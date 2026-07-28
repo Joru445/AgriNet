@@ -1,0 +1,65 @@
+export const farmerNavigation = [
+  {
+    to: "/farmer",
+    icon: "ri-dashboard-line",
+    label: "Dashboard",
+    bottom: true,
+  },
+  {
+    to: "/farmer/products",
+    icon: "ri-store-2-line",
+    label: "My Products",
+    bottom: true,
+  },
+  {
+    to: "/farmer/inquiries",
+    icon: "ri-file-list-3-line",
+    label: "Inquiries",
+    bottom: false,
+  },
+  {
+    to: "/farmer/messages",
+    icon: "ri-message-3-line",
+    label: "Messages",
+    bottom: true,
+  },
+  {
+    to: "/farmer/reviews",
+    icon: "ri-star-line",
+    label: "Reviews",
+    bottom: false,
+  },
+  {
+    to: "/farmer/profile",
+    icon: "ri-user-line",
+    label: "My Profile",
+    bottom: true,
+  },
+];
+
+export const consumerNavigation = [
+  {
+    to: "/home",
+    icon: "ri-store-2-line",
+    label: "Home",
+    bottom: true,
+  },
+  {
+    to: "/nearby",
+    icon: "ri-map-pin-line",
+    label: "Nearby",
+    bottom: true,
+  },
+  {
+    to: "/messages",
+    icon: "ri-message-3-line",
+    label: "Messages",
+    bottom: true,
+  },
+  {
+    to: "/profile",
+    icon: "ri-user-line",
+    label: "Profile",
+    bottom: true,
+  },
+];

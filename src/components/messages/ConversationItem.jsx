@@ -1,0 +1,78 @@
+import defaultAvatar from "../../assets/img/defaultAvatar.png";
+
+import { formatTimestamp } from "../../utils/date";
+
+export default function ConversationItem({
+  item,
+  searching,
+  activeConversation,
+  onConversation,
+  onUser,
+}) {
+  const user = searching ? item : item.otherUser;
+
+  const active =
+    !searching &&
+    activeConversation?.id === item.id;
+
+  function handleClick() {
+    if (searching) {
+      onUser(user);
+    } else {
+      onConversation(item);
+    }
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors ${
+        active
+          ? "bg-green-50 border-r-2 border-[#2D6A4F]"
+          : "hover:bg-gray-50"
+      }`}
+    >
+      <div className="relative shrink-0">
+        <img
+          src={user.profilePicture || defaultAvatar}
+          alt={user.fullname}
+          className="w-14 h-14 rounded-full object-cover object-top"
+        />
+
+        {user.online && (
+          <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-start gap-2">
+          <h3 className="font-semibold truncate">
+            {user.fullname}
+          </h3>
+
+          {!searching && (
+            <span className="text-xs text-gray-400 whitespace-nowrap">
+              {formatTimestamp(item.lastMessageAt)}
+            </span>
+          )}
+        </div>
+
+        {searching ? (
+          <p className="text-sm text-gray-500 truncate">
+            @{user.username}
+          </p>
+        ) : (
+          <p className="text-sm text-gray-500 truncate">
+            {item.lastMessage || "Start a conversation"}
+          </p>
+        )}
+      </div>
+
+      {!searching && item.unreadCount > 0 && (
+        <span className="min-w-5 h-5 rounded-full bg-[#2D6A4F] text-white text-xs flex items-center justify-center px-1">
+          {item.unreadCount}
+        </span>
+      )}
+    </button>
+  );
+}
