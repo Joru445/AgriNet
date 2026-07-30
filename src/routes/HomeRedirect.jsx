@@ -12,5 +12,5 @@ export default function HomeRedirect() {
 
   if (profile.role === "farmer") return <Navigate to="/farmer" replace />;
 
-  return <Navigate to="/dashboard" replace />;
+  return <Navigate to="/home" replace />;
 }

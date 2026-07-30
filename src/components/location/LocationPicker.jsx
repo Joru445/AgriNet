@@ -18,17 +18,18 @@ export default function LocationPicker({ editing, value, onChange }) {
   }
 
   return (
-    <div className="space-y-5 pt-5">
-      <div className="flex gap-3">
+    <div className="space-y-5">
+      <div className="flex gap-3 relative">
         {editing && (
           <>
+            <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               disabled={!editing}
               placeholder="Search address..."
-              className="flex-1 rounded-xl border border-gray-300 px-4 py-2 disabled:bg-gray-100 disabled:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+              className="w-full pl-8 pr-10 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#2D6A4F] transition-colors"
             />
             <button
               type="button"
@@ -68,7 +69,7 @@ export default function LocationPicker({ editing, value, onChange }) {
           <input
             readOnly
             value={value?.lat?.toFixed(6) ?? ""}
-            className="mt-1 w-full rounded-xl border bg-gray-50 px-3 py-2"
+            className="w-full pl-4 pr-10 py-2.5 border-2 border-gray-200 rounded-lg text-sm"
           />
         </div>
 
@@ -78,7 +79,7 @@ export default function LocationPicker({ editing, value, onChange }) {
           <input
             readOnly
             value={value?.lng?.toFixed(6) ?? ""}
-            className="mt-1 w-full rounded-xl border bg-gray-50 px-3 py-2"
+            className="w-full pl-4 pr-10 py-2.5 border-2 border-gray-200 rounded-lg text-sm"
           />
         </div>
       </div>

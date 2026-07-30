@@ -5,13 +5,14 @@ import * as farmerService from "./farmer.service";
 export async function register(form) {
   const user = await authService.register(form.email, form.password);
 
-  await userService.createUserProfile({
+  await userService.createUser({
     uid: user.uid,
     fullname: form.fullname,
     fullnameLower: form.fullname.toLowerCase(),
-    username: form.fullname.toLowerCase().slice(0, 5),
+    username: form.username.toLowerCase(),
     email: form.email,
     role: form.role,
+    location: form.location,
   });
 
   if (form.role === "farmer") {
@@ -19,8 +20,9 @@ export async function register(form) {
       uid: user.uid,
       fullname: form.fullname,
       fullnameLower: form.fullname.toLowerCase(),
-      username: form.fullname.toLowerCase().slice(0, 5),
+      username: form.username.toLowerCase(),
       email: form.email,
+      location: form.location,
     });
   }
 

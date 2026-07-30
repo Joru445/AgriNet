@@ -14,20 +14,19 @@ export async function createFarmerProfile(data) {
   await setDoc(doc(db, "farmers", data.uid), {
     uid: data.uid,
 
-    fullName: data.fullName,
+    fullname: data.fullname,
+    fullnameLower: data.fullnameLower,
+    username: data.username,
     email: data.email,
+    role: data.role,
 
-    profilePicture: "/default.png",
+    profilePicture: "",
     profilePictureId: "",
 
     farmName: "",
     description: "",
 
-    location: {
-      address: "",
-      lat: null,
-      lng: null,
-    },
+    location: data.location,
 
     rating: 0,
     verified: false,

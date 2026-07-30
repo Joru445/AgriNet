@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import logo from "../../assets/favicon.svg"
+import landscape from "../../assets/img/landscape.jpg"
+
 export default function LandingPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -28,7 +31,7 @@ export default function LandingPage() {
             <img
               alt="AgriNet Lucena Logo"
               className="h-10 w-10 object-contain"
-              src="public/favicon.svg"
+              src={logo}
             />
             <span className={`
               font-bold text-lg whitespace-nowrap transition-colors duration-300
@@ -174,7 +177,7 @@ export default function LandingPage() {
           <img
             alt="Agricultural landscape"
             className="w-full h-full object-cover object-top"
-            src="src/assets/img/landscape.jpg"
+            src={landscape}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1B4332]/85 via-[#1B4332]/60 to-[#1B4332]/30"></div>
         </div>

@@ -19,21 +19,19 @@ export async function createUser(data) {
   await setDoc(doc(db, "users", data.uid), {
     uid: data.uid,
 
-    fullName: data.fullName,
+    fullname: data.fullname,
+    fullnameLower: data.fullnameLower,
+    username: data.username,
     email: data.email,
     role: data.role,
 
-    profilePicture: "/default.png",
+    profilePicture: "",
     profilePictureId: "",
 
     contactNumber: "",
     bio: "",
 
-    location: {
-      address: "",
-      lat: null,
-      lng: null,
-    },
+    location: data.location,
 
     createdAt: serverTimestamp(),
   });
@@ -52,7 +50,7 @@ export async function getUserProfile(uid) {
   const snapshot = await getDoc(doc(db, "users", uid));
 
   if (!snapshot.exists()) {
-    throw new Error("User not found.");
+    return null;
   }
 
   return {
