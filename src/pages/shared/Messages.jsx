@@ -34,10 +34,9 @@ export default function Messages() {
   }
 
   const hasChat = activeConversation || activeUser;
-  console.log(messages)
 
   return (
-    <main className="flex-1 h-[84dvh] md:h-[86dvh] lg:h-[88dvh] overflow-hidden">
+    <main className="flex-1 pb-16 md:pb-0 h-[calc(100vh-4rem)] overflow-hidden">
       <div className="bg-white h-full flex overflow-hidden">
         <ConversationList
           conversations={filteredConversations}
@@ -61,7 +60,7 @@ export default function Messages() {
             onSend={sendMessage}
           />
         ) : (
-          <EmptyConversation />
+          <EmptyConversation hasChat/>
         )}
       </div>
     </main>

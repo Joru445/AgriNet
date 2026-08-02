@@ -12,13 +12,14 @@ export default function ConversationList({
 
   onConversation,
   onUser,
+  hasChat,
 }) {
   const searching = search.trim().length > 0;
 
   return (
     <aside className={`
       w-full lg:w-80 md:w-64 border-r border-gray-200 bg-white flex flex-col
-      ${activeConversation ? "hidden md:flex" : "flex"}
+      ${hasChat ? "hidden md:flex" : "flex"}
     `}>
       <div className="p-4">
         <h2 className="text-xl font-bold text-[#1B4332] mb-4">Messages</h2>

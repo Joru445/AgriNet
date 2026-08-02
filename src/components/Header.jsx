@@ -7,7 +7,7 @@ export default function Header({ title = "Dashboard" }) {
   const { profile } = useAuth();
 
   return (
-    <header className="sticky top-0 right-0 h-16 bg-white/90 border-b border-gray-100 flex items-center justify-between px-4 md:px-6 z-999">
+    <header className="sticky top-0 right-0 h-16 bg-white/90 border-b border-gray-100 flex items-center justify-between px-4 md:px-6 z-99">
       <div className="flex items-center gap-3">
         <h2 className="font-bold text-[#1B4332] text-base">{title}</h2>
       </div>

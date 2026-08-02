@@ -22,14 +22,14 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <main className="flex-1 overflow-y-auto p-4 md:p-6">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-16 md:pb-0">
         <DashboardSkeleton />
       </main>
     );
   }
 
   return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6">
+    <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-16 md:pb-0">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <DashboardHero profile={profile} stats={stats} />
 

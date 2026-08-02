@@ -12,9 +12,10 @@ export default function ChatWindow({
 }) {
   return (
     <section className={`
-    flex-1 md:flex flex-col bg-gray-50 scroll-y-none
-    ${hasChat ? "flex" : "hidden md:flex"}
-    `}>
+      flex-1 md:flex flex-col bg-gray-50 scroll-y-none
+      ${hasChat ? "flex" : "hidden md:flex"}
+      `}
+    >
       <ChatHeader user={user} />
 
       <MessageList user={user} messages={messages} />

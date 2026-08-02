@@ -48,7 +48,7 @@ export default function Profile() {
   }
 
   return (
-    <main className="flex-1 p-0 md:p-6">
+    <main className="flex-1 p-0 md:p-6 pb-16 md:pb-0">
       <div className="bg-white md:rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         <ProfileHeader
           profile={form}

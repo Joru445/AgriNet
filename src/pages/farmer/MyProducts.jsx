@@ -34,7 +34,7 @@ export default function MyProducts() {
   } = useProducts();
 
   return (
-    <main className="flex-1 p-4 md:p-6">
+    <main className="flex-1 p-4 md:p-6 pb-16 md:pb-0">
       <ProductToolbar
         search={search}
         onSearch={setSearch}
@@ -49,6 +49,7 @@ export default function MyProducts() {
         <ProductGrid
           products={filteredProducts}
           view={view}
+          onAdd={openCreate}
           onEdit={openEdit}
           onDelete={openDelete}
         />

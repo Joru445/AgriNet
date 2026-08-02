@@ -1,9 +1,9 @@
 import ProductCard from "./ProductCard";
 import EmptyProducts from "./EmptyProducts";
 
-export default function ProductGrid({ products, view, onEdit, onDelete }) {
+export default function ProductGrid({ products, view, onAdd, onEdit, onDelete }) {
   if (!products.length) {
-    return <EmptyProducts />;
+    return <EmptyProducts onAdd={onAdd} />;
   }
 
   if (view === "list") {

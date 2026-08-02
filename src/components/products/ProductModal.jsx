@@ -59,7 +59,7 @@ export default function ProductModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center md:p-5">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center md:p-5 z-9999">
       <div className="bg-white w-full h-full md:max-w-3xl md:max-h-[90vh] md:rounded-2xl overflow-y-auto scrollbar-none">
         <div className="sticky top-0 z-2 bg-white border-b-2 border-b-gray-500 px-6 py-5 flex justify-between items-center">
           <h2 className="text-xl font-bold">

@@ -20,7 +20,7 @@ export default function Reviews() {
 
   if (loading) {
     return (
-      <main className="flex-1 p-4 md:p-6">
+      <main className="flex-1 p-4 md:p-6 pb-16 md:pb-0">
         <ReviewSkeleton />
       </main>
     );
