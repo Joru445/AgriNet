@@ -1,12 +1,8 @@
-import { useState } from "react";
-
 import LocationMap from "./LocationMap";
 
 import useUserLocation from "../../hooks/useUserLocation";
 
 export default function LocationPicker({ editing, value, onChange }) {
-  const [search, setSearch] = useState("");
-
   const { loadingLocation, refreshLocation } = useUserLocation(false);
 
   async function handleUseCurrentLocation() {
@@ -19,22 +15,24 @@ export default function LocationPicker({ editing, value, onChange }) {
 
   return (
     <div className="space-y-5">
+      <label className="block text-xs font-semibold text-gray-600 mb-1">
+        Farm Location
+      </label>
       <div className="flex gap-3 relative">
         {editing && (
           <>
-            <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <i className="ri-map-pin-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             <input
               type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              disabled={!editing}
-              placeholder="Search address..."
-              className="w-full pl-8 pr-10 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#2D6A4F] transition-colors"
+              value={value?.address ?? ""}
+              readOnly
+              className="w-full pl-8 pr-10 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none transition-colors"
             />
             <button
               type="button"
               onClick={handleUseCurrentLocation}
               disabled={loadingLocation}
+              aria-label="Press to get location"
               className="px-4 rounded-xl bg-[#2D6A4F] text-white hover:bg-[#24563f] disabled:opacity-50"
             >
               {loadingLocation ? (

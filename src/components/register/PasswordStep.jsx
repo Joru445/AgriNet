@@ -11,6 +11,11 @@ export default function PasswordStep({
 }) {
   const password = form.password;
 
+  const confirmPasswordError =
+    form.confirmPassword && form.password !== form.confirmPassword
+      ? "Passwords do not match."
+      : "";
+
   const checks = {
     length: password.length >= 8,
     uppercase: /[A-Z]/.test(password),
@@ -94,7 +99,7 @@ export default function PasswordStep({
         name="confirmPassword"
         value={form.confirmPassword}
         onChange={onChange}
-        error={errors.confirmPassword}
+        error={confirmPasswordError || errors.confirmPassword}
       />
 
       <div>

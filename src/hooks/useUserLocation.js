@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { getCurrentPosition } from "../utils/location";
+import { getCurrentPosition, reverseGeocode } from "../utils/location";
 
 export default function useUserLocation(autoLoad = true) {
   const [location, setLocation] = useState(null);
@@ -14,9 +14,16 @@ export default function useUserLocation(autoLoad = true) {
 
       const position = await getCurrentPosition();
 
-      setLocation(position);
+      const address = await reverseGeocode(position.lat, position.lng);
 
-      return position;
+      const location = {
+        ...position,
+        address,
+      };
+
+      setLocation(location);
+
+      return location;
     } catch (error) {
       console.error("Location error:", error);
 

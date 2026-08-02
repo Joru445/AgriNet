@@ -18,7 +18,6 @@ export async function createFarmerProfile(data) {
     fullnameLower: data.fullnameLower,
     username: data.username,
     email: data.email,
-    role: data.role,
 
     profilePicture: "",
     profilePictureId: "",
