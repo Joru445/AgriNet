@@ -28,7 +28,7 @@ export async function createUser(data) {
     profilePicture: "",
     profilePictureId: "",
 
-    contactNumber: "",
+    phone: data.phone,
     bio: "",
 
     location: data.location,

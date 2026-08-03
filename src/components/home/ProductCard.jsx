@@ -35,9 +35,12 @@ export default function ProductCard({ product }) {
             <p className="text-sm text-gray-500">{product.category}</p>
           </div>
 
-          <span className="whitespace-nowrap font-bold text-[#2D6A4F]">
-            ₱{Number(product.price).toFixed(2)}
-          </span>
+          <div className="min-w-0">
+            <span className="whitespace-nowrap font-bold text-[#2D6A4F]">
+              ₱{Number(product.price).toFixed(2)}/{product.unit}
+            </span>
+            <p className="text-sm text-gray-400 justify-self-end">{product.stock} stocks</p>
+          </div>
         </div>
 
         {/* Farmer */}

@@ -11,6 +11,7 @@ export async function register(form) {
     fullnameLower: form.fullname.toLowerCase(),
     username: form.username.toLowerCase(),
     email: form.email,
+    phone: form.contactNumber,
     role: form.role,
     location: form.location,
   });
