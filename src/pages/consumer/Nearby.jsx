@@ -17,7 +17,7 @@ export default function Nearby() {
   } = useNearbyFarmers();
 
   return (
-    <div className="max-w-7xl mx-auto py-8">
+    <div className="max-w-7xl mx-auto">
       <NearbyHeader />
 
       <NearbyMap
@@ -32,10 +32,7 @@ export default function Nearby() {
         onDistanceChange={setMaxDistance}
       />
 
-      <NearbyFarmerGrid
-        loading={loading}
-        farmers={nearbyFarmers}
-      />
+      <NearbyFarmerGrid loading={loading} farmers={nearbyFarmers} />
     </div>
   );
 }

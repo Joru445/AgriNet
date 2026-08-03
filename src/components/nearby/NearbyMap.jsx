@@ -1,8 +1,13 @@
-import { farmerIcon, userIcon } from "../../data/MapIcons";
+import { farmerIcon, userIcon } from "../../constants/MapIcons";
+
+import useStartConversation from "../../hooks/useStartConversation";
 
 import Map from "../map/Map";
+import FarmerPopup from "./FarmerPopup";
 
 export default function NearbyMap({ userLocation, farmers, maxDistance }) {
+  const startConversation = useStartConversation();
+
   return (
     <Map
       center={userLocation}
@@ -26,11 +31,7 @@ export default function NearbyMap({ userLocation, farmers, maxDistance }) {
           lng: f.location.lng,
           icon: farmerIcon,
           popup: (
-            <>
-              <strong>{f.fullname}</strong>
-              <br />
-              {f.distance.toFixed(1)} km away
-            </>
+            <FarmerPopup farmer={f} onMessage={() => startConversation(f)} />
           ),
         })),
       ]}

@@ -18,7 +18,7 @@ import ForgotPassword from "../pages/public/ForgotPassword";
 import ConsumerHome from "../pages/consumer/Home";
 import Nearby from "../pages/consumer/Nearby";
 import ViewProduct from "../pages/consumer/ViewProduct";
-import ViewProfile from "../pages/shared/ViewProfile";
+import StoreProfile from "../pages/shared/StoreProfile";
 
 import FarmerDashboard from "../pages/farmer/Dashboard";
 import MyProducts from "../pages/farmer/MyProducts";
@@ -54,11 +54,11 @@ export default function AppRoutes() {
 
           <Route path="/product/:id" element={<ViewProduct />} />
 
-          <Route path="/user/:id" element={<ViewProfile />} />
+          <Route path="/profile/:uid" element={<StoreProfile />} />
 
           <Route path="/messages" element={<Messages />} />
 
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/me" element={<Profile />} />
         </Route>
       </Route>
 
@@ -76,7 +76,7 @@ export default function AppRoutes() {
 
           <Route path="/farmer/messages" element={<Messages />} />
 
-          <Route path="/farmer/profile" element={<Profile />} />
+          <Route path="/farmer/me" element={<Profile />} />
         </Route>
       </Route>
     </Routes>

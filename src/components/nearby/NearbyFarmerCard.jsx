@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import defaultAvatar from "../../assets/img/defaultAvatar.png";
 
 export default function NearbyFarmerCard({ farmer }) {
@@ -33,9 +35,14 @@ export default function NearbyFarmerCard({ farmer }) {
         </div>
       </div>
 
-      <button className="mt-5 w-full rounded-xl bg-[#2D6A4F] py-2.5 text-sm font-medium text-white hover:bg-[#1B4332]">
-        View Profile
-      </button>
+      <div className="mt-4 flex gap-2">
+        <Link
+          to={`/profile/${farmer.uid}`}
+          className="flex-1 rounded-lg border border-[#2D6A4F] py-2 text-center text-sm font-medium text-[#2D6A4F] hover:bg-green-50"
+        >
+          View Profile
+        </Link>
+      </div>
     </div>
   );
 }

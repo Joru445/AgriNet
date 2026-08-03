@@ -1,5 +1,5 @@
 import Map from "../map/Map";
-import { defaultIcon } from "../../data/MapIcons";
+import { defaultIcon } from "../../constants/MapIcons";
 
 const DEFAULT_CENTER = {
   lat: 13.9411,

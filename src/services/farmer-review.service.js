@@ -1,8 +1,8 @@
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
+  setDoc,
   getDoc,
   getDocs,
   orderBy,
@@ -86,7 +86,11 @@ export async function getFarmerReviewCount(farmerId) {
 }
 
 export async function createReview(data) {
-  const docRef = await addDoc(reviewsRef, {
+  const reviewId = `${data.farmerId}_${data.reviewerId}`;
+
+  const reviewRef = doc(db, "reviews", reviewId);
+
+  await setDoc(reviewRef, {
     farmerId: data.farmerId,
     reviewerId: data.reviewerId,
 
@@ -95,8 +99,6 @@ export async function createReview(data) {
 
     createdAt: serverTimestamp(),
   });
-
-  return docRef.id;
 }
 
 export async function deleteReview(id) {

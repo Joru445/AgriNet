@@ -30,7 +30,7 @@ export const farmerNavigation = [
     bottom: false,
   },
   {
-    to: "/farmer/profile",
+    to: "/farmer/me",
     icon: "ri-user-line",
     label: "My Profile",
     bottom: true,
@@ -57,7 +57,7 @@ export const consumerNavigation = [
     bottom: true,
   },
   {
-    to: "/profile",
+    to: "/me",
     icon: "ri-user-line",
     label: "Profile",
     bottom: true,
