@@ -83,7 +83,6 @@ export default function useMarketplace() {
     return products.map((product) => {
       const lat = product.farmer?.location?.lat;
       const lng = product.farmer?.location?.lng;
-      console.log(lat)
 
       if (!userLocation || lat == null || lng == null) {
         return {

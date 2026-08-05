@@ -3,6 +3,12 @@ import { useParams } from "react-router-dom";
 
 import { getFarmerById } from "../services/farmer.service";
 import { getFarmerProducts } from "../services/product.service";
+
+import {
+  getProductReviewCount,
+  getAverageProductRating,
+} from "../services/product-review.service";
+
 import {
   getFarmerReviews,
   getFarmerReviewCount,
@@ -15,11 +21,15 @@ export default function useStoreProfile() {
   const [loading, setLoading] = useState(true);
 
   const [farmer, setFarmer] = useState(null);
+
   const [products, setProducts] = useState([]);
 
   const [reviews, setReviews] = useState([]);
   const [reviewCount, setReviewCount] = useState([]);
   const [averageRating, setAverageRating] = useState([]);
+
+  const [productReviewCount] = useState([]);
+  const [averageProductRating] = useState([]);
 
   useEffect(() => {
     if (!uid) return;
@@ -40,8 +50,23 @@ export default function useStoreProfile() {
           getAverageFarmerRating(uid),
         ]);
 
+      const productsWithRatings = await Promise.all(
+        products.map(async (product) => {
+          const [reviewCount, productRating] = await Promise.all([
+            getProductReviewCount(product.id),
+            getAverageProductRating(product.id),
+          ]);
+
+          return {
+            ...product,
+            reviewCount,
+            productRating,
+          };
+        }),
+      );
+
       setFarmer(farmer);
-      setProducts(products);
+      setProducts(productsWithRatings);
       setReviews(reviews);
       setReviewCount(reviewCount);
       setAverageRating(averageRating);
@@ -62,6 +87,9 @@ export default function useStoreProfile() {
 
     averageRating,
     reviewCount,
+
+    averageProductRating,
+    productReviewCount,
 
     refresh: loadStore,
   };

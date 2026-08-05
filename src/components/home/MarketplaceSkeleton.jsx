@@ -17,7 +17,7 @@ export default function MarketplaceSkeleton() {
       <div className="mt-8 flex gap-6">
         {/* Desktop Filters */}
         <aside className="hidden w-64 shrink-0 lg:block">
-          <div className="rounded-2xl border bg-white p-5 space-y-5 animate-pulse">
+          <div className="rounded-2xl bg-white p-5 space-y-5 animate-pulse">
             <div className="h-5 w-32 rounded bg-gray-200" />
 
             <div className="space-y-3">
@@ -44,7 +44,7 @@ export default function MarketplaceSkeleton() {
             {Array.from({ length: 9 }).map((_, index) => (
               <div
                 key={index}
-                className="overflow-hidden rounded-2xl border bg-white animate-pulse"
+                className="overflow-hidden rounded-2xl bg-white animate-pulse"
               >
                 <div className="aspect-square bg-gray-200" />
 

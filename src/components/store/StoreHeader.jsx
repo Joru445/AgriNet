@@ -2,7 +2,12 @@ import { Link } from "react-router-dom";
 
 import defaultAvatar from "../../assets/img/defaultAvatar.png";
 
-export default function StoreHeader({ farmer, reviewCount, averageRating }) {
+export default function StoreHeader({
+  farmer,
+  reviewCount,
+  averageRating,
+  onMessage,
+}) {
   return (
     <section className="rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden">
       <div className="h-36 bg-gradient-to-r to-gray-200 from-[#40916C]">
@@ -24,15 +29,9 @@ export default function StoreHeader({ farmer, reviewCount, averageRating }) {
           />
 
           <div className="flex-1">
-            <h1 className="mt-2 text-3xl font-bold text-[#1B4332] md:text-white">
+            <h1 className="mt-2 text-3xl font-bold text-[#2D6A4F]">
               {farmer.fullname}
             </h1>
-
-            {farmer.farmName && (
-              <p className="mt-1 text-lg text-[#40916C] font-medium">
-                {farmer.farmName}
-              </p>
-            )}
 
             <div className="flex flex-wrap gap-5 mt-4 text-sm text-gray-600">
               <span className="flex items-center gap-1">
@@ -58,6 +57,15 @@ export default function StoreHeader({ farmer, reviewCount, averageRating }) {
                   : "-"}
               </span>
             </div>
+          </div>
+          <div className="md:h-32 flex items-center">
+            <button
+              type="button"
+              onClick={onMessage}
+              className="w-32 h-10 rounded-lg bg-[#2D6A4F] py-2 text-sm font-medium text-white hover:bg-[#1B4332]"
+            >
+              Message
+            </button>
           </div>
         </div>
       </div>

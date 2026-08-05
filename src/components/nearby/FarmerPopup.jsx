@@ -14,12 +14,10 @@ export default function FarmerPopup({ farmer, onMessage }) {
         />
 
         <div className="flex-1">
-          <h3 className="font-semibold text-[#1B4332]">{farmer.fullname}</h3>
-
-          <p className="text-xs text-gray-500">@{farmer.username}</p>
+          <h2 className="font-semibold text-[#1B4332]">{farmer.fullname}</h2>
 
           {farmer.distance != null && (
-            <p className="text-xs text-[#2D6A4F] mt-1">
+            <p className="text-xs text-[#2D6A4F] !my-2">
               📍 {farmer.distance.toFixed(1)} km away
             </p>
           )}
@@ -27,13 +25,13 @@ export default function FarmerPopup({ farmer, onMessage }) {
       </div>
 
       {farmer.bio && (
-        <p className="mt-3 text-sm text-gray-600 line-clamp-2">{farmer.bio}</p>
+        <p className="!my-3 text-sm text-gray-600 line-clamp-2">{farmer.bio}</p>
       )}
 
       <div className="mt-4 flex gap-2">
         <Link
           to={`/profile/${farmer.uid}`}
-          className="flex-1 rounded-lg border border-[#2D6A4F] py-2 text-center text-sm font-medium text-[#2D6A4F] hover:bg-green-50"
+          className="flex-1 rounded-lg border border-[#2D6A4F] py-2 text-center text-sm font-medium !text-[#2D6A4F] !hover:bg-green-50"
         >
           Profile
         </Link>
