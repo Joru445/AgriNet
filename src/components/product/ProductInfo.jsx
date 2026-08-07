@@ -24,7 +24,7 @@ export default function ProductInfo({ product, reviewCount, averageRating }) {
       </div>
 
       <div className="mt-6">
-        <p className="text-4xl font-bold text-[#2D6A4F]">₱{product.price}</p>
+        <p className="text-4xl font-bold text-[#2D6A4F]">₱{product.price}/{product.unit}</p>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">

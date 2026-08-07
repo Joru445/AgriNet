@@ -64,7 +64,7 @@ export default function FiltersSidebar({
           </div>
         </div>
 
-        <div>
+        <div className="mb-6">
           <label className="block mb-2 text-xs font-bold">Minimum Rating</label>
 
           <div className="flex gap-1">

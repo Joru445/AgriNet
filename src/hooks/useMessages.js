@@ -123,10 +123,20 @@ export default function useMessages() {
     }
 
     if (userId) {
-      getUserProfile(userId).then((user) => {
+      (async () => {
+        const existing = await findConversation(profile.uid, userId);
+
+        if (existing) {
+          setSearchParams({ conversation: existing.id }, { replace: true });
+
+          return;
+        }
+
+        const user = await getUserProfile(userId);
+
         setActiveConversation(null);
         setActiveUser(user);
-      });
+      })();
 
       return;
     }
@@ -157,16 +167,6 @@ export default function useMessages() {
 
   async function selectUser(user) {
     setSearch("");
-
-    const existing = await findConversation(profile.uid, user.uid);
-
-    if (existing) {
-      setSearchParams({
-        conversation: existing.id,
-      });
-
-      return;
-    }
 
     setSearchParams({
       user: user.uid,
