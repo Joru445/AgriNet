@@ -4,7 +4,11 @@ export default function ProductActions({ product, farmer }) {
   const navigate = useNavigate();
 
   function handleInquiry() {
-    navigate(`/messages?user=${farmer.uid}`);
+    navigate(`/messages?user=${farmer.uid}`, {
+      state: {
+        inquiryProduct: product,
+      },
+    });
   }
 
   return (

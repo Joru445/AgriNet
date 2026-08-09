@@ -17,6 +17,11 @@ export default function Messages() {
 
     messages,
 
+    inquiryProduct,
+    inquiryProducts,
+    sendInquiry,
+    acceptInquiry,
+
     search,
     setSearch,
 
@@ -58,6 +63,10 @@ export default function Messages() {
             onMessageChange={setMessage}
             hasChat={hasChat}
             onSend={sendMessage}
+            inquiryProduct={inquiryProduct}
+            inquiryProducts={inquiryProducts}
+            onSendInquiry={sendInquiry}
+            onAcceptInquiry={acceptInquiry}
           />
         ) : (
           <EmptyConversation hasChat/>

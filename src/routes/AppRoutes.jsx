@@ -56,6 +56,8 @@ export default function AppRoutes() {
 
           <Route path="/profile/:uid" element={<StoreProfile />} />
 
+          <Route path="/inquiries" element={<Inquiries />} />
+
           <Route path="/messages" element={<Messages />} />
 
           <Route path="/me" element={<Profile />} />

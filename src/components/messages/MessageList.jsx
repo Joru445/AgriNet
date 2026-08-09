@@ -1,11 +1,17 @@
 import { useEffect, useRef } from "react";
 
 import MessageBubble from "./MessageBubble";
+import ProductInquiryMessage from "./ProductInquiryMessage";
 import MessageSeparator from "./MessageSeparator";
 
 import { shouldShowSeparator } from "../../utils/chat";
 
-export default function MessageList({ user, messages }) {
+export default function MessageList({
+  user,
+  messages,
+  inquiryProducts,
+  onAcceptInquiry,
+}) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -16,7 +22,7 @@ export default function MessageList({ user, messages }) {
 
   if (!messages.length) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-400">
+      <div className="flex h-full items-center justify-center text-sm text-gray-500">
         Start your conversation 👋
       </div>
     );
@@ -33,7 +39,16 @@ export default function MessageList({ user, messages }) {
               <MessageSeparator timestamp={message.createdAt} />
             )}
 
-            <MessageBubble user={user} message={message} />
+            {message.type === "product_inquiry" ? (
+              <ProductInquiryMessage
+                user={user}
+                message={message}
+                product={inquiryProducts?.[message.productId]}
+                onAccept={onAcceptInquiry}
+              />
+            ) : (
+              <MessageBubble user={user} message={message} />
+            )}
           </div>
         );
       })}

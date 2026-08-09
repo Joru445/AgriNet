@@ -15,7 +15,7 @@ export const farmerNavigation = [
     to: "/farmer/inquiries",
     icon: "ri-file-list-3-line",
     label: "Inquiries",
-    bottom: false,
+    bottom: true,
   },
   {
     to: "/farmer/messages",
@@ -48,6 +48,12 @@ export const consumerNavigation = [
     to: "/nearby",
     icon: "ri-map-pin-line",
     label: "Nearby",
+    bottom: true,
+  },
+  {
+    to: "/inquiries",
+    icon: "ri-file-list-3-line",
+    label: "Inquiries",
     bottom: true,
   },
   {

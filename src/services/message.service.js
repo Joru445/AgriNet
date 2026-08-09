@@ -1,13 +1,15 @@
 import {
   addDoc,
   collection,
+  doc,
+  getDocs,
+  increment,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
+  updateDoc,
   where,
-  getDocs,
-  increment,
   writeBatch,
 } from "firebase/firestore";
 
@@ -23,11 +25,18 @@ export async function sendMessage({
   conversationId,
   senderId,
   text,
+  type = "text",
+  productId = null,
+  inquiryStatus = null,
 }) {
   await addDoc(messagesRef, {
     conversationId,
     senderId,
     text,
+    type,
+    productId,
+    inquiryStatus,
+    read: false,
     createdAt: serverTimestamp(),
   });
 
@@ -37,9 +46,7 @@ export async function sendMessage({
     throw new Error("Conversation not found.");
   }
 
-  const receiverId = conversation.participants.find(
-    (id) => id !== senderId,
-  );
+  const receiverId = conversation.participants.find((id) => id !== senderId);
 
   await updateConversation(conversationId, {
     lastMessage: text,
@@ -89,4 +96,17 @@ export async function markConversationAsRead(conversationId, currentUserId) {
   });
 
   await batch.commit();
+}
+
+export async function updateMessage(
+  messageId,
+  data,
+) {
+  const messageRef = doc(
+    db,
+    "messages",
+    messageId,
+  );
+
+  await updateDoc(messageRef, data);
 }
