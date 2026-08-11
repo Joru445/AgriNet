@@ -25,6 +25,13 @@ export async function createFarmerProfile(data) {
     farmName: "",
     description: "",
 
+    verification: {
+      status: "unverified",
+      group: null,
+      verifiedAt: null,
+      verifiedBy: null
+    },
+
     location: data.location,
 
     rating: 0,

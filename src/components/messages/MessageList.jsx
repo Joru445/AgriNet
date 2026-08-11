@@ -15,10 +15,15 @@ export default function MessageList({
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({
-      behavior: "smooth",
+    if (!messages.length) return;
+
+    requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({
+        behavior: "auto",
+        block: "end",
+      });
     });
-  }, [messages]);
+  }, [messages, inquiryProducts]);
 
   if (!messages.length) {
     return (

@@ -69,3 +69,36 @@ export const consumerNavigation = [
     bottom: true,
   },
 ];
+
+export const adminNavigation = [
+  {
+    to: "/admin",
+    label: "Dashboard",
+    icon: "ri-dashboard-line",
+    bottom: true,
+  },
+  {
+    to: "/admin/farmers/verification",
+    label: "Farmer Verification",
+    icon: "ri-user-search-line",
+    bottom: true,
+  },
+  {
+    to: "/admin/messages",
+    icon: "ri-message-3-line",
+    label: "Messages",
+    bottom: true,
+  },
+  {
+    to: "/admin/me",
+    icon: "ri-user-line",
+    label: "Profile",
+    bottom: true,
+  },
+];
+
+export const navigationByRole = {
+  consumer: consumerNavigation,
+  farmer: farmerNavigation,
+  admin: adminNavigation,
+};

@@ -2,6 +2,7 @@ import { useAuth } from "../../context/AuthContext";
 
 import useInquiries from "../../hooks/useInquiries";
 
+import InquirySkeleton from "../../components/inquiries/InquirySkeleton";
 import InquiryTabs from "../../components/inquiries/InquiryTabs";
 import InquiryTable from "../../components/inquiries/InquiryTable";
 
@@ -32,9 +33,7 @@ export default function Inquiries() {
       <InquiryTabs activeTab={activeTab} onChange={setActiveTab} />
 
       {loading ? (
-        <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center">
-          <p className="text-sm text-gray-500">Loading inquiries...</p>
-        </div>
+        <InquirySkeleton />
       ) : (
         <InquiryTable
           inquiries={filteredInquiries}

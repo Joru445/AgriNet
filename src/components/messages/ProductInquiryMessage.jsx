@@ -12,7 +12,7 @@ export default function ProductInquiryMessage({ user, message, product, onAccept
 
   if (product === undefined) {
     return (
-      <div className="w-72 rounded-xl border bg-white p-4">
+      <div className="w-72 rounded-xl bg-white p-4">
         <p className="text-sm text-gray-500">Loading product...</p>
       </div>
     );

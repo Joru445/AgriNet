@@ -7,15 +7,19 @@ import BottomTab from "../components/BottomTab";
 
 import { useAuth } from "../context/AuthContext";
 
-export default function FarmerLayout() {
+export default function AppLayout() {
   const { profile } = useAuth();
   const [collapsed, setCollapsed] = useState(true);
 
   return (
     <>
-      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed}/>
+      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ml-0 ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
+      <div
+        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ml-0 ${
+          collapsed ? "lg:ml-20" : "lg:ml-64"
+        }`}
+      >
         <Header user={profile} />
 
         <div className="bg-[#FAFAFA] flex-1 overflow-y-auto">
