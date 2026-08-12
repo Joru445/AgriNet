@@ -4,7 +4,7 @@ import { getMessagesPath } from "../../utils/routes";
 
 import InquiryStatusBadge from "./InquiryStatusBadge";
 
-import productPlaceholder from "../../assets/img/ProductPlaceholder.png";
+import productPlaceholder from "../../assets/img/productPlaceholder.png";
 
 export default function InquiryRow({
   inquiry,
