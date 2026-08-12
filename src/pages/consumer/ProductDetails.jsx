@@ -1,5 +1,7 @@
 import useProductDetails from "../../hooks/useProductDetails";
 
+import { useAuth } from "../../context/AuthContext";
+
 import ProductGallery from "../../components/product/ProductGallery";
 import ProductInfo from "../../components/product/ProductInfo";
 import ProductSeller from "../../components/product/ProductSeller";
@@ -17,6 +19,7 @@ export default function ProductDetails() {
     reviewCount,
     averageRating,
   } = useProductDetails();
+  const { profile } = useAuth();
 
   if (loading) {
     return <ProductDetailsSkeleton />;
@@ -27,6 +30,8 @@ export default function ProductDetails() {
       <div className="max-w-7xl mx-auto px-4 py-8">Product not found.</div>
     );
   }
+
+  const isOwner = product.farmerId === profile.uid;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -39,12 +44,9 @@ export default function ProductDetails() {
             reviewCount={reviewCount}
             averageRating={averageRating}
           />
-
-          <ProductSeller farmer={farmer} />
-
+          <ProductSeller farmer={farmer} isOwner={isOwner} />
           <ProductDescription product={product} />
-
-          <ProductActions product={product} farmer={farmer} />
+          <ProductActions product={product} farmer={farmer} isOwner={isOwner} />
         </div>
       </div>
     </div>

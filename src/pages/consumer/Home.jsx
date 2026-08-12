@@ -30,7 +30,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <main className="px-4 py-8 md:px-8 pb-16 md:pb-0">
+      <main className="px-4 py-8 md:px-8 pb-16 md:pb-8">
         <MarketplaceSkeleton />
       </main>
     );

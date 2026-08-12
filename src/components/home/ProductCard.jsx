@@ -1,16 +1,21 @@
 import { Link } from "react-router-dom";
 
+import { useAuth } from "../../context/AuthContext";
+
+import { getProductPath } from "../../utils/routes";
+
 import defaultAvatar from "../../assets/img/defaultAvatar.png";
 
 export default function ProductCard({
   product,
 }) {
+  const { profile } = useAuth()
   const image =
     product.images?.[0]?.url ?? product.images?.[0] ?? "/placeholder.png";
 
   return (
     <Link
-      to={`/product/${product.id}`}
+      to={`${getProductPath(profile.role)}/${product.id}`}
       className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:-translate-y-1 hover:shadow-lg"
     >
       {/* Image */}
