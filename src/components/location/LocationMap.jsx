@@ -6,13 +6,14 @@ const DEFAULT_CENTER = {
   lng: 121.6243,
 };
 
-export default function LocationMap({ editing, value, onChange }) {
+export default function LocationMap({ editing, value, onProfile, onChange }) {
   const hasLocation = value?.lat != null && value?.lng != null;
 
   const center = hasLocation ? value : DEFAULT_CENTER;
 
   return (
     <Map
+      onProfile={onProfile}
       center={center}
       editable={editing}
       onLocationChange={onChange}

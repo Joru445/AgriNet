@@ -1,5 +1,3 @@
-import LocationPicker from "../../components/location/LocationPicker";
-
 export default function ProfileForm({ form, editing, onChange }) {
   return (
     <div className="px-4 lg:px-8 pb-8">
@@ -80,19 +78,6 @@ export default function ProfileForm({ form, editing, onChange }) {
           className="w-full px-4 py-3 rounded-xl border border-gray-300 disabled:bg-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
         />
       </div>
-
-      <LocationPicker
-        editing={editing}
-        value={form.location}
-        onChange={(location) =>
-          onChange({
-            target: {
-              name: "location",
-              value: location,
-            },
-          })
-        }
-      />
     </div>
   );
 }

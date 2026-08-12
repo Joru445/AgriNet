@@ -2,7 +2,7 @@ import LocationMap from "./LocationMap";
 
 import useUserLocation from "../../hooks/useUserLocation";
 
-export default function LocationPicker({ editing, value, onChange }) {
+export default function LocationPicker({ editing, value, onProfile = false, onChange }) {
   const { loadingLocation, refreshLocation } = useUserLocation(false);
 
   async function handleUseCurrentLocation() {
@@ -45,7 +45,7 @@ export default function LocationPicker({ editing, value, onChange }) {
         )}
       </div>
 
-      <LocationMap editing={editing} value={value} onChange={onChange} />
+      <LocationMap editing={editing} value={value} onProfile={onProfile} onChange={onChange} />
 
       {value?.address && (
         <div className="rounded-xl border border-green-200 bg-green-50 p-3">

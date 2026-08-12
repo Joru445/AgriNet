@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
 
+import { getMessagesPath } from "../../utils/routes";
+
 export default function ProductActions({ product, farmer }) {
   const navigate = useNavigate();
 
   function handleInquiry() {
-    navigate(`/messages?user=${farmer.uid}`, {
+    navigate(`${getMessagesPath(userRole)}?user=${farmer.id}`, {
       state: {
         inquiryProduct: product,
       },

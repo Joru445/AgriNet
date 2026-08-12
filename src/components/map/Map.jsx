@@ -10,6 +10,7 @@ const DEFAULT_CENTER = {
 };
 
 export default function Map({
+  onProfile,
   center,
   markers = [],
   radius,
@@ -55,7 +56,7 @@ export default function Map({
       ref={wrapperRef}
       className={`relative overflow-hidden bg-white ${
         fullscreen ? "fixed inset-0 z-9997" : "h-80 md:h-96"
-      }`}
+      } ${onProfile ? "rounded-xl" : " "}`}
     >
       <MapContainer
         center={[mapCenter.lat, mapCenter.lng]}

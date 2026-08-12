@@ -72,6 +72,8 @@ export default function AppRoutes() {
         <Route element={<AppLayout />}>
           <Route path="/farmer" element={<FarmerDashboard />} />
 
+          <Route path="/farmer/product/:id" element={<ProductDetails />} />
+
           <Route path="/farmer/products" element={<MyProducts />} />
 
           <Route path="/farmer/inquiries" element={<Inquiries />} />
