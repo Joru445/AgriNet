@@ -14,7 +14,6 @@ import ForgotPassword from "../pages/public/ForgotPassword";
 
 import ConsumerHome from "../pages/consumer/Home";
 import Nearby from "../pages/consumer/Nearby";
-import ProductDetails from "../pages/consumer/ProductDetails";
 
 import FarmerDashboard from "../pages/farmer/Dashboard";
 import MyProducts from "../pages/farmer/MyProducts";
@@ -23,6 +22,7 @@ import Reviews from "../pages/farmer/Reviews";
 import AdminDashboard from "../pages/admin/Dashboard";
 import FarmerVerification from "../pages/admin/FarmerVerification";
 
+import ProductDetails from "../pages/shared/ProductDetails";
 import StoreProfile from "../pages/shared/StoreProfile";
 import Inquiries from "../pages/shared/Inquiries";
 import Messages from "../pages/shared/Messages";

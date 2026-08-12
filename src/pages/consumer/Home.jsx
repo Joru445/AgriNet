@@ -24,6 +24,10 @@ export default function Home() {
     setPage,
     totalPages,
 
+    hasMore,
+    loadingMore,
+    loadMore,
+
     showFilters,
     setShowFilters,
   } = useMarketplace();
@@ -71,6 +75,19 @@ export default function Home() {
               totalPages={totalPages}
               onChange={setPage}
             />
+
+            {hasMore && (
+              <div className="mt-5 flex justify-center">
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="rounded-xl border border-[#2D6A4F] px-5 py-2.5 text-sm font-semibold text-[#2D6A4F] hover:bg-green-50 disabled:opacity-50"
+                >
+                  {loadingMore ? "Loading..." : "Load more products"}
+                </button>
+              </div>
+            )}
           </section>
         </div>
       </main>

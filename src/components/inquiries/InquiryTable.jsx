@@ -30,7 +30,7 @@ export default function InquiryTable({
               </th>
 
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">
-                Consumer
+                {userRole === "farmer" ? "Consumer" : "Farmer"}
               </th>
 
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">

@@ -1,7 +1,5 @@
 import { useRef } from "react";
 
-import StarRating from "./StarRating";
-
 import defaultAvatar from "../../assets/img/defaultAvatar.png";
 
 export default function ProfileHeader({
@@ -16,8 +14,6 @@ export default function ProfileHeader({
   onAvatarChange,
 }) {
   const fileInput = useRef();
-
-  const isFarmer = profile.role === "farmer";
 
   return (
     <>

@@ -43,11 +43,17 @@ export default function useInquiries() {
     return unsubscribe;
   }, [profile?.uid, profile?.role]);
 
-  /*
-   * Load related products and consumers
-   */
+  // New inquiry documents carry immutable display snapshots. Only legacy
+  // records require the older per-document lookups.
   useEffect(() => {
-    if (!inquiries.length) {
+    const legacyInquiries = inquiries.filter(
+      (inquiry) =>
+        !inquiry.productSnapshot ||
+        !inquiry.consumerSnapshot ||
+        !inquiry.farmerSnapshot,
+    );
+
+    if (!legacyInquiries.length) {
       setInquiryData({});
       return;
     }
@@ -56,7 +62,7 @@ export default function useInquiries() {
 
     async function loadRelatedData() {
       const results = await Promise.all(
-        inquiries.map(async (inquiry) => {
+        legacyInquiries.map(async (inquiry) => {
           try {
             const [product, consumer] = await Promise.all([
               getProductById(inquiry.productId),
@@ -107,7 +113,7 @@ export default function useInquiries() {
     }
 
     return inquiries.filter(
-      (inquiry) => getDisplayStatus(inquiry.status) === activeTab,
+      (inquiry) => normalizeStatus(inquiry.status) === activeTab,
     );
   }, [inquiries, activeTab]);
 
@@ -120,14 +126,22 @@ export default function useInquiries() {
     try {
       setUpdatingId(inquiryId);
 
-      await updateInquiryStatus(inquiryId, status);
+      await updateInquiryStatus({
+        inquiryId,
+        status,
+        actor: profile,
+      });
 
       if (status === "ongoing") {
         showToast.success("Inquiry marked as ongoing.");
       }
 
-      if (status === "resolved") {
-        showToast.success("Inquiry marked as resolved.");
+      if (status === "completed") {
+        showToast.success("Inquiry marked as completed.");
+      }
+
+      if (status === "cancelled") {
+        showToast.success("Inquiry cancelled.");
       }
     } catch (error) {
       console.error(error);
@@ -153,10 +167,6 @@ export default function useInquiries() {
   };
 }
 
-function getDisplayStatus(status) {
-  if (status === "accepted") {
-    return "pending";
-  }
-
-  return status;
+function normalizeStatus(status) {
+  return status === "resolved" ? "completed" : status;
 }

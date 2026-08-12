@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 import Loading from "../components/Loading";
+import { getRoleHome } from "../utils/routes";
 
 export default function HomeRedirect() {
   const { user, profile, loading } = useAuth();
@@ -10,7 +11,5 @@ export default function HomeRedirect() {
 
   if (!user) return <Navigate to="/landing" replace />;
 
-  if (profile.role === "farmer") return <Navigate to="/farmer" replace />;
-
-  return <Navigate to="/home" replace />;
+  return <Navigate to={getRoleHome(profile?.role)} replace />;
 }

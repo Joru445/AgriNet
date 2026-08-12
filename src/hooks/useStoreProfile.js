@@ -1,13 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { getFarmerById } from "../services/farmer.service";
 import { getFarmerProducts } from "../services/product.service";
-
-import {
-  getProductReviewCount,
-  getAverageProductRating,
-} from "../services/product-review.service";
 
 import {
   getFarmerReviews,
@@ -28,16 +23,9 @@ export default function useStoreProfile() {
   const [reviewCount, setReviewCount] = useState([]);
   const [averageRating, setAverageRating] = useState([]);
 
-  const [productReviewCount] = useState([]);
-  const [averageProductRating] = useState([]);
-
-  useEffect(() => {
+  const loadStore = useCallback(async () => {
     if (!uid) return;
 
-    loadStore();
-  }, [uid]);
-
-  async function loadStore() {
     try {
       setLoading(true);
 
@@ -50,20 +38,11 @@ export default function useStoreProfile() {
           getAverageFarmerRating(uid),
         ]);
 
-      const productsWithRatings = await Promise.all(
-        products.map(async (product) => {
-          const [reviewCount, productRating] = await Promise.all([
-            getProductReviewCount(product.id),
-            getAverageProductRating(product.id),
-          ]);
-
-          return {
-            ...product,
-            reviewCount,
-            productRating,
-          };
-        }),
-      );
+      const productsWithRatings = products.map((product) => ({
+        ...product,
+        reviewCount: Number(product.ratingSummary?.count ?? 0),
+        productRating: Number(product.ratingSummary?.average ?? 0),
+      }));
 
       setFarmer(farmer);
       setProducts(productsWithRatings);
@@ -75,7 +54,11 @@ export default function useStoreProfile() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [uid]);
+
+  useEffect(() => {
+    loadStore();
+  }, [loadStore]);
 
   return {
     loading,
@@ -87,9 +70,6 @@ export default function useStoreProfile() {
 
     averageRating,
     reviewCount,
-
-    averageProductRating,
-    productReviewCount,
 
     refresh: loadStore,
   };

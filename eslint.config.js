@@ -17,5 +17,12 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // These compiler-oriented rules flag normal asynchronous data loading
+      // and subscriptions used throughout this application. React Compiler is
+      // not enabled in the Vite configuration, so they are not actionable.
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
+    },
   },
 ])

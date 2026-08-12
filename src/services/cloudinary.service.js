@@ -1,9 +1,15 @@
-const CLOUD_NAME = "uytz6pnb";
-
-const PROFILE_PRESET = "agrinet_profile";
-const PRODUCT_PRESET = "agrinet_products";
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const DEFAULT_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+const PROFILE_PRESET =
+  import.meta.env.VITE_CLOUDINARY_PROFILE_PRESET ?? DEFAULT_PRESET;
+const PRODUCT_PRESET =
+  import.meta.env.VITE_CLOUDINARY_PRODUCT_PRESET ?? DEFAULT_PRESET;
 
 async function uploadImage(file, uploadPreset) {
+  if (!CLOUD_NAME || !uploadPreset) {
+    throw new Error("Cloudinary upload configuration is missing.");
+  }
+
   const formData = new FormData();
 
   formData.append("file", file);

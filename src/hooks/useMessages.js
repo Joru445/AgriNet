@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { serverTimestamp } from "firebase/firestore";
-
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
@@ -16,12 +14,11 @@ import {
 import {
   subscribeMessages,
   sendMessage,
-  updateMessage,
 } from "../services/message.service";
 
 import { getUserProfile, searchUsers } from "../services/user.service";
 import { getProductById } from "../services/product.service";
-import { createInquiry } from "../services/inquiry.service";
+import { acceptProductInquiry } from "../services/inquiry.service";
 
 import { showToast } from "../utils/toast";
 
@@ -36,7 +33,6 @@ export default function useMessages() {
   const [loading, setLoading] = useState(true);
 
   const [conversations, setConversations] = useState([]);
-  const [users, setUsers] = useState([]);
   const [messages, setMessages] = useState([]);
 
   const [activeConversation, setActiveConversation] = useState(null);
@@ -302,7 +298,7 @@ export default function useMessages() {
     markConversationRead(activeConversation.id, profile.uid);
 
     return subscribeMessages(activeConversation.id, setMessages);
-  }, [activeConversation?.id, profile?.uid]);
+  }, [activeConversation, profile?.uid]);
 
   // --------------------------------------------------
   // Select conversation
@@ -429,7 +425,7 @@ export default function useMessages() {
     }
   }
 
-  async function handleAcceptInquiry(inquiryMessage, product) {
+  async function handleAcceptInquiry(inquiryMessage) {
     if (!inquiryMessage?.id) {
       showToast.error("Invalid inquiry message.");
 
@@ -455,42 +451,9 @@ export default function useMessages() {
     }
 
     try {
-      // Make sure the farmer is the current
-      // participant in this conversation.
-      const conversation = await getConversation(inquiryMessage.conversationId);
-
-      if (!conversation) {
-        throw new Error("Conversation not found.");
-      }
-
-      if (!conversation.participants.includes(profile.uid)) {
-        throw new Error("You are not part of this conversation.");
-      }
-
-      // Prevent duplicate acceptance if
-      // the button somehow gets clicked twice.
-      if (inquiryMessage.inquiryStatus !== "pending") {
-        return;
-      }
-
-      // Create the actual inquiry document.
-      const inquiryId = await createInquiry({
-        conversationId: inquiryMessage.conversationId,
-
-        inquiryMessageId: inquiryMessage.id,
-
-        consumerId: inquiryMessage.senderId,
-
-        farmerId: profile.uid,
-
-        productId: inquiryMessage.productId,
-      });
-
-      // Update only this inquiry message.
-      await updateMessage(inquiryMessage.id, {
-        inquiryStatus: "accepted",
-        inquiryId,
-        acceptedAt: serverTimestamp(),
+      await acceptProductInquiry({
+        inquiryMessage,
+        farmer: profile,
       });
 
       showToast.success("Inquiry accepted.");
@@ -531,8 +494,6 @@ export default function useMessages() {
     searching,
 
     conversations,
-    users,
-
     filteredConversations,
     userResults,
 

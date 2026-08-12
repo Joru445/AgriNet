@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function ProductGallery({ product }) {
+  return <ProductGalleryImages key={product.id} product={product} />;
+}
+
+function ProductGalleryImages({ product }) {
   const images = product.images ?? [];
 
   const [selected, setSelected] = useState(0);
 
   const selectedImage = images[selected];
-
-  useEffect(() => {
-    setSelected(0);
-  }, [product.id]);
 
   if (!images.length) {
     return (

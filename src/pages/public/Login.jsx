@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 import { login } from "../../services/login.service";
 
-import { showToast } from "../../utils/toast";
+import { getRoleHome } from "../../utils/routes";
+
 import logo from "../../assets/favicon.ico";
 
 export default function LoginPage() {
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({
     email: "",
     password: "",
+    general: "",
   });
 
   const handleChange = (e) => {
@@ -29,7 +31,6 @@ export default function LoginPage() {
       [name]: value,
     }));
 
-    // Clear the error while typing
     setErrors((prev) => ({
       ...prev,
       [name]: "",
@@ -41,26 +42,54 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    setErrors({
+      email: "",
+      password: "",
+      general: "",
+    });
+
     try {
       setLoading(true);
 
       const { profile } = await login(form);
 
-      showToast.success("Welcome back!");
+      if (!profile?.role) {
+        setErrors({
+          email: "",
+          password: "",
+          general: "Unable to determine your account role.",
+        });
 
-      navigate(profile.role === "farmer" ? "/farmer" : "/dashboard");
+        return;
+      }
+
+      navigate(getRoleHome(profile.role));
     } catch (error) {
+      console.error(error);
+
       switch (error.code) {
         case "auth/invalid-credential":
-          showToast.error("Invalid email or password.");
+          setErrors({
+            email: "",
+            password: "Invalid email or password.",
+            general: "",
+          });
           break;
 
         case "auth/too-many-requests":
-          showToast.error("Too many login attempts. Please try again later.");
+          setErrors({
+            email: "",
+            password: "Too many login attempts. Please try again later.",
+            general: "",
+          });
           break;
 
         default:
-          showToast.error("Unable to sign in.");
+          setErrors({
+            email: "",
+            password: "",
+            general: "Unable to sign in. Please try again.",
+          });
       }
     } finally {
       setLoading(false);
@@ -148,6 +177,14 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
+              {errors.general && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-xs text-red-600 font-medium flex items-center gap-2">
+                    <i className="ri-error-warning-line text-sm"></i>
+                    <span>{errors.general}</span>
+                  </p>
+                </div>
+              )}
               <label className="block text-xs font-semibold text-gray-600 mb-1">
                 Email Address
               </label>
@@ -165,7 +202,6 @@ export default function LoginPage() {
                   className="w-full pl-9 pr-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#2D6A4F] transition-colors"
                 />
               </div>
-
               {errors.email && (
                 <p className="text-xs text-red-500 font-medium mt-1.5 flex items-center gap-1">
                   <i className="ri-error-warning-line text-sm"></i>

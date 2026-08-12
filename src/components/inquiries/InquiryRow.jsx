@@ -1,9 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 import { getMessagesPath } from "../../utils/routes";
-
 import InquiryStatusBadge from "./InquiryStatusBadge";
-
 import productPlaceholder from "../../assets/img/productPlaceholder.png";
 
 export default function InquiryRow({
@@ -15,88 +13,97 @@ export default function InquiryRow({
   onStatusChange,
 }) {
   const navigate = useNavigate();
-
-  const status = getDisplayStatus(inquiry.status);
+  const status = normalizeStatus(inquiry.status);
+  const productData = inquiry.productSnapshot ?? product;
+  const counterparty =
+    userRole === "farmer"
+      ? inquiry.consumerSnapshot ?? consumer
+      : inquiry.farmerSnapshot;
 
   function openConversation() {
-    if (!inquiry.conversationId) {
-      return;
+    if (inquiry.conversationId) {
+      navigate(`${getMessagesPath(userRole)}?conversation=${inquiry.conversationId}`);
     }
+  }
 
-    navigate(`${getMessagesPath(userRole)}?conversation=${inquiry.conversationId}`);
+  function cancelInquiry() {
+    if (window.confirm("Cancel this inquiry?")) {
+      onStatusChange(inquiry.id, "cancelled");
+    }
   }
 
   return (
     <tr className="border-t border-gray-50 transition-colors hover:bg-gray-50/50">
-      {/* Product */}
       <td className="px-5 py-3">
         <div className="flex items-center gap-3">
           <img
-            src={getProductImage(product)}
-            alt={product?.name || "Product"}
+            src={getProductImage(productData)}
+            alt={productData?.name || "Product"}
             className="h-10 w-10 rounded-lg object-cover"
           />
-
           <div>
             <span className="block text-sm font-medium text-gray-800">
-              {product?.name || "Product unavailable"}
+              {productData?.name || "Product unavailable"}
             </span>
-
-            {product?.price != null && (
-              <span className="text-xs text-gray-500">₱{product.price}</span>
+            {productData?.price != null && (
+              <span className="text-xs text-gray-500">
+                ₱{productData.price}{productData.unit ? `/${productData.unit}` : ""}
+              </span>
             )}
           </div>
         </div>
       </td>
 
-      {/* Consumer */}
       <td className="px-5 py-3 text-sm text-gray-600">
-        {consumer?.fullname || consumer?.username || "Unknown consumer"}
+        { counterparty?.fullname ||
+          counterparty?.username ||
+          "Unknown user"}
       </td>
 
-      {/* Date */}
       <td className="px-5 py-3 text-sm text-gray-500">
         {formatDate(inquiry.acceptedAt || inquiry.createdAt)}
       </td>
 
-      {/* Status */}
       <td className="px-5 py-3">
         <InquiryStatusBadge status={status} />
       </td>
 
-      {/* Actions */}
       <td className="px-5 py-3">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={openConversation}
             title="Open conversation"
-            className="text-xs font-semibold text-[#2D6A4F] hover:underline gap-2"
+            className="text-xs font-semibold text-[#2D6A4F] hover:underline"
           >
             View <i className="ri-message-3-line" />
           </button>
 
-          {/* Farmer actions */}
-          {userRole === "farmer" && status === "pending" && (
-            <button
-              type="button"
-              disabled={updating}
+          {userRole === "farmer" && status === "accepted" && (
+            <Action
+              updating={updating}
+              label="Start"
+              className="text-blue-600"
               onClick={() => onStatusChange(inquiry.id, "ongoing")}
-              className="text-xs font-semibold text-blue-600 hover:underline disabled:opacity-50"
-            >
-              {updating ? "Updating..." : "Start"}
-            </button>
+            />
           )}
 
-          {userRole === "farmer" && status === "ongoing" && (
-            <button
-              type="button"
-              disabled={updating}
-              onClick={() => onStatusChange(inquiry.id, "resolved")}
-              className="text-xs font-semibold text-green-600 hover:underline disabled:opacity-50"
-            >
-              {updating ? "Updating..." : "Resolve"}
-            </button>
+          {userRole === "consumer" && status === "ongoing" && (
+            <Action
+              updating={updating}
+              label="Mark complete"
+              className="text-green-600"
+              onClick={() => onStatusChange(inquiry.id, "completed")}
+            />
+          )}
+
+          {["accepted", "ongoing"].includes(status) && (
+            <Action
+              updating={updating}
+              label="Cancel"
+              className="text-red-600"
+              onClick={cancelInquiry}
+            />
           )}
         </div>
       </td>
@@ -104,36 +111,33 @@ export default function InquiryRow({
   );
 }
 
-function getDisplayStatus(status) {
-  if (status === "accepted") {
-    return "pending";
-  }
+function Action({ updating, label, className, onClick }) {
+  return (
+    <button
+      type="button"
+      disabled={updating}
+      onClick={onClick}
+      className={`text-xs font-semibold hover:underline disabled:opacity-50 ${className}`}
+    >
+      {updating ? "Updating..." : label}
+    </button>
+  );
+}
 
-  return status;
+function normalizeStatus(status) {
+  return status === "resolved" ? "completed" : status;
 }
 
 function getProductImage(product) {
-  if (!product?.images?.length) {
-    return productPlaceholder;
-  }
-
-  const image = product.images[0];
-
-  if (typeof image === "string") {
-    return image;
-  }
-
-  return image?.url || productPlaceholder;
+  const image = product?.imageUrl ?? product?.images?.[0];
+  return typeof image === "string" ? image : image?.url || productPlaceholder;
 }
 
 function formatDate(timestamp) {
-  if (!timestamp) {
-    return "Unknown";
-  }
+  if (!timestamp) return "Unknown";
 
   try {
     const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
-
     return date.toLocaleDateString("en-CA");
   } catch {
     return "Unknown";

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import ProductForm from "./ProductForm";
 import ProductImageUploader from "./ProductImageUploader";
@@ -10,31 +10,25 @@ export default function ProductModal({
   onClose,
   onSubmit,
 }) {
-  const initialForm = {
-    name: "",
-    category: "",
-    price: "",
-    stock: "",
-    unit: "",
-    available: true,
-    images: [],
-  };
+  if (!open) return null;
 
-  const [form, setForm] = useState(initialForm);
+  return (
+    <ProductModalContent
+      key={product?.id ?? "new-product"}
+      product={product}
+      saving={saving}
+      onClose={onClose}
+      onSubmit={onSubmit}
+    />
+  );
+}
 
-  useEffect(() => {
-    if (!open) return;
-
-    if (product) {
-      setForm({
-        ...initialForm,
-        ...product,
-        images: product.images ?? [],
-      });
-    } else {
-      setForm(initialForm);
-    }
-  }, [product, open]);
+function ProductModalContent({ product, saving, onClose, onSubmit }) {
+  const [form, setForm] = useState(() => ({
+    ...initialForm,
+    ...product,
+    images: product?.images ?? [],
+  }));
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
@@ -55,8 +49,6 @@ export default function ProductModal({
   function handleSubmit() {
     onSubmit(form);
   }
-
-  if (!open) return null;
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center md:p-5 z-9999">
@@ -94,3 +86,13 @@ export default function ProductModal({
     </div>
   );
 }
+
+const initialForm = {
+  name: "",
+  category: "",
+  price: "",
+  stock: "",
+  unit: "",
+  available: true,
+  images: [],
+};

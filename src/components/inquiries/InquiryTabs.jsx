@@ -5,16 +5,20 @@ export default function InquiryTabs({ activeTab, onChange }) {
       label: "All",
     },
     {
-      id: "pending",
-      label: "Pending",
+      id: "accepted",
+      label: "Accepted",
     },
     {
       id: "ongoing",
       label: "Ongoing",
     },
     {
-      id: "resolved",
-      label: "Resolved",
+      id: "completed",
+      label: "Completed",
+    },
+    {
+      id: "cancelled",
+      label: "Cancelled",
     },
   ];
 

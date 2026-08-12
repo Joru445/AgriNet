@@ -1,16 +1,20 @@
 export default function InquiryStatusBadge({ status }) {
   const styles = {
-    pending: "bg-amber-100 text-amber-700",
+    accepted: "bg-amber-100 text-amber-700",
 
     ongoing: "bg-blue-100 text-blue-700",
 
-    resolved: "bg-green-100 text-green-700",
+    completed: "bg-green-100 text-green-700",
+
+    cancelled: "bg-gray-100 text-gray-600",
   };
 
   const labels = {
-    pending: "Pending",
+    accepted: "Accepted",
     ongoing: "Ongoing",
-    resolved: "Resolved",
+    completed: "Completed",
+
+    cancelled: "Cancelled",
   };
 
   return (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { uploadProfilePicture } from "../services/cloudinary.service";
 import { updateUser, getUserProfile } from "../services/user.service";
@@ -116,11 +116,37 @@ export default function useProfile(profile) {
     setEditing(false);
   }
 
-  async function loadProfile() {
+  const loadStats = useCallback(async (uid) => {
+    try {
+      const [products, reviews, rating] = await Promise.all([
+        getFarmerProducts(uid),
+        getFarmerReviewCount(uid),
+        getAverageFarmerRating(uid),
+      ]);
+
+      setStats({
+        products: products.length,
+        reviews,
+        inquiries: 0,
+        completed: 0,
+      });
+
+      return rating;
+    } catch (error) {
+      console.error(error);
+      return 0;
+    }
+  }, []);
+
+  const loadProfile = useCallback(async () => {
+    if (!profile?.uid) return;
+
     try {
       setLoading(true);
 
       const user = await getUserProfile(profile.uid);
+
+      if (!user) return;
 
       let rating = 0;
       let farmer = null;
@@ -139,28 +165,7 @@ export default function useProfile(profile) {
     } finally {
       setLoading(false);
     }
-  }
-
-  async function loadStats(uid) {
-    try {
-      const [products, reviews, rating] = await Promise.all([
-        getFarmerProducts(uid),
-        getFarmerReviewCount(uid),
-        getAverageFarmerRating(uid),
-      ]);
-
-      setStats({
-        products: products.length,
-        reviews,
-        inquiries: 0,
-        completed: 0,
-      });
-
-      return rating;
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  }, [loadStats, profile?.uid]);
 
   async function handleAvatar(e) {
     const file = e.target.files?.[0];
@@ -183,14 +188,8 @@ export default function useProfile(profile) {
   }
 
   useEffect(() => {
-    if (!profile?.uid) return;
-
-    const initialize = async () => {
-      await loadProfile();
-    };
-
-    initialize();
-  }, [profile?.uid]);
+    loadProfile();
+  }, [loadProfile]);
 
   return {
     loading,

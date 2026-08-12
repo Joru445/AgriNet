@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { getProductById } from "../services/product.service";
 import { getFarmerById } from "../services/farmer.service";
 
 import {
-  getProductReviews,
-  getProductReviewCount,
-  getAverageProductRating,
+  getReviewsByProduct,
 } from "../services/product-review.service";
 
 export default function useProductDetails() {
@@ -29,13 +27,9 @@ export default function useProductDetails() {
 
   const isAvailable = product?.available === true;
 
-  useEffect(() => {
+  const loadProduct = useCallback(async () => {
     if (!id) return;
 
-    loadProduct();
-  }, [id]);
-
-  async function loadProduct() {
     try {
       setLoading(true);
 
@@ -46,12 +40,20 @@ export default function useProductDetails() {
         return;
       }
 
-      const [farmer, reviews, reviewCount, averageRating] = await Promise.all([
+      const [farmer, reviews] = await Promise.all([
         getFarmerById(product.farmerId),
-        getProductReviews(product.id),
-        getProductReviewCount(product.id),
-        getAverageProductRating(product.id),
+        getReviewsByProduct(product.id),
       ]);
+
+      const reviewCount = reviews.length;
+      const averageRating = reviewCount
+        ? Number(
+            (
+              reviews.reduce((total, review) => total + Number(review.rating), 0) /
+              reviewCount
+            ).toFixed(1),
+          )
+        : 0;
 
       setProduct(product);
       setFarmer(farmer);
@@ -65,7 +67,11 @@ export default function useProductDetails() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    loadProduct();
+  }, [loadProduct]);
 
   return {
     loading,

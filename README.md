@@ -205,6 +205,14 @@ services/
 
 This structure makes the application easier to maintain and allows individual features to be modified without placing database logic directly inside UI components.
 
+### Firestore indexes
+
+The required composite indexes are versioned in `firestore.indexes.json`. Deploy them with the Firebase CLI alongside your existing security rules:
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
 ---
 
 ## Installation
@@ -236,6 +244,9 @@ VITE_FIREBASE_APP_ID=your_app_id
 
 VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
 VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+# Optional: use separate unsigned upload presets by image type.
+VITE_CLOUDINARY_PROFILE_PRESET=your_profile_upload_preset
+VITE_CLOUDINARY_PRODUCT_PRESET=your_product_upload_preset
 ```
 
 Do not commit private credentials or environment files containing sensitive configuration to the repository.

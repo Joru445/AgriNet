@@ -5,17 +5,18 @@ import {
   doc,
   getDoc,
   getDocs,
+  documentId,
+  limit,
   orderBy,
   query,
   serverTimestamp,
+  startAfter,
   updateDoc,
   where,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
-
-import { getFarmers } from "./farmer.service";
-import { getProductReviews } from "./product-review.service";
+import { getProductReviewSummaries } from "./product-review.service";
 
 const productsRef = collection(db, "products");
 
@@ -72,6 +73,11 @@ export async function createProduct(data) {
 
     available: data.available ?? true,
 
+    ratingSummary: {
+      average: 0,
+      count: 0,
+    },
+
     createdAt: serverTimestamp(),
   });
 
@@ -86,41 +92,32 @@ export async function deleteProduct(id) {
   await deleteDoc(doc(db, "products", id));
 }
 
-export async function getMarketplaceProducts() {
-  const [productSnapshot, farmers, reviews] = await Promise.all([
-    getDocs(query(productsRef, orderBy("createdAt", "desc"))),
-    getFarmers(),
-    getProductReviews(),
-  ]);
+export async function getMarketplaceProductsPage({ pageSize = 24, cursor } = {}) {
+  const constraints = [orderBy("createdAt", "desc"), limit(pageSize)];
 
-  const farmerMap = new Map(farmers.map((farmer) => [farmer.uid, farmer]));
+  if (cursor) constraints.splice(1, 0, startAfter(cursor));
 
-  const ratingMap = new Map();
+  const productSnapshot = await getDocs(query(productsRef, ...constraints));
+  const products = productSnapshot.docs.map((productDoc) => ({
+    id: productDoc.id,
+    ...productDoc.data(),
+  }));
 
-  for (const review of reviews) {
-    const current = ratingMap.get(review.productId) ?? {
-      total: 0,
-      count: 0,
-    };
+  const farmerMap = await getFarmersByIds(
+    [...new Set(products.map((product) => product.farmerId).filter(Boolean))],
+  );
+  const legacyProductIds = products
+    .filter((product) => !product.ratingSummary)
+    .map((product) => product.id);
+  const legacyRatingMap = await getProductReviewSummaries(legacyProductIds);
 
-    current.total += Number(review.rating);
-    current.count += 1;
+  return {
+    products: products.map((product) => {
+      const farmer = farmerMap.get(product.farmerId);
+      const rating = product.ratingSummary ?? legacyRatingMap.get(product.id) ?? {};
 
-    ratingMap.set(review.productId, current);
-  }
-
-  return productSnapshot.docs.map((doc) => {
-    const product = {
-      id: doc.id,
-      ...doc.data(),
-    };
-
-    const farmer = farmerMap.get(product.farmerId);
-
-    const rating = ratingMap.get(product.id);
-
-    return {
-      ...product,
+      return {
+        ...product,
 
       farmer: farmer
         ? {
@@ -133,11 +130,31 @@ export async function getMarketplaceProducts() {
           }
         : null,
 
-      productRating: rating
-        ? Number((rating.total / rating.count).toFixed(1))
-        : 0,
+        productRating: Number(rating.average ?? product.productRating ?? 0),
+        reviewCount: Number(rating.count ?? product.reviewCount ?? 0),
+      };
+    }),
+    cursor: productSnapshot.docs.at(-1) ?? null,
+    hasMore: productSnapshot.docs.length === pageSize,
+  };
+}
 
-      reviewCount: rating?.count ?? 0,
-    };
-  });
+async function getFarmersByIds(ids) {
+  const farmers = new Map();
+
+  for (let index = 0; index < ids.length; index += 30) {
+    const batch = ids.slice(index, index + 30);
+    const snapshot = await getDocs(
+      query(collection(db, "farmers"), where(documentId(), "in", batch)),
+    );
+
+    snapshot.docs.forEach((farmerDoc) => {
+      farmers.set(farmerDoc.id, {
+        uid: farmerDoc.id,
+        ...farmerDoc.data(),
+      });
+    });
+  }
+
+  return farmers;
 }

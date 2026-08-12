@@ -8,6 +8,7 @@ import {
   getCountFromServer,
   orderBy,
   query,
+  runTransaction,
   serverTimestamp,
   where,
 } from "firebase/firestore";
@@ -28,6 +29,38 @@ export async function getProductReviews() {
     id: doc.id,
     ...doc.data(),
   }));
+}
+
+export async function getProductReviewSummaries(productIds) {
+  const summaries = new Map();
+
+  for (let index = 0; index < productIds.length; index += 30) {
+    const ids = productIds.slice(index, index + 30);
+    if (!ids.length) continue;
+
+    const snapshot = await getDocs(
+      query(productReviewsRef, where("productId", "in", ids)),
+    );
+
+    snapshot.docs.forEach((reviewDoc) => {
+      const review = reviewDoc.data();
+      const summary = summaries.get(review.productId) ?? { total: 0, count: 0 };
+
+      summary.total += Number(review.rating);
+      summary.count += 1;
+      summaries.set(review.productId, summary);
+    });
+  }
+
+  return new Map(
+    [...summaries].map(([productId, summary]) => [
+      productId,
+      {
+        average: Number((summary.total / summary.count).toFixed(1)),
+        count: summary.count,
+      },
+    ]),
+  );
 }
 
 export async function getProductReviewById(id) {
@@ -59,21 +92,60 @@ export async function getReviewsByProduct(productId) {
 }
 
 export async function createProductReview(data) {
-  const docRef = await addDoc(productReviewsRef, {
-    productId: data.productId,
-    reviewerId: data.reviewerId,
+  const reviewRef = doc(productReviewsRef);
+  const productRef = doc(db, "products", data.productId);
 
-    rating: Number(data.rating),
-    comment: data.comment,
+  await runTransaction(db, async (transaction) => {
+    const product = await transaction.get(productRef);
+    if (!product.exists()) throw new Error("Product not found.");
 
-    createdAt: serverTimestamp(),
+    const summary = product.data().ratingSummary ?? { average: 0, count: 0 };
+    const count = Number(summary.count ?? 0) + 1;
+    const total = Number(summary.average ?? 0) * Number(summary.count ?? 0) + Number(data.rating);
+
+    transaction.set(reviewRef, {
+      productId: data.productId,
+      reviewerId: data.reviewerId,
+      rating: Number(data.rating),
+      comment: data.comment,
+      createdAt: serverTimestamp(),
+    });
+    transaction.update(productRef, {
+      ratingSummary: {
+        average: Number((total / count).toFixed(1)),
+        count,
+      },
+    });
   });
 
-  return docRef.id;
+  return reviewRef.id;
 }
 
 export async function deleteProductReview(id) {
-  await deleteDoc(doc(db, "product-reviews", id));
+  const reviewRef = doc(db, "product-reviews", id);
+
+  await runTransaction(db, async (transaction) => {
+    const review = await transaction.get(reviewRef);
+    if (!review.exists()) return;
+
+    const productRef = doc(db, "products", review.data().productId);
+    const product = await transaction.get(productRef);
+
+    transaction.delete(reviewRef);
+    if (!product.exists()) return;
+
+    const summary = product.data().ratingSummary ?? { average: 0, count: 0 };
+    const previousCount = Number(summary.count ?? 0);
+    const count = Math.max(0, previousCount - 1);
+    const total = Number(summary.average ?? 0) * previousCount - Number(review.data().rating);
+
+    transaction.update(productRef, {
+      ratingSummary: {
+        average: count ? Number((total / count).toFixed(1)) : 0,
+        count,
+      },
+    });
+  });
 }
 
 export async function getAverageProductRating(productId) {
