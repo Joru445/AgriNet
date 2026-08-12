@@ -1,7 +1,7 @@
 import { useAuth } from "../../context/AuthContext";
 
 import defaultAvatar from "../../assets/img/defaultAvatar.png"
-import productPlaceholder from "../../assets/img/ProductPlaceholder.png";
+import productPlaceholder from "../../assets/img/productPlaceholder.png";
 
 export default function ProductInquiryMessage({ user, message, product, onAccept }) {
   const { profile } = useAuth();
