@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+
 export default function MessageInput({
   value,
   onChange,
@@ -5,6 +7,22 @@ export default function MessageInput({
   inquiryProduct,
   onSendInquiry,
 }) {
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+
+    if (!textarea) return;
+
+    textarea.style.height = "auto";
+
+    const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight);
+
+    const maxHeight = lineHeight * 3 + 24;
+
+    textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
+  }, [value]);
+
   function handleKeyDown(e) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -13,7 +31,7 @@ export default function MessageInput({
   }
 
   return (
-    <div className="border-t border-gray-200 bg-white p-3">
+    <div className="absolute inset-x-0 bottom-0 md:bottom-16 lg:bottom-0 z-40 border-t border-gray-200 bg-white p-3">
       {inquiryProduct && (
         <div className="mb-3 flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-3">
           {inquiryProduct.images?.[0] && (
@@ -48,22 +66,30 @@ export default function MessageInput({
         </div>
       )}
 
-      <div className="flex items-end gap-2">
+      <div className="flex w-full items-end gap-1">
+        <button
+          type="button"
+          className="h-12 w-12 shrink-0 rounded-2xl text-[#2D6A4F] transition hover:text-[#1B4332]"
+        >
+          <i className="ri-attachment-line text-lg" />
+        </button>
+
         <textarea
+          ref={textareaRef}
           rows={1}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
-          className="flex-1 resize-none rounded-2xl border border-gray-200 px-4 py-3 focus:border-[#2D6A4F] focus:outline-none"
+          className="min-w-0 flex-1 resize-none overflow-y-auto scrollbar-none rounded-3xl border border-gray-200 px-4 py-3 focus:border-[#2D6A4F] focus:outline-none"
         />
 
         <button
           type="button"
           onClick={onSend}
-          className="h-12 w-12 shrink-0 rounded-2xl bg-[#2D6A4F] text-white transition hover:bg-[#1B4332]"
+          className="h-12 w-12 shrink-0 rounded-2xl text-[#2D6A4F] transition hover:text-[#1B4332]"
         >
-          <i className="ri-send-plane-fill text-lg" />
+          <i className="ri-send-ins-fill text-xl" />
         </button>
       </div>
     </div>

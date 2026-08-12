@@ -7,7 +7,6 @@ export default function ConversationList({
   search,
   onSearch,
 
-
   activeConversation,
 
   onConversation,
