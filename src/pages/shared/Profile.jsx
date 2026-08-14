@@ -48,8 +48,8 @@ export default function Profile() {
   }
 
   return (
-    <main className="flex-1 p-0 md:p-6 pb-16 md:pb-8">
-      <div className="bg-white md:rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <main className="flex-1">
+      <div className="bg-white mx-auto max-w-6xl shadow-sm overflow-hidden pb-16 md:pb-8">
         <ProfileHeader
           profile={form}
           editing={editing}

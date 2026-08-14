@@ -4,6 +4,7 @@ export default function UserIdentity({
   user,
   currentUserId,
   size = "md",
+  onlyPic = false,
   showUsername = true,
   showRole = false,
   showVerified = true,
@@ -55,7 +56,7 @@ export default function UserIdentity({
           {getInitials(user.fullname)}
         </div>
       )}
-
+      {!onlyPic && (
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-1.5">
           <p
@@ -92,7 +93,7 @@ export default function UserIdentity({
             {user.role}
           </p>
         )}
-      </div>
+      </div>)}
     </div>
   );
 }

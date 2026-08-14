@@ -18,7 +18,7 @@ export default function Header({ user, title = "Dashboard" }) {
         </button>
 
         <Link
-          to="/profile"
+          to="/me"
           className="flex items-center gap-2 pl-2 border-l border-gray-200"
         >
           <UserIdentity user={user} showUsername={false} showRole={true} />

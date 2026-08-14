@@ -7,7 +7,7 @@ export default function FiltersSidebar({
   if (mobile) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between pb-3 mb-5 border-b">
+        <div className="flex items-center justify-between pb-3 mb-5 border-b border-gray-400">
           <h3 className="font-bold text-[#1B4332] flex items-center gap-2">
             <i className="ri-filter-3-line text-[#2D6A4F]" />
             Filters
@@ -90,7 +90,7 @@ export default function FiltersSidebar({
   return (
     <aside className="hidden lg:block lg:w-72 flex-shrink-0">
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sticky top-24">
-        <div className="flex items-center justify-between pb-3 mb-5 border-b">
+        <div className="flex items-center justify-between pb-3 mb-5 border-b border-gray-400">
           <h3 className="font-bold text-[#1B4332] flex items-center gap-2">
             <i className="ri-filter-3-line text-[#2D6A4F]" />
             Filters

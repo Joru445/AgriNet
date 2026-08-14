@@ -34,7 +34,7 @@ export default function MessageList({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-2 space-y-2 py-20 scrollbar-none">
+    <div className="flex-1 overflow-y-auto p-2 space-y-2 my-20 scrollbar-none">
       {messages.map((message, index) => {
         const previous = messages[index - 1];
 

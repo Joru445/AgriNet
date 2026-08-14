@@ -1,4 +1,4 @@
-import StatCard from "./StatCard";
+import StatCard from "../common/StatCard";
 
 export default function DashboardStats({ stats }) {
   return (
@@ -6,28 +6,25 @@ export default function DashboardStats({ stats }) {
       <StatCard
         title="Products"
         value={stats.totalProducts}
-        icon="ri-store-2-line"
+        description="Total of products you have."
       />
 
       <StatCard
         title="Reviews"
         value={stats.reviewCount}
-        icon="ri-star-line"
-        color="bg-yellow-100 text-yellow-600"
+        description="Your profile's review count."
       />
 
       <StatCard
         title="Average Rating"
         value={stats.averageRating.toFixed(1)}
-        icon="ri-medal-line"
-        color="bg-orange-100 text-orange-600"
+        description="Your average rating."
       />
 
       <StatCard
         title="Unread Messages"
         value={stats.unreadMessages}
-        icon="ri-message-3-line"
-        color="bg-blue-100 text-blue-600"
+        description="Messages you haven't read"
       />
     </div>
   );

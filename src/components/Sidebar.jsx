@@ -54,7 +54,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       {/* Profile */}
 
       <div className="px-4 py-4 border-b border-white/10">
-        <UserIdentity user={profile} showUsername={false} showRole={true} colorWhite={true} size="lg" />
+        <UserIdentity user={profile} onlyPic={collapsed} showUsername={false} showRole={true} showVerified={false} colorWhite={true} size="lg" />
       </div>
 
       {/* Navigation */}
