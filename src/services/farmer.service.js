@@ -64,8 +64,59 @@ export async function updateFarmer(uid, data) {
   await updateDoc(farmerRef, removeUndefined(data));
 }
 
+/**
+ * Verify or unverify a farmer.
+ *
+ * Verification data belongs to the
+ * farmers collection, not users.
+ */
+export async function setFarmerVerification(uid, verified, adminUid) {
+  if (!uid) {
+    throw new Error("Farmer UID is required.");
+  }
+
+  if (!adminUid) {
+    throw new Error("Admin UID is required.");
+  }
+
+  if (typeof verified !== "boolean") {
+    throw new Error("Verification value must be true or false.");
+  }
+
+  const farmerRef = doc(db, "farmers", uid);
+
+  await updateDoc(farmerRef, {
+    verified,
+
+    verifiedAt: verified ? serverTimestamp() : null,
+
+    verifiedBy: verified ? adminUid : null,
+
+    updatedAt: serverTimestamp(),
+  });
+
+  return {
+    uid,
+    verified,
+  };
+}
+
+/**
+ * Verify a farmer.
+ */
+export async function verifyFarmer(uid, adminUid) {
+  return setFarmerVerification(uid, true, adminUid);
+}
+
+/**
+ * Revoke farmer verification.
+ */
+export async function unverifyFarmer(uid, adminUid) {
+  return setFarmerVerification(uid, false, adminUid);
+}
+
 function removeUndefined(obj) {
   return Object.fromEntries(
-    Object.entries(obj).filter(([, value]) => value !== undefined)
+    Object.entries(obj).filter(([, value]) => value !== undefined),
   );
 }

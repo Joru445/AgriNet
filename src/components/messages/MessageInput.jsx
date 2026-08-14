@@ -66,12 +66,12 @@ export default function MessageInput({
         </div>
       )}
 
-      <div className="flex w-full items-end gap-1">
+      <div className="flex w-full items-end rounded-3xl border border-gray-200">
         <button
           type="button"
-          className="h-12 w-12 shrink-0 rounded-2xl text-[#2D6A4F] transition hover:text-[#1B4332]"
+          className="h-12 w-12 shrink-0 rounded-full text-[#2D6A4F] transition hover:text-[#1B4332]"
         >
-          <i className="ri-attachment-line text-lg" />
+          <i className="ri-add-large-fill text-lg" />
         </button>
 
         <textarea
@@ -81,7 +81,7 @@ export default function MessageInput({
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
-          className="min-w-0 flex-1 resize-none overflow-y-auto scrollbar-none rounded-3xl border border-gray-200 px-4 py-3 focus:border-[#2D6A4F] focus:outline-none"
+          className="min-w-0 flex-1 resize-none overflow-y-auto scrollbar-none py-3 focus:border-[#2D6A4F] focus:outline-none"
         />
 
         <button

@@ -1,8 +1,7 @@
 import {
-  addDoc,
   collection,
   doc,
-  getDocs,
+  getDoc,
   increment,
   onSnapshot,
   orderBy,
@@ -14,12 +13,16 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
-import { getConversation, updateConversation } from "./conversation.service";
 
 const messagesRef = collection(db, "messages");
+const conversationsRef = collection(db, "conversations");
 
 /**
  * Send a message.
+ *
+ * The conversation is read first to determine the receiver.
+ * The message creation and conversation update are then committed
+ * together in a single batch.
  */
 export async function sendMessage({
   conversationId,
@@ -29,7 +32,27 @@ export async function sendMessage({
   productId = null,
   inquiryStatus = null,
 }) {
-  await addDoc(messagesRef, {
+  const conversationRef = doc(conversationsRef, conversationId);
+
+  const conversationSnapshot = await getDoc(conversationRef);
+
+  if (!conversationSnapshot.exists()) {
+    throw new Error("Conversation not found.");
+  }
+
+  const conversation = conversationSnapshot.data();
+
+  const receiverId = conversation.participants?.find((id) => id !== senderId);
+
+  if (!receiverId) {
+    throw new Error("Unable to determine message recipient.");
+  }
+
+  const messageRef = doc(messagesRef);
+
+  const batch = writeBatch(db);
+
+  batch.set(messageRef, {
     conversationId,
     senderId,
     text,
@@ -40,19 +63,16 @@ export async function sendMessage({
     createdAt: serverTimestamp(),
   });
 
-  const conversation = await getConversation(conversationId);
-
-  if (!conversation) {
-    throw new Error("Conversation not found.");
-  }
-
-  const receiverId = conversation.participants.find((id) => id !== senderId);
-
-  await updateConversation(conversationId, {
+  batch.update(conversationRef, {
     lastMessage: text,
+    lastMessageSender: senderId,
     lastMessageAt: serverTimestamp(),
     [`unreadCount.${receiverId}`]: increment(1),
   });
+
+  await batch.commit();
+
+  return messageRef.id;
 }
 
 /**
@@ -65,48 +85,49 @@ export function subscribeMessages(conversationId, callback) {
     orderBy("createdAt", "asc"),
   );
 
-  return onSnapshot(q, (snapshot) => {
-    callback(
-      snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })),
-    );
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      callback(
+        snapshot.docs.map((message) => ({
+          id: message.id,
+          ...message.data(),
+        })),
+      );
+    },
+    (error) => {
+      console.error("Message listener error:", error);
+    },
+  );
+}
+
+/**
+ * Mark a conversation as read for the current user.
+ *
+ * This uses conversation-level read tracking instead of reading
+ * and updating every individual message.
+ */
+export async function markConversationAsRead(
+  conversationId,
+  currentUserId,
+) {
+  const conversationRef = doc(
+    db,
+    "conversations",
+    conversationId,
+  );
+
+  await updateDoc(conversationRef, {
+    [`lastRead.${currentUserId}`]: serverTimestamp(),
+    [`unreadCount.${currentUserId}`]: 0,
   });
 }
 
 /**
- * Mark all unread messages as read.
+ * Update a message.
  */
-export async function markConversationAsRead(conversationId, currentUserId) {
-  const q = query(messagesRef, where("conversationId", "==", conversationId));
-
-  const snapshot = await getDocs(q);
-
-  const batch = writeBatch(db);
-
-  snapshot.forEach((message) => {
-    const data = message.data();
-
-    if (data.senderId !== currentUserId && !data.read) {
-      batch.update(message.ref, {
-        read: true,
-      });
-    }
-  });
-
-  await batch.commit();
-}
-
-export async function updateMessage(
-  messageId,
-  data,
-) {
-  const messageRef = doc(
-    db,
-    "messages",
-    messageId,
-  );
+export async function updateMessage(messageId, data) {
+  const messageRef = doc(db, "messages", messageId);
 
   await updateDoc(messageRef, data);
 }

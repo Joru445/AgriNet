@@ -1,21 +1,39 @@
 import {
-  addDoc,
   collection,
   doc,
   getDoc,
   getDocs,
   onSnapshot,
+  orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where,
-  orderBy,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
 
 const conversationsRef = collection(db, "conversations");
 
+/**
+ * Generate a deterministic ID for a one-to-one conversation.
+ *
+ * Sorting the UIDs guarantees that:
+ *
+ * getConversationId("userA", "userB")
+ * and
+ * getConversationId("userB", "userA")
+ *
+ * always produce the same ID.
+ */
+function getConversationId(uid1, uid2) {
+  return [uid1, uid2].sort().join("_");
+}
+
+/**
+ * Mark a conversation as read for a specific user.
+ */
 export async function markConversationRead(conversationId, uid) {
   await updateDoc(doc(db, "conversations", conversationId), {
     [`lastRead.${uid}`]: serverTimestamp(),
@@ -23,6 +41,15 @@ export async function markConversationRead(conversationId, uid) {
   });
 }
 
+/**
+ * Find a one-to-one conversation between two users.
+ *
+ * New conversations use a deterministic document ID, so this normally
+ * requires only one document read.
+ *
+ * The legacy query is kept temporarily so conversations created before
+ * this refactor can still be found.
+ */
 export async function findConversation(uid1, uid2) {
   const q = query(
     conversationsRef,
@@ -32,7 +59,8 @@ export async function findConversation(uid1, uid2) {
   const snapshot = await getDocs(q);
 
   for (const conversation of snapshot.docs) {
-    const participants = conversation.data().participants;
+    const data = conversation.data();
+    const participants = data.participants || [];
 
     if (
       participants.length === 2 &&
@@ -41,7 +69,7 @@ export async function findConversation(uid1, uid2) {
     ) {
       return {
         id: conversation.id,
-        ...conversation.data(),
+        ...data,
       };
     }
   }
@@ -49,8 +77,21 @@ export async function findConversation(uid1, uid2) {
   return null;
 }
 
+/**
+ * Create a one-to-one conversation.
+ *
+ * The conversation ID is deterministic, so both users will resolve to
+ * the same conversation document.
+ *
+ * setDoc() is used instead of addDoc() to prevent duplicate conversation
+ * documents for the same pair of users.
+ */
 export async function createConversation(currentUser, otherUser) {
-  const docRef = await addDoc(conversationsRef, {
+  const conversationId = getConversationId(currentUser.uid, otherUser.uid);
+
+  const conversationRef = doc(db, "conversations", conversationId);
+
+  await setDoc(conversationRef, {
     participants: [currentUser.uid, otherUser.uid],
 
     participantInfo: {
@@ -81,9 +122,12 @@ export async function createConversation(currentUser, otherUser) {
     createdAt: serverTimestamp(),
   });
 
-  return docRef.id;
+  return conversationId;
 }
 
+/**
+ * Get a conversation by ID.
+ */
 export async function getConversation(conversationId) {
   const conversationRef = doc(db, "conversations", conversationId);
 
@@ -99,6 +143,9 @@ export async function getConversation(conversationId) {
   };
 }
 
+/**
+ * Subscribe to all conversations belonging to a user.
+ */
 export function subscribeUserConversations(uid, callback) {
   const q = query(
     conversationsRef,
@@ -109,11 +156,10 @@ export function subscribeUserConversations(uid, callback) {
   return onSnapshot(
     q,
     (snapshot) => {
-
       callback(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        snapshot.docs.map((conversation) => ({
+          id: conversation.id,
+          ...conversation.data(),
         })),
       );
     },
@@ -123,6 +169,9 @@ export function subscribeUserConversations(uid, callback) {
   );
 }
 
+/**
+ * Update a conversation.
+ */
 export async function updateConversation(conversationId, data) {
   const conversationRef = doc(db, "conversations", conversationId);
 

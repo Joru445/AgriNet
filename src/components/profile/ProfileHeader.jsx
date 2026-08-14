@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import defaultAvatar from "../../assets/img/defaultAvatar.png";
+import { getInitials } from "../../utils/getInitials";
 
 export default function ProfileHeader({
   profile,
@@ -20,11 +20,17 @@ export default function ProfileHeader({
       <div className="relative h-44 bg-gradient-to-r from-[#1B4332] to-[#2D6A4F]">
         <div className="absolute -bottom-14 left-4 lg:left-8 flex items-end gap-5">
           <div className="relative">
-            <img
-              src={profile.profilePicture || defaultAvatar}
-              alt={profile.username}
-              className="w-28 h-28 rounded-full border-4 border-white object-cover bg-white"
-            />
+            {profile.profilePicture ? (
+              <img
+                src={profile.profilePicture}
+                alt={profile.username}
+                className="w-28 h-28 rounded-full border-4 border-white object-cover bg-white"
+              />
+            ) : (
+              <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] text-4xl font-semibold text-[#2D6A4F]">
+                {getInitials(profile.fullname)}
+              </div>
+            )}
 
             {editing && (
               <>

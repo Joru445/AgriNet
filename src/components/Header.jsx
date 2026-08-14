@@ -1,10 +1,8 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 
-import defaultAvatar from "../assets/img/defaultAvatar.png";
+import UserIdentity from "./common/UserIdentity";
 
-export default function Header({ title = "Dashboard" }) {
-  const { profile } = useAuth();
+export default function Header({ user, title = "Dashboard" }) {
 
   return (
     <header className="sticky top-0 right-0 h-16 bg-white/95 border-b border-gray-100 flex items-center justify-between px-4 md:px-6 z-9998">
@@ -23,19 +21,7 @@ export default function Header({ title = "Dashboard" }) {
           to="/profile"
           className="flex items-center gap-2 pl-2 border-l border-gray-200"
         >
-          <img
-            src={profile?.profilePicture || defaultAvatar}
-            alt="Profile"
-            className="w-8 h-8 rounded-full object-cover object-top"
-          />
-
-          <div className="hidden md:block">
-            <p className="text-xs font-semibold text-gray-800">
-              {profile?.fullname}
-            </p>
-
-            <p className="text-xs text-gray-400 capitalize">{profile?.role}</p>
-          </div>
+          <UserIdentity user={user} showUsername={false} showRole={true} />
         </Link>
       </div>
     </header>

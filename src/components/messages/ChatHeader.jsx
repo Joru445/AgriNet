@@ -4,7 +4,7 @@ export default function ChatHeader({ user }) {
   if (!user) return null;
 
   return (
-    <header className="h-18 border-b border-gray-200 bg-white px-6 flex items-center justify-between">
+    <header className="w-full h-18 absolute border-b border-gray-200 bg-white px-6 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <img
           src={user.profilePicture || defaultAvatar}

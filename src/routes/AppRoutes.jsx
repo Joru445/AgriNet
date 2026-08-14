@@ -20,7 +20,8 @@ import MyProducts from "../pages/farmer/MyProducts";
 import Reviews from "../pages/farmer/Reviews";
 
 import AdminDashboard from "../pages/admin/Dashboard";
-import FarmerVerification from "../pages/admin/FarmerVerification";
+import Users from "../pages/admin/Users";
+import Reports from "../pages/admin/Reports.jsx"
 
 import ProductDetails from "../pages/shared/ProductDetails";
 import StoreProfile from "../pages/shared/StoreProfile";
@@ -92,13 +93,14 @@ export default function AppRoutes() {
         <Route element={<AppLayout />}>
           <Route path="/admin" element={<AdminDashboard />} />
 
-          <Route
-            path="/admin/farmers/verification"
-            element={<FarmerVerification />}
-          />
+          <Route path="/admin/users" element={<Users />} />
+
+          <Route path="/admin/reports" element={<Reports />} />
+
           <Route path="/admin/messages" element={<Messages />} />
+          
           <Route path="/admin/me" element={<Profile />} />
-        </Route>
+        </Route>  
       </Route>
     </Routes>
   );

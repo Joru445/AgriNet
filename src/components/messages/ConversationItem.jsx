@@ -1,4 +1,4 @@
-import defaultAvatar from "../../assets/img/defaultAvatar.png";
+import { getInitials } from "../../utils/getInitials";
 
 import { formatTimestamp } from "../../utils/date";
 
@@ -11,9 +11,7 @@ export default function ConversationItem({
 }) {
   const user = searching ? item : item.otherUser;
 
-  const active =
-    !searching &&
-    activeConversation?.id === item.id;
+  const active = !searching && activeConversation?.id === item.id;
 
   function handleClick() {
     if (searching) {
@@ -27,17 +25,21 @@ export default function ConversationItem({
     <button
       onClick={handleClick}
       className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors ${
-        active
-          ? "bg-green-50 border-r-2 border-[#2D6A4F]"
-          : "hover:bg-gray-50"
+        active ? "bg-green-50 border-r-2 border-[#2D6A4F]" : "hover:bg-gray-50"
       }`}
     >
       <div className="relative shrink-0">
-        <img
-          src={user.profilePicture || defaultAvatar}
-          alt={user.fullname}
-          className="w-14 h-14 rounded-full object-cover object-top"
-        />
+        {user.profilePicture ? (
+          <img
+            src={user.profilePicture}
+            alt={user.fullname}
+            className="w-14 h-14 rounded-full object-cover object-top"
+          />
+        ) : (
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] text-lg font-semibold text-[#2D6A4F]">
+            {getInitials(user.fullname)}
+          </div>
+        )}
 
         {user.online && (
           <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />
@@ -46,9 +48,7 @@ export default function ConversationItem({
 
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start gap-2">
-          <h3 className="font-semibold truncate">
-            {user.fullname}
-          </h3>
+          <h3 className="font-semibold truncate">{user.fullname}</h3>
 
           {!searching && (
             <span className="text-xs text-gray-400 whitespace-nowrap">
@@ -58,9 +58,7 @@ export default function ConversationItem({
         </div>
 
         {searching ? (
-          <p className="text-sm text-gray-500 truncate">
-            @{user.username}
-          </p>
+          <p className="text-sm text-gray-500 truncate">@{user.username}</p>
         ) : (
           <p className="text-sm text-gray-500 truncate">
             {item.lastMessage || "Start a conversation"}

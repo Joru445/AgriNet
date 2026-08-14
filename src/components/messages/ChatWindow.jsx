@@ -1,5 +1,6 @@
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
+import ChatHeader from "./ChatHeader";
 
 export default function ChatWindow({
   user,
@@ -20,6 +21,8 @@ export default function ChatWindow({
         ${hasChat ? "flex" : "hidden md:flex"}
       `}
     >
+      <ChatHeader user={user} />
+
       <MessageList
         user={user}
         messages={messages}

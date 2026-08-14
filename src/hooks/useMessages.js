@@ -11,13 +11,12 @@ import {
   subscribeUserConversations,
 } from "../services/conversation.service";
 
-import {
-  subscribeMessages,
-  sendMessage,
-} from "../services/message.service";
+import { subscribeMessages, sendMessage } from "../services/message.service";
 
 import { getUserProfile, searchUsers } from "../services/user.service";
+
 import { getProductById } from "../services/product.service";
+
 import { acceptProductInquiry } from "../services/inquiry.service";
 
 import { showToast } from "../utils/toast";
@@ -33,6 +32,7 @@ export default function useMessages() {
   const [loading, setLoading] = useState(true);
 
   const [conversations, setConversations] = useState([]);
+
   const [messages, setMessages] = useState([]);
 
   const [activeConversation, setActiveConversation] = useState(null);
@@ -40,29 +40,26 @@ export default function useMessages() {
   const [activeUser, setActiveUser] = useState(null);
 
   const [search, setSearch] = useState("");
+
   const [message, setMessage] = useState("");
 
   const [userResults, setUserResults] = useState([]);
-
-  // --------------------------------------------------
-  // Product inquiry
-  // --------------------------------------------------
 
   const [inquiryProduct, setInquiryProduct] = useState(
     () => location.state?.inquiryProduct || null,
   );
 
-  // Cache products used by inquiry messages.
-  // productId -> product
-  const productCache = useRef(new Map());
-
   const [inquiryProducts, setInquiryProducts] = useState({});
+
+  const productCache = useRef(new Map());
 
   const searching = search.trim().length > 0;
 
-  // --------------------------------------------------
-  // Read inquiry product from navigation state
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Inquiry product from navigation state
+   * --------------------------------------------------
+   */
 
   useEffect(() => {
     const product = location.state?.inquiryProduct;
@@ -72,16 +69,17 @@ export default function useMessages() {
     }
   }, [location.state]);
 
-  // --------------------------------------------------
-  // Product cache
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Product cache
+   * --------------------------------------------------
+   */
 
   async function getCachedProduct(productId) {
     if (!productId) {
       return null;
     }
 
-    // Return cached product
     if (productCache.current.has(productId)) {
       return productCache.current.get(productId);
     }
@@ -113,9 +111,11 @@ export default function useMessages() {
     }
   }
 
-  // --------------------------------------------------
-  // Load products used by inquiry messages
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Load products used by inquiry messages
+   * --------------------------------------------------
+   */
 
   useEffect(() => {
     if (!messages.length) {
@@ -138,19 +138,26 @@ export default function useMessages() {
     });
   }, [messages]);
 
-  // --------------------------------------------------
-  // Realtime conversations
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Subscribe to conversations
+   * --------------------------------------------------
+   */
 
   useEffect(() => {
     if (!profile?.uid) {
+      setConversations([]);
+      setLoading(false);
+
       return;
     }
 
+    setLoading(true);
+
     const unsubscribe = subscribeUserConversations(profile.uid, (data) => {
       const mapped = data.map((conversation) => {
-        const otherUid = conversation.participants.find(
-          (id) => id !== profile.uid,
+        const otherUid = conversation.participants?.find(
+          (uid) => uid !== profile.uid,
         );
 
         return {
@@ -169,12 +176,16 @@ export default function useMessages() {
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+    };
   }, [profile?.uid]);
 
-  // --------------------------------------------------
-  // Search users
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Search users
+   * --------------------------------------------------
+   */
 
   useEffect(() => {
     if (!profile?.uid) {
@@ -191,23 +202,32 @@ export default function useMessages() {
         const users = await searchUsers(search, profile.uid);
 
         const conversationUserIds = new Set(
-          conversations.map((conversation) => conversation.otherUser.uid),
+          conversations
+            .map((conversation) => conversation.otherUser?.uid)
+            .filter(Boolean),
         );
 
         setUserResults(
           users.filter((user) => !conversationUserIds.has(user.uid)),
         );
       } catch (error) {
-        console.error(error);
+        console.error("Failed to search users:", error);
+
+        setUserResults([]);
       }
     }
 
     loadSearch();
   }, [search, conversations, profile?.uid]);
 
-  // --------------------------------------------------
-  // Read URL params
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Handle URL state
+   *
+   * /messages?conversation=id
+   * /messages?user=uid
+   * --------------------------------------------------
+   */
 
   useEffect(() => {
     if (!profile?.uid) {
@@ -218,91 +238,215 @@ export default function useMessages() {
 
     const userId = searchParams.get("user");
 
-    // ----------------------------------------------
-    // Conversation URL
-    // ----------------------------------------------
+    let cancelled = false;
 
-    if (conversationId) {
-      getConversation(conversationId).then((conversation) => {
-        if (!conversation) {
-          return;
-        }
+    async function loadConversation() {
+      /*
+       * ==============================================
+       * Existing conversation
+       * /messages?conversation=id
+       * ==============================================
+       */
 
-        const otherUid = conversation.participants.find(
-          (id) => id !== profile.uid,
-        );
+      if (conversationId) {
+        try {
+          const conversation = await getConversation(conversationId);
 
-        setActiveConversation({
-          ...conversation,
+          if (cancelled) {
+            return;
+          }
 
-          otherUser: {
-            uid: otherUid,
-            ...(conversation.participantInfo?.[otherUid] || {}),
-          },
-        });
+          if (!conversation) {
+            setActiveConversation(null);
+            setActiveUser(null);
+            setMessages([]);
 
-        setActiveUser(null);
-      });
+            return;
+          }
 
-      return;
-    }
-
-    // ----------------------------------------------
-    // User URL
-    // ----------------------------------------------
-
-    if (userId) {
-      (async () => {
-        const existing = await findConversation(profile.uid, userId);
-
-        if (existing) {
-          setSearchParams(
-            {
-              conversation: existing.id,
-            },
-            {
-              replace: true,
-            },
+          const otherUid = conversation.participants?.find(
+            (uid) => uid !== profile.uid,
           );
 
+          if (!otherUid) {
+            setActiveConversation(null);
+            setActiveUser(null);
+            setMessages([]);
+
+            return;
+          }
+
+          const otherUser = conversation.participantInfo?.[otherUid] || null;
+
+          setActiveConversation({
+            ...conversation,
+
+            otherUser: {
+              uid: otherUid,
+              ...(otherUser || {}),
+            },
+          });
+
+          setActiveUser(null);
+
+          return;
+        } catch (error) {
+          if (!cancelled) {
+            console.error("Failed to load conversation:", error);
+
+            setActiveConversation(null);
+            setActiveUser(null);
+            setMessages([]);
+          }
+
           return;
         }
+      }
 
-        const user = await getUserProfile(userId);
+      /*
+       * ==============================================
+       * User without a conversation
+       * /messages?user=uid
+       * ==============================================
+       */
 
-        setActiveConversation(null);
-        setActiveUser(user);
-      })();
+      if (userId) {
+        try {
+          /*
+           * Check if a conversation already exists.
+           */
+          const existingConversation = await findConversation(
+            profile.uid,
+            userId,
+          );
 
-      return;
+          if (cancelled) {
+            return;
+          }
+
+          /*
+           * Conversation already exists.
+           *
+           * Replace:
+           *
+           * ?user=uid
+           *
+           * with:
+           *
+           * ?conversation=id
+           */
+          if (existingConversation) {
+            setSearchParams(
+              {
+                conversation: existingConversation.id,
+              },
+              {
+                replace: true,
+              },
+            );
+
+            return;
+          }
+
+          /*
+           * No conversation exists yet.
+           *
+           * Load the target user's profile and
+           * use it as the active chat target.
+           */
+          const user = await getUserProfile(userId);
+
+          if (cancelled) {
+            return;
+          }
+
+          if (!user) {
+            setActiveConversation(null);
+            setActiveUser(null);
+            setMessages([]);
+
+            return;
+          }
+
+          /*
+           * IMPORTANT:
+           *
+           * activeConversation remains null.
+           * activeUser represents the person we're
+           * about to start a conversation with.
+           */
+          setActiveConversation(null);
+          setActiveUser(user);
+          setMessages([]);
+
+          return;
+        } catch (error) {
+          if (!cancelled) {
+            console.error("Failed to load user:", error);
+
+            setActiveConversation(null);
+            setActiveUser(null);
+            setMessages([]);
+          }
+
+          return;
+        }
+      }
+
+      /*
+       * ==============================================
+       * Nothing selected
+       * ==============================================
+       */
+
+      setActiveConversation(null);
+      setActiveUser(null);
+      setMessages([]);
     }
 
-    // ----------------------------------------------
-    // No active chat
-    // ----------------------------------------------
+    loadConversation();
 
-    setActiveConversation(null);
-    setActiveUser(null);
-  }, [searchParams, profile?.uid, setSearchParams]);
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.uid, searchParams, setSearchParams]);
 
-  // --------------------------------------------------
-  // Realtime messages + mark as read
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Subscribe to messages
+   * --------------------------------------------------
+   */
 
   useEffect(() => {
-    if (!activeConversation || !profile?.uid) {
+    if (!profile?.uid || !activeConversation?.id) {
       setMessages([]);
+
       return;
     }
 
-    markConversationRead(activeConversation.id, profile.uid);
+    setMessages([]);
 
-    return subscribeMessages(activeConversation.id, setMessages);
-  }, [activeConversation, profile?.uid]);
+    const unsubscribe = subscribeMessages(activeConversation.id, setMessages);
 
-  // --------------------------------------------------
-  // Select conversation
-  // --------------------------------------------------
+    /*
+     * Conversation-level read tracking.
+     *
+     * This no longer scans every message.
+     */
+    markConversationRead(activeConversation.id, profile.uid).catch((error) => {
+      console.error("Failed to mark conversation as read:", error);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [activeConversation?.id, profile?.uid]);
+
+  /*
+   * --------------------------------------------------
+   * Select existing conversation
+   * --------------------------------------------------
+   */
 
   function selectConversation(conversation) {
     setSearch("");
@@ -312,9 +456,11 @@ export default function useMessages() {
     });
   }
 
-  // --------------------------------------------------
-  // Select user
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Select user
+   * --------------------------------------------------
+   */
 
   function selectUser(user) {
     setSearch("");
@@ -324,9 +470,11 @@ export default function useMessages() {
     });
   }
 
-  // --------------------------------------------------
-  // Send normal message
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Send message
+   * --------------------------------------------------
+   */
 
   async function handleSend() {
     const text = message.trim();
@@ -338,6 +486,13 @@ export default function useMessages() {
     try {
       let conversationId = activeConversation?.id;
 
+      /*
+       * No conversation exists yet.
+       *
+       * This means we're currently in:
+       *
+       * /messages?user=uid
+       */
       if (!conversationId) {
         if (!activeUser) {
           showToast.error("No user selected.");
@@ -345,13 +500,29 @@ export default function useMessages() {
           return;
         }
 
+        /*
+         * Create the conversation using the
+         * selected user.
+         */
         conversationId = await createConversation(profile, activeUser);
 
-        setSearchParams({
-          conversation: conversationId,
-        });
+        /*
+         * Immediately replace the temporary
+         * user URL with the real conversation URL.
+         */
+        setSearchParams(
+          {
+            conversation: conversationId,
+          },
+          {
+            replace: true,
+          },
+        );
       }
 
+      /*
+       * Send the actual message.
+       */
       await sendMessage({
         conversationId,
         senderId: profile.uid,
@@ -361,14 +532,17 @@ export default function useMessages() {
 
       setMessage("");
     } catch (error) {
-      console.error(error);
-      showToast.error(error.message);
+      console.error("Failed to send message:", error);
+
+      showToast.error(error.message || "Failed to send message.");
     }
   }
 
-  // --------------------------------------------------
-  // Send product inquiry
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Send product inquiry
+   * --------------------------------------------------
+   */
 
   async function handleSendInquiry() {
     if (!inquiryProduct) {
@@ -380,7 +554,10 @@ export default function useMessages() {
     try {
       let conversationId = activeConversation?.id;
 
-      // Create conversation if one doesn't exist
+      /*
+       * Start a new conversation if this is
+       * currently a /user=uid chat.
+       */
       if (!conversationId) {
         if (!activeUser) {
           showToast.error("Unable to determine the farmer.");
@@ -409,10 +586,8 @@ export default function useMessages() {
         inquiryStatus: "pending",
       });
 
-      // Clear the pending inquiry
       setInquiryProduct(null);
 
-      // Remove the product from navigation state
       navigate(`${location.pathname}${location.search}`, {
         replace: true,
         state: null,
@@ -420,10 +595,17 @@ export default function useMessages() {
 
       showToast.success("Inquiry sent successfully.");
     } catch (error) {
-      console.error(error);
-      showToast.error(error.message);
+      console.error("Failed to send inquiry:", error);
+
+      showToast.error(error.message || "Failed to send inquiry.");
     }
   }
+
+  /*
+   * --------------------------------------------------
+   * Accept inquiry
+   * --------------------------------------------------
+   */
 
   async function handleAcceptInquiry(inquiryMessage) {
     if (!inquiryMessage?.id) {
@@ -466,9 +648,11 @@ export default function useMessages() {
     }
   }
 
-  // --------------------------------------------------
-  // Filter conversations
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Filter conversations
+   * --------------------------------------------------
+   */
 
   const filteredConversations = useMemo(() => {
     if (!search.trim()) {
@@ -479,14 +663,16 @@ export default function useMessages() {
 
     return conversations.filter(
       ({ otherUser }) =>
-        otherUser.fullname?.toLowerCase().includes(keyword) ||
-        otherUser.username?.toLowerCase().includes(keyword),
+        otherUser?.fullname?.toLowerCase().includes(keyword) ||
+        otherUser?.username?.toLowerCase().includes(keyword),
     );
   }, [conversations, search]);
 
-  // --------------------------------------------------
-  // Return
-  // --------------------------------------------------
+  /*
+   * --------------------------------------------------
+   * Return
+   * --------------------------------------------------
+   */
 
   return {
     loading,
@@ -506,6 +692,7 @@ export default function useMessages() {
     inquiryProducts,
 
     sendInquiry: handleSendInquiry,
+
     acceptInquiry: handleAcceptInquiry,
 
     search,

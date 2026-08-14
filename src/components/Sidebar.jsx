@@ -5,7 +5,7 @@ import { navigationByRole } from "../constants/navigation";
 import { showToast } from "../utils/toast";
 
 import logo from "../assets/favicon.ico";
-import placeholder from "../assets/img/defaultAvatar.png";
+import UserIdentity from "./common/UserIdentity";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
   const { profile, logout } = useAuth();
@@ -54,29 +54,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       {/* Profile */}
 
       <div className="px-4 py-4 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <img
-            src={profile?.profilePicture || placeholder}
-            alt={profile?.fullname || "User"}
-            className={`w-10 h-10 rounded-full object-cover object-top border-2 border-green-400 flex-shrink-0 ${
-              collapsed ? "mx-auto" : ""
-            }`}
-          />
-
-          <div
-            className={`min-w-0 transition-all duration-300 ease-in-out ${
-              collapsed ? "hidden" : "block"
-            }`}
-          >
-            <p className="text-white font-semibold text-sm truncate">
-              {profile?.fullname || "User"}
-            </p>
-
-            <p className="text-green-300 text-xs truncate capitalize">
-              {profile?.role || "Consumer"}
-            </p>
-          </div>
-        </div>
+        <UserIdentity user={profile} showUsername={false} showRole={true} colorWhite={true} size="lg" />
       </div>
 
       {/* Navigation */}

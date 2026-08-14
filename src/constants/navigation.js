@@ -78,9 +78,15 @@ export const adminNavigation = [
     bottom: true,
   },
   {
-    to: "/admin/farmers/verification",
-    label: "Farmer Verification",
+    to: "/admin/users",
+    label: "Users",
     icon: "ri-user-search-line",
+    bottom: true,
+  },
+  {
+    to: "/admin/reports",
+    label: "Reports",
+    icon: "ri-todo-line",
     bottom: true,
   },
   {

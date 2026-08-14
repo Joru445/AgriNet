@@ -38,7 +38,7 @@ export default function Messages() {
     return <MessagesSkeleton />;
   }
 
-  const hasChat = activeConversation || activeUser;
+  const hasChat = Boolean(activeConversation || activeUser);
 
   return (
     <main className="flex-1 pb-16 md:pb-0 h-[calc(100vh-4rem)] overflow-hidden">
