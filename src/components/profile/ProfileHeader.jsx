@@ -74,7 +74,7 @@ export default function ProfileHeader({
                     rounded-full
                     border-4 border-white
                     bg-[#D8F3DC]
-                    text-4xl
+                    text-5xl
                     font-semibold
                     text-[#2D6A4F]
                     shadow-sm
