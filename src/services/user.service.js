@@ -86,7 +86,7 @@ export async function getUserProfile(uid) {
   }
 
   return {
-    id: snapshot.id,
+    uid: snapshot.id,
     ...snapshot.data(),
   };
 }

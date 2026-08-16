@@ -36,14 +36,14 @@ export default function useInquiries() {
    */
 
   useEffect(() => {
-    if (!profile?.id || !profile?.role) {
+    if (!profile?.uid || !profile?.role) {
       return;
     }
 
     setLoading(true);
 
     const unsubscribe = subscribeUserInquiries(
-      profile.id,
+      profile.uid,
       profile.role,
       (data) => {
         setInquiries(data);
@@ -60,7 +60,7 @@ export default function useInquiries() {
     );
 
     return unsubscribe;
-  }, [profile?.id, profile?.role]);
+  }, [profile?.uid, profile?.role]);
 
   /*
    * --------------------------------------------------
