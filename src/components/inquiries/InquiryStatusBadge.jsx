@@ -4,6 +4,10 @@ export default function InquiryStatusBadge({ status }) {
 
     ongoing: "bg-blue-100 text-blue-700",
 
+    awaiting_proof: "bg-blue-100 text-blue-700",
+
+    proof_submitted: "bg-blue-100 text-blue-700",
+
     completed: "bg-green-100 text-green-700",
 
     cancelled: "bg-gray-100 text-gray-600",
@@ -12,6 +16,8 @@ export default function InquiryStatusBadge({ status }) {
   const labels = {
     accepted: "Accepted",
     ongoing: "Ongoing",
+    awaiting_proof: "Awaiting Proof",
+    proof_submitted: "Proof Submitted",
     completed: "Completed",
 
     cancelled: "Cancelled",

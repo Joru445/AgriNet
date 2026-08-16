@@ -22,7 +22,6 @@ export async function createFarmerProfile(data) {
     profilePicture: "",
     profilePictureId: "",
 
-    farmName: "",
     description: "",
 
     location: data.location,

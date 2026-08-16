@@ -73,16 +73,20 @@ export async function getUsers() {
  */
 
 export async function getUserProfile(uid) {
-  if (!uid) return null;
+  if (!uid || typeof uid !== "string") {
+    throw new Error("Invalid user UID.");
+  }
 
-  const snapshot = await getDoc(doc(db, "users", uid));
+  const userRef = doc(db, "users", uid);
+
+  const snapshot = await getDoc(userRef);
 
   if (!snapshot.exists()) {
     return null;
   }
 
   return {
-    uid: snapshot.id,
+    id: snapshot.id,
     ...snapshot.data(),
   };
 }

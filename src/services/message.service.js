@@ -30,6 +30,7 @@ export async function sendMessage({
   text,
   type = "text",
   productId = null,
+  quantity = null,
   inquiryStatus = null,
 }) {
   const conversationRef = doc(conversationsRef, conversationId);
@@ -58,6 +59,7 @@ export async function sendMessage({
     text,
     type,
     productId,
+    quantity,
     inquiryStatus,
     read: false,
     createdAt: serverTimestamp(),
@@ -107,15 +109,8 @@ export function subscribeMessages(conversationId, callback) {
  * This uses conversation-level read tracking instead of reading
  * and updating every individual message.
  */
-export async function markConversationAsRead(
-  conversationId,
-  currentUserId,
-) {
-  const conversationRef = doc(
-    db,
-    "conversations",
-    conversationId,
-  );
+export async function markConversationAsRead(conversationId, currentUserId) {
+  const conversationRef = doc(db, "conversations", conversationId);
 
   await updateDoc(conversationRef, {
     [`lastRead.${currentUserId}`]: serverTimestamp(),

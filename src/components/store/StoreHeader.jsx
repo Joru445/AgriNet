@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import landscape from "../../assets/img/landscapeCover.jpg";
 
@@ -10,6 +10,8 @@ export default function StoreHeader({
   averageRating,
   onMessage,
 }) {
+  const navigate = useNavigate();
+
   const joinedDate = farmer.createdAt?.seconds
     ? new Date(farmer.createdAt.seconds * 1000).toLocaleDateString("en-PH", {
         month: "long",
@@ -33,8 +35,9 @@ export default function StoreHeader({
             sm:rounded-b-2xl
           "
         >
-          <Link
-            to="/nearby"
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
             className="
               absolute
               left-3
@@ -56,7 +59,7 @@ export default function StoreHeader({
           >
             <i className="ri-arrow-left-line" />
             Back
-          </Link>
+          </button>
 
           <img
             src={farmer.coverPhoto || landscape}

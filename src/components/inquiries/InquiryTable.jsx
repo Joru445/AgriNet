@@ -20,52 +20,22 @@ export default function InquiryTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50">
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">
-                Product
-              </th>
+    <div className="space-y-3">
+      {inquiries.map((inquiry) => {
+        const data = inquiryData[inquiry.id];
 
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">
-                {userRole === "farmer" ? "Consumer" : "Farmer"}
-              </th>
-
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">
-                Date
-              </th>
-
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">
-                Status
-              </th>
-
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">
-                Action
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {inquiries.map((inquiry) => {
-              const data = inquiryData[inquiry.id];
-
-              return (
-                <InquiryRow
-                  key={inquiry.id}
-                  inquiry={inquiry}
-                  product={data?.product}
-                  consumer={data?.consumer}
-                  userRole={userRole}
-                  updating={updatingId === inquiry.id}
-                  onStatusChange={onStatusChange}
-                />
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+        return (
+          <InquiryRow
+            key={inquiry.id}
+            inquiry={inquiry}
+            product={data?.product}
+            consumer={data?.consumer}
+            userRole={userRole}
+            updating={updatingId === inquiry.id}
+            onStatusChange={onStatusChange}
+          />
+        );
+      })}
     </div>
   );
 }

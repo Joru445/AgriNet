@@ -544,10 +544,33 @@ export default function useMessages() {
    * --------------------------------------------------
    */
 
-  async function handleSendInquiry() {
+  async function handleSendInquiry(quantity) {
     if (!inquiryProduct) {
       showToast.error("No product selected for inquiry.");
+      return;
+    }
 
+    const parsedQuantity = Number(quantity);
+    const stock = Number(inquiryProduct.stock);
+
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1) {
+      showToast.error("Please enter a valid quantity.");
+      return;
+    }
+
+    if (
+      inquiryProduct.available !== true ||
+      !Number.isInteger(stock) ||
+      stock < 1
+    ) {
+      showToast.error("This product is currently unavailable.");
+      return;
+    }
+
+    if (parsedQuantity > stock) {
+      showToast.error(
+        `Only ${stock} ${inquiryProduct.unit || "units"} available.`,
+      );
       return;
     }
 
@@ -556,12 +579,11 @@ export default function useMessages() {
 
       /*
        * Start a new conversation if this is
-       * currently a /user=uid chat.
+       * currently a /messages?user=uid chat.
        */
       if (!conversationId) {
         if (!activeUser) {
           showToast.error("Unable to determine the farmer.");
-
           return;
         }
 
@@ -583,6 +605,7 @@ export default function useMessages() {
         text: `I'm interested in ${inquiryProduct.name}.`,
         type: "product_inquiry",
         productId: inquiryProduct.id,
+        quantity: parsedQuantity,
         inquiryStatus: "pending",
       });
 

@@ -1,13 +1,23 @@
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+
 const DEFAULT_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
 const PROFILE_PRESET =
   import.meta.env.VITE_CLOUDINARY_PROFILE_PRESET ?? DEFAULT_PRESET;
+
 const PRODUCT_PRESET =
   import.meta.env.VITE_CLOUDINARY_PRODUCT_PRESET ?? DEFAULT_PRESET;
+
+const TRANSACTION_PRESET =
+  import.meta.env.VITE_CLOUDINARY_TRANSACTION_PRESET ?? DEFAULT_PRESET;
 
 async function uploadImage(file, uploadPreset) {
   if (!CLOUD_NAME || !uploadPreset) {
     throw new Error("Cloudinary upload configuration is missing.");
+  }
+
+  if (!file) {
+    throw new Error("An image file is required.");
   }
 
   const formData = new FormData();
@@ -41,4 +51,8 @@ export function uploadProfilePicture(file) {
 
 export function uploadProductImage(file) {
   return uploadImage(file, PRODUCT_PRESET);
+}
+
+export function uploadTransactionProof(file) {
+  return uploadImage(file, TRANSACTION_PRESET);
 }

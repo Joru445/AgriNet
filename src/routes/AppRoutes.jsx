@@ -26,6 +26,8 @@ import Reports from "../pages/admin/Reports.jsx"
 import ProductDetails from "../pages/shared/ProductDetails";
 import StoreProfile from "../pages/shared/StoreProfile";
 import Inquiries from "../pages/shared/Inquiries";
+import TransactionProof from "../pages/shared/TransactionProof"
+import TransactionReview from "../pages/shared/TransactionReview"
 import Messages from "../pages/shared/Messages";
 import Profile from "../pages/shared/Profile";
 
@@ -61,6 +63,10 @@ export default function AppRoutes() {
 
           <Route path="/inquiries" element={<Inquiries />} />
 
+          <Route path="/inquiries/:inquiryId/proof" element={<TransactionProof />} />
+
+          <Route path="/inquiries/:inquiryId/review" element={<TransactionReview />} />
+
           <Route path="/messages" element={<Messages />} />
 
           <Route path="/me" element={<Profile />} />
@@ -78,6 +84,10 @@ export default function AppRoutes() {
           <Route path="/farmer/products" element={<MyProducts />} />
 
           <Route path="/farmer/inquiries" element={<Inquiries />} />
+
+          <Route path="/farmer/inquiries/:inquiryId/proof" element={<TransactionProof />} />
+
+          <Route path="/farmer/inquiries/:inquiryId/review" element={<TransactionReview />} />
 
           <Route path="/farmer/reviews" element={<Reviews />} />
 
@@ -97,10 +107,14 @@ export default function AppRoutes() {
 
           <Route path="/admin/reports" element={<Reports />} />
 
+          <Route path="/admin/inquiries/:inquiryId/proof" element={<TransactionProof />} />
+
+          <Route path="/admin/inquiries/:inquiryId/review" element={<TransactionReview />} />
+
           <Route path="/admin/messages" element={<Messages />} />
           
           <Route path="/admin/me" element={<Profile />} />
-        </Route>  
+        </Route>
       </Route>
     </Routes>
   );

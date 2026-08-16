@@ -1,4 +1,4 @@
-import RatingStars from "./RatingStars";
+import ReviewRating from "./ReviewRating";
 
 export default function ReviewSummary({ averageRating, reviewCount }) {
   return (
@@ -9,7 +9,7 @@ export default function ReviewSummary({ averageRating, reviewCount }) {
         </h2>
 
         <div className="mt-2">
-          <RatingStars rating={Math.round(averageRating)} size="text-xl" />
+          <ReviewRating rating={Math.round(averageRating)} size="text-xl" />
         </div>
 
         <p className="mt-3 text-sm text-gray-500">
