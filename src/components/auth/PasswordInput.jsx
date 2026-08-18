@@ -8,13 +8,17 @@ export default function PasswordInput({ label, name, value, onChange, error }) {
       <label className="block mb-2 font-medium">{label}</label>
 
       <div className="relative">
+        <i
+          className="ri-lock-line absolute left-4 top-1/2 -translate-y-1/2 text-[#16352A]/50 text-sm"
+        ></i>
         <input
           type={show ? "text" : "password"}
           name={name}
           value={value}
           onChange={onChange}
+          placeholder="••••••••"
           className={`
-            w-full rounded-xl border px-4 py-3 pr-12
+            w-full rounded-xl border px-4 py-3 pr-12 pl-11
             focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]
             ${error ? "border-red-500" : "border-gray-300"}
           `}
