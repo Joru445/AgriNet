@@ -1,51 +1,51 @@
+import { useState } from "react";
+
 import FarmerReviewForm from "./FarmerReviewForm";
 import ProductReviewForm from "./ProductReviewForm";
 
 export default function TransactionReviewForm({
-  farmerRating,
-  farmerComment,
-  productRating,
-  productComment,
-
-  onFarmerRatingChange,
-  onFarmerCommentChange,
-
-  onProductRatingChange,
-  onProductCommentChange,
-
   onSubmit,
-
   submitting = false,
   error = "",
 }) {
+  const [farmerRating, setFarmerRating] = useState(0);
+  const [farmerComment, setFarmerComment] = useState("");
+
+  const [productRating, setProductRating] = useState(0);
+  const [productComment, setProductComment] = useState("");
+
   const canSubmit = farmerRating >= 1 && productRating >= 1 && !submitting;
 
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    if (!canSubmit) {
+      return;
+    }
+
+    await onSubmit({
+      farmerRating,
+      farmerComment,
+      productRating,
+      productComment,
+    });
+  }
+
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-
-        if (!canSubmit) {
-          return;
-        }
-
-        onSubmit();
-      }}
-      className="space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
       <FarmerReviewForm
         rating={farmerRating}
         comment={farmerComment}
-        onRatingChange={onFarmerRatingChange}
-        onCommentChange={onFarmerCommentChange}
+        onRatingChange={setFarmerRating}
+        onCommentChange={setFarmerComment}
         disabled={submitting}
       />
 
       <ProductReviewForm
         rating={productRating}
         comment={productComment}
-        onRatingChange={onProductRatingChange}
-        onCommentChange={onProductCommentChange}
+        onRatingChange={setProductRating}
+        onCommentChange={setProductComment}
         disabled={submitting}
       />
 

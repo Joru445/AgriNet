@@ -13,15 +13,11 @@ import ProductDetailsSkeleton from "../../components/product/ProductDetailsSkele
 import ReviewSection from "../../components/reviews/ReviewSection";
 
 export default function ProductDetails() {
-  const { loading, product, farmer, reviewCount, averageRating } =
-    useProductDetails();
-
   const { profile } = useAuth();
+  
+  const { loading, product, farmer, reviewCount, averageRating } = useProductDetails();
 
-  const {
-    reviews,
-    loading: reviewsLoading,
-  } = useProductReviews(product?.id);
+  const { reviews, loading: reviewsLoading } = useProductReviews(product?.id);
 
   if (loading) {
     return <ProductDetailsSkeleton />;

@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+
 import { useAuth } from "../../context/AuthContext";
 
 import useTransactionReview from "../../hooks/useTransactionReview";
@@ -15,12 +16,25 @@ export default function TransactionReview() {
 
   const {
     inquiry,
+
     farmerReview,
     productReview,
+
+    farmerRating,
+    farmerComment,
+
+    productRating,
+    productComment,
 
     loading,
     submitting,
     error,
+
+    setFarmerRating,
+    setFarmerComment,
+
+    setProductRating,
+    setProductComment,
 
     submitReview,
   } = useTransactionReview(inquiryId);
@@ -40,8 +54,13 @@ export default function TransactionReview() {
   }
 
   const isConsumer = profile?.role === "consumer";
+
   const isOwner = inquiry.consumerId === profile?.uid;
 
+  /*
+   * A transaction is considered reviewed when
+   * either review document exists.
+   */
   const isReviewed = Boolean(farmerReview || productReview);
 
   const canSubmitReview =
@@ -53,7 +72,11 @@ export default function TransactionReview() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-[#2D6A4F]"
+          className="
+            inline-flex items-center gap-1.5
+            text-sm text-gray-500
+            transition hover:text-[#2D6A4F]
+          "
         >
           <i className="ri-arrow-left-line" />
           Back
@@ -61,6 +84,7 @@ export default function TransactionReview() {
 
         <TransactionSummary inquiry={inquiry} />
 
+        {/* Existing review */}
         {isReviewed && (
           <TransactionReviewView
             farmerReview={farmerReview}
@@ -69,14 +93,24 @@ export default function TransactionReview() {
           />
         )}
 
+        {/* Consumer review form */}
         {canSubmitReview && (
           <TransactionReviewForm
+            farmerRating={farmerRating}
+            farmerComment={farmerComment}
+            productRating={productRating}
+            productComment={productComment}
+            onFarmerRatingChange={setFarmerRating}
+            onFarmerCommentChange={setFarmerComment}
+            onProductRatingChange={setProductRating}
+            onProductCommentChange={setProductComment}
             onSubmit={submitReview}
             submitting={submitting}
             error={error}
           />
         )}
 
+        {/* Completed but user cannot review */}
         {!isReviewed && !canSubmitReview && inquiry.status === "completed" && (
           <div className="rounded-2xl border border-gray-100 bg-white p-5 text-center">
             <i className="ri-star-line text-2xl text-gray-400" />

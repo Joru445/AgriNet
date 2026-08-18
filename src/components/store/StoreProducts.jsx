@@ -2,7 +2,7 @@ import ProductCard from "../home/ProductCard";
 
 export default function StoreProducts({ farmer, products }) {
   return (
-    <section className="p-8">
+    <section className="px-4 sm:px-6 py-8">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-2xl font-bold text-[#1B4332]">Products</h2>

@@ -10,47 +10,86 @@ import {
   getAverageFarmerRating,
 } from "../services/farmer-review.service";
 
+import { getProductReviewSummaries } from "../services/product-review.service";
+
 export default function useStoreProfile() {
   const { uid } = useParams();
 
   const [loading, setLoading] = useState(true);
 
   const [farmer, setFarmer] = useState(null);
-
   const [products, setProducts] = useState([]);
 
   const [reviews, setReviews] = useState([]);
-  const [reviewCount, setReviewCount] = useState([]);
-  const [averageRating, setAverageRating] = useState([]);
+  const [reviewCount, setReviewCount] = useState(0);
+  const [averageRating, setAverageRating] = useState(0);
 
   const loadStore = useCallback(async () => {
-    if (!uid) return;
+    if (!uid) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
 
-      const [farmer, products, reviews, reviewCount, averageRating] =
-        await Promise.all([
-          getFarmerById(uid),
-          getFarmerProducts(uid),
-          getFarmerReviews(uid),
-          getFarmerReviewCount(uid),
-          getAverageFarmerRating(uid),
-        ]);
+      const [
+        farmerData,
+        productsData,
+        reviewsData,
+        reviewCountData,
+        averageRatingData,
+      ] = await Promise.all([
+        getFarmerById(uid),
+        getFarmerProducts(uid),
+        getFarmerReviews(uid),
+        getFarmerReviewCount(uid),
+        getAverageFarmerRating(uid),
+      ]);
 
-      const productsWithRatings = products.map((product) => ({
-        ...product,
-        reviewCount: Number(product.ratingSummary?.count ?? 0),
-        productRating: Number(product.ratingSummary?.average ?? 0),
-      }));
+      /*
+       * Get all product IDs belonging to this farmer.
+       */
+      const productIds = productsData.map((product) => product.id);
 
-      setFarmer(farmer);
+      /*
+       * Load review summaries from product-reviews collection.
+       *
+       * Returns a Map:
+       *
+       * productId => {
+       *   average,
+       *   count
+       * }
+       */
+      const reviewSummaries = await getProductReviewSummaries(productIds);
+
+      /*
+       * Attach review data directly to every product.
+       */
+      const productsWithRatings = productsData.map((product) => {
+        const summary = reviewSummaries.get(product.id);
+
+        return {
+          ...product,
+
+          productRating: summary?.average ?? 0,
+
+          reviewCount: summary?.count ?? 0,
+        };
+      });
+
+      setFarmer(farmerData);
+
       setProducts(productsWithRatings);
-      setReviews(reviews);
-      setReviewCount(reviewCount);
-      setAverageRating(averageRating);
+
+      setReviews(reviewsData);
+
+      setReviewCount(Number(reviewCountData) || 0);
+
+      setAverageRating(Number(averageRatingData) || 0);
     } catch (error) {
-      console.error(error);
+      console.error("Failed to load store profile:", error);
     } finally {
       setLoading(false);
     }
@@ -66,9 +105,11 @@ export default function useStoreProfile() {
     farmer,
 
     products,
+
     reviews,
 
     averageRating,
+
     reviewCount,
 
     refresh: loadStore,

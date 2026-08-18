@@ -4,18 +4,31 @@ import useStartConversation from "../../hooks/useStartConversation";
 import StoreHeader from "../../components/store/StoreHeader";
 import StoreProducts from "../../components/store/StoreProducts";
 
+import ReviewSection from "../../components/reviews/ReviewSection";
+
 export default function StoreProfile() {
   const startConversation = useStartConversation();
 
-  const { loading, farmer, products, averageRating, reviewCount } =
-    useStoreProfile();
+  const {
+    loading,
+    farmer,
+    products,
+    averageRating,
+    reviewCount,
+
+    reviews,
+  } = useStoreProfile();
 
   if (loading) {
-    return <div className="max-w-7xl mx-auto px-4 py-8">Loading...</div>;
+    return <div className="mx-auto max-w-7xl px-4 py-8">Loading...</div>;
+  }
+
+  if (!farmer) {
+    return <div className="mx-auto max-w-7xl px-4 py-8">Store not found.</div>;
   }
 
   return (
-    <main className="bg-white mx-auto max-w-6xl shadow-sm overflow-hidden pb-16 md:pb-8">
+    <main className="mx-auto max-w-6xl overflow-hidden bg-white pb-16 shadow-sm md:pb-8">
       <StoreHeader
         farmer={farmer}
         averageRating={averageRating}
@@ -24,6 +37,12 @@ export default function StoreProfile() {
       />
 
       <StoreProducts farmer={farmer} products={products} />
+
+      <ReviewSection
+        title="Farmer Reviews"
+        reviews={reviews}
+        type="farmer"
+      />
     </main>
   );
 }
