@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import landscape from "../../assets/img/landscapeCover.jpg";
+import landscape from "../../../assets/img/landscapeCover.jpg";
 
 import { getInitials } from "../../../utils/getInitials";
 import Button from "../../ui/Button";

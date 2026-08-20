@@ -15,7 +15,7 @@ export default function Notifications() {
   ).length;
 
   return (
-    <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
+    <div className="mx-auto w-full max-w-3xl p-4 md:p-6 pb-18 md:pb-4">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">

@@ -1,9 +1,9 @@
 import useNearbyFarmers from "../../hooks/useNearbyFarmers";
 
-import NearbyHeader from "../../components/nearby/NearbyHeader";
-import NearbyMap from "../../components/nearby/NearbyMap";
-import NearbyFilters from "../../components/nearby/NearbyFilters";
-import NearbyFarmerGrid from "../../components/nearby/NearbyGrid";
+import NearbyHeader from "../../components/consumer/nearby/NearbyHeader";
+import NearbyMap from "../../components/consumer/nearby/NearbyMap";
+import NearbyFilters from "../../components/consumer/nearby/NearbyFilters";
+import NearbyFarmerGrid from "../../components/consumer/nearby/NearbyGrid";
 
 export default function Nearby() {
   const {

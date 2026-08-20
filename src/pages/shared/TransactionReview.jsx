@@ -4,9 +4,9 @@ import { useAuth } from "../../context/AuthContext";
 
 import useTransactionReview from "../../hooks/useTransactionReview";
 
-import TransactionSummary from "../../components/transaction-review/TransactionSummary";
-import TransactionReviewForm from "../../components/transaction-review/TransactionReviewForm";
-import TransactionReviewView from "../../components/transaction-review/TransactionReviewView";
+import TransactionSummary from "../../components/shared/transaction-review/TransactionSummary";
+import TransactionReviewForm from "../../components/shared/transaction-review/TransactionReviewForm";
+import TransactionReviewView from "../../components/shared/transaction-review/TransactionReviewView";
 
 export default function TransactionReview() {
   const { inquiryId } = useParams();

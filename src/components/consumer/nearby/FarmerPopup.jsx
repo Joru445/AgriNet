@@ -1,17 +1,13 @@
 import { Link } from "react-router-dom";
 
-import defaultAvatar from "../../assets/img/defaultAvatar.png"
+import Avatar from "../../common/Avatar"
 
 export default function FarmerPopup({ farmer, onMessage }) {
 
   return (
     <div className="w-64">
       <div className="flex items-start gap-3">
-        <img
-          src={farmer.profilePicture || defaultAvatar}
-          alt={farmer.fullname}
-          className="w-12 h-12 rounded-full object-cover border"
-        />
+        <Avatar src={farmer.profilePicture} name={farmer.fullname} />
 
         <div className="flex-1">
           <h2 className="font-semibold text-[#1B4332]">{farmer.fullname}</h2>

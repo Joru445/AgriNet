@@ -1,4 +1,4 @@
-import ProductCard from "../home/ProductCard";
+import ProductCard from "../../common/ProductCard";
 
 export default function RecentProducts({ products }) {
   return (

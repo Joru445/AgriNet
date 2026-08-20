@@ -5,6 +5,7 @@ import UserIdentity from "./common/UserIdentity";
 
 export default function Header({ user, collapsed }) {
   const location = useLocation();
+  console.log(user);
 
   const tabRoutes = [
     "/home",
@@ -42,6 +43,10 @@ export default function Header({ user, collapsed }) {
           </span>
         )}
       </div>
+
+      {user.status === "suspended" && (
+        <span className="text-red-500">Your account are suspended!</span>
+      )}
 
       <div className="flex items-center gap-2">
         <Link

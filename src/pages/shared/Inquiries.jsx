@@ -2,9 +2,9 @@ import { useAuth } from "../../context/AuthContext";
 
 import useInquiries from "../../hooks/useInquiries";
 
-import InquirySkeleton from "../../components/inquiries/InquirySkeleton";
-import InquiryTabs from "../../components/inquiries/InquiryTabs";
-import InquiryTable from "../../components/inquiries/InquiryTable";
+import InquirySkeleton from "../../components/shared/inquiries/InquirySkeleton";
+import InquiryTabs from "../../components/shared/inquiries/InquiryTabs";
+import InquiryTable from "../../components/shared/inquiries/InquiryTable";
 
 export default function Inquiries() {
   const { profile } = useAuth();

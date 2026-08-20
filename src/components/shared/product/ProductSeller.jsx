@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
-import defaultAvatar from "../../assets/img/defaultAvatar.png";
+import Avatar from "../../common/Avatar"
+
 
 export default function ProductSeller({ farmer, isOwner }) {
   if (!farmer) return null;
@@ -12,11 +13,7 @@ export default function ProductSeller({ farmer, isOwner }) {
       </h2>
 
       <div className="flex items-center gap-4">
-        <img
-          src={farmer.profilePicture || defaultAvatar}
-          alt={farmer.fullname}
-          className="h-16 w-16 rounded-full object-cover"
-        />
+        <Avatar src={farmer.profilePicture} name={farmer.fullname} />
 
         <div className="flex-1">
           <h3 className="font-semibold text-lg">{farmer.fullname}</h3>

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { getMessagesPath } from "../../utils/routes";
+import { getMessagesPath } from "../../../utils/routes";
 
 export default function ProductActions({ product, farmer, isOwner }) {
   const navigate = useNavigate();

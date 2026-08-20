@@ -2,11 +2,11 @@ import { useAuth } from "../../context/AuthContext";
 
 import useDashboard from "../../hooks/useDashboard";
 
-import DashboardHero from "../../components/dashboard/DashboardHero";
-import DashboardStats from "../../components/dashboard/DashboardStats";
-import RecentProducts from "../../components/dashboard/RecentProducts";
-import RecentReviews from "../../components/dashboard/RecentReviews";
-import DashboardSkeleton from "../../components/dashboard/DashboardSkeleton";
+import DashboardHero from "../../components/farmer/dashboard/DashboardHero";
+import DashboardStats from "../../components/farmer/dashboard/DashboardStats";
+import RecentProducts from "../../components/farmer/dashboard/RecentProducts";
+import RecentReviews from "../../components/farmer/dashboard/RecentReviews";
+import DashboardSkeleton from "../../components/farmer/dashboard/DashboardSkeleton";
 
 export default function Dashboard() {
   const { profile } = useAuth();

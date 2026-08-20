@@ -1,4 +1,4 @@
-import { getProductImage } from "../../utils/getProductImage";
+import { getProductImage } from "../../../utils/getProductImage";
 
 export default function Inquiry({ productData, counterparty }) {
   const price = Number(productData?.price) || 0;

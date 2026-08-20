@@ -150,9 +150,7 @@ export default function useUsers() {
       setActionLoading(true);
       setActionError(null);
 
-      const suspended = status === "suspended";
-
-      const result = await setUserSuspension(uid, suspended);
+      const result = await setUserSuspension(uid, status);
 
       /*
        * Update the local user immediately.

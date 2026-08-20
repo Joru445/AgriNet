@@ -1,4 +1,4 @@
-import productPlaceholder from "../../assets/img/productPlaceholder.png"
+import productPlaceholder from "../../../assets/img/productPlaceholder.png"
 
 export default function ProductCard({ product, view, onEdit, onDelete }) {
   const image = product.images?.[0]?.url || productPlaceholder;

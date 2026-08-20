@@ -36,25 +36,12 @@ const RECENT_LIMIT = 5;
  *
  * Firebase Authentication is NOT disabled.
  */
-export async function setUserSuspension(uid, suspended) {
-  if (!uid) {
-    throw new Error("User UID is required.");
-  }
+export async function setUserSuspension(uid, status) {
+  const userRef = doc(db, "users", uid);
 
-  if (typeof suspended !== "boolean") {
-    throw new Error("Suspension value must be true or false.");
-  }
-
-  await updateDoc(doc(db, "users", uid), {
-    status: suspended ? "suspended" : "active",
-
-    updatedAt: serverTimestamp(),
+  await updateDoc(userRef, {
+    status,
   });
-
-  return {
-    uid,
-    status: suspended ? "suspended" : "active",
-  };
 }
 
 /**

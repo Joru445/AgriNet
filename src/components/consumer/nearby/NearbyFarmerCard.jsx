@@ -1,16 +1,12 @@
 import { Link } from "react-router-dom";
 
-import defaultAvatar from "../../assets/img/defaultAvatar.png";
+import Avatar from "../../common/Avatar"
 
 export default function NearbyFarmerCard({ farmer }) {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition">
       <div className="flex items-center gap-4">
-        <img
-          src={farmer.profilePicture || defaultAvatar}
-          alt={farmer.fullname}
-          className="h-16 w-16 rounded-full object-cover"
-        />
+        <Avatar src={farmer.profilePicture} name={farmer.fullname} />
 
         <div className="flex-1">
           <h3 className="font-semibold text-gray-800">{farmer.fullname}</h3>

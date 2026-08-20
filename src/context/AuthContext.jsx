@@ -1,9 +1,17 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
 
 import { auth } from "../firebase/auth";
+import { db } from "../firebase/firestore";
+
 import { getFarmerById } from "../services/farmer.service";
-import { getUserProfile } from "../services/user.service";
 
 const AuthContext = createContext();
 
@@ -18,33 +26,96 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!firebaseUser) {
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
-        return;
+    let unsubscribeProfile = null;
+
+    const unsubscribeAuth = onAuthStateChanged(
+      auth,
+      (firebaseUser) => {
+        // Clean up the previous user profile listener.
+        if (unsubscribeProfile) {
+          unsubscribeProfile();
+          unsubscribeProfile = null;
+        }
+
+        // User logged out.
+        if (!firebaseUser) {
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        setLoading(true);
+        setUser(firebaseUser);
+
+        const userRef = doc(
+          db,
+          "users",
+          firebaseUser.uid,
+        );
+
+        // Listen to the user's profile in real time.
+        unsubscribeProfile = onSnapshot(
+          userRef,
+          async (snapshot) => {
+            try {
+              if (!snapshot.exists()) {
+                setProfile(null);
+                setLoading(false);
+                return;
+              }
+
+              const userData = {
+                uid: snapshot.id,
+                ...snapshot.data(),
+              };
+
+              let combinedProfile = userData;
+
+              // Load farmer-specific data.
+              if (userData.role === "farmer") {
+                const farmer = await getFarmerById(
+                  firebaseUser.uid,
+                );
+
+                combinedProfile = {
+                  ...userData,
+                  ...farmer,
+                };
+              }
+
+              setProfile(combinedProfile);
+              setLoading(false);
+            } catch (error) {
+              console.error(
+                "Failed to load user profile:",
+                error,
+              );
+
+              setProfile(null);
+              setLoading(false);
+            }
+          },
+          (error) => {
+            console.error(
+              "Failed to listen to user profile:",
+              error,
+            );
+
+            setProfile(null);
+            setLoading(false);
+          },
+        );
+      },
+    );
+
+    return () => {
+      unsubscribeAuth();
+
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
       }
-
-      const user = await getUserProfile(firebaseUser.uid);
-
-      let profile = user;
-
-      if (user.role === "farmer") {
-        const farmer = await getFarmerById(firebaseUser.uid);
-
-        profile = {
-          ...user,
-          ...farmer,
-        };
-      }
-
-      setUser(firebaseUser);
-      setProfile(profile);
-      setLoading(false);
-    });
-
-    return unsubscribe;
+    };
   }, []);
 
   return (
@@ -53,6 +124,10 @@ export function AuthProvider({ children }) {
         user,
         profile,
         loading,
+
+        // Useful for route protection and UI.
+        suspended: profile?.status === "suspended",
+
         logout,
       }}
     >
@@ -61,6 +136,5 @@ export function AuthProvider({ children }) {
   );
 }
 
-// This hook intentionally shares the context with the provider in this module.
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

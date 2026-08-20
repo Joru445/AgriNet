@@ -1,10 +1,10 @@
 import useTransactionProof from "../../hooks/useTransactionProof";
 
-import TransactionProduct from "../../components/transaction/TransactionProduct";
-import TransactionProofReview from "../../components/transaction/TransactionProofReview";
-import TransactionProofSkeleton from "../../components/transaction/TransactionProofSkeleton";
-import TransactionProofStatus from "../../components/transaction/TransactionProofStatus";
-import TransactionProofUpload from "../../components/transaction/TransactionProofUpload";
+import TransactionProduct from "../../components/shared/transaction-proof/TransactionProduct";
+import TransactionProofReview from "../../components/shared/transaction-proof/TransactionProofReview";
+import TransactionProofSkeleton from "../../components/shared/transaction-proof/TransactionProofSkeleton";
+import TransactionProofStatus from "../../components/shared/transaction-proof/TransactionProofStatus";
+import TransactionProofUpload from "../../components/shared/transaction-proof/TransactionProofUpload";
 
 export default function TransactionProof() {
   const {

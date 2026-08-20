@@ -1,13 +1,13 @@
 import useMarketplace from "../../hooks/useMarketplace";
 
-import SearchBar from "../../components/home/SearchBar";
-import CategoryChips from "../../components/home/CategoryChips";
-import FiltersSidebar from "../../components/home/FiltersSidebar";
-import MobileFiltersDrawer from "../../components/home/MobileFiltersDrawer";
-import ProductsToolbar from "../../components/home/ProductsToolbar";
-import ProductGrid from "../../components/home/ProductGrid";
-import ProductPagination from "../../components/home/ProductPagination";
-import MarketplaceSkeleton from "../../components/home/MarketplaceSkeleton";
+import SearchBar from "../../components/consumer/home/SearchBar";
+import CategoryChips from "../../components/consumer/home/CategoryChips";
+import FiltersSidebar from "../../components/consumer/home/FiltersSidebar";
+import MobileFiltersDrawer from "../../components/consumer/home/MobileFiltersDrawer";
+import ProductsToolbar from "../../components/consumer/home/ProductsToolbar";
+import ProductGrid from "../../components/consumer/home/ProductGrid";
+import ProductPagination from "../../components/consumer/home/ProductPagination";
+import MarketplaceSkeleton from "../../components/consumer/home/MarketplaceSkeleton";
 
 export default function Home() {
   const {

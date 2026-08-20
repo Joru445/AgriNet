@@ -1,10 +1,10 @@
 import useProducts from "../../hooks/useProducts";
 
-import ProductToolbar from "../../components/products/ProductToolbar";
-import ProductSkeleton from "../../components/products/ProductSkeleton";
-import ProductModal from "../../components/products/ProductModal";
-import ProductGrid from "../../components/products/ProductGrid";
-import DeleteProductModal from "../../components/products/DeleteProductModal";
+import ProductToolbar from "../../components/farmer/products/ProductToolbar";
+import ProductSkeleton from "../../components/farmer/products/ProductSkeleton";
+import ProductModal from "../../components/farmer/products/ProductModal";
+import ProductGrid from "../../components/farmer/products/ProductGrid";
+import DeleteProductModal from "../../components/farmer/products/DeleteProductModal";
 
 export default function MyProducts() {
   const {

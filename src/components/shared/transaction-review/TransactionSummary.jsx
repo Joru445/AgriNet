@@ -1,4 +1,4 @@
-import productPlaceholder from "../../assets/img/productPlaceholder.png";
+import productPlaceholder from "../../../assets/img/productPlaceholder.png";
 import Avatar from "../../common/Avatar";
 
 export default function TransactionSummary({ inquiry }) {

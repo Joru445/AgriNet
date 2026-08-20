@@ -1,4 +1,4 @@
-import productPlaceholder from "../../assets/img/productPlaceholder.png";
+import productPlaceholder from "../../../assets/img/productPlaceholder.png";
 
 export default function TransactionProduct({ inquiry }) {
   const product = inquiry?.productSnapshot ?? {};

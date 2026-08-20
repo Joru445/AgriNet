@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
-import { getMessagesPath, getInquiriesPath } from "../../utils/routes";
-import { formatTimestamp } from "../../utils/date";
+import { getMessagesPath, getInquiriesPath } from "../../../utils/routes";
+import { formatTimestamp } from "../../../utils/date";
 
 import Inquiry from "./Inquiry";
 import InquiryStatusBadge from "./InquiryStatusBadge";

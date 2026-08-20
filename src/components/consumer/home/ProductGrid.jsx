@@ -1,4 +1,4 @@
-import ProductCard from "./ProductCard";
+import ProductCard from "../../common/ProductCard";
 import EmptyProducts from "./EmptyProducts";
 
 export default function ProductGrid({ products }) {

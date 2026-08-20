@@ -1,6 +1,6 @@
 import StarRating from "./StarRating";
 
-import LocationPicker from "../location/LocationPicker";
+import LocationPicker from "../../location/LocationPicker";
 
 export default function FarmerSection({ form, stats, editing, onChange }) {
   return (

@@ -1,9 +1,9 @@
 import useReviews from "../../hooks/useReviews";
 
-import ReviewSummary from "../../components/reviews/ReviewSummary";
-import RatingDistribution from "../../components/reviews/RatingDistribution";
-import ReviewList from "../../components/reviews/ReviewList";
-import ReviewSkeleton from "../../components/reviews/ReviewSkeleton";
+import ReviewSummary from "../../components/farmer/reviews/ReviewSummary";
+import RatingDistribution from "../../components/farmer/reviews/RatingDistribution";
+import ReviewList from "../../components/farmer/reviews/ReviewList";
+import ReviewSkeleton from "../../components/farmer/reviews/ReviewSkeleton";
 
 export default function Reviews() {
   const {
