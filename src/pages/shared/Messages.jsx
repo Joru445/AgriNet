@@ -1,9 +1,9 @@
 import useMessages from "../../hooks/useMessages";
 
-import MessagesSkeleton from "../../components/messages/MessageSkeleton";
-import ConversationList from "../../components/messages/ConversationList";
-import ChatWindow from "../../components/messages/ChatWindow";
-import EmptyConversation from "../../components/messages/EmptyConversation";
+import MessagesSkeleton from "../../components/shared/messages/MessageSkeleton";
+import ConversationList from "../../components/shared/messages/ConversationList";
+import ChatWindow from "../../components/shared/messages/ChatWindow";
+import EmptyConversation from "../../components/shared/messages/EmptyConversation";
 
 export default function Messages() {
   const {

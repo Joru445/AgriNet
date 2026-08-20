@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -11,8 +11,6 @@ import TransactionReviewView from "../../components/transaction-review/Transacti
 export default function TransactionReview() {
   const { inquiryId } = useParams();
   const { profile } = useAuth();
-
-  const navigate = useNavigate();
 
   const {
     inquiry,
@@ -69,18 +67,6 @@ export default function TransactionReview() {
   return (
     <div className="mx-auto w-full max-w-3xl p-4 pb-18 sm:p-6 sm:pb-4">
       <div className="space-y-4">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="
-            inline-flex items-center gap-1.5
-            text-sm text-gray-500
-            transition hover:text-[#2D6A4F]
-          "
-        >
-          <i className="ri-arrow-left-line" />
-          Back
-        </button>
 
         <TransactionSummary inquiry={inquiry} />
 

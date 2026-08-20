@@ -1,4 +1,4 @@
-import ReviewRating from "./ReviewRating";
+import ReviewRating from "../farmer/reviews/ReviewRating";
 import { formatTimestamp } from "../../utils/date";
 
 export default function ReviewCard({ review, type = "product" }) {

@@ -1,4 +1,4 @@
-import ReviewCard from "../reviews/ReviewCard";
+import ReviewCard from "../../common/ReviewCard";
 
 export default function RecentReviews({ reviews }) {
   return (

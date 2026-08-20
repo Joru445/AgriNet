@@ -1,10 +1,10 @@
 import useStoreProfile from "../../hooks/useStoreProfile";
 import useStartConversation from "../../hooks/useStartConversation";
 
-import StoreHeader from "../../components/store/StoreHeader";
-import StoreProducts from "../../components/store/StoreProducts";
+import StoreHeader from "../../components/shared/store/StoreHeader";
+import StoreProducts from "../../components/shared/store/StoreProducts";
 
-import ReviewSection from "../../components/reviews/ReviewSection";
+import ReviewSection from "../../components/common/ReviewSection";
 
 export default function StoreProfile() {
   const startConversation = useStartConversation();

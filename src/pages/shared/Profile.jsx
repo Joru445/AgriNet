@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 
-import ProfileHeader from "../../components/profile/ProfileHeader";
-import ProfileForm from "../../components/profile/ProfileForm";
-import FarmerSection from "../../components/profile/FarmerSection";
-import ProfileSkeleton from "../../components/profile/ProfileSkeleton";
+import ProfileHeader from "../../components/shared/me/ProfileHeader";
+import ProfileForm from "../../components/shared/me/ProfileForm";
+import FarmerSection from "../../components/shared/me/FarmerSection";
+import ProfileSkeleton from "../../components/shared/me/ProfileSkeleton";
 
 import { useAuth } from "../../context/AuthContext";
 import useProfile from "../../hooks/useProfile";

@@ -17,7 +17,7 @@ export default function Nearby() {
   } = useNearbyFarmers();
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <main className="max-w-7xl mx-auto pb-16 md:pb-4">
       <NearbyHeader />
 
       <NearbyMap
@@ -33,6 +33,6 @@ export default function Nearby() {
       />
 
       <NearbyFarmerGrid loading={loading} farmers={nearbyFarmers} />
-    </div>
+    </main>
   );
 }

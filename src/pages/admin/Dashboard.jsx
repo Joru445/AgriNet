@@ -95,36 +95,42 @@ export default function Dashboard() {
             title="Total Users"
             value={stats.users.total}
             description="Registered users"
+            to="/admin/users"
           />
 
           <StatCard
             title="Farmers"
             value={stats.users.farmers}
             description="Registered farmers"
+            to="/admin/users"
           />
 
           <StatCard
             title="Consumers"
             value={stats.users.consumers}
             description="Registered consumers"
+            to="/admin/users"
           />
 
           <StatCard
             title="Products"
             value={stats.products.total}
             description={`${stats.products.available} available`}
+            to="/admin/products"
           />
 
           <StatCard
             title="Ongoing"
             value={stats.inquiries.ongoing}
             description="Ongoing inquiries"
+            to="/admin/inquiries"
           />
 
           <StatCard
             title="Completed"
             value={stats.inquiries.completed}
             description="Completed inquiries"
+            to="/admin/inquiries"
           />
         </div>
 

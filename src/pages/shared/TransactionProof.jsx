@@ -1,5 +1,3 @@
-import { useNavigate } from "react-router-dom";
-
 import useTransactionProof from "../../hooks/useTransactionProof";
 
 import TransactionProduct from "../../components/transaction/TransactionProduct";
@@ -9,8 +7,6 @@ import TransactionProofStatus from "../../components/transaction/TransactionProo
 import TransactionProofUpload from "../../components/transaction/TransactionProofUpload";
 
 export default function TransactionProof() {
-  const navigate = useNavigate();
-
   const {
     inquiry,
     status,
@@ -62,15 +58,6 @@ export default function TransactionProof() {
       <div className="mx-auto max-w-3xl pb-18 sm:pb-4">
         {/* Header */}
         <div className="mb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-[#2D6A4F]"
-          >
-            <i className="ri-arrow-left-line" />
-            Back
-          </button>
-          
           <h1 className="mt-4 text-2xl font-bold text-gray-900">Transaction</h1>
           {status !== "completed" ? (
             <p className="mt-1 text-sm text-gray-500">

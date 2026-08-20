@@ -1,8 +1,8 @@
-import { farmerIcon, userIcon } from "../../constants/MapIcons";
+import { farmerIcon, userIcon } from "../../../constants/MapIcons";
 
-import useStartConversation from "../../hooks/useStartConversation";
+import useStartConversation from "../../../hooks/useStartConversation";
 
-import Map from "../map/Map";
+import Map from "../../map/Map";
 import FarmerPopup from "./FarmerPopup";
 
 export default function NearbyMap({ userLocation, farmers, maxDistance }) {

@@ -21,7 +21,7 @@ export default function Inquiries() {
   } = useInquiries();
 
   return (
-    <main className="flex-1 p-4 md:p-6">
+    <main className="flex-1 p-4 md:p-6 pb-18 md:pb-4">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-[#1B4332]">Inquiry Records</h2>
 

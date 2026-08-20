@@ -20,7 +20,7 @@ export default function AppLayout() {
           collapsed ? "lg:ml-20" : "lg:ml-64"
         }`}
       >
-        <Header user={profile} />
+        <Header user={profile} collapsed={collapsed} />
 
         <div className="bg-[#FAFAFA] flex-1 overflow-y-auto">
           <Outlet />

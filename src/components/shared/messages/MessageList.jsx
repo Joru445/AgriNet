@@ -4,7 +4,7 @@ import MessageBubble from "./MessageBubble";
 import ProductInquiryMessage from "./ProductInquiryMessage";
 import MessageSeparator from "./MessageSeparator";
 
-import { shouldShowSeparator } from "../../utils/chat";
+import { shouldShowSeparator } from "../../../utils/chat";
 
 export default function MessageList({
   user,

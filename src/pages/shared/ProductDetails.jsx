@@ -3,14 +3,14 @@ import useProductReviews from "../../hooks/useProductReviews";
 
 import { useAuth } from "../../context/AuthContext";
 
-import ProductGallery from "../../components/product/ProductGallery";
-import ProductInfo from "../../components/product/ProductInfo";
-import ProductSeller from "../../components/product/ProductSeller";
-import ProductDescription from "../../components/product/ProductDescription";
-import ProductActions from "../../components/product/ProductActions";
-import ProductDetailsSkeleton from "../../components/product/ProductDetailsSkeleton";
+import ProductGallery from "../../components/shared/product/ProductGallery";
+import ProductInfo from "../../components/shared/product/ProductInfo";
+import ProductSeller from "../../components/shared/product/ProductSeller";
+import ProductDescription from "../../components/shared/product/ProductDescription";
+import ProductActions from "../../components/shared/product/ProductActions";
+import ProductDetailsSkeleton from "../../components/shared/product/ProductDetailsSkeleton";
 
-import ReviewSection from "../../components/reviews/ReviewSection";
+import ReviewSection from "../../components/common/ReviewSection";
 
 export default function ProductDetails() {
   const { profile } = useAuth();
@@ -32,8 +32,8 @@ export default function ProductDetails() {
   const isOwner = product.farmerId === profile?.uid;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="grid gap-8 lg:grid-cols-2">
+    <div className="mx-auto max-w-7xl px-4 py-8 pb-18 md:pb-4">
+      <div className="grid gap-8 lg:grid-cols-2 mb-4">
         <ProductGallery product={product} />
 
         <div className="space-y-6">

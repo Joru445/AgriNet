@@ -30,6 +30,7 @@ import TransactionProof from "../pages/shared/TransactionProof"
 import TransactionReview from "../pages/shared/TransactionReview"
 import Messages from "../pages/shared/Messages";
 import Profile from "../pages/shared/Profile";
+import Notifications from "../pages/shared/Notifications";
 
 export default function AppRoutes() {
   return (
@@ -70,6 +71,8 @@ export default function AppRoutes() {
           <Route path="/messages" element={<Messages />} />
 
           <Route path="/me" element={<Profile />} />
+
+          <Route path="/notifications" element={<Notifications />} />
         </Route>
       </Route>
 
@@ -94,6 +97,8 @@ export default function AppRoutes() {
           <Route path="/farmer/messages" element={<Messages />} />
 
           <Route path="/farmer/me" element={<Profile />} />
+
+          <Route path="/farmer/notifications" element={<Notifications />} />
         </Route>
       </Route>
 
@@ -114,6 +119,8 @@ export default function AppRoutes() {
           <Route path="/admin/messages" element={<Messages />} />
           
           <Route path="/admin/me" element={<Profile />} />
+
+          <Route path="/admin/notifications" element={<Notifications />} />
         </Route>
       </Route>
     </Routes>

@@ -1,4 +1,4 @@
-import { formatSeparator } from "../../utils/chat";
+import { formatSeparator } from "../../../utils/chat";
 
 export default function MessageSeparator({ timestamp }) {
   return (

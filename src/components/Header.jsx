@@ -1,25 +1,62 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
+import BackButton from "./common/BackButton";
 import UserIdentity from "./common/UserIdentity";
 
-export default function Header({ user, title = "Dashboard" }) {
+export default function Header({ user, collapsed }) {
+  const location = useLocation();
+
+  const tabRoutes = [
+    "/home",
+    "/products",
+    "/messages",
+    "/inquiries",
+    "/me",
+
+    "/farmer",
+    "/farmer/products",
+    "/farmer/inquiries",
+    "/farmer/messages",
+    "/farmer/me",
+
+    "/admin",
+    "/admin/reports",
+    "/admin/messages",
+    "/admin/me",
+  ];
+
+  const showBackButton = !tabRoutes.includes(location.pathname);
 
   return (
-    <header className="sticky top-0 right-0 h-16 bg-white/95 border-b border-gray-100 flex items-center justify-between px-4 md:px-6 z-9998">
-      <div className="flex items-center gap-3">
-        <h2 className="font-bold text-[#1B4332] text-base">{title}</h2>
+    <header className="sticky top-0 right-0 z-40 flex h-16 items-center justify-between border-b border-gray-100 bg-white/95 px-4 md:px-6">
+      <div className="flex w-10 items-center">
+        {showBackButton ? (
+          <BackButton />
+        ) : (
+          <span
+            className={`font-bold text-gray-800 text-sm whitespace-nowrap transition-all duration-300 ease-in-out ${
+              !collapsed ? "hidden" : "block"
+            }`}
+          >
+            AgriNet <span className="font-light">Lucena</span>
+          </span>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
-        <button className="relative w-9 h-9 flex items-center justify-center text-gray-500 hover:text-[#2D6A4F] hover:bg-gray-100 rounded-lg transition-colors">
+        <Link
+          to="/notifications"
+          className="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#2D6A4F]"
+          aria-label="Notifications"
+        >
           <i className="ri-notification-3-line text-lg" />
 
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-        </button>
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
+        </Link>
 
         <Link
           to="/me"
-          className="flex items-center gap-2 pl-2 border-l border-gray-200"
+          className="flex items-center gap-2 border-l border-gray-200 pl-2"
         >
           <UserIdentity user={user} showUsername={false} showRole={true} />
         </Link>

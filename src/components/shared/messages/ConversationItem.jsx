@@ -1,6 +1,6 @@
-import { getInitials } from "../../utils/getInitials";
+import { getInitials } from "../../../utils/getInitials";
 
-import { formatTimestamp } from "../../utils/date";
+import { formatTimestamp } from "../../../utils/date";
 
 export default function ConversationItem({
   item,

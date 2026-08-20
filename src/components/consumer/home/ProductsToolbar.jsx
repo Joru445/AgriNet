@@ -13,7 +13,7 @@ export default function ProductsToolbar({
       <div className="flex items-center gap-2">
         <button
           onClick={onOpenFilters}
-          className="lg:hidden flex items-center gap-2 px-3 py-2 bg-white border rounded-xl font-semibold"
+          className="lg:hidden flex items-center gap-2 px-3 py-2 bg-white border text-xs sm:text-sm rounded-xl font-semibold"
         >
           <i className="ri-filter-3-line text-[#2D6A4F]" />
           Filters
@@ -22,7 +22,7 @@ export default function ProductsToolbar({
         <select
           value={sort}
           onChange={(e) => onSort(e.target.value)}
-          className="bg-white px-3 py-2 border rounded-xl font-semibold outline-none"
+          className="bg-white px-3 py-2 border rounded-xl font-semibold outline-none text-xs sm:text-sm"
         >
           <option value="newest">Newest</option>
           <option value="price-low">Price: Low to High</option>

@@ -1,8 +1,6 @@
-import { useNavigate } from "react-router-dom";
+import landscape from "../../../assets/img/landscapeCover.jpg";
 
-import landscape from "../../assets/img/landscapeCover.jpg";
-
-import { getInitials } from "../../utils/getInitials";
+import { getInitials } from "../../../utils/getInitials";
 
 export default function StoreHeader({
   farmer,
@@ -10,8 +8,6 @@ export default function StoreHeader({
   averageRating,
   onMessage,
 }) {
-  const navigate = useNavigate();
-
   const joinedDate = farmer.createdAt?.seconds
     ? new Date(farmer.createdAt.seconds * 1000).toLocaleDateString("en-PH", {
         month: "long",
@@ -35,32 +31,6 @@ export default function StoreHeader({
             sm:rounded-b-2xl
           "
         >
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="
-              absolute
-              left-3
-              top-3
-              z-40
-              inline-flex
-              items-center
-              gap-2
-              rounded-lg
-              bg-black/30
-              px-3
-              py-2
-              text-sm
-              text-white
-              backdrop-blur-sm
-              transition
-              hover:bg-black/50
-            "
-          >
-            <i className="ri-arrow-left-line" />
-            Back
-          </button>
-
           <img
             src={farmer.coverPhoto || landscape}
             alt="Cover"
