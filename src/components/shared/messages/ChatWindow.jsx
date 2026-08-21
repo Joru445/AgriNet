@@ -17,9 +17,10 @@ export default function ChatWindow({
   return (
     <section
       className={`
-        relative flex-1 flex-col bg-gray-50
+        relative flex-1 flex-col
         ${hasChat ? "flex" : "hidden md:flex"}
       `}
+      style={{ backgroundColor: 'var(--agri-bg)' }}
     >
       <ChatHeader user={user} />
 

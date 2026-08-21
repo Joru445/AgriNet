@@ -30,6 +30,20 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
     images: product?.images ?? [],
   }));
 
+  const isValid = Boolean(
+    form.name?.trim() &&
+    form.category?.trim() &&
+    form.unit?.trim() &&
+    form.price !== "" &&
+    !isNaN(Number(form.price)) &&
+    Number(form.price) > 0 &&
+    form.stock !== "" &&
+    !isNaN(Number(form.stock)) &&
+    Number(form.stock) >= 0 &&
+    form.images &&
+    form.images.length > 0
+  );
+
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
 
@@ -47,37 +61,69 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
   }
 
   function handleSubmit() {
+    if (!isValid || saving) return;
     onSubmit(form);
   }
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center md:p-5 z-9999">
-      <div className="bg-white w-full h-full md:max-w-3xl md:max-h-[90vh] md:rounded-2xl overflow-y-auto scrollbar-none">
-        <div className="sticky top-0 z-2 bg-white border-b-2 border-b-gray-500 px-6 py-5 flex justify-between items-center">
-          <h2 className="text-xl font-bold">
-            {product ? "Edit Product" : "Add Product"}
-          </h2>
+      <div className="bg-white w-full h-full md:max-w-3xl md:max-h-[90vh] md:rounded-2xl overflow-y-auto scrollbar-none flex flex-col justify-between">
+        <div>
+          <div
+            className="sticky top-0 z-10 px-6 py-5 flex justify-between items-center border-b md:rounded-t-2xl"
+            style={{ backgroundColor: "var(--agri-bg-surface)", borderColor: "var(--agri-border)" }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#2D6A4F]/15 text-[#2D6A4F] flex items-center justify-center">
+                <i className={`${product ? "ri-edit-box-line" : "ri-plant-line"} text-2xl text-[#2D6A4F]`} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-[#1B4332]">
+                  {product ? "Edit Product" : "Add Product"}
+                </h2>
+                <p className="text-xs text-[#2D6A4F]/80">
+                  {product ? "Update your product details" : "List a new agricultural product"}
+                </p>
+              </div>
+            </div>
 
-          <button onClick={onClose}>
-            <i className="ri-close-line text-2xl" />
-          </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 hover:text-[#1B4332] hover:bg-green-100/60 transition-colors cursor-pointer"
+            >
+              <i className="ri-close-line text-2xl" />
+            </button>
+          </div>
+
+          <div className="p-6 space-y-8">
+            <ProductImageUploader images={form.images} onChange={handleImages} />
+
+            <ProductForm form={form} onChange={handleChange} />
+          </div>
         </div>
 
-        <div className="p-6 space-y-8">
-          <ProductImageUploader images={form.images} onChange={handleImages} />
-
-          <ProductForm form={form} onChange={handleChange} />
-        </div>
-
-        <div className="sticky bottom-0 bg-white border-t-2 border-t-gray-500 px-6 py-4 flex justify-end gap-3">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border">
+        <div
+          className="sticky bottom-0 bg-white border-t px-6 py-4 flex justify-end gap-3 md:rounded-b-2xl"
+          style={{ borderColor: "var(--agri-border)" }}
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 transition-colors cursor-pointer"
+          >
             Cancel
           </button>
 
           <button
-            disabled={saving}
+            type="button"
+            disabled={saving || !isValid}
             onClick={handleSubmit}
-            className="px-5 py-2.5 rounded-xl bg-[#2D6A4F] text-white"
+            className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
+              saving || !isValid
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-[#2D6A4F] hover:bg-[#1B4332] text-white cursor-pointer shadow-sm"
+            }`}
           >
             {saving ? "Saving..." : product ? "Save Changes" : "Create Product"}
           </button>

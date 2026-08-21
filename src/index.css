@@ -1,1 +1,46 @@
 @import "tailwindcss";
+
+/* ── AgriNet Global Base ── */
+:root {
+  --agri-bg:          #f0f7f2;   /* very soft sage green */
+  --agri-bg-card:     #f7faf8;   /* near-white with a green cast */
+  --agri-bg-surface:  #eaf4ee;   /* light mint for panels */
+  --agri-green-dark:  #1B4332;
+  --agri-green-mid:   #2D6A4F;
+  --agri-green-light: #52b788;
+  --agri-border:      #d4e8da;   /* soft green border */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--agri-bg);
+  color: #1a2e1f;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle green-tinted scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #e8f5ec;
+}
+::-webkit-scrollbar-thumb {
+  background: #95c9a8;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #52b788;
+}

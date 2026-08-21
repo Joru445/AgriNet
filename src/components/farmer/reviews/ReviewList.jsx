@@ -12,7 +12,12 @@ export default function ReviewList({ reviews }) {
   return (
     <div className="space-y-4">
       {reviews.map((review) => (
-        <ReviewCard key={review.id} review={review} />
+        <div
+          key={review.id}
+          className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs transition-all hover:shadow-md"
+        >
+          <ReviewCard review={review} />
+        </div>
       ))}
     </div>
   );

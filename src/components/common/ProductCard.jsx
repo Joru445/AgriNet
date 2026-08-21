@@ -61,9 +61,20 @@ export default function ProductCard({
               />
 
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold">
-                  {product.farmer?.fullname}
-                </p>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <p className="truncate font-semibold text-gray-900">
+                    {product.farmer?.fullname}
+                  </p>
+                  {product.farmer?.verified && (
+                    <span
+                      title="Verified Farmer"
+                      aria-label="Verified Farmer"
+                      className="inline-flex shrink-0 items-center text-[#2D6A4F] text-sm"
+                    >
+                      <i className="ri-verified-badge-fill" />
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 

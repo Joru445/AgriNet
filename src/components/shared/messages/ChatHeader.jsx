@@ -5,18 +5,32 @@ export default function ChatHeader({ user }) {
   if (!user) return null;
 
   return (
-    <header className="w-full h-18 absolute border-b border-gray-200 bg-white px-6 flex items-center justify-between">
+    <header
+      className="w-full h-18 absolute border-b px-6 flex items-center justify-between shadow-sm"
+      style={{ backgroundColor: 'rgba(247,250,248,0.97)', borderColor: 'var(--agri-border)', backdropFilter: 'blur(8px)' }}
+    >
       <div className="flex items-center gap-3">
         <BackButton className="flex sm:hidden" />
 
         <Avatar src={user.profilePicture} name={user.fullname} />
 
-        <div>
-          <h3 className="font-semibold text-gray-900">
-            {user.fullname}
-          </h3>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className="font-semibold text-gray-900 truncate">
+              {user.fullname}
+            </h3>
+            {user.verified && (
+              <span
+                title="Verified Farmer"
+                aria-label="Verified Farmer"
+                className="inline-flex shrink-0 items-center text-[#2D6A4F] text-base"
+              >
+                <i className="ri-verified-badge-fill" />
+              </span>
+            )}
+          </div>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 truncate">
             @{user.username}
           </p>
         </div>

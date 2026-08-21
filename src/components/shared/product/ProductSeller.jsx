@@ -15,8 +15,21 @@ export default function ProductSeller({ farmer, isOwner }) {
       <div className="flex items-center gap-4">
         <Avatar src={farmer.profilePicture} name={farmer.fullname} />
 
-        <div className="flex-1">
-          <h3 className="font-semibold text-lg">{farmer.fullname}</h3>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className="font-semibold text-lg text-gray-900 truncate">
+              {farmer.fullname}
+            </h3>
+            {farmer.verified && (
+              <span
+                title="Verified Farmer"
+                aria-label="Verified Farmer"
+                className="inline-flex shrink-0 items-center text-[#2D6A4F] text-base"
+              >
+                <i className="ri-verified-badge-fill" />
+              </span>
+            )}
+          </div>
 
           <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
             <span>

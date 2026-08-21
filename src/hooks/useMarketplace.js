@@ -10,9 +10,9 @@ const PRODUCTS_PER_PAGE = 12;
 const DEFAULT_FILTERS = {
   search: "",
   category: "All",
-  distance: 1,
+  distance: 10,
   minPrice: 0,
-  maxPrice: 500,
+  maxPrice: 0,
   rating: 0,
   sort: "newest",
 };
@@ -31,7 +31,11 @@ export default function useMarketplace() {
     () => ({
       search: searchParams.get("search") ?? DEFAULT_FILTERS.search,
       category: searchParams.get("category") ?? DEFAULT_FILTERS.category,
-      distance: Number(searchParams.get("distance") ?? DEFAULT_FILTERS.distance),
+      distance: Number(
+        searchParams.get("distance") ??
+          localStorage.getItem("agri_consumer_distance") ??
+          DEFAULT_FILTERS.distance,
+      ),
       minPrice: Number(searchParams.get("minPrice") ?? DEFAULT_FILTERS.minPrice),
       maxPrice: Number(searchParams.get("maxPrice") ?? DEFAULT_FILTERS.maxPrice),
       rating: Number(searchParams.get("rating") ?? DEFAULT_FILTERS.rating),
@@ -95,28 +99,41 @@ export default function useMarketplace() {
     let data = [...marketplaceProducts];
 
     if (filters.search.trim()) {
-      const keyword = filters.search.toLowerCase();
+      const keyword = filters.search.trim().toLowerCase();
       data = data.filter(
         (product) =>
           product.name?.toLowerCase().includes(keyword) ||
           product.category?.toLowerCase().includes(keyword) ||
           product.farmer?.fullname?.toLowerCase().includes(keyword) ||
+          product.farmer?.username?.toLowerCase().includes(keyword) ||
           product.farmer?.farmName?.toLowerCase().includes(keyword),
       );
     }
 
-    if (filters.category !== "All") {
-      data = data.filter((product) => product.category === filters.category);
+    if (filters.category && filters.category !== "All") {
+      data = data.filter(
+        (product) =>
+          product.category?.toLowerCase() === filters.category.toLowerCase(),
+      );
     }
 
-    data = data.filter(
-      (product) =>
-        Number(product.price) >= filters.minPrice &&
-        Number(product.price) <= filters.maxPrice &&
-        (!userLocation ||
-          (product.distance != null && product.distance <= filters.distance)) &&
-        Number(product.productRating ?? 0) >= filters.rating,
-    );
+    data = data.filter((product) => {
+      const price = Number(product.price ?? 0);
+      const rating = Number(product.productRating ?? 0);
+      const matchesMinPrice =
+        filters.minPrice > 0 ? price >= filters.minPrice : true;
+      const matchesMaxPrice =
+        filters.maxPrice > 0 ? price <= filters.maxPrice : true;
+      const matchesDistance =
+        !userLocation ||
+        product.distance == null ||
+        product.distance <= filters.distance;
+      const matchesRating = rating >= filters.rating;
+
+      return (
+        matchesMinPrice && matchesMaxPrice && matchesDistance && matchesRating
+      );
+    });
 
     switch (filters.sort) {
       case "price-low":
@@ -147,9 +164,13 @@ export default function useMarketplace() {
     const params = new URLSearchParams(searchParams);
     const defaultValue = DEFAULT_FILTERS[key];
 
+    if (key === "distance") {
+      localStorage.setItem("agri_consumer_distance", String(value));
+    }
+
     if (key === "search") {
       value ? params.set(key, value) : params.delete(key);
-    } else if (key === "rating") {
+    } else if (key === "rating" || key === "minPrice" || key === "maxPrice") {
       Number(value) > 0 ? params.set(key, value) : params.delete(key);
     } else if (value !== defaultValue && Number(value) !== defaultValue) {
       params.set(key, value);
@@ -175,7 +196,10 @@ export default function useMarketplace() {
     totalProducts: filteredProducts.length,
     filters,
     updateFilter,
-    resetFilters: () => setSearchParams({}),
+    resetFilters: () => {
+      localStorage.removeItem("agri_consumer_distance");
+      setSearchParams({});
+    },
     page,
     setPage,
     totalPages,

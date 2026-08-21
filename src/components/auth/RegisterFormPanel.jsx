@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 import logo from "../../assets/favicon.ico";
+import landscapeBg from "../../assets/img/landscape.jpg";
 
 import AccountStep from "./AccountStep";
 import PasswordStep from "./PasswordStep";
@@ -17,31 +18,48 @@ export default function RegisterForm({
   submit,
 }) {
   return (
-    <div className="flex-1 h-screen min-h-0 overflow-y-auto bg-white scrollbar-none">
-      <div className="min-h-full flex items-center justify-center p-6 md:p-12">
-        <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <Link to="/" className="flex items-center gap-2 mb-8 lg:hidden">
-            <img
-              src={logo}
-              alt="AgriNet Logo"
-              className="h-8 w-8 object-contain"
-            />
+    <div
+      className="flex-1 relative h-screen min-h-0 overflow-y-auto scrollbar-none"
+      style={{ backgroundColor: 'var(--agri-bg-surface)' }}
+    >
+      {/* Mobile-only agricultural landscape background */}
+      <div className="fixed inset-0 lg:hidden pointer-events-none overflow-hidden">
+        <img
+          src={landscapeBg}
+          alt="Agricultural background"
+          className="w-full h-full object-cover object-center scale-105 blur-[1.5px]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a2e1a]/85 via-[#1B4332]/75 to-[#2D6A4F]/65" />
+      </div>
 
-            <span className="font-bold text-[#1B4332]">AgriNet</span>
-          </Link>
+      <div className="relative z-10 min-h-full flex items-center justify-center p-3 sm:p-6 md:p-12">
+        <div className="w-full max-w-md bg-white/90 backdrop-blur-md border border-white/60 shadow-2xl rounded-2xl p-5 sm:p-8 md:p-10 lg:bg-white lg:border-transparent lg:shadow-xl lg:backdrop-blur-none my-auto">
+          {/* Mobile Logo */}
+          <div className="border-b-2 border-[#1B4332]/20 pb-3 mb-3 sm:pb-4 sm:mb-6 lg:hidden">
+            <Link className="flex items-center gap-2 no-underline hover:no-underline" to="/">
+              <img
+                src={logo}
+                alt="AgriNet Logo"
+                className="h-7 w-7 sm:h-8 sm:w-8 object-contain"
+              />
+
+              <span className="font-bold text-[#1B4332] text-base sm:text-lg">
+                AgriNet <span className="font-light">Lucena</span>
+              </span>
+            </Link>
+          </div>
 
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-[#1B4332]">
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332]">
               Create Your Account
             </h1>
 
-            <p className="text-gray-500 text-sm mt-1">Join AgriNet today.</p>
+            <p className="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1">Join AgriNet today.</p>
           </div>
 
           {/* Step Indicator */}
-          <div className="flex items-center mb-8">
+          <div className="flex items-center mb-4 sm:mb-6">
             {[1, 2, 3].map((number) => (
               <div
                 key={number}
@@ -49,9 +67,9 @@ export default function RegisterForm({
               >
                 <div
                   className={`
-                    h-7 w-7 shrink-0 rounded-full
+                    h-6 w-6 sm:h-7 sm:w-7 shrink-0 rounded-full
                     flex items-center justify-center
-                    text-sm font-semibold
+                    text-xs sm:text-sm font-semibold
                     transition-colors
                     ${
                       step >= number
@@ -107,7 +125,7 @@ export default function RegisterForm({
           )}
 
           {/* Login */}
-          <p className="text-center text-sm text-gray-500 mt-8">
+          <p className="text-center text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6">
             Already have an account?{" "}
             <Link
               to="/login"
@@ -118,7 +136,7 @@ export default function RegisterForm({
           </p>
 
           {/* Back Home */}
-          <p className="text-center text-xs text-gray-400 mt-4">
+          <p className="text-center text-xs text-gray-500 mt-2 sm:mt-4">
             <Link
               to="/"
               className="inline-flex items-center justify-center gap-1 hover:text-[#2D6A4F]"

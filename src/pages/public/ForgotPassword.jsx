@@ -5,6 +5,7 @@ import { forgotPassword } from "../../services/forgot-password.service";
 
 import { showToast } from "../../utils/toast";
 import logo from "../../assets/favicon.ico";
+import landscapeBg from "../../assets/img/landscape.jpg";
 import SidePanel from "../../components/auth/SidePanel";
 
 export default function ForgotPassword() {
@@ -54,29 +55,44 @@ export default function ForgotPassword() {
     <div className="min-h-screen flex">
       <SidePanel />
 
-      <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-white">
-        <div className="w-full max-w-md pt-6">
-          <Link className="flex items-center gap-2 mb-8 lg:hidden" to="/">
-            <img
-              src={logo}
-              alt="AgriNet Logo"
-              className="h-8 w-8 object-contain"
-            />
-            <span className="font-bold text-[#1B4332] text-base">
-              AgriNet Lucena
-            </span>
-          </Link>
+      <div
+        className="flex-1 relative flex items-center justify-center p-3 sm:p-6 md:p-12 min-h-screen overflow-y-auto"
+        style={{ backgroundColor: 'var(--agri-bg-surface)' }}
+      >
+        {/* Mobile-only agricultural landscape background */}
+        <div className="absolute inset-0 lg:hidden pointer-events-none overflow-hidden">
+          <img
+            src={landscapeBg}
+            alt="Agricultural background"
+            className="w-full h-full object-cover object-center scale-105 blur-[1.5px]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0a2e1a]/85 via-[#1B4332]/75 to-[#2D6A4F]/65" />
+        </div>
 
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-[#1B4332]">
+        <div className="relative z-10 w-full max-w-md bg-white/90 backdrop-blur-md border border-white/60 shadow-2xl rounded-2xl p-5 sm:p-8 md:p-10 lg:bg-white lg:border-transparent lg:shadow-xl lg:backdrop-blur-none my-auto">
+          <div className="border-b-2 border-[#1B4332]/20 pb-3 mb-4 sm:pb-4 sm:mb-6 lg:hidden">
+            <Link className="flex items-center gap-2 no-underline hover:no-underline" to="/">
+              <img
+                src={logo}
+                alt="AgriNet Logo"
+                className="h-7 w-7 sm:h-8 sm:w-8 object-contain"
+              />
+              <span className="font-bold text-[#1B4332] text-base sm:text-lg">
+                AgriNet <span className="font-light">Lucena</span>
+              </span>
+            </Link>
+          </div>
+
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332]">
               Reset your password!
             </h1>
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1">
               We will send a reset link to your email address.
             </p>
           </div>
 
-          <form onSubmit={handleResetPassword} className="space-y-4">
+          <form onSubmit={handleResetPassword} className="space-y-3 sm:space-y-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">
                 Email Address
@@ -107,14 +123,14 @@ export default function ForgotPassword() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold rounded-full transition-all duration-200 text-sm flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-70"
+              className="w-full py-2.5 sm:py-3 bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold rounded-full transition-all duration-200 text-sm flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-70 cursor-pointer"
             >
               <i className="ri-login-box-line"></i>
               {loading ? "Sending..." : "Send Reset Link"}
             </button>
           </form>
 
-          <p className="text-center text-xs text-gray-400 mt-4">
+          <p className="text-center text-xs text-gray-500 mt-3 sm:mt-4">
             <Link
               to="/login"
               className="hover:text-[#2D6A4F] flex items-center justify-center gap-1"

@@ -1,10 +1,19 @@
+import { Link } from "react-router-dom";
 import ProductCard from "../../common/ProductCard";
 
 export default function RecentProducts({ products }) {
+  const displayedProducts = products.slice(0, 3);
+
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Recent Products</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Recent Products</h2>
+        <Link
+          to="/farmer/products"
+          className="text-sm font-semibold text-[#2D6A4F] hover:text-[#1B4332] transition hover:underline"
+        >
+          View all
+        </Link>
       </div>
 
       {products.length === 0 ? (
@@ -13,7 +22,7 @@ export default function RecentProducts({ products }) {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {products.map((product) => (
+          {displayedProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

@@ -7,33 +7,54 @@ import FarmerPopup from "./FarmerPopup";
 
 export default function NearbyMap({ userLocation, farmers, maxDistance }) {
   const startConversation = useStartConversation();
+  const lucenaCenter = { lat: 13.9411, lng: 121.6243 };
+
+  const hasValidUserLocation =
+    userLocation &&
+    typeof userLocation.lat === "number" &&
+    !isNaN(userLocation.lat) &&
+    typeof userLocation.lng === "number" &&
+    !isNaN(userLocation.lng);
+
+  const mapCenter = hasValidUserLocation ? userLocation : lucenaCenter;
 
   return (
     <Map
-      center={userLocation}
+      center={mapCenter}
+      zoom={13}
       radius={maxDistance * 1000}
       markers={[
-        ...(userLocation
+        ...(hasValidUserLocation
           ? [
               {
                 key: "user",
                 lat: userLocation.lat,
                 lng: userLocation.lng,
                 icon: userIcon,
-                popup: "You are here",
+                popup: "You are here (Consumer Location)",
               },
             ]
           : []),
 
-        ...farmers.map((f) => ({
-          key: f.uid,
-          lat: f.location.lat,
-          lng: f.location.lng,
-          icon: farmerIcon,
-          popup: (
-            <FarmerPopup farmer={f} onMessage={() => startConversation(f)} />
-          ),
-        })),
+        ...(farmers || [])
+          .filter(
+            (f) =>
+              f &&
+              f.location &&
+              typeof f.location.lat === "number" &&
+              !isNaN(f.location.lat) &&
+              typeof f.location.lng === "number" &&
+              !isNaN(f.location.lng),
+          )
+          .map((f) => ({
+            key: f.uid,
+            lat: f.location.lat,
+            lng: f.location.lng,
+            icon: farmerIcon,
+            popup: (
+              <FarmerPopup farmer={f} onMessage={() => startConversation(f)} />
+            ),
+          })),
       ]}
     />
   );

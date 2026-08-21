@@ -100,6 +100,7 @@ export async function createConversation(currentUser, otherUser) {
         username: currentUser.username,
         profilePicture: currentUser.profilePicture || "",
         role: currentUser.role,
+        verified: currentUser.verified === true,
       },
 
       [otherUser.uid]: {
@@ -107,6 +108,7 @@ export async function createConversation(currentUser, otherUser) {
         username: otherUser.username,
         profilePicture: otherUser.profilePicture || "",
         role: otherUser.role,
+        verified: otherUser.verified === true,
       },
     },
 
@@ -150,18 +152,22 @@ export function subscribeUserConversations(uid, callback) {
   const q = query(
     conversationsRef,
     where("participants", "array-contains", uid),
-    orderBy("lastMessageAt", "desc"),
   );
 
   return onSnapshot(
     q,
     (snapshot) => {
-      callback(
-        snapshot.docs.map((conversation) => ({
-          id: conversation.id,
-          ...conversation.data(),
-        })),
+      const docs = snapshot.docs.map((conversation) => ({
+        id: conversation.id,
+        ...conversation.data(),
+      }));
+
+      docs.sort(
+        (a, b) =>
+          (b.lastMessageAt?.seconds ?? 0) - (a.lastMessageAt?.seconds ?? 0),
       );
+
+      callback(docs);
     },
     (error) => {
       console.error("Conversation listener error:", error);

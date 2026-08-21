@@ -28,7 +28,9 @@ export default function ProductImageUploader({ images, onChange }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Product Images</h3>
+        <h3 className="font-semibold">
+          Product Images <span className="text-red-500">*</span>
+        </h3>
 
         <span className="text-xs text-gray-500">
           {images.length}/{MAX_IMAGES}

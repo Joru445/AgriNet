@@ -91,7 +91,9 @@ export default function LandingPage() {
             </Link>
           </div>
           <button
-            className="md:hidden w-10 h-10 flex items-center justify-center text-white focus:outline-none cursor-pointer"
+            className={`md:hidden w-10 h-10 flex items-center justify-center focus:outline-none cursor-pointer transition-colors duration-200 ${
+              isScrolled ? "text-gray-800 hover:text-[#2D6A4F]" : "text-white hover:text-green-200"
+            }`}
             aria-label="Open menu"
             onClick={() => setIsDrawerOpen(true)}
           >
@@ -102,53 +104,58 @@ export default function LandingPage() {
 
       <div
         className={`
-        md:hidden fixed bg-black/5 backdrop-blur-sm z-9998 inset-0 transition-all ease-in-out duration-300
-        ${isDrawerOpen ? "opacity-full pointer-events-auto" : "opacity-0 pointer-events-none"}
+        md:hidden fixed bg-black/40 backdrop-blur-xs z-9998 inset-0 transition-all ease-in-out duration-300
+        ${isDrawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
       `}
+        onClick={() => setIsDrawerOpen(false)}
       ></div>
 
       <div
         className={`
-        md:hidden fixed flex flex-col justify-between p-5 top-0 right-0 w-[70%] max-width:[260px] h-screen bg-[#1B4332] text-white z-9999 shadow-sm transition-all ease-in-out duration-300
+        md:hidden fixed flex flex-col justify-between p-4 sm:p-5 top-0 right-0 w-[78%] max-w-[280px] h-[100dvh] max-h-screen bg-[#1B4332] text-white z-9999 shadow-2xl transition-all ease-in-out duration-300 overflow-y-auto
         ${isDrawerOpen ? "visible translate-x-0" : "invisible translate-x-full"}
       `}
       >
-        <div>
-          <div className="flex items-center justify-end border-b border-white/10 pb-4 mb-5">
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex items-center justify-end border-b border-white/10 pb-3 mb-3">
             <button
               onClick={() => setIsDrawerOpen(false)}
-              className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white focus:outline-none cursor-pointer"
+              className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white focus:outline-none cursor-pointer rounded-lg hover:bg-white/10 transition-colors"
               aria-label="Close menu"
             >
               <i className="ri-close-line text-2xl"></i>
             </button>
           </div>
 
-          <nav className="flex flex-col gap-3">
+          <nav className="flex flex-col gap-1.5 sm:gap-2 overflow-y-auto">
             <a
               href="#about"
-              className="mobile-drawer-link text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 px-4 py-2.5 rounded-xl transition-colors flex items-center gap-3 whitespace-nowrap"
+              onClick={() => setIsDrawerOpen(false)}
+              className="mobile-drawer-link text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 px-3.5 py-2 rounded-xl transition-colors flex items-center gap-3 whitespace-nowrap"
             >
               <i className="ri-information-line text-green-300 text-lg"></i>{" "}
               About
             </a>
             <a
               href="#how-it-works"
-              className="mobile-drawer-link text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 px-4 py-2.5 rounded-xl transition-colors flex items-center gap-3 whitespace-nowrap"
+              onClick={() => setIsDrawerOpen(false)}
+              className="mobile-drawer-link text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 px-3.5 py-2 rounded-xl transition-colors flex items-center gap-3 whitespace-nowrap"
             >
               <i className="ri-settings-4-line text-green-300 text-lg"></i> How
               It Works
             </a>
             <a
               href="#for-farmers"
-              className="mobile-drawer-link text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 px-4 py-2.5 rounded-xl transition-colors flex items-center gap-3 whitespace-nowrap"
+              onClick={() => setIsDrawerOpen(false)}
+              className="mobile-drawer-link text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 px-3.5 py-2 rounded-xl transition-colors flex items-center gap-3 whitespace-nowrap"
             >
               <i className="ri-plant-line text-green-300 text-lg"></i> For
               Farmers
             </a>
             <a
               href="#for-consumers"
-              className="mobile-drawer-link text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 px-4 py-2.5 rounded-xl transition-colors flex items-center gap-3 whitespace-nowrap"
+              onClick={() => setIsDrawerOpen(false)}
+              className="mobile-drawer-link text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 px-3.5 py-2 rounded-xl transition-colors flex items-center gap-3 whitespace-nowrap"
             >
               <i className="ri-shopping-basket-line text-green-300 text-lg"></i>{" "}
               For Consumers
@@ -156,16 +163,18 @@ export default function LandingPage() {
           </nav>
         </div>
 
-        <div className="flex flex-col gap-3 pt-5 border-t border-white/10">
+        <div className="shrink-0 flex flex-col gap-2.5 pt-3 mt-2 border-t border-white/10">
           <Link
-            className="mobile-drawer-link w-full text-center px-5 py-2.5 rounded-full text-xs font-semibold border-2 border-gray-300 text-gray-200 hover:bg-gray-200 hover:text-gray-900 transition-all duration-200 whitespace-nowrap"
+            className="mobile-drawer-link w-full text-center px-4 py-2.5 rounded-full text-xs font-semibold border-2 border-gray-300 text-gray-200 hover:bg-gray-200 hover:text-gray-900 transition-all duration-200 whitespace-nowrap"
             to="/login"
+            onClick={() => setIsDrawerOpen(false)}
           >
             Login
           </Link>
           <Link
-            className="mobile-drawer-link w-full text-center px-5 py-2.5 rounded-full text-xs font-semibold bg-[#2D6A4F] text-white hover:bg-[#1B4332] transition-all duration-200 whitespace-nowrap"
+            className="mobile-drawer-link w-full text-center px-4 py-2.5 rounded-full text-xs font-semibold bg-[#2D6A4F] text-white hover:bg-[#1B4332] transition-all duration-200 whitespace-nowrap shadow-sm"
             to="/register"
+            onClick={() => setIsDrawerOpen(false)}
           >
             Register
           </Link>
@@ -298,7 +307,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="for-farmers" className="py-20 md:py-28 bg-[#F8FAF9]">
+      <section id="for-farmers" className="py-20 md:py-28 bg-[#F8FAF9] border-y border-gray-200">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="text-center mb-16">
             <span className="inline-block text-[#2D6A4F] font-semibold text-sm uppercase tracking-widest mb-3">
@@ -309,7 +318,7 @@ export default function LandingPage() {
             </h2>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <div className="bg-white rounded-2xl p-8">
+            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 flex items-center justify-center bg-[#1B4332] rounded-xl">
                   <i className="ri-plant-line text-white text-xl"></i>
@@ -549,7 +558,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="bg-[#1B4332] text-white">
+      <footer
+        className="border-t text-gray-800"
+        style={{ backgroundColor: 'var(--agri-bg)', borderColor: 'var(--agri-border)' }}
+      >
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 flex justify-center">
           <div className="flex flex-col md:flex-row items-start justify-center gap-10 md:gap-16 lg:gap-24 w-full max-w-5xl">
             <div className="text-left flex-1 min-w-[220px] max-w-[280px]">
@@ -559,44 +571,44 @@ export default function LandingPage() {
                   className="h-10 w-10 object-contain"
                   src="./src/assets/img/logo.png"
                 />
-                <span className="font-bold text-lg">
+                <span className="font-bold text-lg text-[#1B4332]">
                   AgriNet <span className="font-light">Lucena</span>
                 </span>
               </div>
-              <p className="text-green-200/75 text-sm leading-relaxed mb-5">
+              <p className="text-gray-600 text-sm leading-relaxed mb-5">
                 Connecting farmers and consumers in Lucena City for a fairer,
                 fresher, and more sustainable agricultural trade.
               </p>
               <div className="flex gap-3">
                 <a
                   href="#"
-                  className="w-9 h-9 flex items-center justify-center bg-white/10 hover:bg-[#2D6A4F] rounded-full transition-colors duration-200"
+                  className="w-9 h-9 flex items-center justify-center bg-white border border-[#d4e8da] text-[#2D6A4F] hover:bg-[#2D6A4F] hover:text-white rounded-full transition-colors duration-200 shadow-xs"
                 >
                   <i className="ri-facebook-fill text-sm"></i>
                 </a>
                 <a
                   href="#"
-                  className="w-9 h-9 flex items-center justify-center bg-white/10 hover:bg-[#2D6A4F] rounded-full transition-colors duration-200"
+                  className="w-9 h-9 flex items-center justify-center bg-white border border-[#d4e8da] text-[#2D6A4F] hover:bg-[#2D6A4F] hover:text-white rounded-full transition-colors duration-200 shadow-xs"
                 >
                   <i className="ri-twitter-fill text-sm"></i>
                 </a>
                 <a
                   href="#"
-                  className="w-9 h-9 flex items-center justify-center bg-white/10 hover:bg-[#2D6A4F] rounded-full transition-colors duration-200"
+                  className="w-9 h-9 flex items-center justify-center bg-white border border-[#d4e8da] text-[#2D6A4F] hover:bg-[#2D6A4F] hover:text-white rounded-full transition-colors duration-200 shadow-xs"
                 >
                   <i className="ri-instagram-line text-sm"></i>
                 </a>
               </div>
             </div>
             <div className="text-left flex-1 min-w-[180px] max-w-[240px]">
-              <h4 className="font-bold text-sm uppercase tracking-widest text-green-300 mb-4">
+              <h4 className="font-bold text-sm uppercase tracking-widest text-[#1B4332] mb-4">
                 Quick Links
               </h4>
               <ul className="space-y-2">
                 <li>
                   <a
                     href="#about"
-                    className="text-green-200/75 hover:text-white text-sm transition-colors duration-200"
+                    className="text-gray-600 hover:text-[#2D6A4F] text-sm transition-colors duration-200"
                   >
                     About Us
                   </a>
@@ -604,7 +616,7 @@ export default function LandingPage() {
                 <li>
                   <a
                     href="#how-it-works"
-                    className="text-green-200/75 hover:text-white text-sm transition-colors duration-200"
+                    className="text-gray-600 hover:text-[#2D6A4F] text-sm transition-colors duration-200"
                   >
                     How It Works
                   </a>
@@ -612,7 +624,7 @@ export default function LandingPage() {
                 <li>
                   <a
                     href="/consumer/dashboard"
-                    className="text-green-200/75 hover:text-white text-sm transition-colors duration-200"
+                    className="text-gray-600 hover:text-[#2D6A4F] text-sm transition-colors duration-200"
                   >
                     Browse Products
                   </a>
@@ -620,7 +632,7 @@ export default function LandingPage() {
                 <li>
                   <a
                     href="/farmers/nearby"
-                    className="text-green-200/75 hover:text-white text-sm transition-colors duration-200"
+                    className="text-gray-600 hover:text-[#2D6A4F] text-sm transition-colors duration-200"
                   >
                     Find Farmers
                   </a>
@@ -628,7 +640,7 @@ export default function LandingPage() {
                 <li>
                   <a
                     href="#"
-                    className="text-green-200/75 hover:text-white text-sm transition-colors duration-200"
+                    className="text-gray-600 hover:text-[#2D6A4F] text-sm transition-colors duration-200"
                   >
                     Contact Us
                   </a>
@@ -636,13 +648,13 @@ export default function LandingPage() {
               </ul>
             </div>
             <div className="text-left flex-1 min-w-[180px] max-w-[240px]">
-              <h4 className="font-bold text-sm uppercase tracking-widest text-green-300 mb-4">
+              <h4 className="font-bold text-sm uppercase tracking-widest text-[#1B4332] mb-4">
                 For Users
               </h4>
               <ul className="space-y-2">
                 <li>
                   <a
-                    className="text-green-200/75 hover:text-white text-sm transition-colors duration-200"
+                    className="text-gray-600 hover:text-[#2D6A4F] text-sm transition-colors duration-200"
                     href="/register"
                     data-route
                   >
@@ -651,7 +663,7 @@ export default function LandingPage() {
                 </li>
                 <li>
                   <a
-                    className="text-green-200/75 hover:text-white text-sm transition-colors duration-200"
+                    className="text-gray-600 hover:text-[#2D6A4F] text-sm transition-colors duration-200"
                     href="/login"
                     data-route
                   >
@@ -660,7 +672,7 @@ export default function LandingPage() {
                 </li>
                 <li>
                   <a
-                    className="text-green-200/75 hover:text-white text-sm transition-colors duration-200"
+                    className="text-gray-600 hover:text-[#2D6A4F] text-sm transition-colors duration-200"
                     href="/"
                     data-route
                   >
@@ -671,9 +683,12 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-        <div className="border-t border-white/10">
+        <div
+          className="border-t"
+          style={{ backgroundColor: 'var(--agri-bg-surface)', borderColor: 'var(--agri-border)' }}
+        >
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex items-center justify-center text-center">
-            <p className="text-green-200/60 text-xs text-center">
+            <p className="text-gray-500 text-xs text-center">
               © 2026 AgriNet Lucena. All rights reserved.
             </p>
           </div>

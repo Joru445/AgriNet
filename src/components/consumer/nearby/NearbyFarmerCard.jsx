@@ -8,10 +8,21 @@ export default function NearbyFarmerCard({ farmer }) {
       <div className="flex items-center gap-4">
         <Avatar src={farmer.profilePicture} name={farmer.fullname} />
 
-        <div className="flex-1">
-          <h3 className="font-semibold text-gray-800">{farmer.fullname}</h3>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className="font-semibold text-gray-800 truncate">{farmer.fullname}</h3>
+            {farmer.verified && (
+              <span
+                title="Verified Farmer"
+                aria-label="Verified Farmer"
+                className="inline-flex shrink-0 items-center text-[#2D6A4F] text-sm"
+              >
+                <i className="ri-verified-badge-fill" />
+              </span>
+            )}
+          </div>
 
-          <p className="text-sm text-gray-500">@{farmer.username}</p>
+          <p className="text-sm text-gray-500 truncate">@{farmer.username}</p>
         </div>
       </div>
 
@@ -20,7 +31,7 @@ export default function NearbyFarmerCard({ farmer }) {
           <span className="text-gray-500">Distance</span>
 
           <span className="font-semibold text-[#2D6A4F]">
-            {farmer.distance.toFixed(1)} km
+            {farmer.distance != null ? `${farmer.distance.toFixed(1)} km` : "--"}
           </span>
         </div>
 

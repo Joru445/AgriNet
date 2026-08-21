@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export default function ProductGallery({ product }) {
   return <ProductGalleryImages key={product.id} product={product} />;
@@ -6,44 +6,97 @@ export default function ProductGallery({ product }) {
 
 function ProductGalleryImages({ product }) {
   const images = product.images ?? [];
-
   const [selected, setSelected] = useState(0);
-
-  const selectedImage = images[selected];
+  const scrollContainerRef = useRef(null);
 
   if (!images.length) {
     return (
-      <div className="aspect-square rounded-3xl border flex items-center justify-center text-gray-500">
+      <div className="aspect-square rounded-2xl md:rounded-3xl border border-gray-200 bg-white flex items-center justify-center text-gray-400 text-sm">
         No images available
       </div>
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <img
-        src={selectedImage?.url}
-        alt={product.name}
-        className="aspect-square w-full rounded-3xl border object-cover"
-      />
+  const handleScroll = (e) => {
+    const container = e.currentTarget;
+    const scrollLeft = container.scrollLeft;
+    const width = container.clientWidth;
+    if (width > 0) {
+      const newIndex = Math.round(scrollLeft / width);
+      if (newIndex !== selected && newIndex >= 0 && newIndex < images.length) {
+        setSelected(newIndex);
+      }
+    }
+  };
 
-      <div className="grid grid-cols-5 gap-3">
-        {images.map((image, index) => (
-          <button
-            key={image.publicId}
-            onClick={() => setSelected(index)}
-            className={`overflow-hidden rounded-xl border-2 ${
-              selected === index ? "border-[#2D6A4F]" : "border-transparent"
-            }`}
-          >
-            <img
-              src={image.url}
-              alt=""
-              className="aspect-square w-full object-cover"
-            />
-          </button>
-        ))}
+  const handleThumbnailClick = (index) => {
+    setSelected(index);
+    if (scrollContainerRef.current) {
+      const width = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollTo({
+        left: index * width,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-3 md:space-y-4">
+      {/* Main Image / Swipeable Carousel */}
+      <div className="relative aspect-square w-full rounded-2xl md:rounded-3xl border border-gray-200 bg-black/5 overflow-hidden shadow-xs">
+        {/* Horizontal scroll snap container */}
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none touch-pan-x"
+          style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
+        >
+          {images.map((image, index) => (
+            <div
+              key={image.publicId || index}
+              className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center bg-gray-50"
+            >
+              <img
+                src={image.url || image}
+                alt={`${product.name} ${index + 1}`}
+                className="w-full h-full object-cover select-none"
+                draggable={false}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Shopee-style bottom-right page indicator (e.g. 1/5) */}
+        {images.length > 1 && (
+          <div className="absolute bottom-3 right-3 z-10 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-xs text-white text-xs font-semibold tracking-wider select-none shadow-md pointer-events-none">
+            {selected + 1}/{images.length}
+          </div>
+        )}
       </div>
+
+      {/* Desktop/Tablet Thumbnail selector */}
+      {images.length > 1 && (
+        <div className="hidden md:grid grid-cols-5 gap-3">
+          {images.map((image, index) => (
+            <button
+              key={image.publicId || index}
+              type="button"
+              onClick={() => handleThumbnailClick(index)}
+              className={`overflow-hidden rounded-xl border-2 transition-all duration-200 aspect-square ${
+                selected === index
+                  ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 scale-[1.02]"
+                  : "border-transparent opacity-70 hover:opacity-100 hover:border-gray-300"
+              }`}
+            >
+              <img
+                src={image.url || image}
+                alt=""
+                className="aspect-square w-full h-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

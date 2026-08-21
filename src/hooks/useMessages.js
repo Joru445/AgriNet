@@ -276,14 +276,21 @@ export default function useMessages() {
             return;
           }
 
-          const otherUser = conversation.participantInfo?.[otherUid] || null;
+          let otherUser = conversation.participantInfo?.[otherUid] || {};
+          try {
+            const userProfile = await getUserProfile(otherUid);
+            if (userProfile) {
+              otherUser = { ...otherUser, ...userProfile };
+            }
+          } catch (_) {}
 
           setActiveConversation({
             ...conversation,
 
             otherUser: {
               uid: otherUid,
-              ...(otherUser || {}),
+              ...otherUser,
+              verified: otherUser.verified === true,
             },
           });
 

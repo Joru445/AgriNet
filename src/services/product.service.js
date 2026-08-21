@@ -106,15 +106,22 @@ export async function getMarketplaceProductsPage({ pageSize = 24, cursor } = {})
   const farmerMap = await getFarmersByIds(
     [...new Set(products.map((product) => product.farmerId).filter(Boolean))],
   );
-  const legacyProductIds = products
-    .filter((product) => !product.ratingSummary)
+
+  // Fetch live review summaries for products with no ratingSummary or with count === 0 (stale)
+  const staleProductIds = products
+    .filter((product) => !product.ratingSummary || product.ratingSummary.count === 0)
     .map((product) => product.id);
-  const legacyRatingMap = await getProductReviewSummaries(legacyProductIds);
+  const liveRatingMap = await getProductReviewSummaries(staleProductIds);
 
   return {
     products: products.map((product) => {
       const farmer = farmerMap.get(product.farmerId);
-      const rating = product.ratingSummary ?? legacyRatingMap.get(product.id) ?? {};
+
+      // Use live rating if available (for stale or missing ratingSummary)
+      const liveRating = liveRatingMap.get(product.id);
+      const rating = (liveRating && liveRating.count > 0)
+        ? liveRating
+        : (product.ratingSummary?.count > 0 ? product.ratingSummary : {});
 
       return {
         ...product,
@@ -127,6 +134,7 @@ export async function getMarketplaceProductsPage({ pageSize = 24, cursor } = {})
             farmName: farmer.farmName,
             profilePicture: farmer.profilePicture,
             location: farmer.location,
+            verified: farmer.verified === true,
           }
         : null,
 
@@ -141,19 +149,41 @@ export async function getMarketplaceProductsPage({ pageSize = 24, cursor } = {})
 
 async function getFarmersByIds(ids) {
   const farmers = new Map();
+  if (!ids || ids.length === 0) return farmers;
 
   for (let index = 0; index < ids.length; index += 30) {
     const batch = ids.slice(index, index + 30);
-    const snapshot = await getDocs(
-      query(collection(db, "farmers"), where(documentId(), "in", batch)),
-    );
+    try {
+      const snapshot = await getDocs(
+        query(collection(db, "farmers"), where(documentId(), "in", batch)),
+      );
 
-    snapshot.docs.forEach((farmerDoc) => {
-      farmers.set(farmerDoc.id, {
-        uid: farmerDoc.id,
-        ...farmerDoc.data(),
+      snapshot.docs.forEach((farmerDoc) => {
+        farmers.set(farmerDoc.id, {
+          uid: farmerDoc.id,
+          ...farmerDoc.data(),
+        });
       });
-    });
+    } catch (err) {
+      console.warn("Error fetching farmers batch:", err);
+    }
+
+    const missingIds = batch.filter((id) => !farmers.has(id));
+    if (missingIds.length > 0) {
+      try {
+        const userSnapshot = await getDocs(
+          query(collection(db, "users"), where(documentId(), "in", missingIds)),
+        );
+        userSnapshot.docs.forEach((userDoc) => {
+          farmers.set(userDoc.id, {
+            uid: userDoc.id,
+            ...userDoc.data(),
+          });
+        });
+      } catch (err) {
+        console.warn("Error fetching fallback users batch:", err);
+      }
+    }
   }
 
   return farmers;
