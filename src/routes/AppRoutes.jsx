@@ -7,6 +7,9 @@ import RoleRoute from "./RoleRoute";
 import PublicLayout from "../layouts/PublicLayout";
 import AppLayout from "../layouts/AppLayout";
 
+import SuspendedRoute from "./SuspendedRoute";
+import Suspended from "../pages/Suspended.jsx";
+
 import Landing from "../pages/public/Landing";
 import Login from "../pages/public/Login";
 import Register from "../pages/public/Register";
@@ -21,16 +24,18 @@ import Reviews from "../pages/farmer/Reviews";
 
 import AdminDashboard from "../pages/admin/Dashboard";
 import Users from "../pages/admin/Users";
-import Reports from "../pages/admin/Reports.jsx"
+import Reports from "../pages/admin/Reports.jsx";
 
 import ProductDetails from "../pages/shared/ProductDetails";
 import StoreProfile from "../pages/shared/StoreProfile";
 import Inquiries from "../pages/shared/Inquiries";
-import TransactionProof from "../pages/shared/TransactionProof"
-import TransactionReview from "../pages/shared/TransactionReview"
+import TransactionProof from "../pages/shared/TransactionProof";
+import TransactionReview from "../pages/shared/TransactionReview";
 import Messages from "../pages/shared/Messages";
 import Profile from "../pages/shared/Profile";
 import Notifications from "../pages/shared/Notifications";
+
+import NotFound from "../pages/NotFound";
 
 export default function AppRoutes() {
   return (
@@ -38,6 +43,10 @@ export default function AppRoutes() {
       {/* ROOT */}
 
       <Route path="/" element={<HomeRedirect />} />
+
+      <Route element={<SuspendedRoute />}>
+        <Route path="/suspended" element={<Suspended />} />
+      </Route>
 
       {/* PUBLIC */}
 
@@ -64,9 +73,15 @@ export default function AppRoutes() {
 
           <Route path="/inquiries" element={<Inquiries />} />
 
-          <Route path="/inquiries/:inquiryId/proof" element={<TransactionProof />} />
+          <Route
+            path="/inquiries/:inquiryId/proof"
+            element={<TransactionProof />}
+          />
 
-          <Route path="/inquiries/:inquiryId/review" element={<TransactionReview />} />
+          <Route
+            path="/inquiries/:inquiryId/review"
+            element={<TransactionReview />}
+          />
 
           <Route path="/messages" element={<Messages />} />
 
@@ -88,9 +103,15 @@ export default function AppRoutes() {
 
           <Route path="/farmer/inquiries" element={<Inquiries />} />
 
-          <Route path="/farmer/inquiries/:inquiryId/proof" element={<TransactionProof />} />
+          <Route
+            path="/farmer/inquiries/:inquiryId/proof"
+            element={<TransactionProof />}
+          />
 
-          <Route path="/farmer/inquiries/:inquiryId/review" element={<TransactionReview />} />
+          <Route
+            path="/farmer/inquiries/:inquiryId/review"
+            element={<TransactionReview />}
+          />
 
           <Route path="/farmer/reviews" element={<Reviews />} />
 
@@ -112,17 +133,25 @@ export default function AppRoutes() {
 
           <Route path="/admin/reports" element={<Reports />} />
 
-          <Route path="/admin/inquiries/:inquiryId/proof" element={<TransactionProof />} />
+          <Route
+            path="/admin/inquiries/:inquiryId/proof"
+            element={<TransactionProof />}
+          />
 
-          <Route path="/admin/inquiries/:inquiryId/review" element={<TransactionReview />} />
+          <Route
+            path="/admin/inquiries/:inquiryId/review"
+            element={<TransactionReview />}
+          />
 
           <Route path="/admin/messages" element={<Messages />} />
-          
+
           <Route path="/admin/me" element={<Profile />} />
 
           <Route path="/admin/notifications" element={<Notifications />} />
         </Route>
       </Route>
+
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

@@ -11,13 +11,12 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { auth } from "../firebase/auth";
 import { db } from "../firebase/firestore";
 
-import { getFarmerById } from "../services/farmer.service";
-
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [farmer, setFarmer] = useState(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -27,26 +26,30 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let unsubscribeProfile = null;
+    let unsubscribeFarmer = null;
 
     const unsubscribeAuth = onAuthStateChanged(
       auth,
       (firebaseUser) => {
-        // Clean up the previous user profile listener.
-        if (unsubscribeProfile) {
-          unsubscribeProfile();
-          unsubscribeProfile = null;
-        }
+        // Clean up previous listeners.
+        unsubscribeProfile?.();
+        unsubscribeFarmer?.();
 
-        // User logged out.
+        unsubscribeProfile = null;
+        unsubscribeFarmer = null;
+
         if (!firebaseUser) {
           setUser(null);
           setProfile(null);
+          setFarmer(null);
           setLoading(false);
           return;
         }
 
         setLoading(true);
         setUser(firebaseUser);
+        setProfile(null);
+        setFarmer(null);
 
         const userRef = doc(
           db,
@@ -54,55 +57,71 @@ export function AuthProvider({ children }) {
           firebaseUser.uid,
         );
 
-        // Listen to the user's profile in real time.
         unsubscribeProfile = onSnapshot(
           userRef,
-          async (snapshot) => {
-            try {
-              if (!snapshot.exists()) {
-                setProfile(null);
-                setLoading(false);
-                return;
-              }
+          (snapshot) => {
+            if (!snapshot.exists()) {
+              setProfile(null);
+              setFarmer(null);
+              setLoading(false);
+              return;
+            }
 
-              const userData = {
-                uid: snapshot.id,
-                ...snapshot.data(),
-              };
+            const userData = {
+              uid: snapshot.id,
+              ...snapshot.data(),
+            };
 
-              let combinedProfile = userData;
+            setProfile(userData);
 
-              // Load farmer-specific data.
-              if (userData.role === "farmer") {
-                const farmer = await getFarmerById(
-                  firebaseUser.uid,
+            // Only farmers need the farmer listener.
+            if (userData.role !== "farmer") {
+              setFarmer(null);
+              setLoading(false);
+              return;
+            }
+
+            const farmerRef = doc(
+              db,
+              "farmers",
+              firebaseUser.uid,
+            );
+
+            unsubscribeFarmer?.();
+
+            unsubscribeFarmer = onSnapshot(
+              farmerRef,
+              (farmerSnapshot) => {
+                setFarmer(
+                  farmerSnapshot.exists()
+                    ? {
+                        uid: farmerSnapshot.id,
+                        ...farmerSnapshot.data(),
+                      }
+                    : null,
                 );
 
-                combinedProfile = {
-                  ...userData,
-                  ...farmer,
-                };
-              }
+                setLoading(false);
+              },
+              (error) => {
+                console.error(
+                  "Failed to load farmer profile:",
+                  error,
+                );
 
-              setProfile(combinedProfile);
-              setLoading(false);
-            } catch (error) {
-              console.error(
-                "Failed to load user profile:",
-                error,
-              );
-
-              setProfile(null);
-              setLoading(false);
-            }
+                setFarmer(null);
+                setLoading(false);
+              },
+            );
           },
           (error) => {
             console.error(
-              "Failed to listen to user profile:",
+              "Failed to load user profile:",
               error,
             );
 
             setProfile(null);
+            setFarmer(null);
             setLoading(false);
           },
         );
@@ -112,20 +131,27 @@ export function AuthProvider({ children }) {
     return () => {
       unsubscribeAuth();
 
-      if (unsubscribeProfile) {
-        unsubscribeProfile();
-      }
+      unsubscribeProfile?.();
+      unsubscribeFarmer?.();
     };
   }, []);
+
+  const account = profile
+    ? {
+        ...profile,
+        ...(farmer ?? {}),
+      }
+    : null;
 
   return (
     <AuthContext.Provider
       value={{
         user,
         profile,
+        farmer,
+        account,
         loading,
 
-        // Useful for route protection and UI.
         suspended: profile?.status === "suspended",
 
         logout,
@@ -136,5 +162,4 @@ export function AuthProvider({ children }) {
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

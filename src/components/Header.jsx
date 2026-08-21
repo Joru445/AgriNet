@@ -3,11 +3,10 @@ import { Link, useLocation } from "react-router-dom";
 import BackButton from "./common/BackButton";
 import UserIdentity from "./common/UserIdentity";
 
-import { getRoleHome } from "../utils/routes";
+import { getMePath, getNotificationsPath } from "../utils/routes";
 
 export default function Header({ user, collapsed }) {
   const location = useLocation();
-  console.log(user);
 
   const tabRoutes = [
     "/home",
@@ -27,7 +26,9 @@ export default function Header({ user, collapsed }) {
     "/admin/messages",
     "/admin/me",
   ];
-  const roleAddress = getRoleHome(user.role);
+  
+  const notificationPath = getNotificationsPath(user.role);
+  const mePath = getMePath(user.role);
 
   const showBackButton = !tabRoutes.includes(location.pathname);
 
@@ -53,7 +54,7 @@ export default function Header({ user, collapsed }) {
 
       <div className="flex items-center gap-2">
         <Link
-          to={`${roleAddress}/notifications`}
+          to={notificationPath}
           className="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#2D6A4F]"
           aria-label="Notifications"
         >
@@ -63,7 +64,7 @@ export default function Header({ user, collapsed }) {
         </Link>
 
         <Link
-          to={`${roleAddress}/me`}
+          to={mePath}
           className="flex items-center gap-2 border-l border-gray-200 pl-2"
         >
           <UserIdentity user={user} showUsername={false} showRole={true} />

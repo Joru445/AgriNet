@@ -46,6 +46,38 @@ export function getProductPath(role) {
   }
 }
 
+export function getNotificationsPath(role) {
+  switch (role) {
+    case "admin":
+      return "/admin/notifications";
+
+    case "farmer":
+      return "/farmer/notifications";
+
+    case "consumer":
+      return "/notifications";
+
+    default:
+      return "/notifications";
+  }
+}
+
+export function getMePath(role) {
+  switch (role) {
+    case "admin":
+      return "/admin/me";
+
+    case "farmer":
+      return "/farmer/me";
+
+    case "consumer":
+      return "/me";
+
+    default:
+      return "/me";
+  }
+}
+
 export function getRoleHome(role) {
   switch (role) {
     case "admin":
