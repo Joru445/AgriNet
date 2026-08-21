@@ -67,14 +67,22 @@ export default function ProductForm({ form, onChange }) {
       <div>
         <label className="text-sm font-medium">Price</label>
 
-        <input
-          name="price"
-          type="number"
-          min="0"
-          value={form.price}
-          onChange={onChange}
-          className="mt-2 w-full border rounded-xl px-4 py-3"
-        />
+        <div className="relative mt-2">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold select-none text-base">
+            ₱
+          </span>
+
+          <input
+            name="price"
+            type="number"
+            min="0"
+            step="any"
+            placeholder="0.00"
+            value={form.price}
+            onChange={onChange}
+            className="w-full border rounded-xl pl-9 pr-4 py-3"
+          />
+        </div>
       </div>
 
       <div>

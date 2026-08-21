@@ -102,9 +102,12 @@ export default function MessageInput({
   const isMaxQuantity = hasStock && Number(quantity) >= stock;
 
   return (
-    <div className="absolute inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white p-3 md:bottom-16 lg:bottom-0">
+    <div
+      className="absolute inset-x-0 bottom-0 z-40 border-t p-3 md:bottom-16 lg:bottom-0"
+      style={{ backgroundColor: 'var(--agri-bg-card)', borderColor: 'var(--agri-border)' }}
+    >
       {inquiryProduct && (
-        <div className="mb-3 rounded-2xl border border-gray-200 bg-gray-50 p-3">
+        <div className="mb-3 rounded-2xl border p-3" style={{ backgroundColor: 'var(--agri-bg-surface)', borderColor: 'var(--agri-border)' }}>
           <div className="flex items-center gap-3">
             {inquiryProduct.images?.[0] && (
               <img
@@ -227,7 +230,7 @@ export default function MessageInput({
         </div>
       )}
 
-      <div className="flex w-full items-end rounded-3xl border border-gray-200">
+      <div className="flex w-full items-end rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--agri-border)', backgroundColor: 'var(--agri-bg-surface)' }}>
         <button
           type="button"
           className="h-12 w-12 shrink-0 rounded-full text-[#2D6A4F] transition hover:text-[#1B4332]"

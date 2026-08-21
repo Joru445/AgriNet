@@ -15,9 +15,17 @@ export default function Map({
   markers = [],
   radius,
   children,
+  zoom = 13,
   className = "w-full h-full border border-gray-200",
 }) {
-  const mapCenter = center ?? DEFAULT_CENTER;
+  const isValidCenter =
+    center &&
+    typeof center.lat === "number" &&
+    !isNaN(center.lat) &&
+    typeof center.lng === "number" &&
+    !isNaN(center.lng);
+
+  const mapCenter = isValidCenter ? center : DEFAULT_CENTER;
 
   const wrapperRef = useRef(null);
 
@@ -60,7 +68,7 @@ export default function Map({
     >
       <MapContainer
         center={[mapCenter.lat, mapCenter.lng]}
-        zoom={15}
+        zoom={zoom}
         className={className}
       >
         <TileLayer
@@ -70,7 +78,7 @@ export default function Map({
 
         <ResizeMap fullscreen={fullscreen} />
 
-        <Recenter center={mapCenter} />
+        <Recenter center={mapCenter} zoom={zoom} />
 
         {radius && (
           <Circle
@@ -84,17 +92,26 @@ export default function Map({
           />
         )}
 
-        {markers.map((marker) => (
-          <Marker
-            key={marker.key}
-            position={[marker.lat, marker.lng]}
-            icon={marker.icon}
-            draggable={marker.draggable}
-            eventHandlers={marker.eventHandlers}
-          >
-            {marker.popup && <Popup>{marker.popup}</Popup>}
-          </Marker>
-        ))}
+        {markers
+          .filter(
+            (marker) =>
+              marker &&
+              typeof marker.lat === "number" &&
+              !isNaN(marker.lat) &&
+              typeof marker.lng === "number" &&
+              !isNaN(marker.lng),
+          )
+          .map((marker) => (
+            <Marker
+              key={marker.key}
+              position={[marker.lat, marker.lng]}
+              icon={marker.icon}
+              draggable={marker.draggable}
+              eventHandlers={marker.eventHandlers}
+            >
+              {marker.popup && <Popup>{marker.popup}</Popup>}
+            </Marker>
+          ))}
 
         {children}
       </MapContainer>

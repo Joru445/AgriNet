@@ -28,16 +28,16 @@ export default function FiltersSidebar({
 
           <input
             type="range"
-            min={0.1}
+            min={0.5}
             max={10}
-            step={0.1}
+            step={0.5}
             value={filters.distance}
             onChange={(e) => onChange("distance", Number(e.target.value))}
             className="w-full accent-[#2D6A4F]"
           />
 
           <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>0.1 km</span>
+            <span>0.5 km</span>
             <span>10 km</span>
           </div>
         </div>
@@ -48,18 +48,20 @@ export default function FiltersSidebar({
           <div className="flex gap-2">
             <input
               type="number"
-              value={filters.minPrice}
-              onChange={(e) => onChange("minPrice", Number(e.target.value))}
-              className="w-full border rounded-lg px-3 py-2"
-              placeholder="Min"
+              min="0"
+              value={filters.minPrice > 0 ? filters.minPrice : ""}
+              onChange={(e) => onChange("minPrice", Math.max(0, Number(e.target.value) || 0))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]"
+              placeholder="0 (Min)"
             />
 
             <input
               type="number"
-              value={filters.maxPrice}
-              onChange={(e) => onChange("maxPrice", Number(e.target.value))}
-              className="w-full border rounded-lg px-3 py-2"
-              placeholder="Max"
+              min="0"
+              value={filters.maxPrice > 0 ? filters.maxPrice : ""}
+              onChange={(e) => onChange("maxPrice", Math.max(0, Number(e.target.value) || 0))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]"
+              placeholder="0 (Max)"
             />
           </div>
         </div>
@@ -71,7 +73,9 @@ export default function FiltersSidebar({
             {[1, 2, 3, 4, 5].map((rating) => (
               <button
                 key={rating}
-                onClick={() => onChange("rating", rating)}
+                onClick={() =>
+                  onChange("rating", filters.rating >= rating ? rating - 1 : rating)
+                }
                 className={`w-9 h-9 rounded-lg border flex items-center justify-center transition ${
                   filters.rating >= rating
                     ? "bg-amber-50 border-amber-400 text-amber-500"
@@ -111,16 +115,16 @@ export default function FiltersSidebar({
 
           <input
             type="range"
-            min={0.1}
+            min={0.5}
             max={10}
-            step={0.1}
+            step={0.5}
             value={filters.distance}
             onChange={(e) => onChange("distance", Number(e.target.value))}
             className="w-full accent-[#2D6A4F]"
           />
 
           <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>0.1 km</span>
+            <span>0.5 km</span>
             <span>10 km</span>
           </div>
         </div>
@@ -131,18 +135,20 @@ export default function FiltersSidebar({
           <div className="flex gap-2">
             <input
               type="number"
-              value={filters.minPrice}
-              onChange={(e) => onChange("minPrice", Number(e.target.value))}
-              className="w-full border rounded-lg px-3 py-2"
-              placeholder="Min"
+              min="0"
+              value={filters.minPrice > 0 ? filters.minPrice : ""}
+              onChange={(e) => onChange("minPrice", Math.max(0, Number(e.target.value) || 0))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]"
+              placeholder="0 (Min)"
             />
 
             <input
               type="number"
-              value={filters.maxPrice}
-              onChange={(e) => onChange("maxPrice", Number(e.target.value))}
-              className="w-full border rounded-lg px-3 py-2"
-              placeholder="Max"
+              min="0"
+              value={filters.maxPrice > 0 ? filters.maxPrice : ""}
+              onChange={(e) => onChange("maxPrice", Math.max(0, Number(e.target.value) || 0))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]"
+              placeholder="0 (Max)"
             />
           </div>
         </div>
@@ -154,7 +160,9 @@ export default function FiltersSidebar({
             {[1, 2, 3, 4, 5].map((rating) => (
               <button
                 key={rating}
-                onClick={() => onChange("rating", rating)}
+                onClick={() =>
+                  onChange("rating", filters.rating >= rating ? rating - 1 : rating)
+                }
                 className={`w-9 h-9 rounded-lg border flex items-center justify-center transition ${
                   filters.rating >= rating
                     ? "bg-amber-50 border-amber-400 text-amber-500"

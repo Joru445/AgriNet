@@ -7,8 +7,13 @@ import { showToast } from "../utils/toast";
 import logo from "../assets/favicon.ico";
 import UserIdentity from "./common/UserIdentity";
 
+import { useUnreadMessages } from "../context/UnreadMessagesContext";
+import { useUnreadInquiries } from "../context/UnreadInquiriesContext";
+
 export default function Sidebar({ collapsed, setCollapsed }) {
   const { profile, logout } = useAuth();
+  const { unreadCount, showPopup } = useUnreadMessages();
+  const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -29,13 +34,13 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside
-      className={`hidden lg:flex fixed top-0 left-0 h-full bg-[#1B4332] flex-col z-40 overflow-hidden transition-all duration-300 ease-in-out ${
+      className={`hidden lg:flex fixed top-0 left-0 h-full bg-[#1B4332] flex-col z-40 transition-all duration-300 ease-in-out ${
         collapsed ? "w-20" : "w-64"
       }`}
     >
       {/* Logo */}
 
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
+      <div className="flex h-16 shrink-0 items-center gap-3 px-4 border-b border-white/10">
         <img
           src={logo}
           alt="Logo"
@@ -43,7 +48,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         />
 
         <span
-          className={`font-bold text-white text-sm whitespace-nowrap transition-all duration-300 ease-in-out ${
+          className={`font-bold text-white text-xl whitespace-nowrap transition-all duration-300 ease-in-out ${
             collapsed ? "hidden" : "block"
           }`}
         >
@@ -60,27 +65,73 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       {/* Navigation */}
 
       <nav className="flex-1 py-4">
-        {items.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end
-            title={collapsed ? item.label : undefined}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 mx-2 rounded-xl mb-1 transition-all ${
-                collapsed ? "justify-center" : "justify-start"
-              } ${
-                isActive
-                  ? "bg-white/20 text-white font-semibold"
-                  : "text-green-200/75 hover:bg-white/10 hover:text-white"
-              }`
-            }
-          >
-            <i className={`${item.icon} text-base`} />
+        {items.map((item) => {
+          const isMessages = item.to.includes("messages");
+          const isInquiries = item.to.includes("inquiries");
 
-            <span className={collapsed ? "hidden" : "block"}>{item.label}</span>
-          </NavLink>
-        ))}
+          return (
+            <div key={item.to} className="relative">
+              <NavLink
+                to={item.to}
+                end
+                title={collapsed ? item.label : undefined}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 mx-2 rounded-xl mb-1 transition-all ${
+                    collapsed ? "justify-center" : "justify-start"
+                  } ${
+                    isActive
+                      ? "bg-white/20 text-white font-semibold"
+                      : "text-green-200/75 hover:bg-white/10 hover:text-white"
+                  }`
+                }
+              >
+                <div className="relative flex items-center justify-center">
+                  <i className={`${item.icon} text-base`} />
+                  {isMessages && unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[#1B4332]" />
+                  )}
+                  {isInquiries && inquiryActionCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[#1B4332]" />
+                  )}
+                </div>
+
+                <span className={collapsed ? "hidden" : "block"}>{item.label}</span>
+              </NavLink>
+
+              {/* Speech bubble — messages */}
+              {isMessages && showPopup && (
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 z-50 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-left-2">
+                  <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#1B4332] shadow-2xl shadow-black/20 border border-gray-100 ring-1 ring-black/5">
+                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rotate-45 border-l border-b border-gray-100" />
+                    <span className="relative z-10 flex items-center gap-2">
+                      <span className="flex h-2.5 w-2.5 relative">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                      </span>
+                      <span>New messages</span>
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Speech bubble — inquiries */}
+              {isInquiries && showInquiryPopup && (
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 z-50 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-left-2">
+                  <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#1B4332] shadow-2xl shadow-black/20 border border-gray-100 ring-1 ring-black/5">
+                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rotate-45 border-l border-b border-gray-100" />
+                    <span className="relative z-10 flex items-center gap-2">
+                      <span className="flex h-2.5 w-2.5 relative">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                      </span>
+                      <span>{inquiryPopupMessage}</span>
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </nav>
 
       {/* Bottom Actions */}

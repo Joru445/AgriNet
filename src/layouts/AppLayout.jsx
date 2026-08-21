@@ -4,7 +4,6 @@ import { Outlet } from "react-router-dom";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import BottomTab from "../components/BottomTab";
-
 import { useAuth } from "../context/AuthContext";
 
 export default function AppLayout() {
@@ -22,7 +21,7 @@ export default function AppLayout() {
       >
         <Header user={profile} collapsed={collapsed} />
 
-        <div className="bg-[#FAFAFA] flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--agri-bg)' }}>
           <Outlet />
         </div>
 

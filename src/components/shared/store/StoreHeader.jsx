@@ -97,9 +97,20 @@ export default function StoreHeader({
 
               {/* Profile Details */}
               <div className="min-w-0 pb-3 pt-3 sm:pb-5 sm:pl-2">
-                <h1 className="truncate text-xl font-bold text-gray-900 sm:text-3xl">
-                  {farmer.fullname}
-                </h1>
+                <div className="flex items-center gap-2 min-w-0">
+                  <h1 className="truncate text-xl font-bold text-gray-900 sm:text-3xl">
+                    {farmer.fullname}
+                  </h1>
+                  {farmer.verified && (
+                    <span
+                      title="Verified Farmer"
+                      aria-label="Verified Farmer"
+                      className="inline-flex shrink-0 items-center text-[#2D6A4F] text-xl sm:text-2xl"
+                    >
+                      <i className="ri-verified-badge-fill" />
+                    </span>
+                  )}
+                </div>
 
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-600 sm:mt-4 sm:gap-5">
                   <span className="flex items-center gap-1 whitespace-nowrap">

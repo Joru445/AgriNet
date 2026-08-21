@@ -32,15 +32,31 @@ export default function useProductReviews(productId) {
 
         const enrichedReviews = await Promise.all(
           productReviews.map(async (review) => {
-            const [reviewer, inquiry] = await Promise.all([
-              review.reviewerId ? getUserProfile(review.reviewerId) : null,
+            let reviewer = null;
+            let inquiry = null;
 
-              review.inquiryId ? getInquiry(review.inquiryId) : null,
-            ]);
+            try {
+              if (review.reviewerId) {
+                reviewer = await getUserProfile(review.reviewerId).catch(() => null);
+              }
+            } catch (e) {
+              console.warn("Could not fetch reviewer:", e);
+            }
+
+            try {
+              if (review.inquiryId) {
+                inquiry = await getInquiry(review.inquiryId).catch(() => null);
+              }
+            } catch (e) {
+              console.warn("Could not fetch inquiry:", e);
+            }
 
             return {
               ...review,
-              reviewer,
+              reviewer: reviewer || {
+                fullname: review.reviewerName || "Verified Buyer",
+                profilePicture: "",
+              },
               inquiry,
             };
           }),

@@ -9,11 +9,22 @@ export default function FarmerPopup({ farmer, onMessage }) {
       <div className="flex items-start gap-3">
         <Avatar src={farmer.profilePicture} name={farmer.fullname} />
 
-        <div className="flex-1">
-          <h2 className="font-semibold text-[#1B4332]">{farmer.fullname}</h2>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h2 className="font-semibold text-[#1B4332] truncate">{farmer.fullname}</h2>
+            {farmer.verified && (
+              <span
+                title="Verified Farmer"
+                aria-label="Verified Farmer"
+                className="inline-flex shrink-0 items-center text-[#2D6A4F] text-sm"
+              >
+                <i className="ri-verified-badge-fill" />
+              </span>
+            )}
+          </div>
 
           {farmer.distance != null && (
-            <p className="text-xs text-[#2D6A4F] !my-2">
+            <p className="text-xs text-[#2D6A4F] !my-1">
               📍 {farmer.distance.toFixed(1)} km away
             </p>
           )}

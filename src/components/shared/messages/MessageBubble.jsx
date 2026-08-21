@@ -12,11 +12,12 @@ export default function MessageBubble({ user, message }) {
       
       <Avatar src={user.profilePicture} name={user.fullname} size="sm" className={`${mine ? "hidden" : "flex"}`} />
       <div
-        className={`max-w-[75%] rounded-3xl px-4 py-2 shadow-sm ${
+        className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
           mine
-            ? "bg-[#2D6A4F] text-white"
-            : "bg-white text-gray-800 border"
+            ? "bg-[#2D6A4F] text-white shadow-md shadow-green-900/20"
+            : "bg-white text-gray-800 shadow-md shadow-black/10"
         }`}
+        style={!mine ? { border: '1px solid var(--agri-border)' } : {}}
       >
         <p className="break-words whitespace-pre-wrap">{message.text}</p>
       </div>

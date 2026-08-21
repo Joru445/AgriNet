@@ -7,6 +7,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  updateDoc,
   where,
   setDoc,
 } from "firebase/firestore";
@@ -14,7 +15,7 @@ import {
 import { db } from "../firebase/firestore";
 
 const productReviewsRef = collection(db, "product-reviews");
-
+const productsRef = collection(db, "products");
 const inquiriesRef = collection(db, "inquiries");
 
 export async function getProductReviews() {
@@ -42,18 +43,26 @@ export async function getProductReviewById(id) {
 }
 
 export async function getReviewsByProduct(productId) {
-  const q = query(
-    productReviewsRef,
-    where("productId", "==", productId),
-    orderBy("createdAt", "desc"),
-  );
+  try {
+    const q = query(
+      productReviewsRef,
+      where("productId", "==", productId),
+    );
 
-  const snapshot = await getDocs(q);
+    const snapshot = await getDocs(q);
 
-  return snapshot.docs.map((reviewDoc) => ({
-    id: reviewDoc.id,
-    ...reviewDoc.data(),
-  }));
+    const reviews = snapshot.docs.map((reviewDoc) => ({
+      id: reviewDoc.id,
+      ...reviewDoc.data(),
+    }));
+
+    return reviews.sort(
+      (a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0),
+    );
+  } catch (err) {
+    console.error("Error fetching product reviews:", err);
+    return [];
+  }
 }
 
 export async function getProductReviewSummaries(productIds) {
@@ -161,6 +170,26 @@ export async function createProductReview(data) {
 
     createdAt: serverTimestamp(),
   });
+
+  // Recalculate and persist the ratingSummary on the product document
+  try {
+    const allReviews = await getReviewsByProduct(productId);
+    const totalRating =
+      allReviews.reduce((sum, r) => sum + Number(r.rating), 0) + Number(rating);
+    const newCount = allReviews.length + 1;
+    const newAverage = Number((totalRating / newCount).toFixed(1));
+
+    await updateDoc(doc(productsRef, productId), {
+      ratingSummary: {
+        average: newAverage,
+        count: newCount,
+      },
+      productRating: newAverage,
+      reviewCount: newCount,
+    });
+  } catch (err) {
+    console.warn("Could not update product ratingSummary:", err);
+  }
 
   return reviewRef.id;
 }

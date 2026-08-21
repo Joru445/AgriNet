@@ -32,14 +32,14 @@ export default function Header({ user, collapsed }) {
   const showBackButton = !tabRoutes.includes(location.pathname);
 
   return (
-    <header className="sticky top-0 right-0 z-40 flex h-16 items-center justify-between border-b border-gray-100 bg-white/95 px-4 md:px-6">
-      <div className="flex w-10 items-center">
+    <header className="sticky top-0 right-0 z-40 flex h-16 items-center justify-between border-b px-4 md:px-6" style={{ backgroundColor: 'rgba(240,247,242,0.97)', borderColor: 'var(--agri-border)' }}>
+      <div className="flex items-center">
         {showBackButton ? (
           <BackButton />
         ) : (
           <span
-            className={`font-bold text-gray-800 text-sm whitespace-nowrap transition-all duration-300 ease-in-out ${
-              !collapsed ? "hidden" : "block"
+            className={`font-bold text-gray-800 text-lg sm:text-xl md:text-2xl whitespace-nowrap transition-all duration-300 ease-in-out ${
+              !collapsed ? "lg:hidden" : "block"
             }`}
           >
             AgriNet <span className="font-light">Lucena</span>

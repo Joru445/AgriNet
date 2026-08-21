@@ -10,9 +10,9 @@ export default function NearbyFilters({
 
         <input
           type="range"
-          min={0.1}
+          min={0.5}
           max={10}
-          step={0.1}
+          step={0.5}
           value={distance}
           onChange={(e) => onDistanceChange(Number(e.target.value))}
           className="w-44 accent-[#2D6A4F]"
@@ -30,8 +30,12 @@ export default function NearbyFilters({
             <span className="ml-1 font-semibold text-[#2D6A4F]">
               {nearestFarmer.fullname}
             </span>
-            {" • "}
-            {nearestFarmer.distance.toFixed(1)} km
+            {nearestFarmer.distance != null && (
+              <>
+                {" • "}
+                {nearestFarmer.distance.toFixed(1)} km
+              </>
+            )}
           </>
         ) : (
           "No nearby farmers."

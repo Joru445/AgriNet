@@ -5,6 +5,8 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  query,
+  where,
   serverTimestamp,
 } from "firebase/firestore";
 
@@ -34,26 +36,55 @@ export async function createFarmerProfile(data) {
 }
 
 export async function getFarmers() {
-  const snapshot = await getDocs(collection(db, "farmers"));
+  try {
+    const [farmersSnap, usersSnap] = await Promise.all([
+      getDocs(collection(db, "farmers")),
+      getDocs(query(collection(db, "users"), where("role", "==", "farmer"))),
+    ]);
 
-  return snapshot.docs.map((doc) => ({
-    uid: doc.id,
-    ...doc.data(),
-  }));
+    const farmerMap = new Map();
+
+    usersSnap.docs.forEach((doc) => {
+      farmerMap.set(doc.id, {
+        uid: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    farmersSnap.docs.forEach((doc) => {
+      const existing = farmerMap.get(doc.id) || {};
+      farmerMap.set(doc.id, {
+        ...existing,
+        uid: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    return Array.from(farmerMap.values());
+  } catch (error) {
+    console.error("Error fetching farmers:", error);
+    return [];
+  }
 }
 
 export async function getFarmerById(uid) {
-  const farmerRef = doc(db, "farmers", uid);
+  const [farmerSnap, userSnap] = await Promise.all([
+    getDoc(doc(db, "farmers", uid)),
+    getDoc(doc(db, "users", uid)),
+  ]);
 
-  const snapshot = await getDoc(farmerRef);
-
-  if (!snapshot.exists()) {
+  if (!farmerSnap.exists() && !userSnap.exists()) {
     throw new Error("Farmer not found.");
   }
 
+  const userData = userSnap.exists() ? userSnap.data() : {};
+  const farmerData = farmerSnap.exists() ? farmerSnap.data() : {};
+
   return {
-    uid: snapshot.id,
-    ...snapshot.data(),
+    uid,
+    ...userData,
+    ...farmerData,
+    verified: farmerData.verified === true || userData.verified === true,
   };
 }
 

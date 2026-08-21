@@ -42,7 +42,7 @@ export default function Messages() {
 
   return (
     <main className="flex-1 pb-16 md:pb-0 h-[calc(100vh-4rem)] overflow-hidden">
-      <div className="bg-white h-full flex overflow-hidden">
+      <div className="h-full flex overflow-hidden" style={{ backgroundColor: 'var(--agri-bg)' }}>
         <ConversationList
           conversations={filteredConversations}
           users={userResults}

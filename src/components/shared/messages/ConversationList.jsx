@@ -16,10 +16,10 @@ export default function ConversationList({
   const searching = search.trim().length > 0;
 
   return (
-    <aside className={`
-      w-full lg:w-80 md:w-64 border-r border-gray-200 bg-white flex flex-col
-      ${hasChat ? "hidden md:flex" : "flex"}
-    `}>
+    <aside
+      className={`w-full lg:w-80 md:w-64 flex flex-col border-r ${hasChat ? "hidden md:flex" : "flex"}`}
+      style={{ backgroundColor: 'var(--agri-bg-card)', borderColor: 'var(--agri-border)' }}
+    >
       <div className="p-4">
         <h2 className="text-xl font-bold text-[#1B4332] mb-4">Messages</h2>
 
@@ -30,7 +30,8 @@ export default function ConversationList({
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Search people..."
-            className="w-full rounded-xl border border-gray-200 pl-10 pr-4 py-2.5 outline-none focus:border-[#2D6A4F]"
+            className="w-full rounded-xl border pl-10 pr-4 py-2.5 outline-none focus:border-[#2D6A4F] transition-colors"
+            style={{ backgroundColor: 'var(--agri-bg-surface)', borderColor: 'var(--agri-border)' }}
           />
         </div>
       </div>
@@ -49,10 +50,11 @@ export default function ConversationList({
                 No conversations yet.
               </div>
             ) : (
-              conversations.map((conversation) => (
+              conversations.map((conversation, index) => (
                 <ConversationItem
                   key={conversation.id}
                   item={conversation}
+                  index={index}
                   searching={false}
                   activeConversation={activeConversation}
                   onConversation={onConversation}
@@ -71,10 +73,11 @@ export default function ConversationList({
                   </p>
                 </div>
 
-                {conversations.map((conversation) => (
+                {conversations.map((conversation, index) => (
                   <ConversationItem
                     key={conversation.id}
                     item={conversation}
+                    index={index}
                     searching={false}
                     activeConversation={activeConversation}
                     onConversation={onConversation}
@@ -92,10 +95,11 @@ export default function ConversationList({
                   </p>
                 </div>
 
-                {users.map((user) => (
+                {users.map((user, index) => (
                   <ConversationItem
                     key={user.uid}
                     item={user}
+                    index={index}
                     searching
                     activeConversation={activeConversation}
                     onConversation={onConversation}
