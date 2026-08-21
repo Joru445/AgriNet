@@ -53,7 +53,7 @@ export default function Header({ user, collapsed }) {
 
       <div className="flex items-center gap-2">
         <Link
-          to={`${roleAddress}/notifications`"
+          to={`${roleAddress}/notifications`}
           className="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#2D6A4F]"
           aria-label="Notifications"
         >
