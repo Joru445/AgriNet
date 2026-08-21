@@ -7,7 +7,7 @@ export default function BottomNavigation({ items }) {
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 border-t lg:hidden z-40" style={{ backgroundColor: 'var(--agri-bg-card)', borderColor: 'var(--agri-border)' }}>
+    <nav className="fixed bottom-0 left-0 right-0 border-t lg:hidden z-9996 bg-[#FAFAFA]" style={{ borderColor: 'var(--agri-border)' }}>
       <div className="flex h-16">
         {items.map((item) => {
           const isMessages = item.to.includes("messages");

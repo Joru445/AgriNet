@@ -63,8 +63,8 @@ export default function Map({
     <div
       ref={wrapperRef}
       className={`relative overflow-hidden bg-white ${
-        fullscreen ? "fixed inset-0 z-9997" : "h-80 md:h-96"
-      } ${onProfile ? "rounded-xl" : " "}`}
+        fullscreen ? "fixed inset-0 z-9995" : "h-80 md:h-96"
+      } ${onProfile ? "rounded-xl" : "rounded-none"}`}
     >
       <MapContainer
         center={[mapCenter.lat, mapCenter.lng]}
@@ -119,7 +119,7 @@ export default function Map({
       <button
         type="button"
         onClick={toggleFullscreen}
-        className="absolute top-3 right-3 z-9997 w-10 h-10 rounded-sm bg-white/95 shadow-lg border-2 border-gray-400 hover:bg-gray-100"
+        className="absolute top-3 right-3 z-9995 w-10 h-10 rounded-sm bg-white/95 shadow-lg border-2 border-gray-400 hover:bg-gray-100"
       >
         <i
           className={

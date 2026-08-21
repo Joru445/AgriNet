@@ -2,8 +2,8 @@
 
 /* ── AgriNet Global Base ── */
 :root {
-  --agri-bg:          #f0f7f2;   /* very soft sage green */
-  --agri-bg-card:     #f7faf8;   /* near-white with a green cast */
+  --agri-bg:          #f5fbf7;   /* very soft sage green */
+  --agri-bg-card:     #f0f7f2;   /* near-white with a green cast */
   --agri-bg-surface:  #eaf4ee;   /* light mint for panels */
   --agri-green-dark:  #1B4332;
   --agri-green-mid:   #2D6A4F;
