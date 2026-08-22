@@ -8,7 +8,6 @@ export default function MessageInput({
   onSendInquiry,
 }) {
   const textareaRef = useRef(null);
-  const containerRef = useRef(null);
 
   const [quantity, setQuantity] = useState(1);
 
@@ -26,19 +25,6 @@ export default function MessageInput({
 
     textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
   }, [value]);
-
-  // Scroll input into view immediately when mobile keyboard opens
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    function onResize() {
-      containerRef.current?.scrollIntoView({ block: "end", behavior: "instant" });
-    }
-
-    vv.addEventListener("resize", onResize);
-    return () => vv.removeEventListener("resize", onResize);
-  }, []);
 
   /*
    * Reset the inquiry quantity whenever
@@ -117,7 +103,7 @@ export default function MessageInput({
   const isMaxQuantity = hasStock && Number(quantity) >= stock;
 
   return (
-    <div ref={containerRef} className="shrink-0 w-full border-t p-3 bg-[#FAFAFA] border-[#DDD] z-10">
+    <div className="shrink-0 w-full border-t p-3 bg-[#FAFAFA] border-[#DDD] z-10">
       {inquiryProduct && (
         <div
           className="mb-3 rounded-2xl border p-3"
