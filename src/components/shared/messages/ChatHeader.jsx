@@ -6,7 +6,7 @@ export default function ChatHeader({ user }) {
 
   return (
     <header
-      className="w-full h-18 absolute border-b px-6 flex items-center justify-between shadow-sm"
+      className="w-full h-16 sm:h-18 shrink-0 border-b px-4 sm:px-6 flex items-center justify-between shadow-xs z-10"
       style={{ backgroundColor: 'rgba(247,250,248,0.97)', borderColor: 'var(--agri-border)', backdropFilter: 'blur(8px)' }}
     >
       <div className="flex items-center gap-3">

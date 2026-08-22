@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 import { getMessagesPath, getInquiriesPath } from "../../../utils/routes";
-import { formatTimestamp } from "../../../utils/date";
+import { formatFullDateTime } from "../../../utils/date";
 import { useUnreadInquiries } from "../../../context/UnreadInquiriesContext";
 
 import Inquiry from "./Inquiry";
@@ -94,7 +94,7 @@ export default function InquiryRow({
 
           <div className="flex items-center gap-3">
             <span className="hidden text-xs text-gray-500 font-medium sm:inline">
-              {formatTimestamp(getInquiryDisplayTime(inquiry))}
+              {formatFullDateTime(getInquiryDisplayTime(inquiry))}
             </span>
 
             <InquiryStatusBadge status={status} />
@@ -106,8 +106,8 @@ export default function InquiryRow({
           <Inquiry productData={productData} counterparty={counterparty} />
 
           {/* Mobile date */}
-          <p className="mt-3 text-xs text-gray-400 sm:hidden">
-            {formatTimestamp(getInquiryDisplayTime(inquiry))}
+          <p className="mt-3 text-xs text-gray-500 font-medium sm:hidden">
+            {formatFullDateTime(getInquiryDisplayTime(inquiry))}
           </p>
         </div>
 

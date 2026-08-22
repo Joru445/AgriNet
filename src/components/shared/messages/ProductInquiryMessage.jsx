@@ -51,26 +51,26 @@ export default function ProductInquiryMessage({
   const quantity = Number(message.quantity);
 
   return (
-    <div className={`flex gap-2 ${isOwn ? "justify-end" : "justify-start"}`}>
+    <div className={`flex gap-2 ${isOwn ? "justify-end" : "justify-start"} min-w-0`}>
       <img
         src={user.profilePicture || defaultAvatar}
         alt={user.fullname}
-        className={`h-10 w-10 rounded-full object-cover ${
+        className={`h-10 w-10 shrink-0 rounded-full object-cover ${
           isOwn ? "hidden" : "flex"
         }`}
       />
 
-      <div className="w-72 overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="w-64 sm:w-72 max-w-[78vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-white shadow-sm border border-gray-100">
         <img
           src={productImage}
           alt={product.name}
-          className="h-40 w-full object-cover"
+          className="h-36 sm:h-40 w-full object-cover"
         />
 
         <div className="p-3">
           <p className="text-xs font-medium text-[#2D6A4F]">Product Inquiry</p>
 
-          <h3 className="mt-1 font-semibold text-gray-900">{product.name}</h3>
+          <h3 className="mt-1 font-semibold text-gray-900 truncate">{product.name}</h3>
 
           {product.price != null && (
             <p className="mt-1 text-sm font-medium text-gray-700">
@@ -93,7 +93,7 @@ export default function ProductInquiryMessage({
             </div>
           )}
 
-          <p className="mt-3 text-sm text-gray-600">{message.text}</p>
+          <p className="mt-3 text-sm text-gray-600 break-words [overflow-wrap:anywhere] [word-break:break-word]">{message.text}</p>
 
           {showAccept && (
             <button

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useUnreadMessages } from "../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../context/UnreadInquiriesContext";
@@ -5,6 +6,14 @@ import { useUnreadInquiries } from "../context/UnreadInquiriesContext";
 export default function BottomNavigation({ items }) {
   const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
+  const [activeGlow, setActiveGlow] = useState(null);
+
+  function handleTap(key) {
+    setActiveGlow(key);
+    setTimeout(() => {
+      setActiveGlow((current) => (current === key ? null : current));
+    }, 450);
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t lg:hidden z-9996 bg-[#FAFAFA]" style={{ borderColor: 'var(--agri-border)' }}>
@@ -18,12 +27,19 @@ export default function BottomNavigation({ items }) {
               <NavLink
                 to={item.to}
                 end
+                onClick={() => handleTap(item.to)}
+                onTouchStart={() => handleTap(item.to)}
                 className={({ isActive }) =>
-                  `flex w-full flex-col items-center justify-center ${
+                  `relative flex w-full h-full flex-col items-center justify-center transition-colors duration-150 select-none ${
                     isActive ? "text-[#2D6A4F] font-bold" : "text-gray-500"
                   }`
                 }
               >
+                {/* Messenger-like soft grey blur glow effect */}
+                {activeGlow === item.to && (
+                  <span className="absolute inset-x-2.5 inset-y-1.5 rounded-2xl bg-gray-300/50 backdrop-blur-xs animate-tap-glow pointer-events-none" />
+                )}
+
                 <div className="relative flex items-center justify-center">
                   <i className={`${item.icon} text-lg`} />
                   {isMessages && unreadCount > 0 && (

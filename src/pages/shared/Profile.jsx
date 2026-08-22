@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import ProfileHeader from "../../components/shared/me/ProfileHeader";
 import ProfileForm from "../../components/shared/me/ProfileForm";
 import FarmerSection from "../../components/shared/me/FarmerSection";
 import ProfileSkeleton from "../../components/shared/me/ProfileSkeleton";
+import LogoutConfirmModal from "../../components/common/LogoutConfirmModal";
 
 import { useAuth } from "../../context/AuthContext";
 import useProfile from "../../hooks/useProfile";
@@ -13,6 +15,9 @@ import { showToast } from "../../utils/toast";
 export default function Profile() {
   const { profile, logout } = useAuth();
   const navigate = useNavigate();
+
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const {
     loading,
@@ -35,15 +40,18 @@ export default function Profile() {
 
   async function handleLogout() {
     try {
+      setLoggingOut(true);
       await logout();
 
       showToast.success("Logged out.");
-
+      setShowLogoutModal(false);
       navigate("/login");
     } catch (error) {
       console.error(error);
 
       showToast.error(error.message);
+    } finally {
+      setLoggingOut(false);
     }
   }
 
@@ -56,7 +64,7 @@ export default function Profile() {
           onEdit={() => setEditing(true)}
           onCancel={handleCancel}
           onSave={handleSave}
-          onLogout={handleLogout}
+          onLogout={() => setShowLogoutModal(true)}
           onAvatarChange={handleAvatar}
         />
 
@@ -71,6 +79,13 @@ export default function Profile() {
           />
         )}
       </div>
+
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        loggingOut={loggingOut}
+        onCancel={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
     </main>
   );
 }

@@ -32,7 +32,7 @@ export default function InquiryTabs({ activeTab, onChange }) {
             key={tab.id}
             type="button"
             onClick={() => onChange(tab.id)}
-            className={`cursor-pointer whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition-all ${
+            className={`cursor-pointer whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition-all active:bg-gray-100 active:scale-95 ${
               active
                 ? "border-[#2D6A4F] text-[#2D6A4F]"
                 : "border-transparent text-gray-500 hover:text-gray-700"

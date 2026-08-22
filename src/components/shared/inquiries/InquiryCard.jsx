@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { getProductImage } from "../../../utils/getProductImage";
 import { getInquiriesPath, getMessagesPath } from "../../../utils/routes";
-import { formatTimestamp } from "../../../utils/date";
+import { formatFullDateTime } from "../../../utils/date";
 import { useUnreadInquiries } from "../../../context/UnreadInquiriesContext";
 import InquiryStatusBadge from "./InquiryStatusBadge";
 import defaultAvatar from "../../../assets/img/defaultAvatar.png";
@@ -159,8 +159,8 @@ export default function InquiryCard({
             )}
           </div>
 
-          <span className="text-[11px] font-medium text-gray-400 shrink-0 ml-2">
-            {formatTimestamp(getInquiryDisplayTime(inquiry))}
+          <span className="text-[11px] font-medium text-gray-500 shrink-0 ml-2">
+            {formatFullDateTime(getInquiryDisplayTime(inquiry))}
           </span>
         </div>
       </div>

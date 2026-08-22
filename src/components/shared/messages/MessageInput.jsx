@@ -102,7 +102,7 @@ export default function MessageInput({
   const isMaxQuantity = hasStock && Number(quantity) >= stock;
 
   return (
-    <div className="absolute inset-x-0 bottom-0 z-40 border-t p-3 md:bottom-16 lg:bottom-0 bg-[#FAFAFA] border-[#DDD]">
+    <div className="shrink-0 w-full border-t p-3 bg-[#FAFAFA] border-[#DDD] z-10">
       {inquiryProduct && (
         <div
           className="mb-3 rounded-2xl border p-3"
