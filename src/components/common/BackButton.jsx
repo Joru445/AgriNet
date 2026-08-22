@@ -22,7 +22,7 @@ export default function BackButton({
       className={`inline-flex items-center gap-2 font-medium text-gray-600 transition hover:text-[#2D6A4F] ${className}`}
       aria-label={label}
     >
-      <i class="ri-arrow-left-line text-2xl"></i>
+      <i className="ri-arrow-left-line text-2xl" />
     </button>
   );
 }

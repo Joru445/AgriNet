@@ -11,6 +11,7 @@ export default function InquiryRow({
   inquiry,
   product,
   consumer,
+  farmer,
   userRole,
   updating,
   onStatusChange,
@@ -28,7 +29,13 @@ export default function InquiryRow({
   const counterparty =
     userRole === "farmer"
       ? (inquiry.consumerSnapshot ?? consumer)
-      : inquiry.farmerSnapshot;
+      : {
+          ...(inquiry.farmerSnapshot ?? {}),
+          ...(farmer ?? {}),
+          verified:
+            farmer?.verified === true ||
+            inquiry.farmerSnapshot?.verified === true,
+        };
 
   function openConversation() {
     if (!inquiry.conversationId) {
@@ -198,7 +205,7 @@ export default function InquiryRow({
             label="View transaction"
             icon="ri-file-text-line"
             showDot={false}
-            className="border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            className="border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 font-semibold"
             onClick={openProofPage}
           />
         )}
@@ -207,10 +214,10 @@ export default function InquiryRow({
         {userRole === "consumer" && status === "completed" && !isReviewed && (
           <Action
             updating={updating}
-            label="Rate"
+            label="Rate transaction"
             icon="ri-star-line"
             showDot={dots.rate}
-            className="border border-[#2D6A4F] bg-white text-[#2D6A4F] hover:bg-green-50"
+            className="bg-[#2D6A4F] text-white hover:bg-[#24583F] font-bold shadow-xs"
             onClick={openReviewPage}
           />
         )}
@@ -222,7 +229,7 @@ export default function InquiryRow({
             label="View review"
             icon="ri-star-fill"
             showDot={false}
-            className="border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            className="border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 font-semibold"
             onClick={openReviewPage}
           />
         )}
@@ -315,18 +322,11 @@ function getBanner(status, userRole, isReviewed) {
         className: "bg-gray-50 text-gray-500 border border-gray-200",
       };
     }
-    if (status === "completed" && !isReviewed) {
-      return {
-        message: "Transaction complete! Don't forget to rate the product.",
-        icon: "ri-star-fill",
-        className: "bg-green-50 text-green-700 border border-green-200",
-      };
-    }
-    if (status === "completed" && isReviewed) {
+    if (status === "completed") {
       return {
         message: "Transaction complete.",
         icon: "ri-checkbox-circle-fill",
-        className: "bg-gray-50 text-gray-500 border border-gray-200",
+        className: "bg-green-50 text-green-700 border border-green-200",
       };
     }
   }
@@ -336,26 +336,26 @@ function getBanner(status, userRole, isReviewed) {
       return {
         message: "You accepted this inquiry. Start the transaction when ready.",
         icon: "ri-play-circle-fill",
-        className: "bg-green-50 text-green-700 border border-green-200",
+        className: "bg-green-50 text-green-700 border border-green-200 font-medium",
       };
     }
     if (status === "ongoing") {
       return {
         message: "Transaction is ongoing.",
         icon: "ri-exchange-line",
-        className: "bg-blue-50 text-blue-700 border border-blue-200",
+        className: "bg-blue-50 text-blue-700 border border-blue-200 font-medium",
       };
     }
     if (status === "proof_submitted") {
       return {
         message: "Consumer submitted proof of product received. Please review it.",
         icon: "ri-file-search-line",
-        className: "bg-orange-50 text-orange-700 border border-orange-200",
+        className: "bg-orange-50 text-orange-700 border border-orange-200 font-medium",
       };
     }
     if (status === "completed") {
       return {
-        message: "Transaction completed successfully.",
+        message: "Transaction complete.",
         icon: "ri-checkbox-circle-fill",
         className: "bg-green-50 text-green-700 border border-green-200",
       };

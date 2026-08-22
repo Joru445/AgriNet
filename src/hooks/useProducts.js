@@ -112,9 +112,6 @@ export default function useProducts() {
 
       const uploadedImages = await uploadImages(form.images);
 
-      console.log("Original:", form.images);
-      console.log("Uploaded:", uploadedImages);
-
       await createProduct({
         ...form,
         farmerId: profile.uid,

@@ -154,23 +154,55 @@ export default function useMessages() {
 
     setLoading(true);
 
-    const unsubscribe = subscribeUserConversations(profile.uid, (data) => {
+    const unsubscribe = subscribeUserConversations(profile.uid, async (data) => {
       const mapped = data.map((conversation) => {
         const otherUid = conversation.participants?.find(
           (uid) => uid !== profile.uid,
         );
+
+        const otherInfo = conversation.participantInfo?.[otherUid] || {};
 
         return {
           ...conversation,
 
           otherUser: {
             uid: otherUid,
-            ...(conversation.participantInfo?.[otherUid] || {}),
+            ...otherInfo,
+            verified: otherInfo.verified === true,
           },
 
           unreadCount: conversation.unreadCount?.[profile.uid] ?? 0,
         };
       });
+
+      // Always enrich conversation otherUser with live user profile (verified status, name, picture)
+      const allOtherUids = [
+        ...new Set(mapped.map((c) => c.otherUser?.uid).filter(Boolean)),
+      ];
+
+      if (allOtherUids.length > 0) {
+        try {
+          const userProfiles = await Promise.all(
+            allOtherUids.map(async (uId) => {
+              const u = await getUserProfile(uId);
+              return [uId, u];
+            }),
+          );
+          const uMap = new Map(userProfiles.filter(([, u]) => u != null));
+          mapped.forEach((c) => {
+            const liveUser = uMap.get(c.otherUser?.uid);
+            if (liveUser) {
+              c.otherUser = {
+                ...c.otherUser,
+                ...liveUser,
+                verified: liveUser.verified === true,
+              };
+            }
+          });
+        } catch (err) {
+          console.error("Error enriching conversation users:", err);
+        }
+      }
 
       setConversations(mapped);
       setLoading(false);

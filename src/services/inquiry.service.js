@@ -607,6 +607,8 @@ function getPersonSnapshot(data, uid) {
     username: data.username ?? "",
 
     profilePicture: data.profilePicture ?? "",
+
+    verified: data.verified === true,
   };
 }
 

@@ -7,7 +7,6 @@ import { getRoleHome } from "../utils/routes";
 
 export default function Header({ user, collapsed }) {
   const location = useLocation();
-  console.log(user);
 
   const tabRoutes = [
     "/home",

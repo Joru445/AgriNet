@@ -40,6 +40,7 @@ export default function InquiryTable({
             inquiry={inquiry}
             product={data?.product}
             consumer={data?.consumer}
+            farmer={data?.farmer}
             userRole={userRole}
             updating={updatingId === inquiry.id}
             onStatusChange={onStatusChange}
