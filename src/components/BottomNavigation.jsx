@@ -2,11 +2,17 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useUnreadMessages } from "../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../context/UnreadInquiriesContext";
+import useKeyboardVisible from "../hooks/useKeyboardVisible";
 
 export default function BottomNavigation({ items }) {
+  const isKeyboardVisible = useKeyboardVisible();
   const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
   const [activeGlow, setActiveGlow] = useState(null);
+
+  if (isKeyboardVisible) {
+    return null;
+  }
 
   function handleTap(key) {
     setActiveGlow(key);
@@ -16,7 +22,7 @@ export default function BottomNavigation({ items }) {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 border-t lg:hidden z-9996 bg-[#FAFAFA]" style={{ borderColor: 'var(--agri-border)' }}>
+    <nav className="shrink-0 h-16 border-t lg:hidden z-30 bg-[#FAFAFA]" style={{ borderColor: 'var(--agri-border)' }}>
       <div className="flex h-16">
         {items.map((item) => {
           const isMessages = item.to.includes("messages");

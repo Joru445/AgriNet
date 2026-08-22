@@ -1,6 +1,6 @@
 export default function MessagesSkeleton() {
   return (
-    <main className="flex-1 p-0 h-[calc(100dvh-8rem)] md:h-[calc(100vh-4rem)] flex flex-col overflow-hidden animate-pulse">
+    <main className="flex-1 p-0 h-full flex flex-col overflow-hidden animate-pulse">
       <div className="bg-white border border-gray-200 h-full flex overflow-hidden">
         <aside className="w-full lg:w-80 md:w-64 p-4 space-y-4">
           <div className="h-8 w-32 bg-gray-200 rounded" />
