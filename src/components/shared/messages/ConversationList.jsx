@@ -18,7 +18,7 @@ export default function ConversationList({
   return (
     <aside
       className={`w-full lg:w-80 md:w-64 flex flex-col border-r ${hasChat ? "hidden md:flex" : "flex"}`}
-      style={{ backgroundColor: 'var(--agri-bg-card)', borderColor: 'var(--agri-border)' }}
+      style={{ backgroundColor: 'var(--agri-bg)', borderColor: 'var(--agri-border)' }}
     >
       <div className="p-4">
         <h2 className="text-xl font-bold text-[#1B4332] mb-4">Messages</h2>
@@ -31,7 +31,7 @@ export default function ConversationList({
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Search people..."
             className="w-full rounded-xl border pl-10 pr-4 py-2.5 outline-none focus:border-[#2D6A4F] transition-colors"
-            style={{ backgroundColor: 'var(--agri-bg-surface)', borderColor: 'var(--agri-border)' }}
+            style={{ backgroundColor: 'var(--agri-bg)', borderColor: 'var(--agri-border)' }}
           />
         </div>
       </div>
@@ -50,11 +50,10 @@ export default function ConversationList({
                 No conversations yet.
               </div>
             ) : (
-              conversations.map((conversation, index) => (
+              conversations.map((conversation) => (
                 <ConversationItem
                   key={conversation.id}
                   item={conversation}
-                  index={index}
                   searching={false}
                   activeConversation={activeConversation}
                   onConversation={onConversation}

@@ -1,10 +1,9 @@
-import { getInitials } from "../../../utils/getInitials";
+import Avatar from "../../common/Avatar"
 
 import { formatTimestamp } from "../../../utils/date";
 
 export default function ConversationItem({
   item,
-  index = 0,
   searching,
   activeConversation,
   onConversation,
@@ -13,7 +12,6 @@ export default function ConversationItem({
   const user = searching ? item : item.otherUser;
 
   const active = !searching && activeConversation?.id === item.id;
-  const isEven = index % 2 === 0;
 
   function handleClick() {
     if (searching) {
@@ -23,31 +21,17 @@ export default function ConversationItem({
     }
   }
 
-  // Alternates: 1st is white (index 0), 2nd is slight grey (index 1), 3rd is white (index 2), etc.
   const bgClass = active
-    ? "border-r-2 border-[#2D6A4F]"
-    : isEven
-    ? "bg-white hover:bg-green-50/70"
-    : "bg-gray-50/90 hover:bg-green-50/70";
+    ? "border-r-2 border-[#2D6A4F]/60 bg-[#2D6A4F]/12"
+    : "bg-[#FAFAFA] hover:bg-[#2D6A4F]/10"
 
   return (
     <button
       onClick={handleClick}
       className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors cursor-pointer ${bgClass}`}
-      style={active ? { backgroundColor: "rgba(212,232,218,0.45)" } : {}}
     >
       <div className="relative shrink-0">
-        {user.profilePicture ? (
-          <img
-            src={user.profilePicture}
-            alt={user.fullname}
-            className="w-14 h-14 rounded-full object-cover object-top"
-          />
-        ) : (
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] text-lg font-semibold text-[#2D6A4F]">
-            {getInitials(user.fullname)}
-          </div>
-        )}
+        <Avatar src={user.profilePicture} name={user.fullname} />
 
         {user.online && (
           <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />
