@@ -1,16 +1,21 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useSearchParams } from "react-router-dom";
 import { useUnreadMessages } from "../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../context/UnreadInquiriesContext";
 import useKeyboardVisible from "../hooks/useKeyboardVisible";
 
 export default function BottomNavigation({ items }) {
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const isKeyboardVisible = useKeyboardVisible();
   const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
   const [activeGlow, setActiveGlow] = useState(null);
 
-  if (isKeyboardVisible) {
+  const isMessagesRoute = location.pathname.includes("messages");
+  const hasActiveChat = isMessagesRoute && Boolean(searchParams.get("conversation") || searchParams.get("user"));
+
+  if (isKeyboardVisible || hasActiveChat) {
     return null;
   }
 
