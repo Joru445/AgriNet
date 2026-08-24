@@ -3,12 +3,12 @@ import BottomNavigation from "./BottomNavigation";
 import { useAuth } from "../context/AuthContext";
 import { navigationByRole } from "../constants/navigation";
 
-export default function BottomTab() {
+export default function BottomTab({ showBottomTab }) {
   const { profile } = useAuth();
 
   const items = (navigationByRole[profile?.role] ?? []).filter(
-    (item) => item.bottom
+    (item) => item.bottom,
   );
 
-  return <BottomNavigation items={items} />;
+  return showBottomTab && <BottomNavigation items={items} />;
 }

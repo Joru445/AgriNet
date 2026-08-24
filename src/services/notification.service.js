@@ -2,7 +2,7 @@ import {
   addDoc,
   collection,
   doc,
-  getDocs,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -16,73 +16,98 @@ import { db } from "../firebase/firestore";
 
 const notificationsRef = collection(db, "notifications");
 
-export function createNotification({
-  userId,
-  type,
-  title,
-  message,
-  targetType = null,
-  targetId = null,
-}) {
+export async function createNotification(notification) {
+  if (!notification?.recipientId) {
+    throw new Error("Notification recipient is required.");
+  }
+
   return addDoc(notificationsRef, {
-    userId,
-    type,
-    title,
-    message,
+    recipientId: notification.recipientId,
+
+    type: notification.type || "system",
+
+    title: notification.title || "Notification",
+
+    body: notification.body || "",
+
+    actorId: notification.actorId || null,
+
+    entityType: notification.entityType || null,
+
+    entityId: notification.entityId || null,
+
+    data: notification.data || {},
+
     read: false,
-    targetType,
-    targetId,
+
     createdAt: serverTimestamp(),
   });
 }
 
-export function subscribeNotifications(userId, callback) {
+export function subscribeUserNotifications(userId, callback, onError) {
   if (!userId) {
     return () => {};
   }
 
   const q = query(
     notificationsRef,
-    where("userId", "==", userId),
+
+    where("recipientId", "==", userId),
+
     orderBy("createdAt", "desc"),
+
+    limit(50),
   );
 
-  return onSnapshot(q, (snapshot) => {
-    const notifications = snapshot.docs.map((notificationDoc) => ({
-      id: notificationDoc.id,
-      ...notificationDoc.data(),
-    }));
+  return onSnapshot(
+    q,
 
-    callback(notifications);
-  });
+    (snapshot) => {
+      const notifications = snapshot.docs.map((notification) => ({
+        id: notification.id,
+
+        ...notification.data(),
+      }));
+
+      callback(notifications);
+    },
+
+    onError,
+  );
 }
 
-export function markNotificationAsRead(notificationId) {
-  return updateDoc(doc(db, "notifications", notificationId), {
+export async function markNotificationRead(notificationId) {
+  if (!notificationId) {
+    return;
+  }
+
+  const notificationRef = doc(db, "notifications", notificationId);
+
+  await updateDoc(notificationRef, {
     read: true,
   });
 }
 
-export async function markAllNotificationsAsRead(userId) {
-  if (!userId) return;
-
-  const q = query(
-    notificationsRef,
-    where("userId", "==", userId),
-    where("read", "==", false),
+export async function markAllNotificationsRead(userId, notifications) {
+  const unreadNotifications = notifications.filter(
+    (notification) => !notification.read,
   );
 
-  const snapshot = await getDocs(q);
-
-  if (snapshot.empty) return;
+  if (unreadNotifications.length === 0) {
+    return;
+  }
 
   const batch = writeBatch(db);
 
-  snapshot.docs.forEach((notificationDoc) => {
-    batch.update(notificationDoc.ref, {
-      read: true,
-    });
+  unreadNotifications.forEach((notification) => {
+    batch.update(
+      doc(db, "notifications", notification.id),
+
+      {
+        read: true,
+      },
+    );
   });
 
-  return batch.commit();
+  await batch.commit();
 }
