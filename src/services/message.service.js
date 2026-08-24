@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
+import { auth } from "../firebase/auth";
 
 const messagesRef = collection(db, "messages");
 const conversationsRef = collection(db, "conversations");
@@ -27,12 +28,20 @@ const conversationsRef = collection(db, "conversations");
 export async function sendMessage({
   conversationId,
   senderId,
-  text,
+  text = "",
   type = "text",
+  imageUrl = null,
+  imageId = null,
   productId = null,
   quantity = null,
   inquiryStatus = null,
 }) {
+  const actualSenderId = senderId || auth.currentUser?.uid;
+
+  if (!actualSenderId) {
+    throw new Error("User must be authenticated to send messages.");
+  }
+
   const conversationRef = doc(conversationsRef, conversationId);
 
   const conversationSnapshot = await getDoc(conversationRef);
@@ -43,7 +52,7 @@ export async function sendMessage({
 
   const conversation = conversationSnapshot.data();
 
-  const receiverId = conversation.participants?.find((id) => id !== senderId);
+  const receiverId = conversation.participants?.find((id) => id !== actualSenderId);
 
   if (!receiverId) {
     throw new Error("Unable to determine message recipient.");
@@ -53,21 +62,33 @@ export async function sendMessage({
 
   const batch = writeBatch(db);
 
-  batch.set(messageRef, {
+  const messageData = {
     conversationId,
-    senderId,
-    text,
-    type,
-    productId,
-    quantity,
-    inquiryStatus,
+    senderId: actualSenderId,
+    text: text || "",
+    type: type || "text",
     read: false,
     createdAt: serverTimestamp(),
-  });
+  };
+
+  if (imageUrl) messageData.imageUrl = imageUrl;
+  if (imageId) messageData.imageId = imageId;
+  if (productId) messageData.productId = productId;
+  if (quantity != null && quantity !== "") messageData.quantity = quantity;
+  if (inquiryStatus) messageData.inquiryStatus = inquiryStatus;
+
+  batch.set(messageRef, messageData);
+
+  const lastMessageText =
+    type === "image"
+      ? text
+        ? `📷 ${text}`
+        : "📷 Sent a photo"
+      : text || "Sent a message";
 
   batch.update(conversationRef, {
-    lastMessage: text,
-    lastMessageSender: senderId,
+    lastMessage: lastMessageText,
+    lastMessageSender: actualSenderId,
     lastMessageAt: serverTimestamp(),
     [`unreadCount.${receiverId}`]: increment(1),
   });

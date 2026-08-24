@@ -9,7 +9,7 @@ import InquiryTable from "../../components/shared/inquiries/InquiryTable";
 
 export default function Inquiries() {
   const { profile } = useAuth();
-  const [view, setView] = useState("vertical");
+  const [view, setView] = useState("grid");
 
   const {
     filteredInquiries,
@@ -40,11 +40,10 @@ export default function Inquiries() {
           <button
             type="button"
             onClick={() => setView("vertical")}
-            className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${
-              view === "vertical"
+            className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${view === "vertical"
                 ? "bg-white shadow-xs text-[#2D6A4F] font-bold ring-1 ring-black/5"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 font-semibold"
-            }`}
+              }`}
             title="Vertical list view"
           >
             <i className="ri-list-check text-lg" />
@@ -54,11 +53,10 @@ export default function Inquiries() {
           <button
             type="button"
             onClick={() => setView("grid")}
-            className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${
-              view === "grid"
+            className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${view === "grid"
                 ? "bg-white shadow-xs text-[#2D6A4F] font-bold ring-1 ring-black/5"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 font-semibold"
-            }`}
+              }`}
             title="2-column grid view"
           >
             <i className="ri-grid-line text-lg" />

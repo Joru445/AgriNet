@@ -34,7 +34,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <main className="px-4 py-8 md:px-8 pb-16 md:pb-8">
+      <main className="max-w-7xl mx-auto px-4 py-6 md:px-6 pb-16 md:pb-8">
         <MarketplaceSkeleton />
       </main>
     );
@@ -42,18 +42,22 @@ export default function Home() {
 
   return (
     <>
-      <main className="px-4 py-8 md:px-8 pb-18 md:pb-8">
-        <SearchBar
-          value={filters.search}
-          onChange={(value) => updateFilter("search", value)}
-        />
+      <main className="max-w-7xl mx-auto px-4 py-6 md:px-6 pb-18 md:pb-8 space-y-6">
+        {/* Search & Category Filter Section */}
+        <section className="space-y-4">
+          <SearchBar
+            value={filters.search}
+            onChange={(value) => updateFilter("search", value)}
+          />
 
-        <CategoryChips
-          value={filters.category}
-          onChange={(value) => updateFilter("category", value)}
-        />
+          <CategoryChips
+            value={filters.category}
+            onChange={(value) => updateFilter("category", value)}
+          />
+        </section>
 
-        <div className="mx-auto mt-8 flex max-w-7xl gap-6">
+        {/* Main Products Grid & Filter Sidebar */}
+        <div className="flex flex-col lg:flex-row gap-6 pt-2">
           <FiltersSidebar
             filters={filters}
             onChange={updateFilter}
@@ -77,14 +81,14 @@ export default function Home() {
             />
 
             {hasMore && (
-              <div className="mt-5 flex justify-center">
+              <div className="mt-8 flex justify-center">
                 <button
                   type="button"
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="rounded-xl border border-[#2D6A4F] px-5 py-2.5 text-sm font-semibold text-[#2D6A4F] hover:bg-green-50 disabled:opacity-50"
+                  className="rounded-2xl border-2 border-[#2D6A4F] bg-white px-6 py-3 text-sm font-bold text-[#2D6A4F] hover:bg-[#E8F5EE] disabled:opacity-50 transition-all cursor-pointer shadow-xs"
                 >
-                  {loadingMore ? "Loading..." : "Load more products"}
+                  {loadingMore ? "Loading more produce..." : "Load More Products"}
                 </button>
               </div>
             )}

@@ -64,6 +64,13 @@ export async function createProduct(data) {
     name: data.name,
     category: data.category,
     price: Number(data.price),
+    originalPrice:
+      data.originalPrice !== "" &&
+      data.originalPrice != null &&
+      !isNaN(Number(data.originalPrice)) &&
+      Number(data.originalPrice) > 0
+        ? Number(data.originalPrice)
+        : null,
     stock: Number(data.stock),
     unit: data.unit,
 

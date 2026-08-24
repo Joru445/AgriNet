@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
@@ -6,6 +7,7 @@ import { showToast } from "../utils/toast";
 
 import logo from "../assets/favicon.ico";
 import UserIdentity from "./common/UserIdentity";
+import LogoutConfirmModal from "./common/LogoutConfirmModal";
 
 import { useUnreadMessages } from "../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../context/UnreadInquiriesContext";
@@ -16,17 +18,22 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
   const navigate = useNavigate();
 
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
   async function handleLogout() {
     try {
+      setLoggingOut(true);
       await logout();
 
       showToast.success("Logged out.");
-
+      setShowLogoutModal(false);
       navigate("/login");
     } catch (error) {
       console.error(error);
-
       showToast.error(error.message);
+    } finally {
+      setLoggingOut(false);
     }
   }
 
@@ -156,7 +163,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         </button>
 
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogoutModal(true)}
           className="bg-[#dc2626]/25 text-white/80 hover:bg-[#dc2626]/40 hover:text-white w-full flex items-center justify-start px-4 py-2.5 rounded-lg transition-all duration-200 cursor-pointer"
         >
           <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
@@ -172,6 +179,13 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           </span>
         </button>
       </div>
+
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        loggingOut={loggingOut}
+        onCancel={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
     </aside>
   );
 }

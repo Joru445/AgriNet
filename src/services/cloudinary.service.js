@@ -11,6 +11,9 @@ const PRODUCT_PRESET =
 const TRANSACTION_PRESET =
   import.meta.env.VITE_CLOUDINARY_TRANSACTION_PRESET ?? DEFAULT_PRESET;
 
+const MESSAGE_PRESET =
+  import.meta.env.VITE_CLOUDINARY_MESSAGE_PRESET ?? DEFAULT_PRESET;
+
 async function uploadImage(file, uploadPreset) {
   if (!CLOUD_NAME || !uploadPreset) {
     throw new Error("Cloudinary upload configuration is missing.");
@@ -55,4 +58,8 @@ export function uploadProductImage(file) {
 
 export function uploadTransactionProof(file) {
   return uploadImage(file, TRANSACTION_PRESET);
+}
+
+export function uploadMessageImage(file) {
+  return uploadImage(file, MESSAGE_PRESET);
 }

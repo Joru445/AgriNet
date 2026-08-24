@@ -85,9 +85,22 @@ export async function getUserProfile(uid) {
     return null;
   }
 
+  const data = snapshot.data();
+  let verified = data.verified === true;
+
+  if (data.role === "farmer" && !verified) {
+    try {
+      const farmerSnap = await getDoc(doc(db, "farmers", uid));
+      if (farmerSnap.exists() && farmerSnap.data()?.verified === true) {
+        verified = true;
+      }
+    } catch (_) {}
+  }
+
   return {
     uid: snapshot.id,
-    ...snapshot.data(),
+    ...data,
+    verified,
   };
 }
 
@@ -309,7 +322,27 @@ export async function searchUsers(search, currentUserId) {
     });
   });
 
-  return [...users.values()];
+  const list = [...users.values()];
+
+  const enriched = await Promise.all(
+    list.map(async (u) => {
+      let verified = u.verified === true;
+      if (u.role === "farmer" && !verified) {
+        try {
+          const farmerSnap = await getDoc(doc(db, "farmers", u.uid));
+          if (farmerSnap.exists() && farmerSnap.data()?.verified === true) {
+            verified = true;
+          }
+        } catch (_) {}
+      }
+      return {
+        ...u,
+        verified,
+      };
+    }),
+  );
+
+  return enriched;
 }
 
 /*

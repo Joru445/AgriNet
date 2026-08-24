@@ -15,6 +15,7 @@ const DEFAULT_FILTERS = {
   maxPrice: 0,
   rating: 0,
   sort: "newest",
+  showUnavailable: false,
 };
 
 export default function useMarketplace() {
@@ -40,6 +41,7 @@ export default function useMarketplace() {
       maxPrice: Number(searchParams.get("maxPrice") ?? DEFAULT_FILTERS.maxPrice),
       rating: Number(searchParams.get("rating") ?? DEFAULT_FILTERS.rating),
       sort: searchParams.get("sort") ?? DEFAULT_FILTERS.sort,
+      showUnavailable: searchParams.get("showUnavailable") === "true",
     }),
     [searchParams],
   );
@@ -118,6 +120,13 @@ export default function useMarketplace() {
     }
 
     data = data.filter((product) => {
+      const stockNum = Number(product.stock ?? 0);
+      const isAvailable = product.available !== false && stockNum > 0;
+
+      if (!filters.showUnavailable && !isAvailable) {
+        return false;
+      }
+
       const price = Number(product.price ?? 0);
       const rating = Number(product.productRating ?? 0);
       const matchesMinPrice =
@@ -170,6 +179,8 @@ export default function useMarketplace() {
 
     if (key === "search") {
       value ? params.set(key, value) : params.delete(key);
+    } else if (key === "showUnavailable") {
+      value ? params.set(key, "true") : params.delete(key);
     } else if (key === "rating" || key === "minPrice" || key === "maxPrice") {
       Number(value) > 0 ? params.set(key, value) : params.delete(key);
     } else if (value !== defaultValue && Number(value) !== defaultValue) {

@@ -6,11 +6,39 @@ export default function MessageInput({
   onSend,
   inquiryProduct,
   onSendInquiry,
+  selectedImage,
+  onSelectImage,
+  onRemoveImage,
+  uploadingImage = false,
 }) {
   const textareaRef = useRef(null);
+  const menuRef = useRef(null);
+  const galleryInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   const [quantity, setQuantity] = useState(1);
+  const [showMenu, setShowMenu] = useState(false);
 
+  // Close menu on click outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    }
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [showMenu]);
+
+  // Auto-grow textarea up to 3 lines
   useEffect(() => {
     const textarea = textareaRef.current;
 
@@ -36,8 +64,22 @@ export default function MessageInput({
   function handleKeyDown(e) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      onSend();
+      if (!uploadingImage && (value.trim() || selectedImage)) {
+        onSend();
+      }
     }
+  }
+
+  function handleFileSelected(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input so re-selecting same file works
+    e.target.value = "";
+    setShowMenu(false);
+
+    const previewUrl = URL.createObjectURL(file);
+    onSelectImage?.({ file, previewUrl });
   }
 
   function decreaseQuantity() {
@@ -101,8 +143,27 @@ export default function MessageInput({
 
   const isMaxQuantity = hasStock && Number(quantity) >= stock;
 
+  const canSend = Boolean(value.trim() || selectedImage) && !uploadingImage;
+
   return (
-    <div className="absolute inset-x-0 bottom-0 z-40 border-t p-3 md:bottom-16 lg:bottom-0 bg-[#FAFAFA] border-[#DDD]">
+    <div className="shrink-0 w-full border-t p-3 bg-[#FAFAFA] border-[#DDD] z-10">
+      {/* Hidden file inputs for Camera and Gallery */}
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileSelected}
+      />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileSelected}
+      />
+
       {inquiryProduct && (
         <div
           className="mb-3 rounded-2xl border p-3"
@@ -151,7 +212,7 @@ export default function MessageInput({
                 Quantity
               </p>
 
-              <div className="flex h-10 items-center rounded-xl border border-gray-200 bg-black">
+              <div className="flex h-10 items-center rounded-xl border border-gray-200 bg-white">
                 <button
                   type="button"
                   onClick={decreaseQuantity}
@@ -233,31 +294,129 @@ export default function MessageInput({
         </div>
       )}
 
-      <div className="flex w-full items-end rounded-2xl border overflow-hidden bg-[#FAFAFA] border-[#DDDDDD]">
-        <button
-          type="button"
-          className="h-12 w-12 shrink-0 rounded-full text-[#2D6A4F] transition hover:text-[#1B4332]"
-        >
-          <i className="ri-add-large-fill text-lg" />
-        </button>
+      {/* Main Input Container */}
+      <div className="relative flex flex-col w-full rounded-2xl border bg-[#FAFAFA] border-[#DDDDDD] shadow-xs focus-within:border-[#2D6A4F] focus-within:shadow-md transition-all">
+        {/* Selected Image Preview */}
+        {selectedImage?.previewUrl && (
+          <div className="p-3 pb-1 flex items-center gap-3 border-b border-gray-200/60 bg-gray-50/50 rounded-t-2xl">
+            <div className="relative inline-block">
+              <img
+                src={selectedImage.previewUrl}
+                alt="Selected preview"
+                className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-xl border-2 border-[#2D6A4F] shadow-sm"
+              />
+              {uploadingImage ? (
+                <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center text-white">
+                  <i className="ri-loader-4-line text-2xl animate-spin" />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onRemoveImage}
+                  className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md transition cursor-pointer"
+                  title="Remove image"
+                >
+                  <i className="ri-close-line text-xs font-bold" />
+                </button>
+              )}
+            </div>
 
-        <textarea
-          ref={textareaRef}
-          rows={1}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
-          className="min-w-0 flex-1 resize-none overflow-y-auto py-3 focus:border-[#2D6A4F] focus:outline-none"
-        />
+            <div className="text-xs text-gray-600">
+              <p className="font-semibold text-gray-800 flex items-center gap-1">
+                <i className="ri-image-fill text-[#2D6A4F]" /> Photo selected
+              </p>
+              <p className="text-gray-500 mt-0.5">
+                {uploadingImage
+                  ? "Uploading photo..."
+                  : "Type an optional caption or press send"}
+              </p>
+            </div>
+          </div>
+        )}
 
-        <button
-          type="button"
-          onClick={onSend}
-          className="h-12 w-12 shrink-0 rounded-2xl text-[#2D6A4F] transition hover:text-[#1B4332]"
-        >
-          <i className="ri-send-ins-fill text-xl" />
-        </button>
+        <div className="flex w-full items-end">
+          {/* + Attachment Button with Menu */}
+          <div className="relative" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setShowMenu((prev) => !prev)}
+              aria-label="Add attachment"
+              title="Add photo or media"
+              className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-[#2D6A4F] transition hover:text-[#1B4332] hover:bg-black/5 cursor-pointer ${showMenu ? "rotate-45" : "rotate-0"
+                }`}
+            >
+              <i className="ri-add-large-fill text-lg font-bold transition-transform duration-200" />
+            </button>
+
+            {/* Menu Popover */}
+            {showMenu && (
+              <div className="absolute bottom-14 left-0 z-50 w-52 bg-white rounded-2xl shadow-xl border border-gray-200 p-1.5 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-150">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMenu(false);
+                    cameraInputRef.current?.click();
+                  }}
+                  className="flex sm:hidden items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-gray-700 hover:bg-green-50 hover:text-[#2D6A4F] transition cursor-pointer"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-green-100/70 text-[#2D6A4F] flex items-center justify-center shrink-0">
+                    <i className="ri-camera-fill text-base" />
+                  </div>
+                  <span>Take Photo</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMenu(false);
+                    galleryInputRef.current?.click();
+                  }}
+                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-gray-700 hover:bg-green-50 hover:text-[#2D6A4F] transition cursor-pointer"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100/70 text-[#2D6A4F] flex items-center justify-center shrink-0">
+                    <i className="ri-image-2-fill text-base" />
+                  </div>
+                  <span>Choose from Gallery</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={
+              selectedImage
+                ? "Add a caption (optional)..."
+                : "Type a message..."
+            }
+            className="min-w-0 flex-1 resize-none overflow-y-auto py-3 focus:outline-none bg-transparent text-sm font-medium text-gray-800 placeholder-gray-400"
+          />
+
+          <button
+            type="button"
+            onClick={() => {
+              if (canSend) {
+                onSend();
+              }
+            }}
+            disabled={!canSend}
+            aria-label="Send message"
+            className={`h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center transition ${canSend
+                ? "text-[#2D6A4F] hover:text-[#1B4332] cursor-pointer hover:scale-105 active:scale-95"
+                : "text-gray-300 cursor-not-allowed"
+              }`}
+          >
+            {uploadingImage ? (
+              <i className="ri-loader-4-line text-xl animate-spin text-[#2D6A4F]" />
+            ) : (
+              <i className="ri-send-plane-fill text-xl" />
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ export default function UserIdentity({
   const isCurrentUser = currentUserId && user.uid === currentUserId;
 
   const isVerified =
-    showVerified && user.role === "farmer" && user.verified === true;
+    showVerified && user.verified === true;
 
   const sizes = {
     sm: {
@@ -57,43 +57,43 @@ export default function UserIdentity({
         </div>
       )}
       {!onlyPic && (
-      <div className="min-w-0">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <p
-            className={`truncate font-semibold ${currentSize.name} ${colorWhite ? "text-gray-200" : "text-gray-900"}`}
-          >
-            {user.fullname || "Unknown User"}
-          </p>
-
-          {isVerified && (
-            <span
-              title="Verified Farmer"
-              aria-label="Verified Farmer"
-              className={`inline-flex shrink-0 items-center text-[#2D6A4F] ${currentSize.badge}`}
+        <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <p
+              className={`truncate font-semibold ${currentSize.name} ${colorWhite ? "text-gray-200" : "text-gray-900"}`}
             >
-              <i className="ri-verified-badge-fill" />
-            </span>
+              {user.fullname || "Unknown User"}
+            </p>
+
+            {isVerified && (
+              <span
+                title="Verified Farmer"
+                aria-label="Verified Farmer"
+                className={`inline-flex shrink-0 items-center text-[#2D6A4F] ${currentSize.badge}`}
+              >
+                <i className="ri-verified-badge-fill" />
+              </span>
+            )}
+
+            {isCurrentUser && (
+              <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+                You
+              </span>
+            )}
+          </div>
+
+          {showUsername && user.username && (
+            <p className={`truncate ${currentSize.username} ${colorWhite ? "text-gray-400" : "text-gray-500"} `}>
+              @{user.username}
+            </p>
           )}
 
-          {isCurrentUser && (
-            <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
-              You
-            </span>
+          {showRole && user.role && (
+            <p className={`truncate ${currentSize.username} ${colorWhite ? "text-gray-400" : "text-gray-500"}`}>
+              {user.role}
+            </p>
           )}
-        </div>
-
-        {showUsername && user.username && (
-          <p className={`truncate ${currentSize.username} ${colorWhite ? "text-gray-400" : "text-gray-500"} `}>
-            @{user.username}
-          </p>
-        )}
-
-        {showRole && user.role && (
-          <p className={`truncate ${currentSize.username} ${colorWhite ? "text-gray-400" : "text-gray-500"}`}>
-            {user.role}
-          </p>
-        )}
-      </div>)}
+        </div>)}
     </div>
   );
 }

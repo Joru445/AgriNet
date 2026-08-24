@@ -1,42 +1,32 @@
 const categories = [
-  "All",
-  "Vegetables",
-  "Fruits",
-  "Grains",
-  "Livestock",
-  "Herbs",
-  "Root Crops",
+  { id: "All", label: "All Produce", icon: "ri-apps-2-line" },
+  { id: "Vegetables", label: "Vegetables", icon: "ri-plant-line" },
+  { id: "Fruits", label: "Fruits", icon: "ri-seedling-line" },
+  { id: "Grains", label: "Grains & Rice", icon: "ri-leaf-line" },
+  { id: "Livestock", label: "Livestock", icon: "ri-heart-pulse-line" },
+  { id: "Poultry", label: "Poultry", icon: "ri-heart-line" },
+  { id: "Herbs", label: "Herbs", icon: "ri-medicine-bottle-line" },
+  { id: "Root Crops", label: "Root Crops", icon: "ri-earth-line" },
 ];
-
-const icons = {
-  All: "ri-apps-line",
-  Vegetables: "ri-plant-line",
-  Fruits: "ri-seedling-line",
-  Grains: "ri-leaf-line",
-  Livestock: "ri-heart-line",
-  Herbs: "ri-medicine-bottle-line",
-  "Root Crops": "ri-earth-line",
-};
 
 export default function CategoryChips({ value, onChange }) {
   return (
-    <div className="max-w-4xl mx-auto mt-6 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-      {categories.map((category) => {
-        const active = value === category;
+    <div className="w-full flex items-center justify-start sm:justify-center gap-2 overflow-x-auto py-2 scrollbar-none">
+      {categories.map((cat) => {
+        const active = (value || "All") === cat.id;
 
         return (
           <button
-            key={category}
-            onClick={() => onChange(category)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
-              active
-                ? "bg-[#2D6A4F] text-white"
-                : "bg-white border border-gray-200 text-gray-700 hover:border-[#2D6A4F] hover:text-[#2D6A4F]"
-            }`}
+            key={cat.id}
+            type="button"
+            onClick={() => onChange(cat.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 cursor-pointer shadow-2xs ${active
+              ? "bg-[#1B4332] text-white shadow-md shadow-[#1B4332]/20 ring-2 ring-[#2D6A4F]/30 scale-[1.02]"
+              : "bg-white border border-[#DCE8DF] text-gray-700 hover:border-[#2D6A4F] hover:text-[#2D6A4F] hover:bg-[#F4F9F5]"
+              }`}
           >
-            <i className={icons[category]} />
-
-            {category === "All" ? "All Products" : category}
+            <i className={`${cat.icon} text-base ${active ? "text-emerald-300" : "text-[#2D6A4F]"}`} />
+            <span>{cat.label}</span>
           </button>
         );
       })}

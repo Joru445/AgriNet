@@ -18,11 +18,15 @@
 }
 
 html {
+  height: 100%;
   scroll-behavior: smooth;
+  overscroll-behavior: none;
 }
 
 body {
   margin: 0;
+  height: 100%;
+  overscroll-behavior: none;
   background-color: var(--agri-bg);
   color: #1a2e1f;
   -webkit-font-smoothing: antialiased;
@@ -43,4 +47,24 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #52b788;
+}
+
+/* ── Messenger-like tap glow effect ── */
+@keyframes tapGlow {
+  0% {
+    transform: scale(0.88);
+    opacity: 0.85;
+  }
+  40% {
+    transform: scale(1.02);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.06);
+    opacity: 0;
+  }
+}
+
+.animate-tap-glow {
+  animation: tapGlow 380ms ease-out forwards;
 }

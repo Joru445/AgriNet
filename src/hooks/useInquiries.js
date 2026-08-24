@@ -14,6 +14,7 @@ import {
 
 import { getProductById } from "../services/product.service";
 import { getUserProfile } from "../services/user.service";
+import { getFarmerById } from "../services/farmer.service";
 
 import { showToast } from "../utils/toast";
 
@@ -64,19 +65,12 @@ export default function useInquiries() {
 
   /*
    * --------------------------------------------------
-   * Load legacy inquiry data
+   * Load related & legacy inquiry data
    * --------------------------------------------------
    */
 
   useEffect(() => {
-    const legacyInquiries = inquiries.filter(
-      (inquiry) =>
-        !inquiry.productSnapshot ||
-        !inquiry.consumerSnapshot ||
-        !inquiry.farmerSnapshot,
-    );
-
-    if (!legacyInquiries.length) {
+    if (!inquiries.length) {
       setInquiryData({});
       return;
     }
@@ -84,42 +78,75 @@ export default function useInquiries() {
     let cancelled = false;
 
     async function loadRelatedData() {
-      const results = await Promise.all(
-        legacyInquiries.map(async (inquiry) => {
-          try {
-            const [product, consumer] = await Promise.all([
-              getProductById(inquiry.productId),
-              getUserProfile(inquiry.consumerId),
-            ]);
+      const isConsumer = profile?.role === "consumer";
+      const farmerIds = isConsumer
+        ? [...new Set(inquiries.map((i) => i.farmerId).filter(Boolean))]
+        : [];
 
-            return {
-              id: inquiry.id,
-              product,
-              consumer,
-            };
-          } catch (error) {
-            console.error("Failed to load inquiry data:", error);
-
-            return {
-              id: inquiry.id,
-              product: null,
-              consumer: null,
-            };
-          }
-        }),
+      const legacyInquiries = inquiries.filter(
+        (inquiry) => !inquiry.productSnapshot || !inquiry.consumerSnapshot,
       );
 
-      if (cancelled) {
-        return;
+      try {
+        const [farmerProfiles, legacyResults] = await Promise.all([
+          Promise.all(
+            farmerIds.map(async (fId) => {
+              try {
+                const farmer = await getFarmerById(fId);
+                return [fId, farmer];
+              } catch (_) {
+                return [fId, null];
+              }
+            }),
+          ),
+          Promise.all(
+            legacyInquiries.map(async (inquiry) => {
+              try {
+                const [product, consumer] = await Promise.all([
+                  !inquiry.productSnapshot
+                    ? getProductById(inquiry.productId)
+                    : null,
+                  !inquiry.consumerSnapshot
+                    ? getUserProfile(inquiry.consumerId)
+                    : null,
+                ]);
+                return { id: inquiry.id, product, consumer };
+              } catch (_) {
+                return { id: inquiry.id, product: null, consumer: null };
+              }
+            }),
+          ),
+        ]);
+
+        if (cancelled) return;
+
+        const farmerMap = new Map(farmerProfiles.filter(([, f]) => f != null));
+        const legacyMap = new Map(legacyResults.map((r) => [r.id, r]));
+
+        const mapped = {};
+        inquiries.forEach((inquiry) => {
+          const legacy = legacyMap.get(inquiry.id);
+          const farmer = farmerMap.get(inquiry.farmerId);
+
+          mapped[inquiry.id] = {
+            product: legacy?.product ?? null,
+            consumer: legacy?.consumer ?? null,
+            farmer: farmer
+              ? {
+                  uid: farmer.uid,
+                  fullname: farmer.fullname,
+                  username: farmer.username,
+                  profilePicture: farmer.profilePicture,
+                  verified: farmer.verified === true,
+                }
+              : null,
+          };
+        });
+
+        setInquiryData(mapped);
+      } catch (error) {
+        console.error("Failed to load inquiry related data:", error);
       }
-
-      const mapped = {};
-
-      results.forEach((item) => {
-        mapped[item.id] = item;
-      });
-
-      setInquiryData(mapped);
     }
 
     loadRelatedData();
@@ -127,7 +154,7 @@ export default function useInquiries() {
     return () => {
       cancelled = true;
     };
-  }, [inquiries]);
+  }, [inquiries, profile?.role]);
 
   /*
    * --------------------------------------------------

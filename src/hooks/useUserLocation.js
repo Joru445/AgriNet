@@ -25,7 +25,7 @@ export default function useUserLocation(autoLoad = true) {
 
       return location;
     } catch (error) {
-      console.error("Location error:", error);
+      console.warn("Location not available:", error.message || error);
 
       setLocationError(error);
 

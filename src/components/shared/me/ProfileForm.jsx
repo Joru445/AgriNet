@@ -52,8 +52,8 @@ export default function ProfileForm({ form, editing, onChange }) {
           </label>
 
           <input
-            name="contactNumber"
-            value={form.phone}
+            name="phone"
+            value={form.phone || ""}
             onChange={onChange}
             disabled={!editing}
             placeholder="09XXXXXXXXX"

@@ -8,6 +8,7 @@ import Button from "../../ui/Button";
 export default function ProfileHeader({
   profile,
   editing,
+  uploadingAvatar = false,
 
   onEdit,
   onCancel,
@@ -85,39 +86,52 @@ export default function ProfileHeader({
                 </div>
               )}
 
-              {/* Avatar Edit */}
-              {editing && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => fileInput.current?.click()}
-                    className="
-                      absolute
-                      bottom-1
-                      right-1
-                      flex
-                      h-9 w-9
-                      items-center justify-center
-                      rounded-full
-                      bg-[#2D6A4F]
-                      text-white
-                      shadow-md
-                      transition-colors
-                      hover:bg-[#1B4332]
-                    "
-                  >
-                    <i className="ri-camera-line text-lg" />
-                  </button>
+              {/* Avatar Edit Camera Button - always clickable to change photo */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!editing) {
+                    onEdit?.();
+                  }
+                  fileInput.current?.click();
+                }}
+                disabled={uploadingAvatar}
+                aria-label="Change profile picture"
+                className="
+                  absolute
+                  bottom-1
+                  right-1
+                  flex
+                  h-9 w-9
+                  items-center justify-center
+                  rounded-full
+                  bg-[#2D6A4F]
+                  text-white
+                  shadow-md
+                  transition-transform
+                  hover:scale-105
+                  hover:bg-[#1B4332]
+                  active:scale-95
+                  disabled:opacity-75
+                  cursor-pointer
+                  z-10
+                "
+                title="Change photo"
+              >
+                {uploadingAvatar ? (
+                  <i className="ri-loader-4-line text-lg animate-spin" />
+                ) : (
+                  <i className="ri-camera-line text-lg" />
+                )}
+              </button>
 
-                  <input
-                    hidden
-                    ref={fileInput}
-                    type="file"
-                    accept="image/*"
-                    onChange={onAvatarChange}
-                  />
-                </>
-              )}
+              <input
+                ref={fileInput}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={onAvatarChange}
+              />
             </div>
 
             {/* Profile Details */}

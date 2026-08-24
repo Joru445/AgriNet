@@ -25,13 +25,14 @@ function getActionMessage(status, role, isReviewed) {
 
   if (role === "consumer") {
     if (normalized === "accepted") return "Farmer accepted your inquiry!";
-    if (normalized === "ongoing") return "Transaction is ongoing. Mark complete when your product is received.";
+    if (normalized === "ongoing") return "Transaction is ongoing";
     if (normalized === "awaiting_proof") return "Please upload the product you received.";
     if (normalized === "completed" && !isReviewed) return "Transaction done! Rate the product.";
   }
 
   if (role === "farmer") {
     if (normalized === "accepted") return "New inquiry accepted — start the transaction!";
+    if (normalized === "ongoing") return "Transaction is ongoing";
     if (normalized === "proof_submitted") return "Consumer submitted proof — review it!";
   }
 

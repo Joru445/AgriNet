@@ -15,13 +15,13 @@ export default function AppLayout() {
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
       <div
-        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ml-0 ${
+        className={`flex-1 flex flex-col h-screen h-[100dvh] max-h-[100dvh] overflow-hidden transition-all duration-300 ml-0 ${
           collapsed ? "lg:ml-20" : "lg:ml-64"
         }`}
       >
         <Header user={profile} collapsed={collapsed} />
 
-        <div className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--agri-bg)' }}>
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-none" style={{ backgroundColor: 'var(--agri-bg)' }}>
           <Outlet />
         </div>
 

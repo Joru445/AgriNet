@@ -70,9 +70,20 @@ export default function TransactionSummary({ inquiry }) {
         <div className="min-w-0">
           <p className="text-xs text-gray-500">Farmer</p>
 
-          <p className="truncate text-sm font-semibold text-gray-900">
-            {farmer.fullname || farmer.username || "Farmer"}
-          </p>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="truncate text-sm font-semibold text-gray-900">
+              {farmer.fullname || farmer.username || "Farmer"}
+            </p>
+            {farmer.verified && (
+              <span
+                title="Verified Farmer"
+                aria-label="Verified Farmer"
+                className="inline-flex shrink-0 items-center text-[#2D6A4F] text-xs"
+              >
+                <i className="ri-verified-badge-fill" />
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </section>
