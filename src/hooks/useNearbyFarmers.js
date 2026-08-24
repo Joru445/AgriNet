@@ -42,18 +42,18 @@ export default function useNearbyFarmers() {
   const [farmers, setFarmers] = useState([]);
 
   const [maxDistance, setMaxDistanceState] = useState(() => {
-    const stored = localStorage.getItem("agri_consumer_distance");
-    return stored ? Number(stored) : 10;
+    const stored = localStorage.getItem("agri_nearby_distance");
+    return stored ? Number(stored) : 3;
   });
 
   const setMaxDistance = (dist) => {
-    const val = Number(dist) || 10;
-    localStorage.setItem("agri_consumer_distance", String(val));
+    const val = Number(dist) || 3;
+    localStorage.setItem("agri_nearby_distance", String(val));
     setMaxDistanceState(val);
   };
 
   useEffect(() => {
-    const stored = localStorage.getItem("agri_consumer_distance");
+    const stored = localStorage.getItem("agri_nearby_distance");
     if (stored) {
       setMaxDistanceState(Number(stored));
     }

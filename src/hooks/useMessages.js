@@ -13,6 +13,8 @@ import {
 
 import { subscribeMessages, sendMessage } from "../services/message.service";
 
+import { uploadMessageImage } from "../services/cloudinary.service";
+
 import { getUserProfile, searchUsers } from "../services/user.service";
 
 import { getProductById } from "../services/product.service";
@@ -42,6 +44,22 @@ export default function useMessages() {
   const [search, setSearch] = useState("");
 
   const [message, setMessage] = useState("");
+  const [drafts, setDrafts] = useState(() => {
+    try {
+      const saved = localStorage.getItem("agri_message_drafts");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof navigator !== "undefined" ? navigator.onLine : true,
+  );
+  const [failedMessages, setFailedMessages] = useState([]);
+
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [userResults, setUserResults] = useState([]);
 
@@ -54,6 +72,64 @@ export default function useMessages() {
   const productCache = useRef(new Map());
 
   const searching = search.trim().length > 0;
+
+  const currentTargetKey = useMemo(() => {
+    if (activeConversation?.id) return activeConversation.id;
+    if (activeUser?.uid) return `user_${activeUser.uid}`;
+    return null;
+  }, [activeConversation?.id, activeUser?.uid]);
+
+  // Persist drafts to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("agri_message_drafts", JSON.stringify(drafts));
+    } catch (e) {
+      console.error("Failed to save drafts to localStorage", e);
+    }
+  }, [drafts]);
+
+  // Sync draft text when active conversation/user changes
+  useEffect(() => {
+    if (currentTargetKey) {
+      const savedDraft = drafts[currentTargetKey] || "";
+      setMessage(savedDraft);
+    } else {
+      setMessage("");
+    }
+  }, [currentTargetKey]);
+
+  // Listen to network status
+  useEffect(() => {
+    function handleOnline() {
+      setIsOnline(true);
+    }
+    function handleOffline() {
+      setIsOnline(false);
+      showToast.error("No internet connection.");
+    }
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  function handleMessageChange(val) {
+    setMessage(val);
+    if (!currentTargetKey) return;
+    setDrafts((prev) => {
+      if (!val || !val.trim()) {
+        if (!prev[currentTargetKey]) return prev;
+        const next = { ...prev };
+        delete next[currentTargetKey];
+        return next;
+      }
+      return { ...prev, [currentTargetKey]: val };
+    });
+  }
 
   /*
    * --------------------------------------------------
@@ -172,6 +248,7 @@ export default function useMessages() {
           },
 
           unreadCount: conversation.unreadCount?.[profile.uid] ?? 0,
+          rawUnreadCount: conversation.unreadCount || {},
         };
       });
 
@@ -515,40 +592,61 @@ export default function useMessages() {
    * --------------------------------------------------
    */
 
-  async function handleSend() {
+  async function handleSend(customImage = null) {
+    const activeImg = customImage || selectedImage;
     const text = message.trim();
 
-    if (!text) {
+    if (!text && !activeImg) {
+      return;
+    }
+
+    let conversationId = activeConversation?.id;
+
+    if (!conversationId && !activeUser) {
+      showToast.error("No user selected.");
+      return;
+    }
+
+    const currentKey = currentTargetKey;
+
+    // Check offline condition like Messenger
+    if (!navigator.onLine) {
+      const tempId = `failed_${Date.now()}`;
+      const failedMsg = {
+        id: tempId,
+        conversationId: conversationId || "temp",
+        senderId: profile.uid,
+        text,
+        type: activeImg ? "image" : "text",
+        imageUrl: activeImg ? activeImg.previewUrl : null,
+        status: "failed",
+        error: "No internet connection",
+        createdAt: { seconds: Math.floor(Date.now() / 1000) },
+      };
+
+      setFailedMessages((prev) => [...prev, failedMsg]);
+      setMessage("");
+      setSelectedImage(null);
+      if (currentKey) {
+        setDrafts((prev) => {
+          const next = { ...prev };
+          delete next[currentKey];
+          return next;
+        });
+      }
+
+      showToast.error("Unable to send. No internet connection.");
       return;
     }
 
     try {
-      let conversationId = activeConversation?.id;
+      if (activeImg) {
+        setUploadingImage(true);
+      }
 
-      /*
-       * No conversation exists yet.
-       *
-       * This means we're currently in:
-       *
-       * /messages?user=uid
-       */
       if (!conversationId) {
-        if (!activeUser) {
-          showToast.error("No user selected.");
-
-          return;
-        }
-
-        /*
-         * Create the conversation using the
-         * selected user.
-         */
         conversationId = await createConversation(profile, activeUser);
 
-        /*
-         * Immediately replace the temporary
-         * user URL with the real conversation URL.
-         */
         setSearchParams(
           {
             conversation: conversationId,
@@ -559,22 +657,103 @@ export default function useMessages() {
         );
       }
 
-      /*
-       * Send the actual message.
-       */
+      let imageUrl = null;
+      let imageId = null;
+
+      if (activeImg?.file) {
+        const uploaded = await uploadMessageImage(activeImg.file);
+        imageUrl = uploaded.url;
+        imageId = uploaded.publicId;
+      }
+
       await sendMessage({
         conversationId,
         senderId: profile.uid,
         text,
-        type: "text",
+        type: activeImg ? "image" : "text",
+        imageUrl,
+        imageId,
       });
 
       setMessage("");
+      setSelectedImage(null);
+      if (currentKey) {
+        setDrafts((prev) => {
+          const next = { ...prev };
+          delete next[currentKey];
+          return next;
+        });
+      }
     } catch (error) {
       console.error("Failed to send message:", error);
 
-      showToast.error(error.message || "Failed to send message.");
+      const tempId = `failed_${Date.now()}`;
+      const failedMsg = {
+        id: tempId,
+        conversationId: conversationId || "temp",
+        senderId: profile.uid,
+        text,
+        type: activeImg ? "image" : "text",
+        imageUrl: activeImg ? activeImg.previewUrl : null,
+        status: "failed",
+        error: error.message || "Failed to send message",
+        createdAt: { seconds: Math.floor(Date.now() / 1000) },
+      };
+
+      setFailedMessages((prev) => [...prev, failedMsg]);
+      setMessage("");
+      setSelectedImage(null);
+      if (currentKey) {
+        setDrafts((prev) => {
+          const next = { ...prev };
+          delete next[currentKey];
+          return next;
+        });
+      }
+
+      showToast.error("Unable to send message.");
+    } finally {
+      setUploadingImage(false);
     }
+  }
+
+  async function retryMessage(failedMsg) {
+    setFailedMessages((prev) => prev.filter((m) => m.id !== failedMsg.id));
+
+    if (!navigator.onLine) {
+      setFailedMessages((prev) => [...prev, failedMsg]);
+      showToast.error("Unable to send. No internet connection.");
+      return;
+    }
+
+    try {
+      let conversationId = activeConversation?.id;
+      if (!conversationId && activeUser) {
+        conversationId = await createConversation(profile, activeUser);
+        setSearchParams({ conversation: conversationId }, { replace: true });
+      }
+
+      if (!conversationId) {
+        throw new Error("No conversation found");
+      }
+
+      await sendMessage({
+        conversationId,
+        senderId: profile.uid,
+        text: failedMsg.text || "",
+        type: failedMsg.type || "text",
+        imageUrl: failedMsg.imageUrl || null,
+        imageId: failedMsg.imageId || null,
+      });
+    } catch (err) {
+      console.error("Failed to retry message:", err);
+      setFailedMessages((prev) => [...prev, failedMsg]);
+      showToast.error("Unable to send message.");
+    }
+  }
+
+  function deleteFailedMessage(id) {
+    setFailedMessages((prev) => prev.filter((m) => m.id !== id));
   }
 
   /*
@@ -730,6 +909,27 @@ export default function useMessages() {
     );
   }, [conversations, search]);
 
+  const activeConversationLive = useMemo(() => {
+    if (!activeConversation?.id) return activeConversation;
+    const found = conversations.find((c) => c.id === activeConversation.id);
+    if (!found) return activeConversation;
+    return {
+      ...activeConversation,
+      ...found,
+      otherUser: activeConversation.otherUser || found.otherUser,
+    };
+  }, [activeConversation, conversations]);
+
+  const combinedMessages = useMemo(() => {
+    const targetConversationId = activeConversation?.id;
+    const currentFailed = failedMessages.filter(
+      (m) =>
+        (targetConversationId && m.conversationId === targetConversationId) ||
+        (m.conversationId === "temp" && Boolean(activeUser)),
+    );
+    return [...messages, ...currentFailed];
+  }, [messages, failedMessages, activeConversation?.id, activeUser]);
+
   /*
    * --------------------------------------------------
    * Return
@@ -745,10 +945,10 @@ export default function useMessages() {
     filteredConversations,
     userResults,
 
-    activeConversation,
+    activeConversation: activeConversationLive,
     activeUser,
 
-    messages,
+    messages: combinedMessages,
 
     inquiryProduct,
     inquiryProducts,
@@ -761,11 +961,20 @@ export default function useMessages() {
     setSearch,
 
     message,
-    setMessage,
+    setMessage: handleMessageChange,
+
+    selectedImage,
+    setSelectedImage,
+    uploadingImage,
+
+    drafts,
+    isOnline,
 
     selectConversation,
     selectUser,
 
     sendMessage: handleSend,
+    retryMessage,
+    deleteFailedMessage,
   };
 }

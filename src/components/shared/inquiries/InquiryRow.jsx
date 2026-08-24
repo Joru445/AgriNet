@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { getMessagesPath, getInquiriesPath } from "../../../utils/routes";
@@ -6,6 +7,7 @@ import { useUnreadInquiries } from "../../../context/UnreadInquiriesContext";
 
 import Inquiry from "./Inquiry";
 import InquiryStatusBadge from "./InquiryStatusBadge";
+import CancelInquiryModal from "./CancelInquiryModal";
 
 export default function InquiryRow({
   inquiry,
@@ -18,6 +20,7 @@ export default function InquiryRow({
 }) {
   const navigate = useNavigate();
   const { acknowledgeInquiry } = useUnreadInquiries();
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const status = normalizeStatus(inquiry.status);
 
@@ -51,9 +54,12 @@ export default function InquiryRow({
   }
 
   function cancelInquiry() {
-    if (window.confirm("Cancel this inquiry?")) {
-      onStatusChange(inquiry.id, "cancelled");
-    }
+    setShowCancelModal(true);
+  }
+
+  function handleConfirmCancel() {
+    onStatusChange(inquiry.id, "cancelled");
+    setShowCancelModal(false);
   }
 
   function openCompletionPage() {
@@ -80,10 +86,10 @@ export default function InquiryRow({
   const dots = getRedDots(status, userRole, isReviewed);
 
   return (
-    <article className="flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs transition-all hover:shadow-md">
+    <article className="flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-md transition-all hover:shadow-xl">
       <div>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-3 sm:px-5">
+        <div className="flex items-center justify-between border-b border-gray-300 bg-gray-50 px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2">
             <i className="ri-shopping-bag-3-line text-[#2D6A4F]" />
 
@@ -249,6 +255,13 @@ export default function InquiryRow({
           </span>
         )}
       </div>
+
+      <CancelInquiryModal
+        open={showCancelModal}
+        onCancel={() => setShowCancelModal(false)}
+        onConfirm={handleConfirmCancel}
+        cancelling={updating}
+      />
     </article>
   );
 }

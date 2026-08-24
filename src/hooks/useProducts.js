@@ -29,11 +29,13 @@ export default function useProducts() {
 
   const [editingProduct, setEditingProduct] = useState(null);
 
-  const loadProducts = useCallback(async () => {
+  const loadProducts = useCallback(async (isInitial = false) => {
     if (!profile?.uid) return;
 
     try {
-      setLoading(true);
+      if (isInitial) {
+        setLoading(true);
+      }
 
       const data = await getFarmerProducts(profile.uid);
 
@@ -42,19 +44,24 @@ export default function useProducts() {
       console.error(error);
       showToast.error("Failed to load products.");
     } finally {
-      setLoading(false);
+      if (isInitial) {
+        setLoading(false);
+      }
     }
   }, [profile?.uid]);
 
   useEffect(() => {
-    loadProducts();
+    loadProducts(true);
   }, [loadProducts]);
 
   const filteredProducts = useMemo(() => {
+    const term = search.trim().toLowerCase();
+
     return products.filter((product) => {
-      const matchesSearch = product.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
+      const matchesSearch =
+        !term ||
+        product.name?.toLowerCase().includes(term) ||
+        product.category?.toLowerCase().includes(term);
 
       const matchesCategory =
         category === "all" || product.category === category;
@@ -120,8 +127,8 @@ export default function useProducts() {
 
       showToast.success("Product created.");
 
-      await loadProducts();
       closeModal();
+      await loadProducts(false);
     } catch (error) {
       console.error(error);
       showToast.error(error.message);
@@ -143,8 +150,8 @@ export default function useProducts() {
 
       showToast.success("Product updated.");
 
-      await loadProducts();
       closeModal();
+      await loadProducts(false);
     } catch (error) {
       console.error(error);
       showToast.error(error.message);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { uploadProfilePicture } from "../services/cloudinary.service";
 import { updateUser, getUserProfile } from "../services/user.service";
@@ -12,34 +12,34 @@ import {
 import { showToast } from "../utils/toast";
 
 export default function useProfile(profile) {
-  const [loading, setLoading] = useState(true);
-
+  const [loading, setLoading] = useState(!profile?.uid);
   const [editing, setEditing] = useState(false);
-
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const hasLoadedRef = useRef(false);
 
-  const [form, setForm] = useState({
-    fullname: "",
-    username: "",
-    email: "",
-    phone: "",
-    bio: "",
+  const [form, setForm] = useState(() => ({
+    fullname: profile?.fullname || "",
+    username: profile?.username || "",
+    email: profile?.email || "",
+    phone: profile?.phone || "",
+    bio: profile?.bio || "",
 
-    role: "",
+    role: profile?.role || "",
 
-    location: {
+    location: profile?.location || {
       address: "",
       lat: null,
       lng: null,
     },
 
-    farmName: "",
-    description: "",
-    rating: 0,
-    verified: false,
-    profilePicture: "",
-    profilePictureId: "",
-  });
+    farmName: profile?.farmName || "",
+    description: profile?.description || "",
+    rating: profile?.rating || 0,
+    verified: profile?.verified === true,
+    profilePicture: profile?.profilePicture || "",
+    profilePictureId: profile?.profilePictureId || "",
+  }));
 
   const [stats, setStats] = useState({
     products: 0,
@@ -50,9 +50,10 @@ export default function useProfile(profile) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    const fieldName = name === "contactNumber" ? "phone" : name;
 
-    if (name.startsWith("location.")) {
-      const key = name.split(".")[1];
+    if (fieldName.startsWith("location.")) {
+      const key = fieldName.split(".")[1];
 
       setForm((prev) => ({
         ...prev,
@@ -67,7 +68,7 @@ export default function useProfile(profile) {
 
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [fieldName]: value,
     }));
   };
 
@@ -99,7 +100,7 @@ export default function useProfile(profile) {
           description: form.description,
         });
       }
-      await loadProfile();
+      await loadProfile(false);
 
       showToast.success("Profile updated!");
 
@@ -112,7 +113,7 @@ export default function useProfile(profile) {
   }
 
   async function handleCancel() {
-    await loadProfile();
+    await loadProfile(false);
     setEditing(false);
   }
 
@@ -138,41 +139,65 @@ export default function useProfile(profile) {
     }
   }, []);
 
-  const loadProfile = useCallback(async () => {
-    if (!profile?.uid) return;
+  const loadProfile = useCallback(
+    async (isInitial = false) => {
+      if (!profile?.uid) return;
 
-    try {
-      setLoading(true);
+      try {
+        if (isInitial && !hasLoadedRef.current) {
+          setLoading(true);
+        }
 
-      const user = await getUserProfile(profile.uid);
+        const user = await getUserProfile(profile.uid);
 
-      if (!user) return;
+        if (!user) return;
 
-      let rating = 0;
-      let farmer = null;
+        let rating = 0;
+        let farmer = null;
 
-      if (user.role === "farmer") {
-        farmer = await getFarmerById(profile.uid);
+        if (user.role === "farmer") {
+          farmer = await getFarmerById(profile.uid);
 
-        rating = await loadStats(profile.uid);
+          rating = await loadStats(profile.uid);
+        }
+
+        setForm((prev) => ({
+          ...user,
+          ...farmer,
+          rating,
+          profilePicture: prev.profilePicture || user.profilePicture || "",
+          profilePictureId: prev.profilePictureId || user.profilePictureId || "",
+        }));
+
+        hasLoadedRef.current = true;
+      } finally {
+        setLoading(false);
       }
-
-      setForm({
-        ...user,
-        ...farmer,
-        rating,
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [loadStats, profile?.uid]);
+    },
+    [loadStats, profile?.uid],
+  );
 
   async function handleAvatar(e) {
     const file = e.target.files?.[0];
 
     if (!file) return;
 
+    // Reset value so picking the same file works
+    e.target.value = "";
+
+    // IMMEDIATELY switch to editing mode so "Save Changes" is visible!
+    setEditing(true);
+
     try {
+      setUploadingAvatar(true);
+
+      // Instant local preview for immediate visual feedback without waiting
+      const localPreview = URL.createObjectURL(file);
+      setForm((prev) => ({
+        ...prev,
+        profilePicture: localPreview,
+      }));
+
       const image = await uploadProfilePicture(file);
 
       setForm((prev) => ({
@@ -181,19 +206,26 @@ export default function useProfile(profile) {
         profilePictureId: image.publicId,
       }));
 
-      showToast.success("Profile picture uploaded.");
+      setEditing(true);
+
+      showToast.success("Photo selected. Click Save Changes to save.");
     } catch (error) {
-      showToast.error(error.message);
+      showToast.error(error.message || "Failed to upload profile picture.");
+    } finally {
+      setUploadingAvatar(false);
     }
   }
 
   useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+    if (!hasLoadedRef.current && profile?.uid) {
+      loadProfile(true);
+    }
+  }, [loadProfile, profile?.uid]);
 
   return {
     loading,
     saving,
+    uploadingAvatar,
 
     editing,
     setEditing,

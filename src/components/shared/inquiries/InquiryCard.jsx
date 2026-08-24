@@ -70,7 +70,7 @@ export default function InquiryCard({
   const primaryLabel = getPrimaryLabel(status, userRole, isReviewed);
 
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs transition-all hover:shadow-lg hover:-translate-y-1">
+    <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-md transition-all hover:shadow-xl hover:-translate-y-1">
       {/* Red dot */}
       {showDot && (
         <span className="absolute top-3 right-3 flex h-3.5 w-3.5 z-20">
@@ -125,26 +125,26 @@ export default function InquiryCard({
         </div>
 
         {/* Price & Total */}
-        <div className="rounded-xl bg-[#2D6A4F]/5 p-2.5">
+        <div className="rounded-xl bg-[#F4F9F6] border border-[#D5E7DC] p-2.5">
           <div className="flex items-baseline justify-between">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
               Total Amount
             </span>
-            <span className="text-lg font-extrabold text-[#2D6A4F]">
+            <span className="text-lg font-black text-[#1B4332]">
               ₱{total.toLocaleString()}
             </span>
           </div>
         </div>
 
         {/* Counterparty & Date */}
-        <div className="flex items-center justify-between border-t border-gray-100 pt-2.5 text-xs text-gray-500">
+        <div className="flex items-center justify-between border-t border-gray-200 pt-2.5 text-xs text-gray-500">
           <div className="flex items-center gap-2 min-w-0">
             <img
               src={counterparty?.profilePicture || defaultAvatar}
               alt=""
-              className="h-6 w-6 rounded-full object-cover border border-gray-200 shrink-0"
+              className="h-6 w-6 rounded-full object-cover border border-gray-300 shrink-0"
             />
-            <span className="truncate font-semibold text-gray-700">
+            <span className="truncate font-bold text-gray-800">
               {counterparty?.fullname ||
                 (counterparty?.username ? `@${counterparty.username}` : "Unknown")}
             </span>
@@ -159,14 +159,14 @@ export default function InquiryCard({
             )}
           </div>
 
-          <span className="text-[11px] font-medium text-gray-500 shrink-0 ml-2">
+          <span className="text-[11px] font-semibold text-gray-500 shrink-0 ml-2">
             {formatFullDateTime(getInquiryDisplayTime(inquiry))}
           </span>
         </div>
       </div>
 
       {/* Action row */}
-      <div className="flex items-center gap-2 border-t border-gray-100 bg-gray-50/70 p-3">
+      <div className="flex items-center gap-2 border-t border-gray-200 bg-gray-50 p-3">
         {/* Message button */}
         <button
           type="button"

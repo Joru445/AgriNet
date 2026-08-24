@@ -28,10 +28,19 @@ export default function Messages() {
     message,
     setMessage,
 
+    selectedImage,
+    setSelectedImage,
+    uploadingImage,
+
+    drafts,
+    isOnline,
+
     selectConversation,
     selectUser,
 
     sendMessage,
+    retryMessage,
+    deleteFailedMessage,
   } = useMessages();
 
   if (loading) {
@@ -46,6 +55,7 @@ export default function Messages() {
         <ConversationList
           conversations={filteredConversations}
           users={userResults}
+          drafts={drafts}
           search={search}
           onSearch={setSearch}
           activeConversation={activeConversation}
@@ -67,6 +77,13 @@ export default function Messages() {
             inquiryProducts={inquiryProducts}
             onSendInquiry={sendInquiry}
             onAcceptInquiry={acceptInquiry}
+            isOnline={isOnline}
+            onRetryMessage={retryMessage}
+            onDeleteFailedMessage={deleteFailedMessage}
+            selectedImage={selectedImage}
+            onSelectImage={setSelectedImage}
+            onRemoveImage={() => setSelectedImage(null)}
+            uploadingImage={uploadingImage}
           />
         ) : (
           <EmptyConversation hasChat/>

@@ -137,6 +137,7 @@ const initialForm = {
   name: "",
   category: "",
   price: "",
+  originalPrice: "",
   stock: "",
   unit: "",
   available: true,

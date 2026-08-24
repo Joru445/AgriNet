@@ -17,7 +17,7 @@ export default function Nearby() {
   } = useNearbyFarmers();
 
   return (
-    <main className="max-w-7xl mx-auto pb-16 md:pb-4">
+    <main className="max-w-6xl mx-auto pb-16 md:pb-4">
       <NearbyHeader />
 
       <NearbyMap

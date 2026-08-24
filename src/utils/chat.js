@@ -1,10 +1,34 @@
+function parseTimestamp(timestamp) {
+  if (!timestamp) return null;
+
+  if (typeof timestamp.toDate === "function") {
+    return timestamp.toDate();
+  }
+
+  if (timestamp.seconds != null) {
+    return new Date(timestamp.seconds * 1000);
+  }
+
+  if (timestamp instanceof Date) {
+    return timestamp;
+  }
+
+  const d = new Date(timestamp);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 export function shouldShowSeparator(current, previous) {
   if (!previous) return true;
 
-  if (!current.createdAt || !previous.createdAt) return false;
+  if (!current?.createdAt || !previous?.createdAt) return false;
 
-  const currentTime = current.createdAt.toDate().getTime();
-  const previousTime = previous.createdAt.toDate().getTime();
+  const currentDate = parseTimestamp(current.createdAt);
+  const previousDate = parseTimestamp(previous.createdAt);
+
+  if (!currentDate || !previousDate) return false;
+
+  const currentTime = currentDate.getTime();
+  const previousTime = previousDate.getTime();
 
   const TEN_MINUTES = 10 * 60 * 1000;
 
@@ -14,7 +38,9 @@ export function shouldShowSeparator(current, previous) {
 export function formatSeparator(timestamp) {
   if (!timestamp) return "";
 
-  const date = timestamp.toDate();
+  const date = parseTimestamp(timestamp);
+  if (!date) return "";
+
   const now = new Date();
 
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

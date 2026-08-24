@@ -3,6 +3,7 @@ import ConversationItem from "./ConversationItem";
 export default function ConversationList({
   conversations = [],
   users = [],
+  drafts = {},
 
   search,
   onSearch,
@@ -23,16 +24,26 @@ export default function ConversationList({
       <div className="p-4">
         <h2 className="text-xl font-bold text-[#1B4332] mb-4">Messages</h2>
 
-        <div className="relative">
-          <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <div className="relative flex items-center gap-2 bg-white rounded-xl px-3 py-1.5 border-2 border-[#D6E6DC] shadow-xs focus-within:border-[#2D6A4F] focus-within:shadow-md focus-within:ring-3 focus-within:ring-[#2D6A4F]/15 transition-all">
+          <i className="ri-search-line text-[#2D6A4F] text-lg font-bold shrink-0" />
 
           <input
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Search people..."
-            className="w-full rounded-xl border pl-10 pr-4 py-2.5 outline-none focus:border-[#2D6A4F] transition-colors"
-            style={{ backgroundColor: 'var(--agri-bg)', borderColor: 'var(--agri-border)' }}
+            className="w-full text-sm font-semibold text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
           />
+
+          {search && (
+            <button
+              type="button"
+              onClick={() => onSearch("")}
+              className="p-0.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition cursor-pointer shrink-0"
+              title="Clear search"
+            >
+              <i className="ri-close-circle-fill text-base text-gray-400 hover:text-gray-600" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -54,6 +65,7 @@ export default function ConversationList({
                 <ConversationItem
                   key={conversation.id}
                   item={conversation}
+                  drafts={drafts}
                   searching={false}
                   activeConversation={activeConversation}
                   onConversation={onConversation}
@@ -77,6 +89,7 @@ export default function ConversationList({
                     key={conversation.id}
                     item={conversation}
                     index={index}
+                    drafts={drafts}
                     searching={false}
                     activeConversation={activeConversation}
                     onConversation={onConversation}
@@ -99,6 +112,7 @@ export default function ConversationList({
                     key={user.uid}
                     item={user}
                     index={index}
+                    drafts={drafts}
                     searching
                     activeConversation={activeConversation}
                     onConversation={onConversation}

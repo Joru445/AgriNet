@@ -14,7 +14,7 @@ import ReviewSection from "../../components/common/ReviewSection";
 
 export default function ProductDetails() {
   const { profile } = useAuth();
-  
+
   const { loading, product, farmer, reviewCount, averageRating } = useProductDetails();
 
   const { reviews, loading: reviewsLoading } = useProductReviews(product?.id);
@@ -43,9 +43,9 @@ export default function ProductDetails() {
             averageRating={averageRating}
           />
 
-          <ProductSeller farmer={farmer} isOwner={isOwner} />
-
           <ProductDescription product={product} />
+
+          <ProductSeller farmer={farmer} isOwner={isOwner} />
 
           <ProductActions product={product} farmer={farmer} isOwner={isOwner} />
         </div>

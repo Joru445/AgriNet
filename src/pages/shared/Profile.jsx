@@ -21,6 +21,7 @@ export default function Profile() {
 
   const {
     loading,
+    uploadingAvatar,
 
     editing,
     setEditing,
@@ -61,6 +62,7 @@ export default function Profile() {
         <ProfileHeader
           profile={form}
           editing={editing}
+          uploadingAvatar={uploadingAvatar}
           onEdit={() => setEditing(true)}
           onCancel={handleCancel}
           onSave={handleSave}
