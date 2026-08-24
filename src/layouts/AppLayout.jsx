@@ -13,13 +13,8 @@ export default function AppLayout() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(true);
 
-<<<<<<< HEAD
   const isMessages = location.pathname.includes("messages");
-=======
-  const location = useLocation();
-
   const isTabRoutes = tabRoutes.includes(location.pathname);
->>>>>>> 655dc1060d4d11da05a60f611271b836f3c09b96
 
   return (
     <div className="fixed inset-0 flex overflow-hidden">
