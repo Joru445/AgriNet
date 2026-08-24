@@ -10,20 +10,12 @@ export default function BottomNavigation({ items }) {
   const isKeyboardVisible = useKeyboardVisible();
   const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
-  const [activeGlow, setActiveGlow] = useState(null);
 
   const isMessagesRoute = location.pathname.includes("messages");
   const hasActiveChat = isMessagesRoute && Boolean(searchParams.get("conversation") || searchParams.get("user"));
 
   if (isKeyboardVisible || hasActiveChat) {
     return null;
-  }
-
-  function handleTap(key) {
-    setActiveGlow(key);
-    setTimeout(() => {
-      setActiveGlow((current) => (current === key ? null : current));
-    }, 450);
   }
 
   return (
@@ -34,23 +26,16 @@ export default function BottomNavigation({ items }) {
           const isInquiries = item.to.includes("inquiries");
 
           return (
-            <div key={item.to} className="relative flex-1 flex items-center justify-center">
+            <div key={item.to} className="relative flex-1 flex items-center justify-center p-1">
               <NavLink
                 to={item.to}
                 end
-                onClick={() => handleTap(item.to)}
-                onTouchStart={() => handleTap(item.to)}
                 className={({ isActive }) =>
-                  `relative flex w-full h-full flex-col items-center justify-center transition-colors duration-150 select-none ${
-                    isActive ? "text-[#2D6A4F] font-bold" : "text-gray-500"
+                  `relative flex w-full h-full flex-col items-center justify-center rounded-2xl active:bg-gray-200/80 transition-colors duration-150 select-none ${
+                    isActive ? "text-[#2D6A4F] font-bold" : "text-gray-500 hover:text-gray-800"
                   }`
                 }
               >
-                {/* Messenger-like soft grey blur glow effect */}
-                {activeGlow === item.to && (
-                  <span className="absolute inset-x-2.5 inset-y-1.5 rounded-2xl bg-gray-300/50 backdrop-blur-xs animate-tap-glow pointer-events-none" />
-                )}
-
                 <div className="relative flex items-center justify-center">
                   <i className={`${item.icon} text-lg`} />
                   {isMessages && unreadCount > 0 && (

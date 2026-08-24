@@ -37,26 +37,60 @@ export async function createFarmerProfile(data) {
 
 export async function getFarmers() {
   try {
-    const [farmersSnap, usersSnap] = await Promise.all([
+    const [farmersSnap, usersSnap, reviewsSnap] = await Promise.all([
       getDocs(collection(db, "farmers")),
       getDocs(query(collection(db, "users"), where("role", "==", "farmer"))),
+      getDocs(collection(db, "reviews")),
     ]);
+
+    // Calculate rating and review count per farmer from reviews collection
+    const ratingMap = new Map();
+    reviewsSnap.docs.forEach((doc) => {
+      const data = doc.data();
+      if (data.farmerId) {
+        const current = ratingMap.get(data.farmerId) || { total: 0, count: 0 };
+        current.total += Number(data.rating || 0);
+        current.count += 1;
+        ratingMap.set(data.farmerId, current);
+      }
+    });
 
     const farmerMap = new Map();
 
     usersSnap.docs.forEach((doc) => {
+      const stats = ratingMap.get(doc.id);
+      const rating =
+        stats && stats.count > 0
+          ? Number((stats.total / stats.count).toFixed(1))
+          : doc.data().rating || 0;
+      const reviewCount = stats ? stats.count : doc.data().reviewCount || 0;
+
       farmerMap.set(doc.id, {
         uid: doc.id,
         ...doc.data(),
+        rating,
+        reviewCount,
       });
     });
 
     farmersSnap.docs.forEach((doc) => {
       const existing = farmerMap.get(doc.id) || {};
+      const stats = ratingMap.get(doc.id);
+      const data = doc.data();
+      const rating =
+        stats && stats.count > 0
+          ? Number((stats.total / stats.count).toFixed(1))
+          : data.rating || existing.rating || 0;
+      const reviewCount = stats
+        ? stats.count
+        : data.reviewCount || existing.reviewCount || 0;
+
       farmerMap.set(doc.id, {
         ...existing,
         uid: doc.id,
-        ...doc.data(),
+        ...data,
+        rating,
+        reviewCount,
       });
     });
 
@@ -68,9 +102,10 @@ export async function getFarmers() {
 }
 
 export async function getFarmerById(uid) {
-  const [farmerSnap, userSnap] = await Promise.all([
+  const [farmerSnap, userSnap, reviewsSnap] = await Promise.all([
     getDoc(doc(db, "farmers", uid)),
     getDoc(doc(db, "users", uid)),
+    getDocs(query(collection(db, "reviews"), where("farmerId", "==", uid))),
   ]);
 
   if (!farmerSnap.exists() && !userSnap.exists()) {
@@ -80,10 +115,22 @@ export async function getFarmerById(uid) {
   const userData = userSnap.exists() ? userSnap.data() : {};
   const farmerData = farmerSnap.exists() ? farmerSnap.data() : {};
 
+  let rating = farmerData.rating || userData.rating || 0;
+  const reviewCount = reviewsSnap.size;
+  if (reviewCount > 0) {
+    const total = reviewsSnap.docs.reduce(
+      (sum, d) => sum + Number(d.data().rating || 0),
+      0,
+    );
+    rating = Number((total / reviewCount).toFixed(1));
+  }
+
   return {
     uid,
     ...userData,
     ...farmerData,
+    rating,
+    reviewCount,
     verified: farmerData.verified === true || userData.verified === true,
   };
 }
