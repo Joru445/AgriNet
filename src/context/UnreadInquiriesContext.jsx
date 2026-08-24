@@ -96,12 +96,13 @@ export function UnreadInquiriesProvider({ children }) {
 
         // Show popup only for newly encountered keys
         if (!dismissed.has(popupKey) && message) {
+          dismissedRef.current.add(popupKey);
           setInquiryPopupMessage(message);
           setShowInquiryPopup(true);
 
           if (popupTimerRef.current) clearTimeout(popupTimerRef.current);
 
-          // Auto-dismiss after 5 seconds
+          // Auto-dismiss after exactly 5 seconds
           popupTimerRef.current = setTimeout(() => {
             setShowInquiryPopup(false);
           }, 5000);

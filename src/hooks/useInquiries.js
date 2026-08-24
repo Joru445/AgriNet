@@ -13,7 +13,7 @@ import {
 } from "../services/inquiry.service";
 
 import { getProductById } from "../services/product.service";
-import { getUserProfile } from "../services/user.service";
+import { getUserProfile, updateUser } from "../services/user.service";
 import { getFarmerById } from "../services/farmer.service";
 
 import { showToast } from "../utils/toast";
@@ -49,6 +49,28 @@ export default function useInquiries() {
       (data) => {
         setInquiries(data);
         setLoading(false);
+
+        if (profile.role === "consumer" && Array.isArray(data)) {
+          const completedCount = data.filter(
+            (item) => item.status === "completed" || item.status === "resolved",
+          ).length;
+          const cancelledCount = data.filter(
+            (item) => item.status === "cancelled",
+          ).length;
+          const totalCount = data.length;
+
+          if (
+            profile.completedDeals !== completedCount ||
+            profile.totalDeals !== totalCount ||
+            profile.cancelledDeals !== cancelledCount
+          ) {
+            updateUser(profile.uid, {
+              completedDeals: completedCount,
+              totalDeals: totalCount,
+              cancelledDeals: cancelledCount,
+            }).catch(() => {});
+          }
+        }
       },
       (error) => {
         console.error("Failed to load inquiries:", error);
@@ -61,7 +83,7 @@ export default function useInquiries() {
     );
 
     return unsubscribe;
-  }, [profile?.uid, profile?.role]);
+  }, [profile?.uid, profile?.role, profile?.completedDeals, profile?.totalDeals, profile?.cancelledDeals]);
 
   /*
    * --------------------------------------------------

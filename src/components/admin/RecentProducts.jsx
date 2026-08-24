@@ -9,59 +9,77 @@ function getImageUrl(images) {
 }
 
 export default function RecentProducts({ products = [] }) {
-  return (
-    <section className="rounded-2xl border border-gray-200 bg-white">
-      <div className="border-b border-gray-100 p-5">
-        <h2 className="font-semibold text-gray-900">Recent Products</h2>
+  const displayedProducts = products.slice(0, 4);
 
-        <p className="mt-1 text-sm text-gray-500">Recently listed products</p>
+  return (
+    <section className="rounded-2xl border border-gray-200/90 bg-white shadow-lg shadow-black/5 overflow-hidden">
+      <div className="flex items-center justify-between border-b border-gray-100 p-5 bg-gray-50/50">
+        <div>
+          <h2 className="text-base font-bold text-gray-900">Recent Products</h2>
+
+          <p className="mt-0.5 text-xs text-gray-500 font-medium">
+            Recently listed products
+          </p>
+        </div>
+
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 shadow-2xs">
+          <i className="ri-shopping-bag-3-line text-base text-[#2D6A4F]" />
+        </div>
       </div>
 
-      {products.length === 0 ? (
-        <div className="p-6 text-center text-sm text-gray-500">
+      {displayedProducts.length === 0 ? (
+        <div className="p-8 text-center text-sm font-medium text-gray-500">
           No products found.
         </div>
       ) : (
         <div className="divide-y divide-gray-100">
-          {products.map((product) => {
+          {displayedProducts.map((product) => {
             const imageUrl = getImageUrl(product.images);
 
             return (
-              <div key={product.id} className="flex items-center gap-4 p-4">
+              <div
+                key={product.id}
+                className="flex items-center gap-4 p-4 hover:bg-gray-50/60 transition-colors"
+              >
                 {imageUrl ? (
                   <img
                     src={imageUrl}
                     alt={product.name || "Product"}
-                    className="h-12 w-12 shrink-0 rounded-xl object-cover"
+                    className="h-12 w-12 shrink-0 rounded-xl object-cover ring-1 ring-black/5"
                   />
                 ) : (
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#D8F3DC]">
-                    <i className="ri-shopping-basket-line text-lg text-[#2D6A4F]" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#D8F3DC] text-[#2D6A4F]">
+                    <i className="ri-shopping-basket-line text-lg" />
                   </div>
                 )}
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-gray-900">
+                  <p className="truncate text-sm font-bold text-gray-900">
                     {product.name || "Unnamed Product"}
                   </p>
 
-                  <p className="truncate text-xs text-gray-500">
+                  <p className="truncate text-xs text-gray-500 font-medium mt-0.5">
                     {product.farmName || product.farmerName || "Unknown farmer"}
                   </p>
                 </div>
 
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-gray-900">
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-black text-[#1B4332]">
                     ₱{Number(product.price || 0).toLocaleString()}
                   </p>
 
-                  <p
-                    className={`text-xs ${
+                  <span
+                    className={`inline-flex items-center gap-1 text-[11px] font-bold ${
                       product.available ? "text-[#2D6A4F]" : "text-gray-400"
                     }`}
                   >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        product.available ? "bg-[#2D6A4F]" : "bg-gray-400"
+                      }`}
+                    />
                     {product.available ? "Available" : "Unavailable"}
-                  </p>
+                  </span>
                 </div>
               </div>
             );

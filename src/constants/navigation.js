@@ -81,6 +81,7 @@ export const adminNavigation = [
     to: "/admin/users",
     label: "Users",
     icon: "ri-user-search-line",
+    bottom: true,
   },
   {
     to: "/admin/products",

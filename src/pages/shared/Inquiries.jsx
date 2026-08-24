@@ -39,28 +39,30 @@ export default function Inquiries() {
         <div className="hidden sm:flex items-center bg-gray-100 rounded-2xl p-1.5 shrink-0 border border-gray-200 shadow-2xs gap-1">
           <button
             type="button"
-            onClick={() => setView("vertical")}
-            className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${view === "vertical"
+            onClick={() => setView("grid")}
+            className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${
+              view === "grid"
                 ? "bg-white shadow-xs text-[#2D6A4F] font-bold ring-1 ring-black/5"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 font-semibold"
-              }`}
-            title="Vertical list view"
+            }`}
+            title="Grid view"
           >
-            <i className="ri-list-check text-lg" />
-            <span>List</span>
+            <i className="ri-grid-line text-lg" />
+            <span>Grid</span>
           </button>
 
           <button
             type="button"
-            onClick={() => setView("grid")}
-            className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${view === "grid"
+            onClick={() => setView("vertical")}
+            className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${
+              view === "vertical"
                 ? "bg-white shadow-xs text-[#2D6A4F] font-bold ring-1 ring-black/5"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 font-semibold"
-              }`}
-            title="2-column grid view"
+            }`}
+            title="Vertical list view"
           >
-            <i className="ri-grid-line text-lg" />
-            <span>Grid</span>
+            <i className="ri-list-check text-lg" />
+            <span>List</span>
           </button>
         </div>
       </div>

@@ -342,6 +342,13 @@ function getBanner(status, userRole, isReviewed) {
         className: "bg-green-50 text-green-700 border border-green-200",
       };
     }
+    if (status === "cancelled") {
+      return {
+        message: "Transaction cancelled.",
+        icon: "ri-close-circle-fill",
+        className: "bg-red-50 text-red-700 border border-red-200",
+      };
+    }
   }
 
   if (userRole === "farmer") {
@@ -371,6 +378,13 @@ function getBanner(status, userRole, isReviewed) {
         message: "Transaction complete.",
         icon: "ri-checkbox-circle-fill",
         className: "bg-green-50 text-green-700 border border-green-200",
+      };
+    }
+    if (status === "cancelled") {
+      return {
+        message: "Transaction cancelled.",
+        icon: "ri-close-circle-fill",
+        className: "bg-red-50 text-red-700 border border-red-200",
       };
     }
   }

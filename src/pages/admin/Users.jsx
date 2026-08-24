@@ -35,6 +35,7 @@ export default function Users() {
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("all");
   const [status, setStatus] = useState("all");
+  const [sortBy, setSortBy] = useState("default");
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
@@ -42,14 +43,14 @@ export default function Users() {
 
   /*
    * ============================================================
-   * FILTER USERS
+   * FILTER & SORT USERS
    * ============================================================
    */
 
   const filteredUsers = useMemo(() => {
     const keyword = search.trim().toLowerCase();
 
-    return users.filter((user) => {
+    let result = users.filter((user) => {
       const matchesSearch =
         !keyword ||
         user.fullname?.toLowerCase().includes(keyword) ||
@@ -64,7 +65,23 @@ export default function Users() {
 
       return matchesSearch && matchesRole && matchesStatus;
     });
-  }, [users, search, role, status]);
+
+    if (sortBy === "name-asc") {
+      result.sort((a, b) =>
+        (a.fullname || a.username || "").localeCompare(
+          b.fullname || b.username || "",
+        ),
+      );
+    } else if (sortBy === "name-desc") {
+      result.sort((a, b) =>
+        (b.fullname || b.username || "").localeCompare(
+          a.fullname || a.username || "",
+        ),
+      );
+    }
+
+    return result;
+  }, [users, search, role, status, sortBy]);
 
   /*
    * ============================================================
@@ -144,7 +161,7 @@ export default function Users() {
       <div className="mx-auto max-w-7xl">
         <UserManagementHeader />
 
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-5 pb-4">
+        <div className="grid grid-cols-2 gap-4 pb-6">
           <StatCard
             title="Total Users"
             value={stats.total}
@@ -164,13 +181,7 @@ export default function Users() {
           />
 
           <StatCard
-            title="Admin"
-            value={stats.admins}
-            description="Registered admins"
-          />
-
-          <StatCard
-            title="Suspendend"
+            title="Suspended"
             value={stats.suspended}
             description="Suspended users"
           />
@@ -183,6 +194,8 @@ export default function Users() {
           onRoleChange={setRole}
           status={status}
           onStatusChange={setStatus}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
         />
 
         {error && (

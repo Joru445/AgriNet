@@ -25,7 +25,7 @@ export default function Dashboard() {
 
             <div className="mt-2 h-4 w-64 rounded bg-gray-200" />
 
-            <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="h-32 rounded-2xl bg-gray-200" />
               ))}
@@ -90,7 +90,7 @@ export default function Dashboard() {
         </div>
 
         {/* Statistics */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <StatCard
             title="Total Users"
             value={stats.users.total}

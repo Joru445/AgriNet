@@ -9,6 +9,7 @@ export default function UserTableRow({
   onEdit,
 }) {
   const isSuspended = user.status === "suspended";
+  const isAdmin = user.role === "admin";
 
   const identityUser =
     user.role === "farmer"
@@ -19,7 +20,7 @@ export default function UserTableRow({
       : user;
 
   return (
-    <tr className="border-b border-gray-100 last:border-0">
+    <tr className="border-b border-gray-100 last:border-0 hover:bg-gray-50/80 transition-colors">
       {/* User */}
       <td className="px-5 py-4">
         <UserIdentity
@@ -31,7 +32,7 @@ export default function UserTableRow({
 
       {/* Email */}
       <td className="px-5 py-4">
-        <span className="text-sm text-gray-600">
+        <span className="text-sm font-medium text-gray-700">
           {user.email || "No email"}
         </span>
       </td>
@@ -44,13 +45,15 @@ export default function UserTableRow({
       {/* Account Status */}
       <td className="px-5 py-4">
         <span
-          className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-            isSuspended ? "text-red-600" : "text-green-600"
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
+            isSuspended
+              ? "bg-red-50 text-red-700 border-red-200"
+              : "bg-emerald-50 text-emerald-700 border-emerald-200"
           }`}
         >
           <span
-            className={`h-2 w-2 rounded-full ${
-              isSuspended ? "bg-red-500" : "bg-green-500"
+            className={`h-1.5 w-1.5 rounded-full ${
+              isSuspended ? "bg-red-500" : "bg-emerald-500"
             }`}
           />
 
@@ -60,23 +63,33 @@ export default function UserTableRow({
 
       {/* Actions */}
       <td className="px-5 py-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
-            onClick={() => onView(user)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
-            title="View user"
+            onClick={() => !isAdmin && onView(user)}
+            disabled={isAdmin}
+            className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border shadow-2xs transition-all ${
+              isAdmin
+                ? "border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed opacity-50"
+                : "border-gray-200 bg-white text-gray-600 hover:bg-[#D8F3DC]/40 hover:text-[#2D6A4F] hover:border-[#2D6A4F]/30 cursor-pointer"
+            }`}
+            title={isAdmin ? "Admin account details disabled" : "View user details"}
           >
-            <i className="ri-eye-line" />
+            <i className="ri-eye-line text-sm font-semibold" />
           </button>
 
           <button
             type="button"
-            onClick={() => onEdit(user)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
-            title="Edit user"
+            onClick={() => !isAdmin && onEdit(user)}
+            disabled={isAdmin}
+            className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border shadow-2xs transition-all ${
+              isAdmin
+                ? "border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed opacity-50"
+                : "border-gray-200 bg-white text-gray-600 hover:bg-[#D8F3DC]/40 hover:text-[#2D6A4F] hover:border-[#2D6A4F]/30 cursor-pointer"
+            }`}
+            title={isAdmin ? "Admin account editing disabled" : "Edit user"}
           >
-            <i className="ri-edit-line" />
+            <i className="ri-edit-line text-sm font-semibold" />
           </button>
         </div>
       </td>

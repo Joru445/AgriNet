@@ -46,7 +46,7 @@ export function UnreadMessagesProvider({ children }) {
       if (!isCurrentActive) {
         const count = conv.unreadCount?.[profile.uid] ?? 0;
         if (count > 0) {
-          totalUnread += count;
+          totalUnread += 1;
           unreads.push(conv);
         }
       }
@@ -66,7 +66,12 @@ export function UnreadMessagesProvider({ children }) {
 
     // Show popup for newest unread from OTHER chats
     const newestUnread = unreads[0];
-    const popupId = `${newestUnread.id}_${newestUnread.lastMessageAt?.seconds || Date.now()}`;
+    const lastTime =
+      newestUnread.lastMessageAt?.seconds ||
+      (newestUnread.lastMessageAt?.toMillis
+        ? newestUnread.lastMessageAt.toMillis()
+        : newestUnread.lastMessage || "latest");
+    const popupId = `${newestUnread.id}_${lastTime}`;
 
     if (dismissedIdRef.current !== popupId) {
       dismissedIdRef.current = popupId;

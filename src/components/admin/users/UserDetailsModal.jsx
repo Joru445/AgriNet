@@ -1,116 +1,261 @@
-function formatDate(timestamp) {
+import RoleBadge from "../../common/RoleBadge";
+
+function formatFullDateTime(timestamp) {
   if (!timestamp) return "Not available";
 
+  let date = null;
   if (typeof timestamp.toDate === "function") {
-    return timestamp.toDate().toLocaleString();
+    date = timestamp.toDate();
+  } else if (timestamp.seconds) {
+    date = new Date(timestamp.seconds * 1000);
+  } else if (typeof timestamp === "string" || typeof timestamp === "number") {
+    date = new Date(timestamp);
   }
 
-  return "Not available";
+  if (!date || isNaN(date.getTime())) {
+    return "Not available";
+  }
+
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
 export default function UserDetailsModal({ user, onClose }) {
   if (!user) return null;
 
+  const isSuspended = user.status === "suspended";
+
+  // Build complete location string
+  const locationParts = [
+    user.address,
+    user.barangay ? `Brgy. ${user.barangay}` : null,
+    user.municipality || user.city,
+    user.province,
+    user.postalCode,
+  ].filter(Boolean);
+
+  const fullLocation =
+    user.location?.address ||
+    (locationParts.length > 0 ? locationParts.join(", ") : null) ||
+    "No address provided";
+
   return (
-    <div className="fixed inset-0 z-9999 flex items-end md:items-center justify-center bg-black/40 p-0 md:p-4 transition-all duration-300 ease-in-out">
-      <div className="w-full max-w-lg rounded-t-2xl md:rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+    <div
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-3xl bg-white p-4 sm:p-5 shadow-2xl border border-gray-200 max-h-[92vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Modal Header */}
+        <div className="flex items-center justify-between pb-2.5 border-b border-gray-200">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">
               User Details
-            </h2>
-
-            <p className="text-sm text-gray-500">View account information</p>
+            </h3>
+            <p className="text-xs font-medium text-gray-500">
+              Complete account and system information
+            </p>
           </div>
-
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer"
+            aria-label="Close"
           >
-            <i className="ri-close-line text-lg" />
+            <i className="ri-close-line text-xl" />
           </button>
         </div>
 
-        <div className="space-y-5 p-6">
-          <div className="flex items-center gap-4">
+        {/* Profile Card / Avatar */}
+        <div className="flex flex-col items-center text-center pt-2.5 pb-2">
+          <div className="relative mb-2">
             {user.profilePicture ? (
               <img
                 src={user.profilePicture}
                 alt={user.fullname}
-                className="h-16 w-16 rounded-full object-cover"
+                className="h-16 w-16 rounded-full object-cover ring-3 ring-[#D8F3DC]"
               />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F3DC] text-lg font-bold text-[#2D6A4F]">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F3DC] text-xl font-black text-[#2D6A4F] ring-3 ring-[#D8F3DC]/40">
                 {user.fullname
                   ?.split(/\s+/)
                   .slice(0, 2)
                   .map((name) => name[0])
                   .join("")
-                  .toUpperCase()}
+                  .toUpperCase() || "U"}
               </div>
             )}
 
-            <div>
-              <h3 className="font-semibold text-gray-900">
-                {user.fullname || "Unnamed User"}
-              </h3>
+            {user.verified && (
+              <span
+                className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[#2D6A4F] text-white ring-2 ring-white"
+                title="Verified Account"
+              >
+                <i className="ri-check-line text-[10px] font-bold" />
+              </span>
+            )}
+          </div>
 
-              <p className="text-sm text-gray-500">
-                @{user.username || "unknown"}
+          <h4 className="text-base font-bold text-gray-900">
+            {user.fullname || "Unnamed User"}
+          </h4>
+
+          <p className="text-xs font-medium text-gray-500 mb-1.5">
+            @{user.username || "user"}
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
+            <RoleBadge role={user.role || "consumer"} />
+
+            <span
+              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                isSuspended
+                  ? "bg-red-50 text-red-700 border-red-200"
+                  : "bg-emerald-50 text-emerald-700 border-emerald-200"
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  isSuspended ? "bg-red-500" : "bg-emerald-500"
+                }`}
+              />
+              {isSuspended ? "Suspended Account" : "Active Account"}
+            </span>
+          </div>
+        </div>
+
+        {/* Complete Information Section */}
+        <div className="space-y-2 text-left my-2">
+          {/* Full Name & Username */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
+              <i className="ri-user-3-line text-base text-[#2D6A4F] shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                  Full Name
+                </p>
+                <p className="text-xs font-semibold text-gray-900 truncate mt-0.5">
+                  {user.fullname || "N/A"}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
+              <i className="ri-at-line text-base text-[#2D6A4F] shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                  Username
+                </p>
+                <p className="text-xs font-semibold text-gray-900 truncate mt-0.5">
+                  @{user.username || "user"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Email Address */}
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
+            <i className="ri-mail-line text-base text-[#2D6A4F] shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                Email Address
+              </p>
+              <p className="text-xs font-semibold text-gray-900 break-all mt-0.5">
+                {user.email || "No email provided"}
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <InfoItem label="Email" value={user.email} />
-
-            <InfoItem label="Phone" value={user.phone} />
-
-            <InfoItem label="Role" value={user.role} />
-
-            <InfoItem label="Status" value={user.status || "active"} />
-
-            <InfoItem label="Created" value={formatDate(user.createdAt)} />
-
-            <InfoItem label="Updated" value={formatDate(user.updatedAt)} />
-          </div>
-
-          <div>
-            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-400">
-              Bio
-            </p>
-
-            <p className="text-sm text-gray-700">
-              {user.bio || "No bio provided."}
-            </p>
-          </div>
-
-          {user.location?.address && (
-            <div>
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-400">
-                Location
+          {/* Phone Number */}
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
+            <i className="ri-phone-line text-base text-[#2D6A4F] shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                Phone Number
               </p>
+              <p className="text-xs font-semibold text-gray-900 mt-0.5">
+                {user.phone || user.contactNumber || "No phone provided"}
+              </p>
+            </div>
+          </div>
 
-              <p className="text-sm text-gray-700">{user.location.address}</p>
+          {/* Full Location */}
+          <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
+            <i className="ri-map-pin-2-line text-base text-[#2D6A4F] shrink-0 mt-0.5" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                Full Location / Address
+              </p>
+              <p className="text-xs font-semibold text-gray-900 whitespace-normal break-words leading-snug mt-0.5">
+                {fullLocation}
+              </p>
+              {user.location?.latitude && user.location?.longitude && (
+                <p className="text-[11px] text-gray-500 font-mono mt-0.5">
+                  GPS: {user.location.latitude}, {user.location.longitude}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Registration & Update Dates */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
+              <i className="ri-calendar-line text-base text-[#2D6A4F] shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                  Created
+                </p>
+                <p className="text-xs font-semibold text-gray-900 mt-0.5">
+                  {formatFullDateTime(user.createdAt)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
+              <i className="ri-time-line text-base text-[#2D6A4F] shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                  Updated
+                </p>
+                <p className="text-xs font-semibold text-gray-900 mt-0.5">
+                  {formatFullDateTime(user.updatedAt || user.createdAt)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bio / Description */}
+          {user.bio && (
+            <div className="p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-0.5">
+                Bio / About
+              </p>
+              <p className="text-xs text-gray-900 font-medium whitespace-pre-wrap leading-relaxed">
+                {user.bio}
+              </p>
             </div>
           )}
         </div>
+
+        {/* Modal Close Action */}
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-2.5 px-4 rounded-xl bg-[#2D6A4F] text-white text-xs sm:text-sm font-bold hover:bg-[#1B4332] active:scale-[0.99] transition cursor-pointer shadow-xs"
+          >
+            Close Details
+          </button>
+        </div>
       </div>
-    </div>
-  );
-}
-
-function InfoItem({ label, value }) {
-  return (
-    <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-        {label}
-      </p>
-
-      <p className="mt-1 break-words text-sm text-gray-800">
-        {value || "Not provided"}
-      </p>
     </div>
   );
 }
