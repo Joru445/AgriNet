@@ -66,6 +66,7 @@ jobs:
           test -n "$VITE_CLOUDINARY_PRODUCT_PRESET" || (echo "ERROR: VITE_CLOUDINARY_PRODUCT_PRESET is missing" && exit 1)
           test -n "$VITE_CLOUDINARY_PROFILE_PRESET" || (echo "ERROR: VITE_CLOUDINARY_PROFILE_PRESET is missing" && exit 1)
           test -n "$VITE_CLOUDINARY_TRANSACTION_PRESET" || (echo "ERROR: VITE_CLOUDINARY_TRANSACTION_PRESET is missing" && exit 1)
+          test -n "$VITE_CLOUDINARY_MESSAGE_PRESET" || (echo "ERROR: VITE_CLOUDINARY_MESSAGE_PRESET is missing" && exit 1)
 
           echo "All required environment variables are present."
 
