@@ -1,43 +1,18 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import BackButton from "./common/BackButton";
 import UserIdentity from "./common/UserIdentity";
 
 import { getMePath, getNotificationsPath } from "../utils/routes";
 
-export default function Header({ user, collapsed }) {
-  const location = useLocation();
-
-  const tabRoutes = [
-    "/home",
-    "/products",
-    "/messages",
-    "/inquiries",
-    "/me",
-
-    "/farmer",
-    "/farmer/products",
-    "/farmer/inquiries",
-    "/farmer/messages",
-    "/farmer/me",
-
-    "/admin",
-    "/admin/reports",
-    "/admin/messages",
-    "/admin/me",
-  ];
-  
+export default function Header({ user, collapsed, hideBackButton }) {
   const notificationPath = getNotificationsPath(user.role);
   const mePath = getMePath(user.role);
-
-  const showBackButton = !tabRoutes.includes(location.pathname);
 
   return (
     <header className="shrink-0 sticky top-0 right-0 z-9996 flex h-16 items-center justify-between bg-[#FAFAFA]/95 border-b border-[#DDDDDD] px-4 md:px-6">
       <div className="flex items-center">
-        {showBackButton ? (
-          <BackButton />
-        ) : (
+        {hideBackButton ? (
           <span
             className={`font-bold text-gray-800 text-lg sm:text-xl lg:text-2xl whitespace-nowrap transition-all duration-300 ease-in-out ${
               !collapsed ? "lg:hidden" : "block"
@@ -45,6 +20,8 @@ export default function Header({ user, collapsed }) {
           >
             AgriNet <span className="font-light">Lucena</span>
           </span>
+        ) : (
+          <BackButton />
         )}
       </div>
 

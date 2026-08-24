@@ -6,12 +6,20 @@ import Sidebar from "../components/Sidebar";
 import BottomTab from "../components/BottomTab";
 import { useAuth } from "../context/AuthContext";
 
+import { tabRoutes } from "../constants/tabsRoutes";
+
 export default function AppLayout() {
   const { profile } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(true);
 
+<<<<<<< HEAD
   const isMessages = location.pathname.includes("messages");
+=======
+  const location = useLocation();
+
+  const isTabRoutes = tabRoutes.includes(location.pathname);
+>>>>>>> 655dc1060d4d11da05a60f611271b836f3c09b96
 
   return (
     <div className="fixed inset-0 flex overflow-hidden">
@@ -22,7 +30,7 @@ export default function AppLayout() {
           collapsed ? "lg:ml-20" : "lg:ml-64"
         }`}
       >
-        <Header user={profile} collapsed={collapsed} />
+        <Header user={profile} collapsed={collapsed} hideBackButton={isTabRoutes} />
 
         <div
           className={`flex-1 min-h-0 overscroll-none ${
@@ -35,7 +43,7 @@ export default function AppLayout() {
           <Outlet />
         </div>
 
-        <BottomTab />
+        <BottomTab showBottomTab={isTabRoutes} />
       </div>
     </div>
   );

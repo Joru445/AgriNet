@@ -18,8 +18,12 @@ export default function MessageBubble({
   const isImage = message.type === "image" || Boolean(message.imageUrl);
 
   return (
-    <div className={`flex flex-col ${mine ? "items-end" : "items-start"} min-w-0`}>
-      <div className={`flex gap-2 ${mine ? "justify-end" : "justify-start"} min-w-0 w-full`}>
+    <div
+      className={`flex flex-col ${mine ? "items-end" : "items-start"} min-w-0`}
+    >
+      <div
+        className={`flex gap-2 ${mine ? "justify-end" : "justify-start"} min-w-0 w-full`}
+      >
         <Avatar
           src={user?.profilePicture}
           name={user?.fullname}
@@ -27,31 +31,34 @@ export default function MessageBubble({
           className={`${mine ? "hidden" : "flex shrink-0"}`}
         />
         <div
-          className={`max-w-[85%] sm:max-w-[75%] min-w-0 rounded-2xl ${
-            isImage ? "p-0 overflow-hidden" : "px-4 py-2.5"
-          } ${
+          className={`max-w-[85%] sm:max-w-[75%] min-w-0 rounded-2xl
+          ${
+            isImage ? "overflow-hidden" : ""
+          }
+          ${
             isFailed
               ? "bg-red-50 text-red-900 border border-red-300 shadow-sm"
-              : mine
-                ? "bg-[#2D6A4F] text-white shadow-md shadow-green-900/20"
-                : "bg-white text-gray-800 shadow-md shadow-black/10"
+              : ""
           }`}
-          style={!mine && !isFailed ? { border: "1px solid var(--agri-border)" } : {}}
         >
-          
           {message.text && (
             <p
-              className={`break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap ${
-                isImage ? "px-2.5 py-1.5 text-sm font-medium" : ""
-              }`}
+              className={`break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-2.5 rounded-2xl shadow-md
+                ${isImage ? "text-sm font-medium" : ""}
+                ${
+                  mine
+                    ? "bg-[#2D6A4F] text-white shadow-green-900/20"
+                    : "bg-white text-gray-800 border-gray-200 shadow-black/10"
+                }
+              `}
             >
               {message.text}
             </p>
           )}
-          
+
           {/* Image Attachment */}
           {isImage && message.imageUrl && (
-            <div className="rounded-xl overflow-hidden mb-0 group relative">
+            <div className="rounded-xl overflow-hidden mb-0 group relative justify-self-end">
               <img
                 src={message.imageUrl}
                 alt="Photo attachment"
@@ -101,9 +108,7 @@ export default function MessageBubble({
       {mine && !isFailed && isLastMine && (
         <div className="flex items-center justify-end gap-1 mt-1 mr-1 text-[11px] font-bold select-none transition-all">
           {isSeen ? (
-            <span className="flex items-center gap-1 text-gray-400">
-              Seen
-            </span>
+            <span className="flex items-center gap-1 text-gray-400">Seen</span>
           ) : (
             <span className="flex items-center gap-1 text-gray-400 font-semibold">
               Sent
@@ -115,7 +120,7 @@ export default function MessageBubble({
       {/* Lightbox / Fullscreen Image Modal */}
       {showLightbox && message.imageUrl && (
         <div
-          className="fixed inset-0 z-9999 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-9999 bg-black/85 backdrop-blur-xs flex items-center justify-center p=0 sm:p-4"
           onClick={() => setShowLightbox(false)}
         >
           <button
@@ -130,7 +135,7 @@ export default function MessageBubble({
           <img
             src={message.imageUrl}
             alt="Full view"
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
+            className="max-h-full max-w-full sm:max-h-[90vh] sm:max-w-[90vw] object-contain rounded-none sm:rounded-xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
