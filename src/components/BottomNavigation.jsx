@@ -39,10 +39,14 @@ export default function BottomNavigation({ items }) {
                 <div className="relative flex items-center justify-center">
                   <i className={`${item.icon} text-lg`} />
                   {isMessages && unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
+                    <span className="absolute -top-1 -right-2 min-w-3.5 h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs leading-none">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
                   )}
                   {isInquiries && inquiryActionCount > 0 && (
-                    <span className="absolute -top-0.5 -right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
+                    <span className="absolute -top-1 -right-2 min-w-3.5 h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs leading-none">
+                      {inquiryActionCount > 99 ? "99+" : inquiryActionCount}
+                    </span>
                   )}
                 </div>
                 <span className="text-[10px]">{item.label}</span>

@@ -5,6 +5,9 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase/firestore";
+
 import { useAuth } from "../context/AuthContext";
 
 import {
@@ -768,15 +771,34 @@ export default function useMessages() {
 
     setMessages([]);
 
+    const convId = activeConversation.id;
+    const currentUid = profile.uid;
+
     const unsubscribe =
       subscribeMessages(
-        activeConversation.id,
-        setMessages,
+        convId,
+        (incomingMessages) => {
+          setMessages(incomingMessages);
+
+          // Mark incoming messages as read in real-time if active in conversation
+          if (document.visibilityState === "visible") {
+            markConversationRead(
+              convId,
+              currentUid,
+            ).catch((error) => {
+              console.error(
+                "Failed to mark conversation as read:",
+                error,
+              );
+            });
+          }
+        },
       );
 
+    // Initial mark as read when entering
     markConversationRead(
-      activeConversation.id,
-      profile.uid,
+      convId,
+      currentUid,
     ).catch((error) => {
       console.error(
         "Failed to mark conversation as read:",
@@ -784,13 +806,83 @@ export default function useMessages() {
       );
     });
 
+    function handleVisibilityOrFocus() {
+      if (document.visibilityState === "visible") {
+        markConversationRead(
+          convId,
+          currentUid,
+        ).catch((error) => {
+          console.error(
+            "Failed to mark conversation as read on focus:",
+            error,
+          );
+        });
+      }
+    }
+
+    window.addEventListener("focus", handleVisibilityOrFocus);
+    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+
     return () => {
+      window.removeEventListener("focus", handleVisibilityOrFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+      markConversationRead(convId, currentUid).catch(() => {});
       unsubscribe();
     };
   }, [
     activeConversation?.id,
     profile?.uid,
   ]);
+
+  /*
+   * ==================================================
+   * REAL-TIME ACTIVE CONVERSATION LISTENER
+   *
+   * Listens directly to the active conversation document
+   * to get instantaneous lastRead and unreadCount changes.
+   * ==================================================
+   */
+
+  const activeConvId = activeConversation?.id;
+
+  useEffect(() => {
+    if (!activeConvId) {
+      return;
+    }
+
+    const unsubscribe = onSnapshot(
+      doc(db, "conversations", activeConvId),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+
+          setActiveConversation((prev) => {
+            if (!prev || prev.id !== snapshot.id) {
+              return prev;
+            }
+
+            return {
+              ...prev,
+              ...data,
+              id: snapshot.id,
+              rawUnreadCount: data.unreadCount || {},
+              lastRead: data.lastRead || {},
+            };
+          });
+        }
+      },
+      (error) => {
+        console.error(
+          "Active conversation listener error:",
+          error,
+        );
+      },
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [activeConvId]);
 
   /*
    * ==================================================

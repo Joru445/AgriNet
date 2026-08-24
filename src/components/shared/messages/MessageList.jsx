@@ -17,18 +17,62 @@ export default function MessageList({
   onDeleteFailed,
 }) {
   const { profile } = useAuth();
+  const containerRef = useRef(null);
   const bottomRef = useRef(null);
+  const prevMessagesLengthRef = useRef(0);
+  const isNearBottomRef = useRef(true);
+  const prevConvIdRef = useRef(null);
 
-  useEffect(() => {
-    if (!messages.length) return;
-
-    requestAnimationFrame(() => {
-      bottomRef.current?.scrollIntoView({
-        behavior: "auto",
-        block: "end",
-      });
+  const scrollToBottom = (behavior = "smooth") => {
+    if (!containerRef.current) return;
+    containerRef.current.scrollTo({
+      top: containerRef.current.scrollHeight,
+      behavior,
     });
-  }, [messages, inquiryProducts]);
+  };
+
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    // Considered near bottom if within 140px of bottom
+    const distanceToBottom = scrollHeight - (scrollTop + clientHeight);
+    isNearBottomRef.current = distanceToBottom < 140;
+  };
+
+  // When switching conversations: jump directly to bottom
+  useEffect(() => {
+    if (conversation?.id !== prevConvIdRef.current) {
+      prevConvIdRef.current = conversation?.id;
+      isNearBottomRef.current = true;
+      requestAnimationFrame(() => {
+        scrollToBottom("auto");
+      });
+    }
+  }, [conversation?.id]);
+
+  // When messages array changes: only auto-scroll if new message was appended and user was already at bottom or sent it
+  useEffect(() => {
+    if (!messages.length) {
+      prevMessagesLengthRef.current = 0;
+      return;
+    }
+
+    const isNewMessage = messages.length > prevMessagesLengthRef.current;
+    const lastMsg = messages[messages.length - 1];
+    const isMyMessage = lastMsg?.senderId === profile?.uid;
+
+    if (prevMessagesLengthRef.current === 0) {
+      requestAnimationFrame(() => {
+        scrollToBottom("auto");
+      });
+    } else if (isNewMessage && (isMyMessage || isNearBottomRef.current)) {
+      requestAnimationFrame(() => {
+        scrollToBottom("smooth");
+      });
+    }
+
+    prevMessagesLengthRef.current = messages.length;
+  }, [messages, profile?.uid]);
 
   if (!messages.length) {
     return (
@@ -38,23 +82,58 @@ export default function MessageList({
     );
   }
 
-  const otherUid = user?.uid || user?.id;
+  const otherUid = user?.uid || user?.id || conversation?.otherUser?.uid;
   const otherUserLastRead = conversation?.lastRead?.[otherUid];
-  const otherUserUnreadCount = conversation?.unreadCount?.[otherUid];
+  const otherUserUnreadCount =
+    conversation?.rawUnreadCount?.[otherUid] ??
+    (typeof conversation?.unreadCount === "object"
+      ? conversation?.unreadCount?.[otherUid]
+      : undefined);
 
-  function checkIfSeen(message) {
+  // Check if any message from other user exists in the conversation
+  const hasReplyFromOther = Boolean(
+    otherUid && messages.some((m) => m.senderId === otherUid),
+  );
+
+  function checkIfSeen(message, messageIndex) {
     if (message.read === true) return true;
     if (message.status === "failed") return false;
-    if (otherUserUnreadCount === 0 && message.createdAt) return true;
-    if (otherUserLastRead && message.createdAt) {
+
+    // 1. If the other user sent a message after this one, this message was seen
+    if (hasReplyFromOther && typeof messageIndex === "number") {
+      const hasLaterReply = messages
+        .slice(messageIndex + 1)
+        .some((m) => m.senderId === otherUid);
+      if (hasLaterReply) return true;
+    }
+
+    // 2. If the other user's unread count is 0 in this conversation
+    if (otherUserUnreadCount === 0) {
+      return true;
+    }
+
+    // 3. Check if other user's lastRead timestamp is >= message timestamp
+    if (otherUserLastRead) {
       const readSeconds =
         otherUserLastRead.seconds ||
-        (otherUserLastRead.toMillis ? otherUserLastRead.toMillis() / 1000 : 0);
-      const msgSeconds =
-        message.createdAt.seconds ||
-        (message.createdAt.toMillis ? message.createdAt.toMillis() / 1000 : 0);
-      if (readSeconds >= msgSeconds && msgSeconds > 0) return true;
+        (otherUserLastRead.toMillis
+          ? otherUserLastRead.toMillis() / 1000
+          : typeof otherUserLastRead === "number"
+            ? otherUserLastRead / 1000
+            : 0);
+
+      const msgSeconds = message.createdAt
+        ? message.createdAt.seconds ||
+          (message.createdAt.toMillis
+            ? message.createdAt.toMillis() / 1000
+            : typeof message.createdAt === "number"
+              ? message.createdAt / 1000
+              : 0)
+        : Math.floor(Date.now() / 1000);
+
+      if (readSeconds >= msgSeconds && readSeconds > 0) return true;
     }
+
     return false;
   }
 
@@ -67,11 +146,15 @@ export default function MessageList({
   }
 
   return (
-    <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y p-3 sm:p-4 space-y-3 scrollbar-none">
+    <div
+      ref={containerRef}
+      onScroll={handleScroll}
+      className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y p-3 sm:p-4 space-y-3 scrollbar-none [overflow-anchor:auto]"
+    >
       {messages.map((message, index) => {
         const previous = messages[index - 1];
         const isLastMine = index === lastMineIndex;
-        const isSeen = checkIfSeen(message);
+        const isSeen = checkIfSeen(message, index);
 
         return (
           <div key={message.id}>
@@ -102,7 +185,7 @@ export default function MessageList({
         );
       })}
 
-      <div ref={bottomRef} />
+      <div ref={bottomRef} className="h-0.5" />
     </div>
   );
 }

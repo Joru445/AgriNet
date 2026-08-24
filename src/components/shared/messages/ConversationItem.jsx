@@ -6,6 +6,7 @@ export default function ConversationItem({
   item,
   searching,
   drafts = {},
+  activeConversation,
   onConversation,
   onUser,
 }) {
@@ -26,10 +27,20 @@ export default function ConversationItem({
     }
   }
 
+  const isSelected =
+    !searching &&
+    activeConversation &&
+    (activeConversation.id === item.id ||
+      activeConversation.otherUser?.uid === user?.uid);
+
   const isMine = !searching && item?.lastMessageSender === profile?.uid;
   const otherUid = user?.uid;
   const otherUnread =
-    item?.rawUnreadCount?.[otherUid] ?? item?.unreadCountMap?.[otherUid] ?? 0;
+    item?.rawUnreadCount?.[otherUid] ??
+    (typeof item?.unreadCount === "object"
+      ? item?.unreadCount?.[otherUid]
+      : undefined) ??
+    0;
   const otherLastRead = item?.lastRead?.[otherUid];
 
   const isSeen = (() => {
@@ -38,10 +49,18 @@ export default function ConversationItem({
     if (otherLastRead && item?.lastMessageAt) {
       const readSec =
         otherLastRead.seconds ||
-        (otherLastRead.toMillis ? otherLastRead.toMillis() / 1000 : 0);
+        (otherLastRead.toMillis
+          ? otherLastRead.toMillis() / 1000
+          : typeof otherLastRead === "number"
+            ? otherLastRead / 1000
+            : 0);
       const msgSec =
         item.lastMessageAt.seconds ||
-        (item.lastMessageAt.toMillis ? item.lastMessageAt.toMillis() / 1000 : 0);
+        (item.lastMessageAt.toMillis
+          ? item.lastMessageAt.toMillis() / 1000
+          : typeof item.lastMessageAt === "number"
+            ? item.lastMessageAt / 1000
+            : 0);
       return readSec >= msgSec && msgSec > 0;
     }
     return false;
@@ -50,7 +69,11 @@ export default function ConversationItem({
   return (
     <button
       onClick={handleClick}
-      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors cursor-pointer`}
+      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-all duration-150 cursor-pointer ${
+        isSelected
+          ? "bg-[#D8F3DC]/45 border-r-4 border-[#2D6A4F] shadow-xs"
+          : "hover:bg-black/3 border-r-4 border-transparent"
+      }`}
     >
       <div className="relative shrink-0">
         <Avatar src={user?.profilePicture} name={user?.fullname} />
@@ -65,9 +88,11 @@ export default function ConversationItem({
           <div className="flex items-center gap-1.5 min-w-0">
             <h3
               className={`truncate ${
-                !searching && !isMine && item.unreadCount > 0
-                  ? "font-bold text-gray-900"
-                  : "font-semibold text-gray-800"
+                isSelected
+                  ? "font-bold text-[#1B4332]"
+                  : !searching && !isMine && item.unreadCount > 0
+                    ? "font-bold text-gray-900"
+                    : "font-semibold text-gray-800"
               }`}
             >
               {user?.fullname}

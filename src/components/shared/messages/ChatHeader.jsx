@@ -78,27 +78,27 @@ export default function ChatHeader({ user }) {
         <button
           type="button"
           onClick={() => setMenuOpen((prev) => !prev)}
-          className={`w-10 h-10 rounded-xl flex items-center justify-center transition cursor-pointer ${
+          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition cursor-pointer ${
             menuOpen ? "bg-gray-200 text-gray-900" : "hover:bg-gray-100 text-gray-600"
           }`}
           title="More options"
           aria-expanded={menuOpen}
         >
-          <i className="ri-more-2-fill text-xl" />
+          <i className="ri-more-2-fill text-lg" />
         </button>
 
         {/* 3-dots dropdown menu */}
         {menuOpen && (
-          <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-white p-1.5 shadow-xl border border-gray-200 ring-1 ring-black/5 z-50 animate-scale-in">
+          <div className="absolute right-0 top-full mt-1.5 w-36 sm:w-40 rounded-xl bg-white p-1 shadow-lg border border-gray-200/90 ring-1 ring-black/5 z-50 animate-scale-in">
             <button
               type="button"
               onClick={handleVisitStore}
-              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-gray-700 hover:bg-[#F4F9F6] hover:text-[#1B4332] transition cursor-pointer"
+              className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-gray-700 hover:bg-[#E8F5EE] hover:text-[#1B4332] transition-colors cursor-pointer"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E8F5EE] text-[#2D6A4F]">
-                <i className="ri-store-2-line text-lg" />
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#E8F5EE] text-[#2D6A4F]">
+                <i className="ri-store-2-line text-sm" />
               </div>
-              <span>Visit Store</span>
+              <span className="truncate">Visit Store</span>
             </button>
           </div>
         )}

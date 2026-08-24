@@ -80,6 +80,10 @@ export default function MessageInput({
 
     setShowMenu(false);
 
+    if (selectedImage?.previewUrl) {
+      URL.revokeObjectURL(selectedImage.previewUrl);
+    }
+
     const previewUrl = URL.createObjectURL(file);
 
     onSelectImage?.({
@@ -87,6 +91,85 @@ export default function MessageInput({
       previewUrl,
     });
   }
+
+  function handlePaste(e) {
+    const clipboardData = e.clipboardData;
+    if (!clipboardData) return;
+
+    const items = clipboardData.items;
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type && item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            e.preventDefault();
+            if (selectedImage?.previewUrl) {
+              URL.revokeObjectURL(selectedImage.previewUrl);
+            }
+            const previewUrl = URL.createObjectURL(file);
+            onSelectImage?.({
+              file,
+              previewUrl,
+            });
+            return;
+          }
+        }
+      }
+    }
+
+    const files = clipboardData.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file && file.type && file.type.startsWith("image/")) {
+        e.preventDefault();
+        if (selectedImage?.previewUrl) {
+          URL.revokeObjectURL(selectedImage.previewUrl);
+        }
+        const previewUrl = URL.createObjectURL(file);
+        onSelectImage?.({
+          file,
+          previewUrl,
+        });
+      }
+    }
+  }
+
+  useEffect(() => {
+    function handleGlobalPaste(e) {
+      const target = e.target;
+      if (target && target.tagName === "INPUT") return;
+      if (target && target.tagName === "TEXTAREA" && target !== textareaRef.current) return;
+
+      const clipboardData = e.clipboardData;
+      if (!clipboardData) return;
+
+      const items = clipboardData.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.type && item.type.startsWith("image/")) {
+            const file = item.getAsFile();
+            if (file) {
+              e.preventDefault();
+              if (selectedImage?.previewUrl) {
+                URL.revokeObjectURL(selectedImage.previewUrl);
+              }
+              const previewUrl = URL.createObjectURL(file);
+              onSelectImage?.({
+                file,
+                previewUrl,
+              });
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    window.addEventListener("paste", handleGlobalPaste);
+    return () => window.removeEventListener("paste", handleGlobalPaste);
+  }, [selectedImage, onSelectImage]);
 
   function decreaseQuantity() {
     setQuantity((current) => Math.max(1, current - 1));
@@ -301,7 +384,7 @@ export default function MessageInput({
       )}
 
       {/* Main Input Container */}
-      <div className="relative flex flex-col w-full rounded-2xl border bg-[#FAFAFA] border-[#DDDDDD] shadow-xs focus-within:border-[#2D6A4F] focus-within:shadow-md transition-all">
+      <div className="relative flex flex-col w-full rounded-2xl border bg-[#FAFAFA] border-[#DDDDDD] shadow-xs focus-within:border-[#2D6A4F] transition-colors duration-150">
         {/* Selected Image Preview */}
         {selectedImage?.previewUrl && (
           <div className="p-3 pb-1 flex items-center gap-3 border-b border-gray-200/60 bg-gray-50/50 rounded-t-2xl">
@@ -409,12 +492,13 @@ export default function MessageInput({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             placeholder={
               selectedImage
                 ? "Add a caption (optional)..."
                 : "Type a message..."
             }
-            className="min-w-0 flex-1 resize-none overflow-y-auto py-3 focus:outline-none bg-transparent text-sm font-medium text-gray-800 placeholder-gray-400"
+            className="min-w-0 flex-1 resize-none overflow-y-auto py-3 focus:outline-none bg-transparent text-base sm:text-sm font-medium text-gray-800 placeholder-gray-400"
           />
 
           <button

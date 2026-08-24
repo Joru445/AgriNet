@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   increment,
   onSnapshot,
   orderBy,
@@ -126,17 +127,19 @@ export function subscribeMessages(conversationId, callback) {
 
 /**
  * Mark a conversation as read for the current user.
- *
- * This uses conversation-level read tracking instead of reading
- * and updating every individual message.
  */
 export async function markConversationAsRead(conversationId, currentUserId) {
-  const conversationRef = doc(db, "conversations", conversationId);
+  if (!conversationId || !currentUserId) return;
 
-  await updateDoc(conversationRef, {
-    [`lastRead.${currentUserId}`]: serverTimestamp(),
-    [`unreadCount.${currentUserId}`]: 0,
-  });
+  try {
+    const conversationRef = doc(db, "conversations", conversationId);
+    await updateDoc(conversationRef, {
+      [`lastRead.${currentUserId}`]: serverTimestamp(),
+      [`unreadCount.${currentUserId}`]: 0,
+    });
+  } catch (error) {
+    console.error("Failed to mark conversation read:", error);
+  }
 }
 
 /**

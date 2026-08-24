@@ -10,6 +10,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
@@ -35,10 +36,17 @@ function getConversationId(uid1, uid2) {
  * Mark a conversation as read for a specific user.
  */
 export async function markConversationRead(conversationId, uid) {
-  await updateDoc(doc(db, "conversations", conversationId), {
-    [`lastRead.${uid}`]: serverTimestamp(),
-    [`unreadCount.${uid}`]: 0,
-  });
+  if (!conversationId || !uid) return;
+
+  try {
+    const conversationRef = doc(db, "conversations", conversationId);
+    await updateDoc(conversationRef, {
+      [`lastRead.${uid}`]: serverTimestamp(),
+      [`unreadCount.${uid}`]: 0,
+    });
+  } catch (error) {
+    console.error("Failed to mark conversation read:", error);
+  }
 }
 
 /**

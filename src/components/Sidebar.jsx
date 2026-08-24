@@ -95,10 +95,14 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 <div className="relative flex items-center justify-center">
                   <i className={`${item.icon} text-base`} />
                   {isMessages && unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[#1B4332]" />
+                    <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-[#1B4332] shadow-xs leading-none">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
                   )}
                   {isInquiries && inquiryActionCount > 0 && (
-                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[#1B4332]" />
+                    <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-[#1B4332] shadow-xs leading-none">
+                      {inquiryActionCount > 99 ? "99+" : inquiryActionCount}
+                    </span>
                   )}
                 </div>
 
