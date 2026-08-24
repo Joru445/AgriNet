@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export default function StatCard({ title, value, description, to, icon }) {
+export default function StatCard({ title, value, description, to }) {
   const navigate = useNavigate();
 
   const handleClick = () => {

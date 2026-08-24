@@ -87,7 +87,7 @@ export default function AppRoutes() {
 
           <Route path="/me" element={<Profile />} />
 
-          <Route path="/home/notifications" element={<Notifications />} />
+          <Route path="/notifications" element={<Notifications />} />
         </Route>
       </Route>
 

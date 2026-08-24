@@ -57,6 +57,7 @@ export default function MessageInput({
    * Reset the inquiry quantity whenever
    * the selected inquiry product changes.
    */
+
   useEffect(() => {
     setQuantity(1);
   }, [inquiryProduct?.id]);
@@ -72,14 +73,19 @@ export default function MessageInput({
 
   function handleFileSelected(e) {
     const file = e.target.files?.[0];
-    if (!file) return;
 
-    // Reset input so re-selecting same file works
-    e.target.value = "";
+    if (!file) {
+      return;
+    }
+
     setShowMenu(false);
 
     const previewUrl = URL.createObjectURL(file);
-    onSelectImage?.({ file, previewUrl });
+
+    onSelectImage?.({
+      file,
+      previewUrl,
+    });
   }
 
   function decreaseQuantity() {
@@ -152,7 +158,7 @@ export default function MessageInput({
         ref={galleryInputRef}
         type="file"
         accept="image/*"
-        className="hidden"
+        className="sr-only"
         onChange={handleFileSelected}
       />
       <input
@@ -160,7 +166,7 @@ export default function MessageInput({
         type="file"
         accept="image/*"
         capture="environment"
-        className="hidden"
+        className="sr-only"
         onChange={handleFileSelected}
       />
 
@@ -312,7 +318,21 @@ export default function MessageInput({
               ) : (
                 <button
                   type="button"
-                  onClick={onRemoveImage}
+                  onClick={() => {
+                    if (selectedImage?.previewUrl) {
+                      URL.revokeObjectURL(selectedImage.previewUrl);
+                    }
+
+                    if (galleryInputRef.current) {
+                      galleryInputRef.current.value = "";
+                    }
+
+                    if (cameraInputRef.current) {
+                      cameraInputRef.current.value = "";
+                    }
+
+                    onRemoveImage?.();
+                  }}
                   className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md transition cursor-pointer"
                   title="Remove image"
                 >
@@ -342,8 +362,9 @@ export default function MessageInput({
               onClick={() => setShowMenu((prev) => !prev)}
               aria-label="Add attachment"
               title="Add photo or media"
-              className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-[#2D6A4F] transition hover:text-[#1B4332] hover:bg-black/5 cursor-pointer ${showMenu ? "rotate-45" : "rotate-0"
-                }`}
+              className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-[#2D6A4F] transition hover:text-[#1B4332] hover:bg-black/5 cursor-pointer ${
+                showMenu ? "rotate-45" : "rotate-0"
+              }`}
             >
               <i className="ri-add-large-fill text-lg font-bold transition-transform duration-200" />
             </button>
@@ -405,10 +426,11 @@ export default function MessageInput({
             }}
             disabled={!canSend}
             aria-label="Send message"
-            className={`h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center transition ${canSend
+            className={`h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center transition ${
+              canSend
                 ? "text-[#2D6A4F] hover:text-[#1B4332] cursor-pointer hover:scale-105 active:scale-95"
                 : "text-gray-300 cursor-not-allowed"
-              }`}
+            }`}
           >
             {uploadingImage ? (
               <i className="ri-loader-4-line text-xl animate-spin text-[#2D6A4F]" />

@@ -28,7 +28,7 @@ export default function MessageBubble({
         />
         <div
           className={`max-w-[85%] sm:max-w-[75%] min-w-0 rounded-2xl ${
-            isImage ? "p-1.5 overflow-hidden" : "px-4 py-2.5"
+            isImage ? "p-0 overflow-hidden" : "px-4 py-2.5"
           } ${
             isFailed
               ? "bg-red-50 text-red-900 border border-red-300 shadow-sm"
@@ -38,9 +38,20 @@ export default function MessageBubble({
           }`}
           style={!mine && !isFailed ? { border: "1px solid var(--agri-border)" } : {}}
         >
+          
+          {message.text && (
+            <p
+              className={`break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap ${
+                isImage ? "px-2.5 py-1.5 text-sm font-medium" : ""
+              }`}
+            >
+              {message.text}
+            </p>
+          )}
+          
           {/* Image Attachment */}
           {isImage && message.imageUrl && (
-            <div className="rounded-xl overflow-hidden mb-1 group relative">
+            <div className="rounded-xl overflow-hidden mb-0 group relative">
               <img
                 src={message.imageUrl}
                 alt="Photo attachment"
@@ -57,16 +68,6 @@ export default function MessageBubble({
                 <i className="ri-fullscreen-line text-sm" />
               </button>
             </div>
-          )}
-
-          {message.text && (
-            <p
-              className={`break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap ${
-                isImage ? "px-2.5 py-1.5 text-sm font-medium" : ""
-              }`}
-            >
-              {message.text}
-            </p>
           )}
         </div>
       </div>
@@ -100,13 +101,11 @@ export default function MessageBubble({
       {mine && !isFailed && isLastMine && (
         <div className="flex items-center justify-end gap-1 mt-1 mr-1 text-[11px] font-bold select-none transition-all">
           {isSeen ? (
-            <span className="flex items-center gap-1 text-[#2D6A4F]">
-              <i className="ri-check-double-line text-xs font-bold text-[#2D6A4F]" />
+            <span className="flex items-center gap-1 text-gray-400">
               Seen
             </span>
           ) : (
             <span className="flex items-center gap-1 text-gray-400 font-semibold">
-              <i className="ri-check-line text-xs text-gray-400" />
               Sent
             </span>
           )}
@@ -116,7 +115,7 @@ export default function MessageBubble({
       {/* Lightbox / Fullscreen Image Modal */}
       {showLightbox && message.imageUrl && (
         <div
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-9999 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4"
           onClick={() => setShowLightbox(false)}
         >
           <button
