@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 import Avatar from "../../common/Avatar";
 import BackButton from "../../common/BackButton";
 
@@ -49,7 +50,7 @@ export default function ChatHeader({ user }) {
       <div className="flex items-center gap-3 min-w-0">
         <BackButton className="flex sm:hidden" />
 
-        <Avatar src={user.profilePicture} name={user.fullname} />
+        <Avatar src={user.profilePicture} name={user.fullname} size="sm" />
 
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 min-w-0">
