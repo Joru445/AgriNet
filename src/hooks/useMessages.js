@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -11,11 +15,17 @@ import {
   subscribeUserConversations,
 } from "../services/conversation.service";
 
-import { subscribeMessages, sendMessage } from "../services/message.service";
+import {
+  subscribeMessages,
+  sendMessage as sendMessageService,
+} from "../services/message.service";
 
 import { uploadMessageImage } from "../services/cloudinary.service";
 
-import { getUserProfile, searchUsers } from "../services/user.service";
+import {
+  getUserProfile,
+  searchUsers,
+} from "../services/user.service";
 
 import { getProductById } from "../services/product.service";
 
@@ -34,19 +44,23 @@ export default function useMessages() {
   const [loading, setLoading] = useState(true);
 
   const [conversations, setConversations] = useState([]);
-
   const [messages, setMessages] = useState([]);
 
-  const [activeConversation, setActiveConversation] = useState(null);
+  const [activeConversation, setActiveConversation] =
+    useState(null);
 
   const [activeUser, setActiveUser] = useState(null);
 
   const [search, setSearch] = useState("");
 
   const [message, setMessage] = useState("");
+
   const [drafts, setDrafts] = useState(() => {
     try {
-      const saved = localStorage.getItem("agri_message_drafts");
+      const saved = localStorage.getItem(
+        "agri_message_drafts",
+      );
+
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
@@ -54,12 +68,17 @@ export default function useMessages() {
   });
 
   const [isOnline, setIsOnline] = useState(() =>
-    typeof navigator !== "undefined" ? navigator.onLine : true,
+    typeof navigator !== "undefined"
+      ? navigator.onLine
+      : true,
   );
+
   const [failedMessages, setFailedMessages] = useState([]);
 
   const [selectedImage, setSelectedImage] = useState(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const [uploadingImage, setUploadingImage] =
+    useState(false);
 
   const [userResults, setUserResults] = useState([]);
 
@@ -67,78 +86,146 @@ export default function useMessages() {
     () => location.state?.inquiryProduct || null,
   );
 
-  const [inquiryProducts, setInquiryProducts] = useState({});
+  const [inquiryProducts, setInquiryProducts] =
+    useState({});
 
   const productCache = useRef(new Map());
 
   const searching = search.trim().length > 0;
 
   const currentTargetKey = useMemo(() => {
-    if (activeConversation?.id) return activeConversation.id;
-    if (activeUser?.uid) return `user_${activeUser.uid}`;
-    return null;
-  }, [activeConversation?.id, activeUser?.uid]);
+    if (activeConversation?.id) {
+      return activeConversation.id;
+    }
 
-  // Persist drafts to localStorage
+    if (activeUser?.uid) {
+      return `user_${activeUser.uid}`;
+    }
+
+    return null;
+  }, [
+    activeConversation?.id,
+    activeUser?.uid,
+  ]);
+
+  /*
+   * ==================================================
+   * PERSIST DRAFTS
+   * ==================================================
+   */
+
   useEffect(() => {
     try {
-      localStorage.setItem("agri_message_drafts", JSON.stringify(drafts));
-    } catch (e) {
-      console.error("Failed to save drafts to localStorage", e);
+      localStorage.setItem(
+        "agri_message_drafts",
+        JSON.stringify(drafts),
+      );
+    } catch (error) {
+      console.error(
+        "Failed to save drafts to localStorage:",
+        error,
+      );
     }
   }, [drafts]);
 
-  // Sync draft text when active conversation/user changes
+  /*
+   * ==================================================
+   * SYNC ACTIVE DRAFT
+   * ==================================================
+   */
+
   useEffect(() => {
     if (currentTargetKey) {
-      const savedDraft = drafts[currentTargetKey] || "";
-      setMessage(savedDraft);
+      setMessage(
+        drafts[currentTargetKey] || "",
+      );
     } else {
       setMessage("");
     }
   }, [currentTargetKey]);
 
-  // Listen to network status
+  /*
+   * ==================================================
+   * NETWORK STATUS
+   * ==================================================
+   */
+
   useEffect(() => {
     function handleOnline() {
       setIsOnline(true);
     }
+
     function handleOffline() {
       setIsOnline(false);
-      showToast.error("No internet connection.");
+
+      showToast.error(
+        "No internet connection.",
+      );
     }
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener(
+      "online",
+      handleOnline,
+    );
+
+    window.addEventListener(
+      "offline",
+      handleOffline,
+    );
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener(
+        "online",
+        handleOnline,
+      );
+
+      window.removeEventListener(
+        "offline",
+        handleOffline,
+      );
     };
   }, []);
 
-  function handleMessageChange(val) {
-    setMessage(val);
-    if (!currentTargetKey) return;
-    setDrafts((prev) => {
-      if (!val || !val.trim()) {
-        if (!prev[currentTargetKey]) return prev;
-        const next = { ...prev };
+  /*
+   * ==================================================
+   * HANDLE MESSAGE INPUT
+   * ==================================================
+   */
+
+  function handleMessageChange(value) {
+    setMessage(value);
+
+    if (!currentTargetKey) {
+      return;
+    }
+
+    setDrafts((previous) => {
+      if (!value?.trim()) {
+        const next = {
+          ...previous,
+        };
+
         delete next[currentTargetKey];
+
         return next;
       }
-      return { ...prev, [currentTargetKey]: val };
+
+      return {
+        ...previous,
+        [currentTargetKey]: value,
+      };
     });
   }
 
   /*
-   * --------------------------------------------------
-   * Inquiry product from navigation state
-   * --------------------------------------------------
+   * ==================================================
+   * SYNC INQUIRY PRODUCT FROM NAVIGATION STATE
+   * ==================================================
    */
 
   useEffect(() => {
-    const product = location.state?.inquiryProduct;
+    const product =
+      location.state?.inquiryProduct;
 
     if (product) {
       setInquiryProduct(product);
@@ -146,9 +233,9 @@ export default function useMessages() {
   }, [location.state]);
 
   /*
-   * --------------------------------------------------
-   * Product cache
-   * --------------------------------------------------
+   * ==================================================
+   * PRODUCT CACHE
+   * ==================================================
    */
 
   async function getCachedProduct(productId) {
@@ -156,16 +243,25 @@ export default function useMessages() {
       return null;
     }
 
-    if (productCache.current.has(productId)) {
-      return productCache.current.get(productId);
+    if (
+      productCache.current.has(productId)
+    ) {
+      return productCache.current.get(
+        productId,
+      );
     }
 
     try {
-      const product = await getProductById(productId);
+      const product =
+        await getProductById(productId);
 
-      const cachedProduct = product || null;
+      const cachedProduct =
+        product || null;
 
-      productCache.current.set(productId, cachedProduct);
+      productCache.current.set(
+        productId,
+        cachedProduct,
+      );
 
       setInquiryProducts((current) => ({
         ...current,
@@ -174,9 +270,15 @@ export default function useMessages() {
 
       return cachedProduct;
     } catch (error) {
-      console.error("Failed to load inquiry product:", error);
+      console.error(
+        "Failed to load inquiry product:",
+        error,
+      );
 
-      productCache.current.set(productId, null);
+      productCache.current.set(
+        productId,
+        null,
+      );
 
       setInquiryProducts((current) => ({
         ...current,
@@ -188,9 +290,9 @@ export default function useMessages() {
   }
 
   /*
-   * --------------------------------------------------
-   * Load products used by inquiry messages
-   * --------------------------------------------------
+   * ==================================================
+   * LOAD PRODUCTS USED BY INQUIRY MESSAGES
+   * ==================================================
    */
 
   useEffect(() => {
@@ -202,10 +304,15 @@ export default function useMessages() {
       ...new Set(
         messages
           .filter(
-            (message) =>
-              message.type === "product_inquiry" && message.productId,
+            (messageItem) =>
+              messageItem.type ===
+                "product_inquiry" &&
+              messageItem.productId,
           )
-          .map((message) => message.productId),
+          .map(
+            (messageItem) =>
+              messageItem.productId,
+          ),
       ),
     ];
 
@@ -215,9 +322,12 @@ export default function useMessages() {
   }, [messages]);
 
   /*
-   * --------------------------------------------------
-   * Subscribe to conversations
-   * --------------------------------------------------
+   * ==================================================
+   * SUBSCRIBE TO CONVERSATIONS
+   *
+   * participantInfo is the fallback.
+   * getUserProfile provides the current user data.
+   * ==================================================
    */
 
   useEffect(() => {
@@ -230,60 +340,134 @@ export default function useMessages() {
 
     setLoading(true);
 
-    const unsubscribe = subscribeUserConversations(profile.uid, async (data) => {
-      const mapped = data.map((conversation) => {
-        const otherUid = conversation.participants?.find(
-          (uid) => uid !== profile.uid,
-        );
+    const unsubscribe =
+      subscribeUserConversations(
+        profile.uid,
+        async (data) => {
+          try {
+            const mapped = data.map(
+              (conversation) => {
+                const otherUid =
+                  conversation.participants?.find(
+                    (uid) =>
+                      uid !== profile.uid,
+                  );
 
-        const otherInfo = conversation.participantInfo?.[otherUid] || {};
+                const otherInfo =
+                  conversation.participantInfo?.[
+                    otherUid
+                  ] || {};
 
-        return {
-          ...conversation,
+                return {
+                  ...conversation,
 
-          otherUser: {
-            uid: otherUid,
-            ...otherInfo,
-            verified: otherInfo.verified === true,
-          },
+                  otherUser: {
+                    uid: otherUid,
+                    ...otherInfo,
 
-          unreadCount: conversation.unreadCount?.[profile.uid] ?? 0,
-          rawUnreadCount: conversation.unreadCount || {},
-        };
-      });
+                    verified:
+                      otherInfo.verified ===
+                      true,
+                  },
 
-      // Always enrich conversation otherUser with live user profile (verified status, name, picture)
-      const allOtherUids = [
-        ...new Set(mapped.map((c) => c.otherUser?.uid).filter(Boolean)),
-      ];
+                  unreadCount:
+                    conversation.unreadCount?.[
+                      profile.uid
+                    ] ?? 0,
 
-      if (allOtherUids.length > 0) {
-        try {
-          const userProfiles = await Promise.all(
-            allOtherUids.map(async (uId) => {
-              const u = await getUserProfile(uId);
-              return [uId, u];
-            }),
-          );
-          const uMap = new Map(userProfiles.filter(([, u]) => u != null));
-          mapped.forEach((c) => {
-            const liveUser = uMap.get(c.otherUser?.uid);
-            if (liveUser) {
-              c.otherUser = {
-                ...c.otherUser,
-                ...liveUser,
-                verified: liveUser.verified === true,
-              };
+                  rawUnreadCount:
+                    conversation.unreadCount ||
+                    {},
+                };
+              },
+            );
+
+            /*
+             * Enrich users with current profile data.
+             *
+             * This is necessary because older
+             * conversations may not contain complete
+             * participantInfo.
+             */
+
+            const otherUserIds = [
+              ...new Set(
+                mapped
+                  .map(
+                    (conversation) =>
+                      conversation.otherUser
+                        ?.uid,
+                  )
+                  .filter(Boolean),
+              ),
+            ];
+
+            if (otherUserIds.length > 0) {
+              const userProfiles =
+                await Promise.all(
+                  otherUserIds.map(
+                    async (uid) => {
+                      try {
+                        const user =
+                          await getUserProfile(
+                            uid,
+                          );
+
+                        return [uid, user];
+                      } catch (error) {
+                        console.error(
+                          `Failed to load user ${uid}:`,
+                          error,
+                        );
+
+                        return [uid, null];
+                      }
+                    },
+                  ),
+                );
+
+              const userMap = new Map(
+                userProfiles.filter(
+                  ([, user]) =>
+                    user != null,
+                ),
+              );
+
+              mapped.forEach(
+                (conversation) => {
+                  const liveUser =
+                    userMap.get(
+                      conversation.otherUser
+                        ?.uid,
+                    );
+
+                  if (liveUser) {
+                    conversation.otherUser = {
+                      ...conversation.otherUser,
+                      ...liveUser,
+
+                      verified:
+                        liveUser.verified ===
+                        true,
+                    };
+                  }
+                },
+              );
             }
-          });
-        } catch (err) {
-          console.error("Error enriching conversation users:", err);
-        }
-      }
 
-      setConversations(mapped);
-      setLoading(false);
-    });
+            setConversations(mapped);
+          } catch (error) {
+            console.error(
+              "Failed to process conversations:",
+              error,
+            );
+
+            setConversations([]);
+          } finally {
+            setLoading(false);
+          }
+        },
+      );
 
     return () => {
       unsubscribe();
@@ -291,9 +475,9 @@ export default function useMessages() {
   }, [profile?.uid]);
 
   /*
-   * --------------------------------------------------
-   * Search users
-   * --------------------------------------------------
+   * ==================================================
+   * SEARCH USERS
+   * ==================================================
    */
 
   useEffect(() => {
@@ -304,38 +488,60 @@ export default function useMessages() {
     async function loadSearch() {
       if (!search.trim()) {
         setUserResults([]);
+
         return;
       }
 
       try {
-        const users = await searchUsers(search, profile.uid);
+        const users =
+          await searchUsers(
+            search,
+            profile.uid,
+          );
 
-        const conversationUserIds = new Set(
-          conversations
-            .map((conversation) => conversation.otherUser?.uid)
-            .filter(Boolean),
-        );
+        const conversationUserIds =
+          new Set(
+            conversations
+              .map(
+                (conversation) =>
+                  conversation.otherUser
+                    ?.uid,
+              )
+              .filter(Boolean),
+          );
 
         setUserResults(
-          users.filter((user) => !conversationUserIds.has(user.uid)),
+          users.filter(
+            (user) =>
+              !conversationUserIds.has(
+                user.uid,
+              ),
+          ),
         );
       } catch (error) {
-        console.error("Failed to search users:", error);
+        console.error(
+          "Failed to search users:",
+          error,
+        );
 
         setUserResults([]);
       }
     }
 
     loadSearch();
-  }, [search, conversations, profile?.uid]);
+  }, [
+    search,
+    conversations,
+    profile?.uid,
+  ]);
 
   /*
-   * --------------------------------------------------
-   * Handle URL state
+   * ==================================================
+   * HANDLE URL STATE
    *
    * /messages?conversation=id
    * /messages?user=uid
-   * --------------------------------------------------
+   * ==================================================
    */
 
   useEffect(() => {
@@ -343,23 +549,54 @@ export default function useMessages() {
       return;
     }
 
-    const conversationId = searchParams.get("conversation");
+    const conversationId =
+      searchParams.get("conversation");
 
-    const userId = searchParams.get("user");
+    const userId =
+      searchParams.get("user");
 
     let cancelled = false;
 
     async function loadConversation() {
       /*
-       * ==============================================
-       * Existing conversation
-       * /messages?conversation=id
-       * ==============================================
+       * Existing conversation.
        */
 
       if (conversationId) {
         try {
-          const conversation = await getConversation(conversationId);
+          /*
+           * Prefer the already enriched conversation
+           * from the conversation list.
+           */
+
+          const existing =
+            conversations.find(
+              (conversation) =>
+                conversation.id ===
+                conversationId,
+            );
+
+          if (existing) {
+            if (!cancelled) {
+              setActiveConversation(
+                existing,
+              );
+
+              setActiveUser(null);
+            }
+
+            return;
+          }
+
+          /*
+           * Fallback if the conversation list has not
+           * loaded yet.
+           */
+
+          const conversation =
+            await getConversation(
+              conversationId,
+            );
 
           if (cancelled) {
             return;
@@ -373,9 +610,11 @@ export default function useMessages() {
             return;
           }
 
-          const otherUid = conversation.participants?.find(
-            (uid) => uid !== profile.uid,
-          );
+          const otherUid =
+            conversation.participants?.find(
+              (uid) =>
+                uid !== profile.uid,
+            );
 
           if (!otherUid) {
             setActiveConversation(null);
@@ -385,13 +624,15 @@ export default function useMessages() {
             return;
           }
 
-          let otherUser = conversation.participantInfo?.[otherUid] || {};
-          try {
-            const userProfile = await getUserProfile(otherUid);
-            if (userProfile) {
-              otherUser = { ...otherUser, ...userProfile };
-            }
-          } catch (_) {}
+          /*
+           * Use participantInfo as the immediate
+           * fallback.
+           */
+
+          const otherUser =
+            conversation.participantInfo?.[
+              otherUid
+            ] || {};
 
           setActiveConversation({
             ...conversation,
@@ -399,7 +640,9 @@ export default function useMessages() {
             otherUser: {
               uid: otherUid,
               ...otherUser,
-              verified: otherUser.verified === true,
+
+              verified:
+                otherUser.verified === true,
             },
           });
 
@@ -408,7 +651,10 @@ export default function useMessages() {
           return;
         } catch (error) {
           if (!cancelled) {
-            console.error("Failed to load conversation:", error);
+            console.error(
+              "Failed to load conversation:",
+              error,
+            );
 
             setActiveConversation(null);
             setActiveUser(null);
@@ -420,41 +666,26 @@ export default function useMessages() {
       }
 
       /*
-       * ==============================================
-       * User without a conversation
-       * /messages?user=uid
-       * ==============================================
+       * User without conversation.
        */
 
       if (userId) {
         try {
-          /*
-           * Check if a conversation already exists.
-           */
-          const existingConversation = await findConversation(
-            profile.uid,
-            userId,
-          );
+          const existingConversation =
+            await findConversation(
+              profile.uid,
+              userId,
+            );
 
           if (cancelled) {
             return;
           }
 
-          /*
-           * Conversation already exists.
-           *
-           * Replace:
-           *
-           * ?user=uid
-           *
-           * with:
-           *
-           * ?conversation=id
-           */
           if (existingConversation) {
             setSearchParams(
               {
-                conversation: existingConversation.id,
+                conversation:
+                  existingConversation.id,
               },
               {
                 replace: true,
@@ -464,13 +695,10 @@ export default function useMessages() {
             return;
           }
 
-          /*
-           * No conversation exists yet.
-           *
-           * Load the target user's profile and
-           * use it as the active chat target.
-           */
-          const user = await getUserProfile(userId);
+          const user =
+            await getUserProfile(
+              userId,
+            );
 
           if (cancelled) {
             return;
@@ -484,13 +712,6 @@ export default function useMessages() {
             return;
           }
 
-          /*
-           * IMPORTANT:
-           *
-           * activeConversation remains null.
-           * activeUser represents the person we're
-           * about to start a conversation with.
-           */
           setActiveConversation(null);
           setActiveUser(user);
           setMessages([]);
@@ -498,7 +719,10 @@ export default function useMessages() {
           return;
         } catch (error) {
           if (!cancelled) {
-            console.error("Failed to load user:", error);
+            console.error(
+              "Failed to load user:",
+              error,
+            );
 
             setActiveConversation(null);
             setActiveUser(null);
@@ -508,12 +732,6 @@ export default function useMessages() {
           return;
         }
       }
-
-      /*
-       * ==============================================
-       * Nothing selected
-       * ==============================================
-       */
 
       setActiveConversation(null);
       setActiveUser(null);
@@ -525,16 +743,24 @@ export default function useMessages() {
     return () => {
       cancelled = true;
     };
-  }, [profile?.uid, searchParams, setSearchParams]);
+  }, [
+    profile?.uid,
+    searchParams,
+    setSearchParams,
+    conversations,
+  ]);
 
   /*
-   * --------------------------------------------------
-   * Subscribe to messages
-   * --------------------------------------------------
+   * ==================================================
+   * SUBSCRIBE TO MESSAGES
+   * ==================================================
    */
 
   useEffect(() => {
-    if (!profile?.uid || !activeConversation?.id) {
+    if (
+      !profile?.uid ||
+      !activeConversation?.id
+    ) {
       setMessages([]);
 
       return;
@@ -542,40 +768,49 @@ export default function useMessages() {
 
     setMessages([]);
 
-    const unsubscribe = subscribeMessages(activeConversation.id, setMessages);
+    const unsubscribe =
+      subscribeMessages(
+        activeConversation.id,
+        setMessages,
+      );
 
-    /*
-     * Conversation-level read tracking.
-     *
-     * This no longer scans every message.
-     */
-    markConversationRead(activeConversation.id, profile.uid).catch((error) => {
-      console.error("Failed to mark conversation as read:", error);
+    markConversationRead(
+      activeConversation.id,
+      profile.uid,
+    ).catch((error) => {
+      console.error(
+        "Failed to mark conversation as read:",
+        error,
+      );
     });
 
     return () => {
       unsubscribe();
     };
-  }, [activeConversation?.id, profile?.uid]);
+  }, [
+    activeConversation?.id,
+    profile?.uid,
+  ]);
 
   /*
-   * --------------------------------------------------
-   * Select existing conversation
-   * --------------------------------------------------
+   * ==================================================
+   * SELECT CONVERSATION
+   * ==================================================
    */
 
   function selectConversation(conversation) {
     setSearch("");
 
     setSearchParams({
-      conversation: conversation.id,
+      conversation:
+        conversation.id,
     });
   }
 
   /*
-   * --------------------------------------------------
-   * Select user
-   * --------------------------------------------------
+   * ==================================================
+   * SELECT USER
+   * ==================================================
    */
 
   function selectUser(user) {
@@ -587,55 +822,143 @@ export default function useMessages() {
   }
 
   /*
-   * --------------------------------------------------
-   * Send message
-   * --------------------------------------------------
+   * ==================================================
+   * CREATE FAILED MESSAGE
+   * ==================================================
    */
 
-  async function handleSend(customImage = null) {
-    const activeImg = customImage || selectedImage;
+  function createFailedMessage({
+    conversationId,
+    text,
+    image,
+    error,
+    stage,
+  }) {
+    return {
+      id: `failed_${Date.now()}`,
+
+      conversationId:
+        conversationId || "temp",
+
+      senderId:
+        profile?.uid || null,
+
+      text,
+
+      type: image
+        ? "image"
+        : "text",
+
+      imageUrl:
+        image?.previewUrl || null,
+
+      imageId: null,
+
+      status: "failed",
+
+      error:
+        error ||
+        "Failed to send message",
+
+      stage,
+
+      createdAt: {
+        seconds: Math.floor(
+          Date.now() / 1000,
+        ),
+      },
+    };
+  }
+
+  /*
+   * ==================================================
+   * CLEAR CURRENT DRAFT
+   * ==================================================
+   */
+
+  function clearCurrentDraft() {
+    if (!currentTargetKey) {
+      return;
+    }
+
+    setDrafts((previous) => {
+      const next = {
+        ...previous,
+      };
+
+      delete next[currentTargetKey];
+
+      return next;
+    });
+  }
+
+  /*
+   * ==================================================
+   * SEND MESSAGE
+   * ==================================================
+   */
+
+  async function handleSend(
+    customImage = null,
+  ) {
+    const activeImg =
+      customImage || selectedImage;
+
     const text = message.trim();
 
     if (!text && !activeImg) {
       return;
     }
 
-    let conversationId = activeConversation?.id;
+    if (!profile?.uid) {
+      showToast.error(
+        "You must be logged in to send a message.",
+      );
 
-    if (!conversationId && !activeUser) {
-      showToast.error("No user selected.");
       return;
     }
 
-    const currentKey = currentTargetKey;
+    let conversationId =
+      activeConversation?.id;
 
-    // Check offline condition like Messenger
+    let stage = "prepare";
+
+    if (
+      !conversationId &&
+      !activeUser?.uid
+    ) {
+      showToast.error(
+        "No user selected.",
+      );
+
+      return;
+    }
+
     if (!navigator.onLine) {
-      const tempId = `failed_${Date.now()}`;
-      const failedMsg = {
-        id: tempId,
-        conversationId: conversationId || "temp",
-        senderId: profile.uid,
-        text,
-        type: activeImg ? "image" : "text",
-        imageUrl: activeImg ? activeImg.previewUrl : null,
-        status: "failed",
-        error: "No internet connection",
-        createdAt: { seconds: Math.floor(Date.now() / 1000) },
-      };
+      const failedMessage =
+        createFailedMessage({
+          conversationId,
+          text,
+          image: activeImg,
+          error:
+            "No internet connection",
+          stage: "offline",
+        });
 
-      setFailedMessages((prev) => [...prev, failedMsg]);
+      setFailedMessages((previous) => [
+        ...previous,
+        failedMessage,
+      ]);
+
       setMessage("");
       setSelectedImage(null);
-      if (currentKey) {
-        setDrafts((prev) => {
-          const next = { ...prev };
-          delete next[currentKey];
-          return next;
-        });
-      }
 
-      showToast.error("Unable to send. No internet connection.");
+      clearCurrentDraft();
+
+      showToast.error(
+        "Unable to send. No internet connection.",
+      );
+
       return;
     }
 
@@ -644,12 +967,75 @@ export default function useMessages() {
         setUploadingImage(true);
       }
 
-      if (!conversationId) {
-        conversationId = await createConversation(profile, activeUser);
+      /*
+       * Create conversation if needed.
+       */
 
+      if (!conversationId) {
+        stage =
+          "create-conversation";
+
+        conversationId =
+          await createConversation(
+            profile,
+            activeUser,
+          );
+      }
+
+      /*
+       * Upload image if present.
+       */
+
+      let imageUrl = null;
+      let imageId = null;
+
+      if (activeImg?.file) {
+        stage = "upload-image";
+
+        const uploaded =
+          await uploadMessageImage(
+            activeImg.file,
+          );
+
+        imageUrl =
+          uploaded?.url || null;
+
+        imageId =
+          uploaded?.publicId || null;
+      }
+
+      /*
+       * Send Firestore message.
+       */
+
+      stage = "send-message";
+
+      await sendMessageService({
+        conversationId,
+
+        senderId:
+          profile.uid,
+
+        text,
+
+        type: activeImg
+          ? "image"
+          : "text",
+
+        imageUrl,
+        imageId,
+      });
+
+      /*
+       * Only change URL after the message
+       * was successfully sent.
+       */
+
+      if (!activeConversation?.id) {
         setSearchParams(
           {
-            conversation: conversationId,
+            conversation:
+              conversationId,
           },
           {
             replace: true,
@@ -657,122 +1043,285 @@ export default function useMessages() {
         );
       }
 
-      let imageUrl = null;
-      let imageId = null;
-
-      if (activeImg?.file) {
-        const uploaded = await uploadMessageImage(activeImg.file);
-        imageUrl = uploaded.url;
-        imageId = uploaded.publicId;
-      }
-
-      await sendMessage({
-        conversationId,
-        senderId: profile.uid,
-        text,
-        type: activeImg ? "image" : "text",
-        imageUrl,
-        imageId,
-      });
-
       setMessage("");
       setSelectedImage(null);
-      if (currentKey) {
-        setDrafts((prev) => {
-          const next = { ...prev };
-          delete next[currentKey];
-          return next;
-        });
-      }
+
+      clearCurrentDraft();
     } catch (error) {
-      console.error("Failed to send message:", error);
+      console.error(
+        `[Messages] Failed during "${stage}":`,
+        error,
+      );
 
-      const tempId = `failed_${Date.now()}`;
-      const failedMsg = {
-        id: tempId,
-        conversationId: conversationId || "temp",
-        senderId: profile.uid,
-        text,
-        type: activeImg ? "image" : "text",
-        imageUrl: activeImg ? activeImg.previewUrl : null,
-        status: "failed",
-        error: error.message || "Failed to send message",
-        createdAt: { seconds: Math.floor(Date.now() / 1000) },
-      };
+      console.error(
+        "[Messages] Error code:",
+        error.code,
+      );
 
-      setFailedMessages((prev) => [...prev, failedMsg]);
+      console.error(
+        "[Messages] Error message:",
+        error.message,
+      );
+
+      const failedMessage =
+        createFailedMessage({
+          conversationId,
+          text,
+          image: activeImg,
+          error:
+            error.message,
+          stage,
+        });
+
+      setFailedMessages((previous) => [
+        ...previous,
+        failedMessage,
+      ]);
+
       setMessage("");
       setSelectedImage(null);
-      if (currentKey) {
-        setDrafts((prev) => {
-          const next = { ...prev };
-          delete next[currentKey];
-          return next;
-        });
-      }
 
-      showToast.error("Unable to send message.");
+      clearCurrentDraft();
+
+      if (
+        error.code ===
+        "permission-denied"
+      ) {
+        showToast.error(
+          `Message blocked by Firestore permissions (${stage}).`,
+        );
+      } else {
+        showToast.error(
+          error.message ||
+            "Unable to send message.",
+        );
+      }
     } finally {
       setUploadingImage(false);
     }
   }
 
-  async function retryMessage(failedMsg) {
-    setFailedMessages((prev) => prev.filter((m) => m.id !== failedMsg.id));
+  /*
+   * ==================================================
+   * RETRY FAILED MESSAGE
+   * ==================================================
+   */
+
+  async function retryMessage(
+    failedMessage,
+  ) {
+    setFailedMessages((previous) =>
+      previous.filter(
+        (messageItem) =>
+          messageItem.id !==
+          failedMessage.id,
+      ),
+    );
 
     if (!navigator.onLine) {
-      setFailedMessages((prev) => [...prev, failedMsg]);
-      showToast.error("Unable to send. No internet connection.");
+      setFailedMessages((previous) => [
+        ...previous,
+        failedMessage,
+      ]);
+
+      showToast.error(
+        "Unable to send. No internet connection.",
+      );
+
       return;
     }
 
+    /*
+     * A blob URL is only a local preview.
+     * The original File is gone, so it cannot
+     * be uploaded again.
+     */
+
+    if (
+      failedMessage.type ===
+        "image" &&
+      (!failedMessage.imageUrl ||
+        failedMessage.imageUrl.startsWith(
+          "blob:",
+        ))
+    ) {
+      setFailedMessages((previous) => [
+        ...previous,
+        failedMessage,
+      ]);
+
+      showToast.error(
+        "Please select the image again before retrying.",
+      );
+
+      return;
+    }
+
+    let stage = "prepare";
+
     try {
-      let conversationId = activeConversation?.id;
-      if (!conversationId && activeUser) {
-        conversationId = await createConversation(profile, activeUser);
-        setSearchParams({ conversation: conversationId }, { replace: true });
+      let conversationId =
+        failedMessage.conversationId;
+
+      if (
+        !conversationId ||
+        conversationId === "temp"
+      ) {
+        conversationId =
+          activeConversation?.id;
+      }
+
+      if (
+        !conversationId &&
+        activeUser?.uid
+      ) {
+        stage =
+          "create-conversation";
+
+        conversationId =
+          await createConversation(
+            profile,
+            activeUser,
+          );
       }
 
       if (!conversationId) {
-        throw new Error("No conversation found");
+        throw new Error(
+          "No conversation found.",
+        );
       }
 
-      await sendMessage({
-        conversationId,
-        senderId: profile.uid,
-        text: failedMsg.text || "",
-        type: failedMsg.type || "text",
-        imageUrl: failedMsg.imageUrl || null,
-        imageId: failedMsg.imageId || null,
-      });
-    } catch (err) {
-      console.error("Failed to retry message:", err);
-      setFailedMessages((prev) => [...prev, failedMsg]);
-      showToast.error("Unable to send message.");
-    }
-  }
+      stage = "send-message";
 
-  function deleteFailedMessage(id) {
-    setFailedMessages((prev) => prev.filter((m) => m.id !== id));
+      await sendMessageService({
+        conversationId,
+
+        senderId:
+          profile.uid,
+
+        text:
+          failedMessage.text || "",
+
+        type:
+          failedMessage.type ||
+          "text",
+
+        imageUrl:
+          failedMessage.imageUrl?.startsWith(
+            "blob:",
+          )
+            ? null
+            : failedMessage.imageUrl ||
+              null,
+
+        imageId:
+          failedMessage.imageId ||
+          null,
+      });
+
+      if (!activeConversation?.id) {
+        setSearchParams(
+          {
+            conversation:
+              conversationId,
+          },
+          {
+            replace: true,
+          },
+        );
+      }
+    } catch (error) {
+      console.error(
+        `[Messages] Retry failed during "${stage}":`,
+        error,
+      );
+
+      setFailedMessages((previous) => [
+        ...previous,
+        {
+          ...failedMessage,
+
+          error:
+            error.message ||
+            "Failed to retry message",
+
+          stage,
+        },
+      ]);
+
+      if (
+        error.code ===
+        "permission-denied"
+      ) {
+        showToast.error(
+          `Message blocked by Firestore permissions (${stage}).`,
+        );
+      } else {
+        showToast.error(
+          error.message ||
+            "Unable to send message.",
+        );
+      }
+    }
   }
 
   /*
-   * --------------------------------------------------
-   * Send product inquiry
-   * --------------------------------------------------
+   * ==================================================
+   * DELETE FAILED MESSAGE
+   * ==================================================
    */
 
-  async function handleSendInquiry(quantity) {
+  function deleteFailedMessage(id) {
+    setFailedMessages((previous) =>
+      previous.filter(
+        (messageItem) =>
+          messageItem.id !== id,
+      ),
+    );
+  }
+
+  /*
+   * ==================================================
+   * SEND PRODUCT INQUIRY
+   * ==================================================
+   */
+
+  async function handleSendInquiry(
+    quantity,
+  ) {
     if (!inquiryProduct) {
-      showToast.error("No product selected for inquiry.");
+      showToast.error(
+        "No product selected for inquiry.",
+      );
+
       return;
     }
 
-    const parsedQuantity = Number(quantity);
-    const stock = Number(inquiryProduct.stock);
+    if (!profile?.uid) {
+      showToast.error(
+        "You must be logged in.",
+      );
 
-    if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1) {
-      showToast.error("Please enter a valid quantity.");
+      return;
+    }
+
+    const parsedQuantity =
+      Number(quantity);
+
+    const stock = Number(
+      inquiryProduct.stock,
+    );
+
+    if (
+      !Number.isInteger(
+        parsedQuantity,
+      ) ||
+      parsedQuantity < 1
+    ) {
+      showToast.error(
+        "Please enter a valid quantity.",
+      );
+
       return;
     }
 
@@ -781,35 +1330,75 @@ export default function useMessages() {
       !Number.isInteger(stock) ||
       stock < 1
     ) {
-      showToast.error("This product is currently unavailable.");
+      showToast.error(
+        "This product is currently unavailable.",
+      );
+
       return;
     }
 
     if (parsedQuantity > stock) {
       showToast.error(
-        `Only ${stock} ${inquiryProduct.unit || "units"} available.`,
+        `Only ${stock} ${
+          inquiryProduct.unit ||
+          "units"
+        } available.`,
       );
+
       return;
     }
 
     try {
-      let conversationId = activeConversation?.id;
+      let conversationId =
+        activeConversation?.id;
 
-      /*
-       * Start a new conversation if this is
-       * currently a /messages?user=uid chat.
-       */
       if (!conversationId) {
-        if (!activeUser) {
-          showToast.error("Unable to determine the farmer.");
+        if (!activeUser?.uid) {
+          showToast.error(
+            "Unable to determine the farmer.",
+          );
+
           return;
         }
 
-        conversationId = await createConversation(profile, activeUser);
+        conversationId =
+          await createConversation(
+            profile,
+            activeUser,
+          );
+      }
 
+      await sendMessageService({
+        conversationId,
+
+        senderId:
+          profile.uid,
+
+        text:
+          `I'm interested in ${inquiryProduct.name}.`,
+
+        type:
+          "product_inquiry",
+
+        productId:
+          inquiryProduct.id,
+
+        quantity:
+          parsedQuantity,
+
+        inquiryStatus:
+          "pending",
+      });
+
+      /*
+       * Only navigate after the inquiry succeeds.
+       */
+
+      if (!activeConversation?.id) {
         setSearchParams(
           {
-            conversation: conversationId,
+            conversation:
+              conversationId,
           },
           {
             replace: true,
@@ -817,58 +1406,75 @@ export default function useMessages() {
         );
       }
 
-      await sendMessage({
-        conversationId,
-        senderId: profile.uid,
-        text: `I'm interested in ${inquiryProduct.name}.`,
-        type: "product_inquiry",
-        productId: inquiryProduct.id,
-        quantity: parsedQuantity,
-        inquiryStatus: "pending",
-      });
-
       setInquiryProduct(null);
 
-      navigate(`${location.pathname}${location.search}`, {
-        replace: true,
-        state: null,
-      });
+      navigate(
+        `${location.pathname}${location.search}`,
+        {
+          replace: true,
+          state: null,
+        },
+      );
 
-      showToast.success("Inquiry sent successfully.");
+      showToast.success(
+        "Inquiry sent successfully.",
+      );
     } catch (error) {
-      console.error("Failed to send inquiry:", error);
+      console.error(
+        "Failed to send inquiry:",
+        error,
+      );
 
-      showToast.error(error.message || "Failed to send inquiry.");
+      showToast.error(
+        error.message ||
+          "Failed to send inquiry.",
+      );
     }
   }
 
   /*
-   * --------------------------------------------------
-   * Accept inquiry
-   * --------------------------------------------------
+   * ==================================================
+   * ACCEPT PRODUCT INQUIRY
+   * ==================================================
    */
 
-  async function handleAcceptInquiry(inquiryMessage) {
+  async function handleAcceptInquiry(
+    inquiryMessage,
+  ) {
     if (!inquiryMessage?.id) {
-      showToast.error("Invalid inquiry message.");
+      showToast.error(
+        "Invalid inquiry message.",
+      );
 
       return;
     }
 
-    if (inquiryMessage.type !== "product_inquiry") {
-      showToast.error("This message is not an inquiry.");
+    if (
+      inquiryMessage.type !==
+      "product_inquiry"
+    ) {
+      showToast.error(
+        "This message is not an inquiry.",
+      );
 
       return;
     }
 
-    if (inquiryMessage.inquiryStatus !== "pending") {
-      showToast.error("This inquiry has already been processed.");
+    if (
+      inquiryMessage.inquiryStatus !==
+      "pending"
+    ) {
+      showToast.error(
+        "This inquiry has already been processed.",
+      );
 
       return;
     }
 
     if (!profile?.uid) {
-      showToast.error("You must be logged in.");
+      showToast.error(
+        "You must be logged in.",
+      );
 
       return;
     }
@@ -879,20 +1485,28 @@ export default function useMessages() {
         farmer: profile,
       });
 
-      showToast.success("Inquiry accepted.");
+      showToast.success(
+        "Inquiry accepted.",
+      );
     } catch (error) {
-      console.error("Failed to accept inquiry:", error);
+      console.error(
+        "Failed to accept inquiry:",
+        error,
+      );
 
-      showToast.error(error.message || "Failed to accept inquiry.");
+      showToast.error(
+        error.message ||
+          "Failed to accept inquiry.",
+      );
 
       throw error;
     }
   }
 
   /*
-   * --------------------------------------------------
-   * Filter conversations
-   * --------------------------------------------------
+   * ==================================================
+   * FILTER CONVERSATIONS
+   * ==================================================
    */
 
   const filteredConversations = useMemo(() => {
@@ -900,40 +1514,100 @@ export default function useMessages() {
       return conversations;
     }
 
-    const keyword = search.toLowerCase();
+    const keyword =
+      search.toLowerCase();
 
     return conversations.filter(
       ({ otherUser }) =>
-        otherUser?.fullname?.toLowerCase().includes(keyword) ||
-        otherUser?.username?.toLowerCase().includes(keyword),
+        otherUser?.fullname
+          ?.toLowerCase()
+          .includes(keyword) ||
+        otherUser?.username
+          ?.toLowerCase()
+          .includes(keyword),
     );
-  }, [conversations, search]);
-
-  const activeConversationLive = useMemo(() => {
-    if (!activeConversation?.id) return activeConversation;
-    const found = conversations.find((c) => c.id === activeConversation.id);
-    if (!found) return activeConversation;
-    return {
-      ...activeConversation,
-      ...found,
-      otherUser: activeConversation.otherUser || found.otherUser,
-    };
-  }, [activeConversation, conversations]);
-
-  const combinedMessages = useMemo(() => {
-    const targetConversationId = activeConversation?.id;
-    const currentFailed = failedMessages.filter(
-      (m) =>
-        (targetConversationId && m.conversationId === targetConversationId) ||
-        (m.conversationId === "temp" && Boolean(activeUser)),
-    );
-    return [...messages, ...currentFailed];
-  }, [messages, failedMessages, activeConversation?.id, activeUser]);
+  }, [
+    conversations,
+    search,
+  ]);
 
   /*
-   * --------------------------------------------------
-   * Return
-   * --------------------------------------------------
+   * ==================================================
+   * KEEP ACTIVE CONVERSATION IN SYNC WITH
+   * ENRICHED CONVERSATION LIST
+   * ==================================================
+   */
+
+  const activeConversationLive =
+    useMemo(() => {
+      if (!activeConversation?.id) {
+        return activeConversation;
+      }
+
+      const found =
+        conversations.find(
+          (conversation) =>
+            conversation.id ===
+            activeConversation.id,
+        );
+
+      if (!found) {
+        return activeConversation;
+      }
+
+      return {
+        ...activeConversation,
+        ...found,
+
+        otherUser:
+          found.otherUser ||
+          activeConversation.otherUser,
+      };
+    }, [
+      activeConversation,
+      conversations,
+    ]);
+
+  /*
+   * ==================================================
+   * COMBINE REAL AND FAILED MESSAGES
+   * ==================================================
+   */
+
+  const combinedMessages = useMemo(() => {
+    const targetConversationId =
+      activeConversation?.id;
+
+    const currentFailed =
+      failedMessages.filter(
+        (messageItem) =>
+          (
+            targetConversationId &&
+            messageItem.conversationId ===
+              targetConversationId
+          ) ||
+          (
+            messageItem.conversationId ===
+              "temp" &&
+            Boolean(activeUser)
+          ),
+      );
+
+    return [
+      ...messages,
+      ...currentFailed,
+    ];
+  }, [
+    messages,
+    failedMessages,
+    activeConversation?.id,
+    activeUser,
+  ]);
+
+  /*
+   * ==================================================
+   * RETURN
+   * ==================================================
    */
 
   return {
@@ -945,26 +1619,34 @@ export default function useMessages() {
     filteredConversations,
     userResults,
 
-    activeConversation: activeConversationLive,
+    activeConversation:
+      activeConversationLive,
+
     activeUser,
 
-    messages: combinedMessages,
+    messages:
+      combinedMessages,
 
     inquiryProduct,
     inquiryProducts,
 
-    sendInquiry: handleSendInquiry,
+    sendInquiry:
+      handleSendInquiry,
 
-    acceptInquiry: handleAcceptInquiry,
+    acceptInquiry:
+      handleAcceptInquiry,
 
     search,
     setSearch,
 
     message,
-    setMessage: handleMessageChange,
+
+    setMessage:
+      handleMessageChange,
 
     selectedImage,
     setSelectedImage,
+
     uploadingImage,
 
     drafts,
@@ -973,7 +1655,9 @@ export default function useMessages() {
     selectConversation,
     selectUser,
 
-    sendMessage: handleSend,
+    sendMessage:
+      handleSend,
+
     retryMessage,
     deleteFailedMessage,
   };
