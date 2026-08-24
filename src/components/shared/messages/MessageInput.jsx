@@ -158,7 +158,7 @@ export default function MessageInput({
         ref={galleryInputRef}
         type="file"
         accept="image/*"
-        className="hidden"
+        className="sr-only"
         onChange={handleFileSelected}
       />
       <input
@@ -166,7 +166,7 @@ export default function MessageInput({
         type="file"
         accept="image/*"
         capture="environment"
-        className="hidden"
+        className="sr-only"
         onChange={handleFileSelected}
       />
 

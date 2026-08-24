@@ -6,14 +6,11 @@ export default function ConversationItem({
   item,
   searching,
   drafts = {},
-  activeConversation,
   onConversation,
   onUser,
 }) {
   const { profile } = useAuth();
   const user = searching ? item : item.otherUser;
-
-  const active = !searching && activeConversation?.id === item.id;
 
   const targetKey = searching ? `user_${user?.uid}` : item.id;
   const draft =
@@ -28,10 +25,6 @@ export default function ConversationItem({
       onConversation(item);
     }
   }
-
-  const bgClass = active
-    ? "border-r-2 border-[#2D6A4F]/60 bg-[#2D6A4F]/12"
-    : "bg-[#FAFAFA] hover:bg-[#2D6A4F]/10";
 
   const isMine = !searching && item?.lastMessageSender === profile?.uid;
   const otherUid = user?.uid;
@@ -99,7 +92,7 @@ export default function ConversationItem({
 
         {hasDraft ? (
           <p className="text-sm truncate">
-            <span className="text-red-500 font-bold">Draft: </span>
+            <span className="text-red-900/75 font-bold">Draft: </span>
             <span className="text-gray-600">{draft}</span>
           </p>
         ) : searching ? (
@@ -113,10 +106,9 @@ export default function ConversationItem({
             <span className="shrink-0 flex items-center gap-0.5 text-[11px] font-bold">
               {isSeen ? (
                 <span
-                  className="text-[#2D6A4F] flex items-center gap-0.5"
+                  className="text-gray-400 flex items-center gap-0.5"
                   title="Seen"
                 >
-                  <i className="ri-check-double-line text-xs font-bold" />
                   Seen
                 </span>
               ) : (
@@ -124,7 +116,6 @@ export default function ConversationItem({
                   className="text-gray-400 flex items-center gap-0.5 font-semibold"
                   title="Sent"
                 >
-                  <i className="ri-check-line text-xs" />
                   Sent
                 </span>
               )}
