@@ -12,7 +12,7 @@ export default function StatCard({ title, value, description, to }) {
   return (
     <div
       onClick={handleClick}
-      className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition ${
+      className={`rounded-2xl border border-gray-200 bg-white/95 p-5 shadow-sm transition ${
         to
           ? "cursor-pointer hover:-translate-y-0.5 hover:border-[#2D6A4F]/30 hover:shadow-md"
           : ""

@@ -5,13 +5,10 @@ import { formatTimestamp } from "../../../utils/date";
 export default function ConversationItem({
   item,
   searching,
-  activeConversation,
   onConversation,
   onUser,
 }) {
   const user = searching ? item : item.otherUser;
-
-  const active = !searching && activeConversation?.id === item.id;
 
   function handleClick() {
     if (searching) {
@@ -21,14 +18,10 @@ export default function ConversationItem({
     }
   }
 
-  const bgClass = active
-    ? "border-r-2 border-[#2D6A4F]/60 bg-[#2D6A4F]/12"
-    : "bg-[#FAFAFA] hover:bg-[#2D6A4F]/10"
-
   return (
     <button
       onClick={handleClick}
-      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors cursor-pointer ${bgClass}`}
+      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors cursor-pointer`}
     >
       <div className="relative shrink-0">
         <Avatar src={user.profilePicture} name={user.fullname} />

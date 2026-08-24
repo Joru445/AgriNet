@@ -1,6 +1,6 @@
 export default function SearchBar({ value, onChange }) {
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row gap-2 bg-white rounded-2xl p-2 border-2 border-gray-200 shadow-sm focus-within:border-[#2D6A4F] focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 transition-all">
         <div className="flex-1 flex items-center gap-3 px-3.5">
           <i className="ri-search-line text-[#2D6A4F] text-lg" />

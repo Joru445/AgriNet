@@ -70,7 +70,7 @@ export default function InquiryCard({
   const primaryLabel = getPrimaryLabel(status, userRole, isReviewed);
 
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs transition-all hover:shadow-lg hover:-translate-y-1">
+    <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white/95 shadow-xs transition-all hover:shadow-lg hover:-translate-y-1">
       {/* Red dot */}
       {showDot && (
         <span className="absolute top-3 right-3 flex h-3.5 w-3.5 z-20">
