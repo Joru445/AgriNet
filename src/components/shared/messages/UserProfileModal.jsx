@@ -4,6 +4,9 @@ import { db } from "../../../firebase/firestore";
 import { getUserProfile } from "../../../services/user.service";
 
 import RoleBadge from "../../common/RoleBadge";
+import ImageViewerModal from "../../common/ImageViewerModal";
+import ReportModal from "../../common/ReportModal";
+import { useAuth } from "../../../context/AuthContext";
 
 function formatDate(timestamp) {
   if (!timestamp) return "Not available";
@@ -25,12 +28,15 @@ function formatDate(timestamp) {
 }
 
 export default function UserProfileModal({ user: initialUser, onClose }) {
+  const { profile } = useAuth();
   const [profileData, setProfileData] = useState(initialUser);
   const [stats, setStats] = useState({
     loading: true,
     completedDeals: 0,
     totalDeals: 0,
   });
+  const [fullscreenImage, setFullscreenImage] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const targetUid = initialUser?.uid || initialUser?.id;
 
@@ -60,43 +66,29 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
           total = completed + cancelled;
         }
 
-        // 1. Check inquiries collection
-        try {
-          const inquiriesSnap = await getDocs(
-            query(
-              collection(db, "inquiries"),
-              where("consumerId", "==", targetUid),
-            ),
-          );
-
-          if (!inquiriesSnap.empty) {
-            total = inquiriesSnap.docs.length;
-            completed = 0;
-            inquiriesSnap.docs.forEach((docSnap) => {
-              const data = docSnap.data();
-              const status = data.status === "resolved" ? "completed" : data.status;
-              if (status === "completed") {
-                completed++;
-              }
-            });
-          }
-        } catch (inqErr) {
-          console.warn("Direct inquiry query:", inqErr);
-        }
-
-        // 2. Check reviews collection if stats not yet established
+        // Direct inquiry query fallback
         if (completed === 0 && total === 0) {
           try {
-            const reviewsSnap = await getDocs(
-              query(
-                collection(db, "reviews"),
-                where("reviewerId", "==", targetUid),
-              ),
-            );
+            const inqRef = collection(db, "inquiries");
+            const q = query(inqRef, where("consumerId", "==", targetUid));
+            const inqSnap = await getDocs(q);
+            if (isMounted && !inqSnap.empty) {
+              total = inqSnap.size;
+              completed = inqSnap.docs.filter((d) => d.data().status === "completed").length;
+            }
+          } catch (inqErr) {
+            console.warn("Inquiries query:", inqErr);
+          }
+        }
 
-            if (reviewsSnap.size > 0) {
-              completed = reviewsSnap.size;
-              total = reviewsSnap.size;
+        if (completed === 0 && total === 0) {
+          try {
+            const revRef = collection(db, "reviews");
+            const qRev = query(revRef, where("reviewerId", "==", targetUid));
+            const revSnap = await getDocs(qRev);
+            if (isMounted && !revSnap.empty) {
+              completed = revSnap.size;
+              total = revSnap.size;
             }
           } catch (revErr) {
             console.warn("Reviews query:", revErr);
@@ -159,14 +151,27 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
               Buyer verification & account details
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer"
-            aria-label="Close"
-          >
-            <i className="ri-close-line text-xl" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            {profile?.uid && profile?.uid !== targetUid && (
+              <button
+                type="button"
+                onClick={() => setShowReportModal(true)}
+                className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
+                title="Report this user"
+                aria-label="Report user"
+              >
+                <i className="ri-shield-alert-line text-lg" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer"
+              aria-label="Close"
+            >
+              <i className="ri-close-line text-xl" />
+            </button>
+          </div>
         </div>
 
         {/* Profile Card / Avatar */}
@@ -176,7 +181,14 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
               <img
                 src={user.profilePicture}
                 alt={user.fullname}
-                className="h-18 w-18 rounded-full object-cover ring-3 ring-[#D8F3DC]"
+                onClick={() =>
+                  setFullscreenImage({
+                    src: user.profilePicture,
+                    title: `${user.fullname || user.username}'s Profile Picture`,
+                  })
+                }
+                className="h-18 w-18 rounded-full object-cover ring-3 ring-[#D8F3DC] cursor-pointer hover:opacity-90 transition"
+                title="Click to view photo"
               />
             ) : (
               <div className="flex h-18 w-18 items-center justify-center rounded-full bg-[#D8F3DC] text-xl font-black text-[#2D6A4F] ring-3 ring-[#D8F3DC]/40">
@@ -361,6 +373,24 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
           </button>
         </div>
       </div>
+
+      {/* Fullscreen Zoomable Image Modal */}
+      <ImageViewerModal
+        isOpen={Boolean(fullscreenImage)}
+        src={fullscreenImage?.src}
+        title={fullscreenImage?.title}
+        onClose={() => setFullscreenImage(null)}
+      />
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        targetType="profile"
+        targetId={targetUid}
+        targetTitle={`User Profile of ${user.fullname || user.username}`}
+        reportedUser={user}
+      />
     </div>
   );
 }

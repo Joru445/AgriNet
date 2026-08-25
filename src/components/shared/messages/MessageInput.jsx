@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { compressImage } from "../../../utils/imageCompression";
 
 export default function MessageInput({
   value,
@@ -71,12 +72,8 @@ export default function MessageInput({
     }
   }
 
-  function handleFileSelected(e) {
-    const file = e.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
+  async function processAndSelectImage(file) {
+    if (!file) return;
 
     setShowMenu(false);
 
@@ -84,12 +81,19 @@ export default function MessageInput({
       URL.revokeObjectURL(selectedImage.previewUrl);
     }
 
-    const previewUrl = URL.createObjectURL(file);
+    const compressed = await compressImage(file);
+    const previewUrl = URL.createObjectURL(compressed);
 
     onSelectImage?.({
-      file,
+      file: compressed,
       previewUrl,
     });
+  }
+
+  function handleFileSelected(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processAndSelectImage(file);
   }
 
   function handlePaste(e) {
@@ -104,14 +108,7 @@ export default function MessageInput({
           const file = item.getAsFile();
           if (file) {
             e.preventDefault();
-            if (selectedImage?.previewUrl) {
-              URL.revokeObjectURL(selectedImage.previewUrl);
-            }
-            const previewUrl = URL.createObjectURL(file);
-            onSelectImage?.({
-              file,
-              previewUrl,
-            });
+            processAndSelectImage(file);
             return;
           }
         }
@@ -123,14 +120,7 @@ export default function MessageInput({
       const file = files[0];
       if (file && file.type && file.type.startsWith("image/")) {
         e.preventDefault();
-        if (selectedImage?.previewUrl) {
-          URL.revokeObjectURL(selectedImage.previewUrl);
-        }
-        const previewUrl = URL.createObjectURL(file);
-        onSelectImage?.({
-          file,
-          previewUrl,
-        });
+        processAndSelectImage(file);
       }
     }
   }
@@ -152,14 +142,7 @@ export default function MessageInput({
             const file = item.getAsFile();
             if (file) {
               e.preventDefault();
-              if (selectedImage?.previewUrl) {
-                URL.revokeObjectURL(selectedImage.previewUrl);
-              }
-              const previewUrl = URL.createObjectURL(file);
-              onSelectImage?.({
-                file,
-                previewUrl,
-              });
+              processAndSelectImage(file);
               return;
             }
           }

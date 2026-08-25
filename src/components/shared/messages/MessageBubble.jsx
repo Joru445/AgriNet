@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import Avatar from "../../common/Avatar";
+import ImageViewerModal from "../../common/ImageViewerModal";
 
 export default function MessageBubble({
   user,
@@ -32,23 +33,20 @@ export default function MessageBubble({
         />
         <div
           className={`max-w-[85%] sm:max-w-[75%] min-w-0 rounded-2xl
-          ${
-            isImage ? "overflow-hidden" : ""
-          }
-          ${
-            isFailed
+          ${isImage ? "overflow-hidden" : ""
+            }
+          ${isFailed
               ? "bg-red-50 text-red-900 border border-red-300 shadow-sm"
               : ""
-          }`}
+            }`}
         >
           {message.text && (
             <p
               className={`break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-2.5 rounded-2xl shadow-md
                 ${isImage ? "text-sm font-medium" : ""}
-                ${
-                  mine
-                    ? "bg-[#2D6A4F] text-white shadow-green-900/20"
-                    : "bg-white text-gray-800 border-gray-200 shadow-black/10"
+                ${mine
+                  ? "bg-[#2D6A4F] text-white shadow-green-900/20"
+                  : "bg-white text-gray-800 border-gray-200 shadow-black/10"
                 }
               `}
             >
@@ -58,7 +56,7 @@ export default function MessageBubble({
 
           {/* Image Attachment */}
           {isImage && message.imageUrl && (
-            <div className="rounded-xl overflow-hidden mb-0 group relative justify-self-end">
+            <div className={`rounded-xl overflow-hidden mb-0 group relative ${mine ? "justify-self-end" : "justify-self-start"}`}>
               <img
                 src={message.imageUrl}
                 alt="Photo attachment"
@@ -117,29 +115,14 @@ export default function MessageBubble({
         </div>
       )}
 
-      {/* Lightbox / Fullscreen Image Modal */}
-      {showLightbox && message.imageUrl && (
-        <div
-          className="fixed inset-0 z-9999 bg-black/85 backdrop-blur-xs flex items-center justify-center p=0 sm:p-4"
-          onClick={() => setShowLightbox(false)}
-        >
-          <button
-            type="button"
-            onClick={() => setShowLightbox(false)}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 p-2.5 rounded-full bg-black/50 hover:bg-black/75 cursor-pointer z-10 transition"
-            title="Close"
-          >
-            <i className="ri-close-line text-2xl font-bold" />
-          </button>
-
-          <img
-            src={message.imageUrl}
-            alt="Full view"
-            className="max-h-full max-w-full sm:max-h-[90vh] sm:max-w-[90vw] object-contain rounded-none sm:rounded-xl shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
+      {/* Zoomable Lightbox / Fullscreen Image Modal */}
+      <ImageViewerModal
+        isOpen={showLightbox && Boolean(message.imageUrl)}
+        src={message.imageUrl}
+        alt="Message photo"
+        title="Photo"
+        onClose={() => setShowLightbox(false)}
+      />
     </div>
   );
 }

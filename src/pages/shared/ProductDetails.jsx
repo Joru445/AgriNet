@@ -1,3 +1,4 @@
+import { useState } from "react";
 import useProductDetails from "../../hooks/useProductDetails";
 import useProductReviews from "../../hooks/useProductReviews";
 
@@ -11,9 +12,11 @@ import ProductActions from "../../components/shared/product/ProductActions";
 import ProductDetailsSkeleton from "../../components/shared/product/ProductDetailsSkeleton";
 
 import ReviewSection from "../../components/common/ReviewSection";
+import ReportModal from "../../components/common/ReportModal";
 
 export default function ProductDetails() {
   const { profile } = useAuth();
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const { loading, product, farmer, reviewCount, averageRating } = useProductDetails();
 
@@ -41,6 +44,8 @@ export default function ProductDetails() {
             product={product}
             reviewCount={reviewCount}
             averageRating={averageRating}
+            isOwner={isOwner}
+            onReport={() => setShowReportModal(true)}
           />
 
           <ProductDescription product={product} />
@@ -57,6 +62,26 @@ export default function ProductDetails() {
         reviews={reviews}
         loading={reviewsLoading}
         type="product"
+      />
+
+      {/* Report Product Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        targetType="product"
+        targetId={product.id}
+        targetTitle={product.name}
+        reportedUser={farmer ? {
+          uid: farmer.uid || farmer.id || product.farmerId,
+          fullname: farmer.fullname || farmer.storeName || "Farmer",
+          username: farmer.username || "",
+          role: "farmer",
+          email: farmer.email || "",
+        } : {
+          uid: product.farmerId,
+          fullname: "Farmer",
+          role: "farmer",
+        }}
       />
     </div>
   );

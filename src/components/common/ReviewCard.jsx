@@ -1,7 +1,10 @@
+import { useState } from "react";
 import ReviewRating from "../farmer/reviews/ReviewRating";
 import { formatTimestamp } from "../../utils/date";
+import ImageViewerModal from "./ImageViewerModal";
 
 export default function ReviewCard({ review, type = "product" }) {
+  const [activeImage, setActiveImage] = useState(null);
   const isProduct = type === "product";
 
   const reviewer = review.reviewer ?? {};
@@ -31,7 +34,9 @@ export default function ReviewCard({ review, type = "product" }) {
           <img
             src={reviewerAvatar}
             alt={reviewerName}
-            className="h-10 w-10 shrink-0 rounded-full object-cover"
+            onClick={() => setActiveImage({ src: reviewerAvatar, title: `${reviewerName}'s Profile Picture` })}
+            className="h-10 w-10 shrink-0 rounded-full object-cover cursor-pointer hover:opacity-90 transition"
+            title="Click to view photo"
           />
         ) : (
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-500">
@@ -72,13 +77,22 @@ export default function ReviewCard({ review, type = "product" }) {
 
       {/* Product transaction proof */}
       {proofImage && (
-        <div className="mt-4 overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
+        <div
+          className="mt-4 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 cursor-pointer group relative"
+          onClick={() => setActiveImage({ src: proofImage, title: "Transaction Proof" })}
+          title="Click to view full screen"
+        >
           <img
             src={proofImage}
             alt="Product transaction proof"
-            className="max-h-80 w-full object-cover sm:max-h-96"
+            className="max-h-80 w-full object-cover sm:max-h-96 group-hover:scale-[1.01] transition-transform duration-200"
             loading="lazy"
           />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-md backdrop-blur-xs flex items-center gap-1">
+              <i className="ri-zoom-in-line" /> View Photo
+            </span>
+          </div>
         </div>
       )}
 
@@ -89,6 +103,14 @@ export default function ReviewCard({ review, type = "product" }) {
           Verified transaction review
         </div>
       )}
+
+      {/* Fullscreen Zoomable Image Modal */}
+      <ImageViewerModal
+        isOpen={Boolean(activeImage)}
+        src={activeImage?.src}
+        title={activeImage?.title}
+        onClose={() => setActiveImage(null)}
+      />
     </article>
   );
 }

@@ -1,4 +1,10 @@
-export default function ProductInfo({ product, reviewCount, averageRating }) {
+export default function ProductInfo({
+  product,
+  reviewCount,
+  averageRating,
+  onReport,
+  isOwner = false,
+}) {
   const originalPriceNum = Number(product.originalPrice);
   const priceNum = Number(product.price ?? 0);
   const hasDiscount =
@@ -26,7 +32,7 @@ export default function ProductInfo({ product, reviewCount, averageRating }) {
 
   return (
     <section>
-      <div className="mb-2">
+      <div className="flex items-center justify-between mb-2">
         <span
           className={`rounded-full px-3 py-1 text-xs font-semibold ${
             product.available
@@ -36,6 +42,18 @@ export default function ProductInfo({ product, reviewCount, averageRating }) {
         >
           {product.available ? "Available" : "Unavailable"}
         </span>
+
+        {!isOwner && onReport && (
+          <button
+            type="button"
+            onClick={onReport}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-gray-400 hover:text-red-600 hover:bg-red-50 px-2.5 py-1 rounded-lg transition cursor-pointer"
+            title="Report this product"
+          >
+            <i className="ri-shield-alert-line text-sm" />
+            <span>Report</span>
+          </button>
+        )}
       </div>
 
       <h1 className="text-3xl font-bold text-[#1B4332]">{product.name}</h1>

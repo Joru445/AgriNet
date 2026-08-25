@@ -64,8 +64,8 @@ export default function ReportTableRow({ report, onView }) {
       </td>
 
       <td className="px-5 py-4">
-        <span className="capitalize text-sm text-gray-600">
-          {report.type || "Unknown"}
+        <span className="capitalize text-xs sm:text-sm font-semibold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-lg">
+          {report.targetType || report.type || "user"}
         </span>
       </td>
 

@@ -6,6 +6,9 @@ export default function ChatWindow({
   conversation,
   user,
   messages,
+  hasMoreOlder = false,
+  loadingOlder = false,
+  onLoadOlder,
   message,
   onMessageChange,
   hasChat,
@@ -43,6 +46,9 @@ export default function ChatWindow({
         user={user}
         conversation={conversation}
         messages={messages}
+        hasMoreOlder={hasMoreOlder}
+        loadingOlder={loadingOlder}
+        onLoadOlder={onLoadOlder}
         inquiryProducts={inquiryProducts}
         onAcceptInquiry={onAcceptInquiry}
         onRetry={onRetryMessage}

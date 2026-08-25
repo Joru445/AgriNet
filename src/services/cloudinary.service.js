@@ -1,3 +1,5 @@
+import { compressImage } from "../utils/imageCompression";
+
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 
 const DEFAULT_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -60,6 +62,7 @@ export function uploadTransactionProof(file) {
   return uploadImage(file, TRANSACTION_PRESET);
 }
 
-export function uploadMessageImage(file) {
-  return uploadImage(file, MESSAGE_PRESET);
+export async function uploadMessageImage(file) {
+  const compressed = await compressImage(file);
+  return uploadImage(compressed, MESSAGE_PRESET);
 }

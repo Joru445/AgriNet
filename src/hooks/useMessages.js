@@ -1,12 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   useLocation,
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase/firestore";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -20,10 +17,13 @@ import {
 
 import {
   subscribeMessages,
+  fetchOlderMessages,
   sendMessage as sendMessageService,
+  DEFAULT_MESSAGE_LIMIT,
 } from "../services/message.service";
 
 import { uploadMessageImage } from "../services/cloudinary.service";
+import { compressImage } from "../utils/imageCompression";
 
 import {
   getUserProfile,
@@ -48,6 +48,15 @@ export default function useMessages() {
 
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
+
+  // Pagination states
+  const [hasMoreOlder, setHasMoreOlder] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const oldestDocSnapRef = useRef(null);
+  const messagesMapRef = useRef(new Map());
+
+  // In-memory profile cache to avoid redundant getDoc calls
+  const userProfileCacheRef = useRef(new Map());
 
   const [activeConversation, setActiveConversation] =
     useState(null);
@@ -328,8 +337,9 @@ export default function useMessages() {
    * ==================================================
    * SUBSCRIBE TO CONVERSATIONS
    *
-   * participantInfo is the fallback.
-   * getUserProfile provides the current user data.
+   * participantInfo from the conversation document is
+   * the primary source for displaying the other user.
+   * In-memory cache is used only if participant data is missing.
    * ==================================================
    */
 
@@ -343,134 +353,94 @@ export default function useMessages() {
 
     setLoading(true);
 
-    const unsubscribe =
-      subscribeUserConversations(
-        profile.uid,
-        async (data) => {
-          try {
-            const mapped = data.map(
-              (conversation) => {
-                const otherUid =
-                  conversation.participants?.find(
-                    (uid) =>
-                      uid !== profile.uid,
-                  );
+    const unsubscribe = subscribeUserConversations(
+      profile.uid,
+      (data) => {
+        try {
+          const missingProfileUids = [];
 
-                const otherInfo =
-                  conversation.participantInfo?.[
-                    otherUid
-                  ] || {};
-
-                return {
-                  ...conversation,
-
-                  otherUser: {
-                    uid: otherUid,
-                    ...otherInfo,
-
-                    verified:
-                      otherInfo.verified ===
-                      true,
-                  },
-
-                  unreadCount:
-                    conversation.unreadCount?.[
-                      profile.uid
-                    ] ?? 0,
-
-                  rawUnreadCount:
-                    conversation.unreadCount ||
-                    {},
-                };
-              },
+          const mapped = data.map((conversation) => {
+            const otherUid = conversation.participants?.find(
+              (uid) => uid !== profile.uid,
             );
 
-            /*
-             * Enrich users with current profile data.
-             *
-             * This is necessary because older
-             * conversations may not contain complete
-             * participantInfo.
-             */
+            const otherInfo =
+              conversation.participantInfo?.[otherUid] || {};
 
-            const otherUserIds = [
-              ...new Set(
-                mapped
-                  .map(
-                    (conversation) =>
-                      conversation.otherUser
-                        ?.uid,
-                  )
-                  .filter(Boolean),
-              ),
-            ];
+            const cachedProfile = otherUid
+              ? userProfileCacheRef.current.get(otherUid)
+              : null;
 
-            if (otherUserIds.length > 0) {
-              const userProfiles =
-                await Promise.all(
-                  otherUserIds.map(
-                    async (uid) => {
-                      try {
-                        const user =
-                          await getUserProfile(
-                            uid,
-                          );
+            // Check if participantInfo has sufficient display data
+            const hasBasicInfo = Boolean(
+              otherInfo.fullname || otherInfo.username,
+            );
 
-                        return [uid, user];
-                      } catch (error) {
-                        console.error(
-                          `Failed to load user ${uid}:`,
-                          error,
-                        );
-
-                        return [uid, null];
-                      }
-                    },
-                  ),
-                );
-
-              const userMap = new Map(
-                userProfiles.filter(
-                  ([, user]) =>
-                    user != null,
-                ),
-              );
-
-              mapped.forEach(
-                (conversation) => {
-                  const liveUser =
-                    userMap.get(
-                      conversation.otherUser
-                        ?.uid,
-                    );
-
-                  if (liveUser) {
-                    conversation.otherUser = {
-                      ...conversation.otherUser,
-                      ...liveUser,
-
-                      verified:
-                        liveUser.verified ===
-                        true,
-                    };
-                  }
-                },
-              );
+            if (!hasBasicInfo && !cachedProfile && otherUid) {
+              missingProfileUids.push(otherUid);
             }
 
-            setConversations(mapped);
-          } catch (error) {
-            console.error(
-              "Failed to process conversations:",
-              error,
-            );
+            return {
+              ...conversation,
 
-            setConversations([]);
-          } finally {
-            setLoading(false);
+              otherUser: {
+                uid: otherUid,
+                ...otherInfo,
+                ...(cachedProfile || {}),
+                verified:
+                  cachedProfile?.verified ??
+                  otherInfo.verified === true,
+              },
+
+              unreadCount:
+                conversation.unreadCount?.[profile.uid] ?? 0,
+
+              rawUnreadCount: conversation.unreadCount || {},
+            };
+          });
+
+          setConversations(mapped);
+
+          // Only fetch profiles if participantInfo is completely empty/missing and not yet in cache
+          if (missingProfileUids.length > 0) {
+            const uniqueMissing = [...new Set(missingProfileUids)];
+            uniqueMissing.forEach(async (uid) => {
+              try {
+                const user = await getUserProfile(uid);
+                if (user) {
+                  userProfileCacheRef.current.set(uid, user);
+                  setConversations((prev) =>
+                    prev.map((c) =>
+                      c.otherUser?.uid === uid
+                        ? {
+                            ...c,
+                            otherUser: {
+                              ...c.otherUser,
+                              ...user,
+                              verified: user.verified === true,
+                            },
+                          }
+                        : c,
+                    ),
+                  );
+                }
+              } catch (error) {
+                console.error(`Failed to load fallback user profile for ${uid}:`, error);
+              }
+            });
           }
-        },
-      );
+        } catch (error) {
+          console.error(
+            "Failed to process conversations:",
+            error,
+          );
+
+          setConversations([]);
+        } finally {
+          setLoading(false);
+        }
+      },
+    );
 
     return () => {
       unsubscribe();
@@ -674,6 +644,23 @@ export default function useMessages() {
 
       if (userId) {
         try {
+          // Check local conversations list first to save a Firestore read
+          const existingInState = conversations.find((c) =>
+            c.participants?.includes(userId),
+          );
+
+          if (existingInState) {
+            setSearchParams(
+              {
+                conversation: existingInState.id,
+              },
+              {
+                replace: true,
+              },
+            );
+            return;
+          }
+
           const existingConversation =
             await findConversation(
               profile.uid,
@@ -755,7 +742,25 @@ export default function useMessages() {
 
   /*
    * ==================================================
-   * SUBSCRIBE TO MESSAGES
+   * HELPER: SORT MESSAGES BY CREATED AT ASCENDING
+   * ==================================================
+   */
+
+  const sortByCreatedAt = useCallback((a, b) => {
+    const getSeconds = (item) => {
+      if (!item?.createdAt) return 0;
+      if (item.createdAt.seconds != null) return item.createdAt.seconds;
+      if (typeof item.createdAt.toMillis === "function")
+        return item.createdAt.toMillis() / 1000;
+      if (typeof item.createdAt === "number") return item.createdAt / 1000;
+      return 0;
+    };
+    return getSeconds(a) - getSeconds(b);
+  }, []);
+
+  /*
+   * ==================================================
+   * SUBSCRIBE TO MESSAGES (PAGINATED REALTIME WINDOW)
    * ==================================================
    */
 
@@ -765,58 +770,97 @@ export default function useMessages() {
       !activeConversation?.id
     ) {
       setMessages([]);
+      setHasMoreOlder(false);
+      setLoadingOlder(false);
+      oldestDocSnapRef.current = null;
+      messagesMapRef.current.clear();
 
       return;
     }
 
-    setMessages([]);
-
     const convId = activeConversation.id;
     const currentUid = profile.uid;
+
+    // Reset pagination tracking when switching conversation
+    setMessages([]);
+    setHasMoreOlder(false);
+    setLoadingOlder(false);
+    oldestDocSnapRef.current = null;
+    messagesMapRef.current.clear();
 
     const unsubscribe =
       subscribeMessages(
         convId,
-        (incomingMessages) => {
-          setMessages(incomingMessages);
+        (incomingMessages, meta) => {
+          // Initialize oldest doc cursor for pagination on first snapshot
+          if (!oldestDocSnapRef.current && meta?.oldestDocSnapshot) {
+            oldestDocSnapRef.current = meta.oldestDocSnapshot;
+            setHasMoreOlder(meta.hasMore);
+          }
 
-          // Mark incoming messages as read in real-time if active in conversation
+          // Merge incoming realtime messages
+          incomingMessages.forEach((msg) => {
+            messagesMapRef.current.set(msg.id, msg);
+          });
+
+          const sorted = Array.from(
+            messagesMapRef.current.values(),
+          ).sort(sortByCreatedAt);
+
+          setMessages(sorted);
+
+          // Smart mark as read: only mark if visible and unread exists from other user
           if (document.visibilityState === "visible") {
-            markConversationRead(
-              convId,
-              currentUid,
-            ).catch((error) => {
-              console.error(
-                "Failed to mark conversation as read:",
-                error,
-              );
-            });
+            const hasUnreadFromOther = incomingMessages.some(
+              (m) =>
+                m.senderId !== currentUid &&
+                m.read !== true,
+            );
+            const currentUnread =
+              activeConversation?.unreadCount ?? 0;
+
+            if (hasUnreadFromOther || currentUnread > 0) {
+              markConversationRead(
+                convId,
+                currentUid,
+              ).catch((error) => {
+                console.error(
+                  "Failed to mark conversation as read:",
+                  error,
+                );
+              });
+            }
           }
         },
+        DEFAULT_MESSAGE_LIMIT,
       );
 
-    // Initial mark as read when entering
-    markConversationRead(
-      convId,
-      currentUid,
-    ).catch((error) => {
-      console.error(
-        "Failed to mark conversation as read:",
-        error,
-      );
-    });
+    // Initial mark as read when entering (only if unreadCount > 0)
+    if (activeConversation?.unreadCount > 0) {
+      markConversationRead(
+        convId,
+        currentUid,
+      ).catch((error) => {
+        console.error(
+          "Failed to mark conversation as read:",
+          error,
+        );
+      });
+    }
 
     function handleVisibilityOrFocus() {
       if (document.visibilityState === "visible") {
-        markConversationRead(
-          convId,
-          currentUid,
-        ).catch((error) => {
-          console.error(
-            "Failed to mark conversation as read on focus:",
-            error,
-          );
-        });
+        if (activeConversation?.unreadCount > 0) {
+          markConversationRead(
+            convId,
+            currentUid,
+          ).catch((error) => {
+            console.error(
+              "Failed to mark conversation as read on focus:",
+              error,
+            );
+          });
+        }
       }
     }
 
@@ -826,63 +870,66 @@ export default function useMessages() {
     return () => {
       window.removeEventListener("focus", handleVisibilityOrFocus);
       document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
-      markConversationRead(convId, currentUid).catch(() => {});
       unsubscribe();
     };
   }, [
     activeConversation?.id,
     profile?.uid,
+    sortByCreatedAt,
   ]);
 
   /*
    * ==================================================
-   * REAL-TIME ACTIVE CONVERSATION LISTENER
-   *
-   * Listens directly to the active conversation document
-   * to get instantaneous lastRead and unreadCount changes.
+   * LOAD OLDER MESSAGES (PAGINATION)
    * ==================================================
    */
 
-  const activeConvId = activeConversation?.id;
-
-  useEffect(() => {
-    if (!activeConvId) {
+  const loadOlderMessages = useCallback(async () => {
+    if (
+      loadingOlder ||
+      !hasMoreOlder ||
+      !oldestDocSnapRef.current ||
+      !activeConversation?.id
+    ) {
       return;
     }
 
-    const unsubscribe = onSnapshot(
-      doc(db, "conversations", activeConvId),
-      (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.data();
+    setLoadingOlder(true);
 
-          setActiveConversation((prev) => {
-            if (!prev || prev.id !== snapshot.id) {
-              return prev;
-            }
+    try {
+      const result = await fetchOlderMessages(
+        activeConversation.id,
+        oldestDocSnapRef.current,
+        DEFAULT_MESSAGE_LIMIT,
+      );
 
-            return {
-              ...prev,
-              ...data,
-              id: snapshot.id,
-              rawUnreadCount: data.unreadCount || {},
-              lastRead: data.lastRead || {},
-            };
-          });
-        }
-      },
-      (error) => {
-        console.error(
-          "Active conversation listener error:",
-          error,
-        );
-      },
-    );
+      if (result.messages && result.messages.length > 0) {
+        result.messages.forEach((msg) => {
+          messagesMapRef.current.set(msg.id, msg);
+        });
 
-    return () => {
-      unsubscribe();
-    };
-  }, [activeConvId]);
+        oldestDocSnapRef.current = result.oldestDocSnapshot;
+        setHasMoreOlder(result.hasMore);
+
+        const sorted = Array.from(
+          messagesMapRef.current.values(),
+        ).sort(sortByCreatedAt);
+
+        setMessages(sorted);
+      } else {
+        setHasMoreOlder(false);
+      }
+    } catch (error) {
+      console.error("Failed to load older messages:", error);
+    } finally {
+      setLoadingOlder(false);
+    }
+  }, [
+    loadingOlder,
+    hasMoreOlder,
+    activeConversation?.id,
+    sortByCreatedAt,
+  ]);
 
   /*
    * ==================================================
@@ -1084,9 +1131,11 @@ export default function useMessages() {
       if (activeImg?.file) {
         stage = "upload-image";
 
+        const fileToUpload = await compressImage(activeImg.file);
+
         const uploaded =
           await uploadMessageImage(
-            activeImg.file,
+            fileToUpload,
           );
 
         imageUrl =
@@ -1102,11 +1151,18 @@ export default function useMessages() {
 
       stage = "send-message";
 
+      const receiverId =
+        activeUser?.uid ||
+        activeConversation?.otherUser?.uid ||
+        null;
+
       await sendMessageService({
         conversationId,
 
         senderId:
           profile.uid,
+
+        receiverId,
 
         text,
 
@@ -1285,11 +1341,19 @@ export default function useMessages() {
 
       stage = "send-message";
 
+      const receiverId =
+        failedMessage.receiverId ||
+        activeUser?.uid ||
+        activeConversation?.otherUser?.uid ||
+        null;
+
       await sendMessageService({
         conversationId,
 
         senderId:
           profile.uid,
+
+        receiverId,
 
         text:
           failedMessage.text || "",
@@ -1460,11 +1524,19 @@ export default function useMessages() {
           );
       }
 
+      const receiverId =
+        activeUser?.uid ||
+        activeConversation?.otherUser?.uid ||
+        inquiryProduct.farmerId ||
+        null;
+
       await sendMessageService({
         conversationId,
 
         senderId:
           profile.uid,
+
+        receiverId,
 
         text:
           `I'm interested in ${inquiryProduct.name}.`,
@@ -1718,6 +1790,11 @@ export default function useMessages() {
 
     messages:
       combinedMessages,
+
+    // Pagination
+    hasMoreOlder,
+    loadingOlder,
+    loadOlderMessages,
 
     inquiryProduct,
     inquiryProducts,

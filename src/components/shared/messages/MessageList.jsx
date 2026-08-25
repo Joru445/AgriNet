@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 import { useAuth } from "../../../context/AuthContext";
 import MessageBubble from "./MessageBubble";
@@ -11,6 +11,9 @@ export default function MessageList({
   conversation,
   user,
   messages,
+  hasMoreOlder = false,
+  loadingOlder = false,
+  onLoadOlder,
   inquiryProducts,
   onAcceptInquiry,
   onRetry,
@@ -22,6 +25,9 @@ export default function MessageList({
   const prevMessagesLengthRef = useRef(0);
   const isNearBottomRef = useRef(true);
   const prevConvIdRef = useRef(null);
+  const prevScrollHeightRef = useRef(0);
+  const loadingOlderRef = useRef(false);
+  loadingOlderRef.current = loadingOlder;
 
   const scrollToBottom = (behavior = "smooth") => {
     if (!containerRef.current) return;
@@ -37,7 +43,25 @@ export default function MessageList({
     // Considered near bottom if within 140px of bottom
     const distanceToBottom = scrollHeight - (scrollTop + clientHeight);
     isNearBottomRef.current = distanceToBottom < 140;
+
+    // Trigger load older messages when user scrolls near top
+    if (scrollTop < 80 && hasMoreOlder && !loadingOlderRef.current && onLoadOlder) {
+      prevScrollHeightRef.current = scrollHeight;
+      onLoadOlder();
+    }
   };
+
+  // Preserve scroll offset when older messages are prepended
+  useLayoutEffect(() => {
+    if (prevScrollHeightRef.current > 0 && containerRef.current) {
+      const newScrollHeight = containerRef.current.scrollHeight;
+      const diff = newScrollHeight - prevScrollHeightRef.current;
+      if (diff > 0) {
+        containerRef.current.scrollTop += diff;
+      }
+      prevScrollHeightRef.current = 0;
+    }
+  }, [messages]);
 
   // When switching conversations: jump directly to bottom
   useEffect(() => {
@@ -151,6 +175,33 @@ export default function MessageList({
       onScroll={handleScroll}
       className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y p-3 sm:p-4 space-y-3 scrollbar-none [overflow-anchor:auto]"
     >
+      {/* Top Pagination Loader / Action */}
+      {hasMoreOlder && (
+        <div className="flex justify-center py-1.5 pb-2">
+          {loadingOlder ? (
+            <div className="flex items-center gap-2 text-xs text-gray-500 font-semibold bg-white/90 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-gray-200 shadow-2xs">
+              <i className="ri-loader-4-line animate-spin text-sm text-[#2D6A4F]" />
+              <span>Loading earlier messages...</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                if (containerRef.current) {
+                  prevScrollHeightRef.current =
+                    containerRef.current.scrollHeight;
+                }
+                onLoadOlder?.();
+              }}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] bg-[#E8F5EE]/80 hover:bg-[#E8F5EE] px-4 py-1.5 rounded-full border border-[#2D6A4F]/25 shadow-2xs transition cursor-pointer active:scale-95"
+            >
+              <i className="ri-history-line text-sm" />
+              <span>Load earlier messages</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {messages.map((message, index) => {
         const previous = messages[index - 1];
         const isLastMine = index === lastMineIndex;

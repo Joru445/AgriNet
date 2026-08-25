@@ -1,6 +1,9 @@
+import { useState } from "react";
 import landscape from "../../../assets/img/landscapeCover.jpg";
 
 import { getInitials } from "../../../utils/getInitials";
+import { useAuth } from "../../../context/AuthContext";
+import ReportModal from "../../common/ReportModal";
 
 export default function StoreHeader({
   farmer,
@@ -8,6 +11,8 @@ export default function StoreHeader({
   averageRating,
   onMessage,
 }) {
+  const { profile } = useAuth();
+  const [showReportModal, setShowReportModal] = useState(false);
   const joinedDate = farmer.createdAt?.seconds
     ? new Date(farmer.createdAt.seconds * 1000).toLocaleDateString("en-PH", {
         month: "long",
@@ -135,35 +140,80 @@ export default function StoreHeader({
               </div>
             </div>
 
-            {/* Message */}
-            <div className="pb-4 pt-3 sm:pt-4 md:pb-5 md:pt-0">
+            {/* Actions: Message & Report */}
+            <div className="flex items-center gap-2 pb-4 pt-3 sm:pt-4 md:pb-5 md:pt-0">
               <button
                 type="button"
                 onClick={onMessage}
                 className="
                   inline-flex
                   h-10
-                  w-full
+                  flex-1
                   items-center
                   justify-center
-                  rounded-lg
+                  rounded-xl
                   bg-[#2D6A4F]
-                  px-6
+                  px-5
                   text-sm
-                  font-medium
+                  font-bold
                   text-white
-                  transition-colors
+                  shadow-sm
+                  transition-all
                   hover:bg-[#1B4332]
+                  active:scale-95
+                  cursor-pointer
                   sm:w-auto
                 "
               >
-                <i className="ri-message-3-line mr-2" />
+                <i className="ri-message-3-line mr-1.5" />
                 Message
               </button>
+
+              {profile?.uid && profile?.uid !== farmer.uid && profile?.uid !== farmer.id && (
+                <button
+                  type="button"
+                  onClick={() => setShowReportModal(true)}
+                  className="
+                    inline-flex
+                    h-10
+                    items-center
+                    justify-center
+                    rounded-xl
+                    border
+                    border-gray-200
+                    bg-white
+                    px-3.5
+                    text-xs
+                    font-bold
+                    text-gray-600
+                    hover:border-red-200
+                    hover:bg-red-50
+                    hover:text-red-600
+                    transition-all
+                    active:scale-95
+                    cursor-pointer
+                    shadow-2xs
+                  "
+                  title="Report this store"
+                >
+                  <i className="ri-shield-alert-line text-sm sm:mr-1" />
+                  <span className="hidden sm:inline">Report</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        targetType="profile"
+        targetId={farmer.uid || farmer.id}
+        targetTitle={`Store of ${farmer.storeName || farmer.fullname || farmer.username}`}
+        reportedUser={farmer}
+      />
     </section>
   );
 }

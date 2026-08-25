@@ -17,6 +17,10 @@ export default function Messages() {
 
     messages,
 
+    hasMoreOlder,
+    loadingOlder,
+    loadOlderMessages,
+
     inquiryProduct,
     inquiryProducts,
     sendInquiry,
@@ -69,6 +73,9 @@ export default function Messages() {
             conversation={activeConversation}
             user={activeConversation?.otherUser ?? activeUser}
             messages={messages}
+            hasMoreOlder={hasMoreOlder}
+            loadingOlder={loadingOlder}
+            onLoadOlder={loadOlderMessages}
             message={message}
             onMessageChange={setMessage}
             hasChat={hasChat}

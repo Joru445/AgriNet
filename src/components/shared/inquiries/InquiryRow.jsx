@@ -8,6 +8,7 @@ import { useUnreadInquiries } from "../../../context/UnreadInquiriesContext";
 import Inquiry from "./Inquiry";
 import InquiryStatusBadge from "./InquiryStatusBadge";
 import CancelInquiryModal from "./CancelInquiryModal";
+import ReportModal from "../../common/ReportModal";
 
 export default function InquiryRow({
   inquiry,
@@ -21,6 +22,7 @@ export default function InquiryRow({
   const navigate = useNavigate();
   const { acknowledgeInquiry } = useUnreadInquiries();
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const status = normalizeStatus(inquiry.status);
 
@@ -98,12 +100,22 @@ export default function InquiryRow({
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <span className="hidden text-xs text-gray-500 font-medium sm:inline">
               {formatFullDateTime(getInquiryDisplayTime(inquiry))}
             </span>
 
             <InquiryStatusBadge status={status} />
+
+            <button
+              type="button"
+              onClick={() => setShowReportModal(true)}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+              title="Report this transaction / user"
+              aria-label="Report inquiry"
+            >
+              <i className="ri-shield-alert-line text-sm" />
+            </button>
           </div>
         </div>
 
@@ -261,6 +273,20 @@ export default function InquiryRow({
         onCancel={() => setShowCancelModal(false)}
         onConfirm={handleConfirmCancel}
         cancelling={updating}
+      />
+
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        targetType="inquiry"
+        targetId={inquiry.id}
+        targetTitle={`Inquiry for ${productData.name || "Product"} (${inquiry.id.slice(0, 8)})`}
+        reportedUser={counterparty?.uid ? counterparty : {
+          uid: userRole === "farmer" ? inquiry.consumerId : inquiry.farmerId,
+          fullname: counterparty?.fullname || counterparty?.username || "User",
+          username: counterparty?.username || "",
+          role: userRole === "farmer" ? "consumer" : "farmer",
+        }}
       />
     </article>
   );

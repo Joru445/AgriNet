@@ -4,11 +4,13 @@ import { useNavigate } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import BackButton from "../../common/BackButton";
 import UserProfileModal from "./UserProfileModal";
+import ReportModal from "../../common/ReportModal";
 
 export default function ChatHeader({ user }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -43,6 +45,11 @@ export default function ChatHeader({ user }) {
     } else {
       setShowProfileModal(true);
     }
+  }
+
+  function handleReport() {
+    setMenuOpen(false);
+    setShowReportModal(true);
   }
 
   return (
@@ -97,7 +104,7 @@ export default function ChatHeader({ user }) {
 
           {/* 3-dots dropdown menu */}
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-36 sm:w-40 rounded-xl bg-white p-1 shadow-lg border border-gray-200/90 ring-1 ring-black/5 z-50 animate-scale-in">
+            <div className="absolute right-0 top-full mt-1.5 w-40 sm:w-44 rounded-xl bg-white p-1 shadow-lg border border-gray-200/90 ring-1 ring-black/5 z-50 animate-scale-in">
               <button
                 type="button"
                 onClick={handleAction}
@@ -107,6 +114,19 @@ export default function ChatHeader({ user }) {
                   <i className={isFarmer ? "ri-store-2-line text-sm" : "ri-user-3-line text-sm"} />
                 </div>
                 <span className="truncate">{isFarmer ? "Visit Store" : "View Profile"}</span>
+              </button>
+
+              <div className="my-1 border-t border-gray-100" />
+
+              <button
+                type="button"
+                onClick={handleReport}
+                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+              >
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-red-100 text-red-600">
+                  <i className="ri-shield-alert-line text-sm" />
+                </div>
+                <span className="truncate">Report User</span>
               </button>
             </div>
           )}
@@ -120,6 +140,16 @@ export default function ChatHeader({ user }) {
           onClose={() => setShowProfileModal(false)}
         />
       )}
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        targetType="message"
+        targetId={targetUid}
+        targetTitle={`Conversation with ${user.fullname || user.username}`}
+        reportedUser={user}
+      />
     </>
   );
 }

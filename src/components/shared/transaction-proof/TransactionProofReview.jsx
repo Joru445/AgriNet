@@ -1,9 +1,13 @@
+import { useState } from "react";
+import ImageViewerModal from "../../common/ImageViewerModal";
+
 export default function TransactionProofReview({
   inquiry,
   processing,
   onConfirm,
   onReject,
 }) {
+  const [showFullscreen, setShowFullscreen] = useState(false);
   const proofUrl = inquiry?.proof?.url;
 
   return (
@@ -20,12 +24,21 @@ export default function TransactionProofReview({
       </div>
 
       {proofUrl ? (
-        <div className="mt-5 overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+        <div
+          className="mt-5 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 cursor-pointer group relative"
+          onClick={() => setShowFullscreen(true)}
+          title="Click to view full screen & zoom"
+        >
           <img
             src={proofUrl}
             alt="Transaction proof submitted by consumer"
-            className="max-h-[600px] w-full object-contain"
+            className="max-h-[600px] w-full object-contain group-hover:scale-[1.01] transition-transform duration-200"
           />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-md backdrop-blur-xs flex items-center gap-1">
+              <i className="ri-zoom-in-line" /> View Photo
+            </span>
+          </div>
         </div>
       ) : (
         <div className="mt-5 rounded-xl bg-gray-50 p-8 text-center">
@@ -69,9 +82,17 @@ export default function TransactionProofReview({
             disabled:opacity-50
           "
         >
-          {processing ? "Processing..." : "Confirm Transaction"}
+          {processing ? "Processing..." : "Confirm & Complete"}
         </button>
       </div>
+
+      {/* Fullscreen Zoomable Image Modal */}
+      <ImageViewerModal
+        isOpen={showFullscreen && Boolean(proofUrl)}
+        src={proofUrl}
+        title="Transaction Proof"
+        onClose={() => setShowFullscreen(false)}
+      />
     </section>
   );
 }

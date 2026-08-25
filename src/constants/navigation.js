@@ -78,17 +78,6 @@ export const adminNavigation = [
     bottom: true,
   },
   {
-    to: "/admin/users",
-    label: "Users",
-    icon: "ri-user-search-line",
-    bottom: true,
-  },
-  {
-    to: "/admin/products",
-    label: "Products",
-    icon: "ri-plant-line",
-  },
-  {
     to: "/admin/reports",
     label: "Reports",
     icon: "ri-todo-line",

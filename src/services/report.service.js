@@ -33,8 +33,21 @@ const REPORT_STATUSES = ["pending", "reviewing", "resolved", "dismissed"];
 
 export async function createReport({
   reporterId,
+  reporterName = "",
+  reporterUsername = "",
+  reporterEmail = "",
+  reporterRole = "",
+
   reportedUserId,
-  reportedUserRole,
+  reportedUserName = "",
+  reportedUserUsername = "",
+  reportedUserRole = "",
+  reportedUserEmail = "",
+
+  targetType = "user",
+  targetId = null,
+  targetTitle = "",
+
   reason,
   description = "",
 }) {
@@ -54,18 +67,22 @@ export async function createReport({
     throw new Error("You cannot report yourself.");
   }
 
-  if (
-    reportedUserRole &&
-    !["consumer", "farmer", "admin"].includes(reportedUserRole)
-  ) {
-    throw new Error("Invalid reported user role.");
-  }
-
   const reportData = {
     reporterId,
-    reportedUserId,
+    reporterName: reporterName || null,
+    reporterUsername: reporterUsername || null,
+    reporterEmail: reporterEmail || null,
+    reporterRole: reporterRole || null,
 
+    reportedUserId,
+    reportedUserName: reportedUserName || null,
+    reportedUserUsername: reportedUserUsername || null,
     reportedUserRole: reportedUserRole || null,
+    reportedUserEmail: reportedUserEmail || null,
+
+    targetType: targetType || "user",
+    targetId: targetId || null,
+    targetTitle: targetTitle || null,
 
     reason: reason.trim(),
     description: description.trim(),

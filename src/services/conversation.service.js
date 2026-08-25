@@ -28,15 +28,22 @@ const conversationsRef = collection(db, "conversations");
  *
  * always produce the same ID.
  */
-function getConversationId(uid1, uid2) {
+export function getConversationId(uid1, uid2) {
+  if (!uid1 || !uid2) return "";
   return [uid1, uid2].sort().join("_");
 }
 
 /**
  * Mark a conversation as read for a specific user.
+ * Skips write if unreadCount is already 0.
  */
-export async function markConversationRead(conversationId, uid) {
+export async function markConversationRead(conversationId, uid, currentUnreadCount = null) {
   if (!conversationId || !uid) return;
+
+  // Skip redundant write if unreadCount is already known to be 0
+  if (currentUnreadCount === 0) {
+    return;
+  }
 
   try {
     const conversationRef = doc(db, "conversations", conversationId);
@@ -51,35 +58,24 @@ export async function markConversationRead(conversationId, uid) {
 
 /**
  * Find a one-to-one conversation between two users.
- *
- * New conversations use a deterministic document ID, so this normally
- * requires only one document read.
- *
- * The legacy query is kept temporarily so conversations created before
- * this refactor can still be found.
+ * Uses deterministic document ID directly (1 getDoc call).
  */
 export async function findConversation(uid1, uid2) {
-  const q = query(
-    conversationsRef,
-    where("participants", "array-contains", uid1),
-  );
+  if (!uid1 || !uid2) return null;
 
-  const snapshot = await getDocs(q);
+  try {
+    const conversationId = getConversationId(uid1, uid2);
+    const conversationRef = doc(db, "conversations", conversationId);
+    const snapshot = await getDoc(conversationRef);
 
-  for (const conversation of snapshot.docs) {
-    const data = conversation.data();
-    const participants = data.participants || [];
-
-    if (
-      participants.length === 2 &&
-      participants.includes(uid1) &&
-      participants.includes(uid2)
-    ) {
+    if (snapshot.exists()) {
       return {
-        id: conversation.id,
-        ...data,
+        id: snapshot.id,
+        ...snapshot.data(),
       };
     }
+  } catch (error) {
+    console.error("Failed to find conversation:", error);
   }
 
   return null;

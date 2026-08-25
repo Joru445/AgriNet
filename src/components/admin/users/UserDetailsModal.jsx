@@ -1,4 +1,6 @@
+import { useState } from "react";
 import RoleBadge from "../../common/RoleBadge";
+import ImageViewerModal from "../../common/ImageViewerModal";
 
 function formatFullDateTime(timestamp) {
   if (!timestamp) return "Not available";
@@ -27,6 +29,8 @@ function formatFullDateTime(timestamp) {
 }
 
 export default function UserDetailsModal({ user, onClose }) {
+  const [fullscreenImage, setFullscreenImage] = useState(null);
+
   if (!user) return null;
 
   const isSuspended = user.status === "suspended";
@@ -81,7 +85,14 @@ export default function UserDetailsModal({ user, onClose }) {
               <img
                 src={user.profilePicture}
                 alt={user.fullname}
-                className="h-16 w-16 rounded-full object-cover ring-3 ring-[#D8F3DC]"
+                onClick={() =>
+                  setFullscreenImage({
+                    src: user.profilePicture,
+                    title: `${user.fullname || user.username}'s Profile Picture`,
+                  })
+                }
+                className="h-16 w-16 rounded-full object-cover ring-3 ring-[#D8F3DC] cursor-pointer hover:opacity-90 transition"
+                title="Click to view photo"
               />
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F3DC] text-xl font-black text-[#2D6A4F] ring-3 ring-[#D8F3DC]/40">
@@ -256,6 +267,14 @@ export default function UserDetailsModal({ user, onClose }) {
           </button>
         </div>
       </div>
+
+      {/* Fullscreen Zoomable Image Modal */}
+      <ImageViewerModal
+        isOpen={Boolean(fullscreenImage)}
+        src={fullscreenImage?.src}
+        title={fullscreenImage?.title}
+        onClose={() => setFullscreenImage(null)}
+      />
     </div>
   );
 }

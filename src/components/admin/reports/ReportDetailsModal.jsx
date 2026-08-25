@@ -20,107 +20,141 @@ function getStatusClasses(status) {
 export default function ReportDetailsModal({ report, onClose }) {
   if (!report) return null;
 
-  return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Report Details
-            </h2>
+  const targetType = report.targetType || report.type || "user";
 
-            <p className="text-sm text-gray-500">
-              Review the submitted report.
-            </p>
+  return (
+    <div
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4"
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white shadow-2xl border border-gray-100 animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 bg-gray-50/80">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+              <i className="ri-shield-alert-line text-xl" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
+                Report Details
+              </h2>
+              <p className="text-xs text-gray-500 font-medium">
+                Review submitted report information
+              </p>
+            </div>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-200/70 hover:text-gray-700 transition cursor-pointer"
+            aria-label="Close"
           >
-            <i className="ri-close-line text-lg" />
+            <i className="ri-close-line text-xl" />
           </button>
         </div>
 
-        <div className="space-y-5 p-6">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-              Reason
-            </p>
-
-            <p className="mt-1 text-sm font-semibold text-gray-900">
-              {report.reason || "No reason provided"}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-              Description
-            </p>
-
-            <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-700">
-              {report.description || "No description provided"}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                Type
-              </p>
-
-              <p className="mt-1 text-sm capitalize text-gray-700">
-                {report.type || "Unknown"}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                Status
-              </p>
+        <div className="space-y-4 p-6">
+          {/* Reason & Status */}
+          <div className="rounded-2xl bg-gray-50 p-4 border border-gray-100">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  Report Reason
+                </p>
+                <p className="mt-0.5 text-sm font-bold text-gray-900">
+                  {report.reason || "No reason provided"}
+                </p>
+              </div>
 
               <span
-                className={`mt-1 inline-block rounded-full px-2.5 py-1 text-xs font-medium ${getStatusClasses(
+                className={`inline-block rounded-full px-2.5 py-1 text-xs font-bold capitalize ${getStatusClasses(
                   report.status,
                 )}`}
               >
-                {report.status || "Unknown"}
+                {report.status || "pending"}
               </span>
             </div>
-          </div>
 
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-              Reported By
-            </p>
-
-            <p className="mt-1 text-sm text-gray-700">
-              {report.reporterName || "Unknown user"}
-            </p>
-
-            {report.reporterUsername && (
-              <p className="text-xs text-gray-500">
-                @{report.reporterUsername}
-              </p>
+            {report.targetTitle && (
+              <div className="mt-3 pt-3 border-t border-gray-200/60">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  Reported Target ({targetType})
+                </p>
+                <p className="text-xs font-semibold text-gray-800 mt-0.5">
+                  {report.targetTitle}
+                </p>
+                {report.targetId && (
+                  <p className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">
+                    ID: {report.targetId}
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
+          {/* Description */}
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-              Reported User
+            <p className="text-xs font-bold text-gray-700 mb-1">
+              Description / User Explanation
             </p>
 
-            <p className="mt-1 text-sm text-gray-700">
-              {report.reportedUserName || "Unknown user"}
-            </p>
+            <div className="rounded-2xl border border-gray-200 bg-gray-50/50 p-3 text-xs sm:text-sm leading-relaxed text-gray-800 whitespace-pre-wrap">
+              {report.description || "No additional description provided."}
+            </div>
           </div>
 
+          {/* Users Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Reported User */}
+            <div className="rounded-2xl border border-gray-100 bg-red-50/40 p-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-red-600">
+                Reported User
+              </p>
+              <p className="text-xs font-bold text-gray-900 mt-1">
+                {report.reportedUserName || "User"}
+              </p>
+              {report.reportedUserUsername && (
+                <p className="text-[11px] text-gray-500">
+                  @{report.reportedUserUsername}
+                </p>
+              )}
+              {report.reportedUserRole && (
+                <span className="inline-block mt-1.5 rounded-md bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700 capitalize">
+                  {report.reportedUserRole}
+                </span>
+              )}
+            </div>
+
+            {/* Reporter */}
+            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                Submitted By
+              </p>
+              <p className="text-xs font-bold text-gray-900 mt-1">
+                {report.reporterName || "Reporter"}
+              </p>
+              {report.reporterUsername && (
+                <p className="text-[11px] text-gray-500">
+                  @{report.reporterUsername}
+                </p>
+              )}
+              {report.reporterRole && (
+                <span className="inline-block mt-1.5 rounded-md bg-gray-200 px-2 py-0.5 text-[10px] font-bold text-gray-700 capitalize">
+                  {report.reporterRole}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Footer Action */}
           <div className="flex justify-end pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 rounded-xl bg-gray-100 text-xs sm:text-sm font-bold text-gray-700 hover:bg-gray-200 transition cursor-pointer"
             >
               Close
             </button>
