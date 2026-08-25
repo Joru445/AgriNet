@@ -1,6 +1,7 @@
 import { AuthProvider } from "./context/AuthContext";
 import { UnreadMessagesProvider } from "./context/UnreadMessagesContext";
 import { UnreadInquiriesProvider } from "./context/UnreadInquiriesContext";
+import { UnreadReportsProvider } from "./context/UnreadReportsContext";
 import AppRoutes from "./routes/AppRoutes";
 
 export default function App() {
@@ -8,7 +9,9 @@ export default function App() {
     <AuthProvider>
       <UnreadMessagesProvider>
         <UnreadInquiriesProvider>
-          <AppRoutes />
+          <UnreadReportsProvider>
+            <AppRoutes />
+          </UnreadReportsProvider>
         </UnreadInquiriesProvider>
       </UnreadMessagesProvider>
     </AuthProvider>

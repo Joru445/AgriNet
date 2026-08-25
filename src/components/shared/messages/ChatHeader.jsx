@@ -124,7 +124,7 @@ export default function ChatHeader({ user }) {
                 className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
               >
                 <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-red-100 text-red-600">
-                  <i className="ri-shield-alert-line text-sm" />
+                  <i className="ri-alert-line text-sm" />
                 </div>
                 <span className="truncate">Report User</span>
               </button>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { createReport } from "../../services/report.service";
+import { createReport, getActiveReportForTarget } from "../../services/report.service";
+import { uploadReportProof } from "../../services/cloudinary.service";
 import { showToast } from "../../utils/toast";
 
 const REPORT_REASONS = [
@@ -55,6 +56,11 @@ const REPORT_REASONS = [
   },
 ];
 
+function formatCleanTitle(title, fallback) {
+  if (!title) return fallback || "Reported Item";
+  return title.replace(/\s*\([a-zA-Z0-9_-]{6,}\)\s*/g, "").trim() || fallback || "Reported Item";
+}
+
 export default function ReportModal({
   isOpen,
   onClose,
@@ -67,18 +73,59 @@ export default function ReportModal({
 
   const [selectedReason, setSelectedReason] = useState("");
   const [description, setDescription] = useState("");
+  const [evidenceFile, setEvidenceFile] = useState(null);
+  const [evidencePreview, setEvidencePreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  // Reset form when modal opens or closes
+  const [activeReport, setActiveReport] = useState(null);
+  const [checkingActive, setCheckingActive] = useState(true);
+
+  const reportedUid = reportedUser?.uid || reportedUser?.id;
+  const displayTargetTitle = formatCleanTitle(
+    targetTitle,
+    reportedUser?.fullname || (reportedUser?.username ? `@${reportedUser.username}` : "Reported Target"),
+  );
+
+  // Check if an unresolved report already exists for this target
   useEffect(() => {
-    if (isOpen) {
+    let isCancelled = false;
+
+    if (isOpen && profile?.uid) {
       setSelectedReason("");
       setDescription("");
+      setEvidenceFile(null);
+      setEvidencePreview(null);
       setError(null);
       setSubmitting(false);
+      setCheckingActive(true);
+
+      getActiveReportForTarget({
+        reporterId: profile.uid,
+        targetId: targetId || reportedUid,
+        reportedUserId: reportedUid,
+        targetType,
+      })
+        .then((existing) => {
+          if (!isCancelled) {
+            setActiveReport(existing);
+            setCheckingActive(false);
+          }
+        })
+        .catch(() => {
+          if (!isCancelled) {
+            setCheckingActive(false);
+          }
+        });
+    } else {
+      setActiveReport(null);
+      setCheckingActive(false);
     }
-  }, [isOpen]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isOpen, profile?.uid, targetId, reportedUid, targetType]);
 
   // Handle escape key
   useEffect(() => {
@@ -94,18 +141,11 @@ export default function ReportModal({
 
   if (!isOpen) return null;
 
-  const reportedUid = reportedUser?.uid || reportedUser?.id;
-
   async function handleSubmit(e) {
     e.preventDefault();
 
     if (!selectedReason) {
       setError("Please select a reason for your report.");
-      return;
-    }
-
-    if (selectedReason === "Other Issue" && !description.trim()) {
-      setError("Please provide details for 'Other Issue'.");
       return;
     }
 
@@ -115,22 +155,31 @@ export default function ReportModal({
     }
 
     if (!reportedUid) {
-      setError("Unable to identify the user being reported.");
+      setError("Target user could not be identified.");
       return;
     }
-
-    if (profile.uid === reportedUid) {
-      setError("You cannot submit a report against yourself.");
-      return;
-    }
-
-    setError(null);
-    setSubmitting(true);
 
     try {
+      setSubmitting(true);
+      setError(null);
+
+      let evidenceUrl = "";
+      let evidencePublicId = "";
+
+      if (evidenceFile) {
+        try {
+          const uploadRes = await uploadReportProof(evidenceFile);
+          evidenceUrl = uploadRes.url;
+          evidencePublicId = uploadRes.publicId;
+        } catch (uploadErr) {
+          console.warn("Evidence proof upload failed:", uploadErr);
+          showToast.warning("Could not upload screenshot proof, submitting report without attachment.");
+        }
+      }
+
       await createReport({
         reporterId: profile.uid,
-        reporterName: profile.fullname || profile.username || "User",
+        reporterName: profile.fullname || profile.username || "Anonymous",
         reporterUsername: profile.username || "",
         reporterEmail: profile.email || "",
         reporterRole: profile.role || "consumer",
@@ -143,13 +192,15 @@ export default function ReportModal({
 
         targetType,
         targetId: targetId || reportedUid,
-        targetTitle: targetTitle || reportedUser.fullname || reportedUser.username || "Reported Item",
+        targetTitle: displayTargetTitle,
 
         reason: selectedReason,
         description: description.trim(),
+        evidenceUrl,
+        evidencePublicId,
       });
 
-      showToast.success("Report submitted. Our moderation team will review it.");
+      showToast.success("Report submitted! Our moderation team will investigate and contact you if needed.");
       onClose?.();
     } catch (err) {
       console.error("Failed to submit report:", err);
@@ -180,21 +231,23 @@ export default function ReportModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg rounded-3xl bg-white shadow-2xl border border-gray-100 overflow-hidden my-auto animate-scale-in"
+        className="relative w-full max-w-lg rounded-3xl bg-white shadow-2xl border border-gray-200/90 overflow-hidden my-auto animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/80">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/90">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
-              <i className="ri-shield-alert-line text-xl" />
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-xs ${
+              activeReport ? "bg-amber-100 text-amber-800 border border-amber-200" : "bg-red-100 text-red-700 border border-red-200"
+            }`}>
+              <i className={activeReport ? "ri-shield-check-line text-xl" : "ri-alert-line text-xl font-bold"} />
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
-                Submit a Report
+                {activeReport ? "Report Under Review" : "Submit a Report"}
               </h2>
-              <p className="text-xs text-gray-500 font-medium">
-                Help us keep AgriNet safe and trustworthy
+              <p className="text-xs text-gray-500 font-medium mt-0.5">
+                {activeReport ? "An active report is already being investigated" : "Help us keep AgriNet safe and trustworthy"}
               </p>
             </div>
           </div>
@@ -209,124 +262,262 @@ export default function ReportModal({
           </button>
         </div>
 
-        {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-          {/* Target Info Summary */}
-          <div className="flex items-center justify-between rounded-2xl bg-[#E8F5EE]/60 border border-[#2D6A4F]/15 px-3.5 py-2.5">
-            <div className="min-w-0 flex-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F]">
-                Reporting {getTargetLabel()}
+        {/* Modal Body */}
+        {checkingActive ? (
+          <div className="p-10 text-center flex flex-col items-center justify-center space-y-3">
+            <i className="ri-loader-4-line animate-spin text-3xl text-[#2D6A4F]" />
+            <p className="text-xs text-gray-500 font-medium">Checking report status...</p>
+          </div>
+        ) : activeReport ? (
+          /* Active Report Already Exists Screen */
+          <div className="p-5 sm:p-6 space-y-4">
+            {/* Target Info Summary */}
+            <div className="flex items-center justify-between rounded-2xl bg-white border border-gray-200/90 shadow-xs p-3.5">
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F]">
+                  Target: {getTargetLabel()}
+                </span>
+                <p className="text-xs sm:text-sm font-bold text-gray-900 truncate mt-0.5">
+                  {displayTargetTitle}
+                </p>
+              </div>
+              <span className="rounded-full bg-amber-100 border border-amber-200 text-amber-900 text-xs font-bold px-3 py-1 capitalize shrink-0 ml-2 shadow-2xs">
+                {activeReport.status === "reviewing" ? "Under Investigation" : "Pending Review"}
               </span>
-              <p className="text-xs sm:text-sm font-bold text-gray-900 truncate">
-                {targetTitle || reportedUser?.fullname || `@${reportedUser?.username}` || "Target Item"}
+            </div>
+
+            {/* Submitted Report Summary */}
+            <div className="rounded-2xl border border-gray-200/90 bg-white p-4 shadow-xs space-y-2.5">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  Submitted Reason
+                </p>
+                <p className="text-sm font-bold text-gray-900 mt-0.5">
+                  {activeReport.reason}
+                </p>
+              </div>
+
+              {activeReport.description && (
+                <div className="pt-2.5 border-t border-gray-100">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    Your Explanation
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-800 mt-1 leading-relaxed font-medium">
+                    {activeReport.description}
+                  </p>
+                </div>
+              )}
+
+              {activeReport.evidenceUrl && (
+                <div className="pt-2.5 border-t border-gray-100">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">
+                    Attached Evidence
+                  </p>
+                  <img
+                    src={activeReport.evidenceUrl}
+                    alt="Submitted proof"
+                    className="h-24 w-auto max-w-[200px] object-cover rounded-xl border border-gray-200 shadow-xs"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Moderator Contact Notice Banner */}
+            <div className="rounded-2xl border border-[#2D6A4F]/25 bg-[#E8F5EE] p-4 shadow-xs text-xs sm:text-sm text-[#1B4332] space-y-1.5">
+              <div className="flex items-center gap-2 font-bold text-[#2D6A4F]">
+                <i className="ri-information-fill text-base" />
+                <span>Notice from Moderation Team</span>
+              </div>
+              <p className="leading-relaxed font-medium">
+                We have received your report and our team is actively investigating the matter.
+                <strong> We will contact you via your registered email or messages if further details or action are needed.</strong>
+              </p>
+              <p className="text-[11px] text-[#2D6A4F]/80 pt-1">
+                You can only submit one report at a time for this item until the current report is resolved.
               </p>
             </div>
-            {reportedUser?.username && (
-              <span className="text-xs font-semibold text-gray-500 shrink-0 ml-2">
-                @{reportedUser.username}
-              </span>
-            )}
-          </div>
 
-          {/* Reason Selection */}
-          <div>
-            <label className="block text-xs sm:text-sm font-bold text-gray-800 mb-2">
-              Why are you reporting this? <span className="text-red-500">*</span>
-            </label>
-
-            <div className="space-y-2">
-              {REPORT_REASONS.map((item) => {
-                const isSelected = selectedReason === item.label;
-                return (
-                  <label
-                    key={item.id}
-                    className={`flex items-start gap-3 p-3 rounded-2xl border transition-all cursor-pointer select-none ${
-                      isSelected
-                        ? "border-[#2D6A4F] bg-[#E8F5EE]/40 ring-2 ring-[#2D6A4F]/20 shadow-xs"
-                        : "border-gray-200/90 bg-white hover:bg-gray-50/80 hover:border-gray-300"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="reportReason"
-                      value={item.label}
-                      checked={isSelected}
-                      onChange={() => {
-                        setSelectedReason(item.label);
-                        setError(null);
-                      }}
-                      className="mt-0.5 h-4 w-4 text-[#2D6A4F] focus:ring-[#2D6A4F] cursor-pointer"
-                    />
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs sm:text-sm font-bold text-gray-900">
-                          {item.label}
-                        </span>
-                      </div>
-                      <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 leading-normal">
-                        {item.description}
-                      </p>
-                    </div>
-                  </label>
-                );
-              })}
+            {/* Close Button */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full rounded-xl bg-[#2D6A4F] py-3 text-xs sm:text-sm font-bold text-white hover:bg-[#1B4332] active:scale-95 transition shadow-md hover:shadow-lg cursor-pointer"
+              >
+                Got It
+              </button>
             </div>
           </div>
-
-          {/* Additional Details */}
-          <div>
-            <label htmlFor="report-description" className="block text-xs sm:text-sm font-bold text-gray-800 mb-1.5">
-              Additional Details <span className="text-gray-400 font-normal">(Optional)</span>
-            </label>
-            <textarea
-              id="report-description"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Please provide any extra context, messages, or details to assist our review..."
-              className="w-full rounded-2xl border border-gray-200/90 p-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/20 focus:outline-none transition resize-none"
-            />
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 px-3.5 py-2.5 text-xs text-red-700 font-medium">
-              <i className="ri-error-warning-line text-base shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="px-4 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm font-bold text-gray-700 hover:bg-gray-100 active:scale-95 transition cursor-pointer disabled:opacity-50"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={submitting || !selectedReason}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 text-white text-xs sm:text-sm font-bold shadow-md hover:bg-red-700 active:scale-95 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {submitting ? (
-                <>
-                  <i className="ri-loader-4-line animate-spin text-base" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <i className="ri-shield-alert-fill text-base" />
-                  Submit Report
-                </>
+        ) : (
+          /* Normal Submission Form */
+          <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4.5 max-h-[75vh] overflow-y-auto">
+            {/* Target Info Summary */}
+            <div className="flex items-center justify-between rounded-2xl bg-white border border-gray-200/90 shadow-xs p-3.5">
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F]">
+                  Reporting {getTargetLabel()}
+                </span>
+                <p className="text-xs sm:text-sm font-bold text-gray-900 truncate mt-0.5">
+                  {displayTargetTitle}
+                </p>
+              </div>
+              {reportedUser?.username && (
+                <span className="text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg shrink-0 ml-2 shadow-2xs">
+                  @{reportedUser.username}
+                </span>
               )}
-            </button>
-          </div>
-        </form>
+            </div>
+
+            {/* Reason Selection */}
+            <div>
+              <label className="block text-xs sm:text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">
+                Why are you reporting this? <span className="text-red-500">*</span>
+              </label>
+
+              <div className="space-y-2">
+                {REPORT_REASONS.map((item) => {
+                  const isSelected = selectedReason === item.label;
+                  return (
+                    <label
+                      key={item.id}
+                      className={`flex items-start gap-3 p-3.5 rounded-2xl border transition-all cursor-pointer select-none shadow-2xs ${
+                        isSelected
+                          ? "border-[#2D6A4F] bg-[#E8F5EE]/40 ring-2 ring-[#2D6A4F]/20 shadow-xs"
+                          : "border-gray-200/90 bg-white hover:bg-gray-50 hover:border-gray-300 hover:shadow-xs"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="reportReason"
+                        value={item.label}
+                        checked={isSelected}
+                        onChange={() => {
+                          setSelectedReason(item.label);
+                          setError(null);
+                        }}
+                        className="mt-0.5 h-4 w-4 text-[#2D6A4F] focus:ring-[#2D6A4F] cursor-pointer"
+                      />
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs sm:text-sm font-bold text-gray-900">
+                            {item.label}
+                          </span>
+                        </div>
+                        <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 leading-normal">
+                          {item.description}
+                        </p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Additional Details */}
+            <div>
+              <label htmlFor="report-description" className="block text-xs sm:text-sm font-bold text-gray-800 mb-1.5 uppercase tracking-wide">
+                Additional Details <span className="text-gray-400 font-normal lowercase">(optional)</span>
+              </label>
+              <textarea
+                id="report-description"
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Please provide any extra context, messages, or details to assist our review..."
+                className="w-full rounded-2xl border border-gray-200/90 bg-gray-50/50 p-3.5 text-xs sm:text-sm text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/20 focus:outline-none shadow-2xs transition resize-none"
+              />
+            </div>
+
+            {/* Evidence / Screenshot Upload */}
+            <div>
+              <label className="block text-xs sm:text-sm font-bold text-gray-800 mb-1.5 uppercase tracking-wide">
+                Attach Screenshot / Proof <span className="text-gray-400 font-normal lowercase">(optional)</span>
+              </label>
+              {evidencePreview ? (
+                <div className="relative inline-block rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 shadow-xs">
+                  <img
+                    src={evidencePreview}
+                    alt="Proof preview"
+                    className="h-28 w-auto max-w-[240px] object-cover rounded-2xl"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEvidenceFile(null);
+                      setEvidencePreview(null);
+                    }}
+                    className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black transition shadow-sm cursor-pointer"
+                    title="Remove image"
+                    aria-label="Remove image"
+                  >
+                    <i className="ri-close-line text-base" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex items-center gap-3.5 p-3.5 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#2D6A4F] bg-gray-50/70 hover:bg-[#E8F5EE]/30 cursor-pointer shadow-2xs transition select-none">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setEvidenceFile(file);
+                        setEvidencePreview(URL.createObjectURL(file));
+                      }
+                    }}
+                  />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#2D6A4F] shadow-xs border border-gray-200">
+                    <i className="ri-image-add-line text-xl font-bold" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs sm:text-sm font-bold text-gray-900">Upload screenshot or photo proof</span>
+                    <p className="text-[11px] text-gray-500 mt-0.5">PNG, JPG, WEBP receipt or chat evidence</p>
+                  </div>
+                </label>
+              )}
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-center gap-2 rounded-2xl bg-red-50 border border-red-200 p-3 text-xs text-red-700 font-bold shadow-2xs">
+                <i className="ri-error-warning-line text-base shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={submitting}
+                className="px-4 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm font-bold text-gray-700 hover:bg-gray-100 active:scale-95 transition shadow-2xs cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={submitting || !selectedReason}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 text-white text-xs sm:text-sm font-bold shadow-md hover:bg-red-700 hover:shadow-lg active:scale-95 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? (
+                  <>
+                    <i className="ri-loader-4-line animate-spin text-base" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <i className="ri-alert-fill text-base" />
+                    Submit Report
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

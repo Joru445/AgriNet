@@ -17,8 +17,8 @@ export default function StatCard({ title, value, description, to }) {
       onKeyDown={to ? (e) => e.key === "Enter" && handleClick() : undefined}
       className={`group rounded-2xl border bg-white p-5 transition-all select-none ${
         to
-          ? "border-gray-300 shadow-md cursor-pointer hover:-translate-y-1 hover:border-[#2D6A4F]/40 hover:shadow-xl active:scale-95 active:shadow-sm"
-          : "border-gray-200 shadow-sm"
+          ? "border-gray-300 shadow-md shadow-black/5 cursor-pointer hover:-translate-y-1 hover:border-[#2D6A4F]/40 hover:shadow-xl active:scale-95 active:shadow-sm"
+          : "border-gray-200/90 shadow-md shadow-black/5"
       }`}
     >
       <div className="flex items-start justify-between gap-3">

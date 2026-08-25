@@ -196,7 +196,7 @@ export default function StoreHeader({
                   "
                   title="Report this store"
                 >
-                  <i className="ri-shield-alert-line text-sm sm:mr-1" />
+                  <i className="ri-alert-line text-sm sm:mr-1" />
                   <span className="hidden sm:inline">Report</span>
                 </button>
               )}

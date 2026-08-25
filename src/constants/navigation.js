@@ -80,7 +80,7 @@ export const adminNavigation = [
   {
     to: "/admin/reports",
     label: "Reports",
-    icon: "ri-todo-line",
+    icon: "ri-alert-line",
     bottom: true,
   },
   {

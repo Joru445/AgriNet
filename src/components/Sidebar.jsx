@@ -11,11 +11,13 @@ import LogoutConfirmModal from "./common/LogoutConfirmModal";
 
 import { useUnreadMessages } from "../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../context/UnreadInquiriesContext";
+import { useUnreadReports } from "../context/UnreadReportsContext";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
   const { profile, logout } = useAuth();
   const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
+  const { pendingReportsCount, showReportPopup, reportPopupMessage } = useUnreadReports();
   const navigate = useNavigate();
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -75,6 +77,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         {items.map((item) => {
           const isMessages = item.to.includes("messages");
           const isInquiries = item.to.includes("inquiries");
+          const isReports = item.to.includes("reports");
 
           return (
             <div key={item.to} className="relative">
@@ -102,6 +105,11 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   {isInquiries && inquiryActionCount > 0 && (
                     <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-[#1B4332] shadow-xs leading-none">
                       {inquiryActionCount > 99 ? "99+" : inquiryActionCount}
+                    </span>
+                  )}
+                  {isReports && pendingReportsCount > 0 && (
+                    <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-[#1B4332] shadow-xs leading-none">
+                      {pendingReportsCount > 99 ? "99+" : pendingReportsCount}
                     </span>
                   )}
                 </div>
@@ -136,6 +144,22 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
                       </span>
                       <span>{inquiryPopupMessage}</span>
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Speech bubble — reports */}
+              {isReports && showReportPopup && (
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 z-50 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-left-2">
+                  <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#1B4332] shadow-2xl shadow-black/20 border border-gray-100 ring-1 ring-black/5">
+                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rotate-45 border-l border-b border-gray-100" />
+                    <span className="relative z-10 flex items-center gap-2">
+                      <span className="flex h-2.5 w-2.5 relative">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                      </span>
+                      <span>{reportPopupMessage || "New report needs review!"}</span>
                     </span>
                   </div>
                 </div>

@@ -50,7 +50,7 @@ export default function ProductInfo({
             className="inline-flex items-center gap-1 text-xs font-semibold text-gray-400 hover:text-red-600 hover:bg-red-50 px-2.5 py-1 rounded-lg transition cursor-pointer"
             title="Report this product"
           >
-            <i className="ri-shield-alert-line text-sm" />
+            <i className="ri-alert-line text-sm" />
             <span>Report</span>
           </button>
         )}

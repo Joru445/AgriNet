@@ -72,36 +72,71 @@ export async function getUsers() {
  * ============================================================
  */
 
+import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
+
 export async function getUserProfile(uid) {
   if (!uid || typeof uid !== "string") {
     throw new Error("Invalid user UID.");
   }
+
+  const cached = getCachedUserProfile(uid);
 
   const userRef = doc(db, "users", uid);
 
   const snapshot = await getDoc(userRef);
 
   if (!snapshot.exists()) {
-    return null;
+    try {
+      const farmerSnap = await getDoc(doc(db, "farmers", uid));
+      if (farmerSnap.exists()) {
+        const farmerData = farmerSnap.data();
+        const res = {
+          uid: farmerSnap.id,
+          ...farmerData,
+          role: farmerData.role || "farmer",
+          verified: farmerData.verified === true,
+        };
+        setCachedUserProfile(uid, res);
+        return res;
+      }
+    } catch (_) {}
+    return cached || null;
   }
 
   const data = snapshot.data();
+  let profilePicture = data.profilePicture || cached?.profilePicture || "";
+  let profilePictureId = data.profilePictureId || cached?.profilePictureId || "";
   let verified = data.verified === true;
 
-  if (data.role === "farmer" && !verified) {
+  if (data.role === "farmer" || !profilePicture) {
     try {
       const farmerSnap = await getDoc(doc(db, "farmers", uid));
-      if (farmerSnap.exists() && farmerSnap.data()?.verified === true) {
-        verified = true;
+      if (farmerSnap.exists()) {
+        const farmerData = farmerSnap.data();
+        if (farmerData?.verified === true) {
+          verified = true;
+        }
+        if (!profilePicture && farmerData?.profilePicture) {
+          profilePicture = farmerData.profilePicture;
+        }
+        if (!profilePictureId && farmerData?.profilePictureId) {
+          profilePictureId = farmerData.profilePictureId;
+        }
       }
     } catch (_) {}
   }
 
-  return {
+  const userResult = {
     uid: snapshot.id,
     ...data,
+    profilePicture,
+    profilePictureId,
     verified,
   };
+
+  setCachedUserProfile(uid, userResult);
+
+  return userResult;
 }
 
 /*
@@ -327,16 +362,31 @@ export async function searchUsers(search, currentUserId) {
   const enriched = await Promise.all(
     list.map(async (u) => {
       let verified = u.verified === true;
-      if (u.role === "farmer" && !verified) {
+      let profilePicture = u.profilePicture || "";
+      let profilePictureId = u.profilePictureId || "";
+
+      if (u.role === "farmer" || !profilePicture) {
         try {
           const farmerSnap = await getDoc(doc(db, "farmers", u.uid));
-          if (farmerSnap.exists() && farmerSnap.data()?.verified === true) {
-            verified = true;
+          if (farmerSnap.exists()) {
+            const farmerData = farmerSnap.data();
+            if (farmerData?.verified === true) {
+              verified = true;
+            }
+            if (!profilePicture && farmerData?.profilePicture) {
+              profilePicture = farmerData.profilePicture;
+            }
+            if (!profilePictureId && farmerData?.profilePictureId) {
+              profilePictureId = farmerData.profilePictureId;
+            }
           }
         } catch (_) {}
       }
+
       return {
         ...u,
+        profilePicture,
+        profilePictureId,
         verified,
       };
     }),

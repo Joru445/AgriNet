@@ -62,6 +62,14 @@ export function uploadTransactionProof(file) {
   return uploadImage(file, TRANSACTION_PRESET);
 }
 
+export async function uploadReportProof(file) {
+  const compressed = await compressImage(file, {
+    maxDimension: 1280,
+    quality: 0.8,
+  });
+  return uploadImage(compressed, TRANSACTION_PRESET || DEFAULT_PRESET);
+}
+
 export async function uploadMessageImage(file) {
   const compressed = await compressImage(file);
   return uploadImage(compressed, MESSAGE_PRESET);

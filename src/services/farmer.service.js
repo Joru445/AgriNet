@@ -76,6 +76,8 @@ export async function getFarmers() {
   }
 }
 
+import { setCachedUserProfile } from "../utils/userProfileCache";
+
 export async function getFarmerById(uid) {
   const [farmerSnap, userSnap, reviewsSnap] = await Promise.all([
     getDoc(doc(db, "farmers", uid)),
@@ -100,7 +102,7 @@ export async function getFarmerById(uid) {
     rating = Number((total / reviewCount).toFixed(1));
   }
 
-  return {
+  const farmerResult = {
     uid,
     ...userData,
     ...farmerData,
@@ -108,6 +110,10 @@ export async function getFarmerById(uid) {
     reviewCount,
     verified: farmerData.verified === true || userData.verified === true,
   };
+
+  setCachedUserProfile(uid, farmerResult);
+
+  return farmerResult;
 }
 
 export async function updateFarmer(uid, data) {

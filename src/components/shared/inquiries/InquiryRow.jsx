@@ -114,7 +114,7 @@ export default function InquiryRow({
               title="Report this transaction / user"
               aria-label="Report inquiry"
             >
-              <i className="ri-shield-alert-line text-sm" />
+              <i className="ri-alert-line text-sm" />
             </button>
           </div>
         </div>
@@ -280,7 +280,7 @@ export default function InquiryRow({
         onClose={() => setShowReportModal(false)}
         targetType="inquiry"
         targetId={inquiry.id}
-        targetTitle={`Inquiry for ${productData.name || "Product"} (${inquiry.id.slice(0, 8)})`}
+        targetTitle={`Inquiry for ${productData.name || "Product"}`}
         reportedUser={counterparty?.uid ? counterparty : {
           uid: userRole === "farmer" ? inquiry.consumerId : inquiry.farmerId,
           fullname: counterparty?.fullname || counterparty?.username || "User",

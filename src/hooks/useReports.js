@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 import {
   subscribeReports,
+  subscribeUserReports,
   getReport,
   getUserReports,
   createReport,
@@ -14,6 +16,10 @@ import {
 const REPORT_STATUSES = ["pending", "reviewing", "resolved", "dismissed"];
 
 export default function useReports({ userId = null, admin = false } = {}) {
+  const { profile } = useAuth();
+  const isAdmin = admin || profile?.role === "admin";
+  const effectiveUserId = userId || profile?.uid;
+
   const [reports, setReports] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -35,7 +41,7 @@ export default function useReports({ userId = null, admin = false } = {}) {
    */
 
   useEffect(() => {
-    if (!userId && !admin) {
+    if (!effectiveUserId && !isAdmin) {
       setReports([]);
       setLoading(false);
       return;
@@ -46,7 +52,7 @@ export default function useReports({ userId = null, admin = false } = {}) {
 
     let unsubscribe;
 
-    if (admin) {
+    if (isAdmin) {
       unsubscribe = subscribeReports(
         (data) => {
           setReports(data);
@@ -61,26 +67,26 @@ export default function useReports({ userId = null, admin = false } = {}) {
         },
       );
     } else {
-      // Import dynamically isn't necessary here.
-      // Normal user reports are loaded with getUserReports.
-      getUserReports(userId)
-        .then((data) => {
+      unsubscribe = subscribeUserReports(
+        effectiveUserId,
+        (data) => {
           setReports(data);
           setLoading(false);
-        })
-        .catch((err) => {
+        },
+        (err) => {
           console.error("Failed to load user reports:", err);
 
           setError(err?.message || "Failed to load reports.");
 
           setLoading(false);
-        });
+        },
+      );
     }
 
     return () => {
       unsubscribe?.();
     };
-  }, [userId, admin]);
+  }, [effectiveUserId, isAdmin]);
 
   /*
    * ============================================================
@@ -195,7 +201,7 @@ export default function useReports({ userId = null, admin = false } = {}) {
    * ============================================================
    */
 
-  const markResolved = useCallback(async (reportId, adminUid) => {
+  const markResolved = useCallback(async (reportId, adminUid, adminNotes = "") => {
     if (!reportId) {
       throw new Error("Report ID is required.");
     }
@@ -208,7 +214,7 @@ export default function useReports({ userId = null, admin = false } = {}) {
       setActionLoading(true);
       setActionError(null);
 
-      return await resolveReport(reportId, adminUid);
+      return await resolveReport(reportId, adminUid, adminNotes);
     } catch (err) {
       console.error("Failed to resolve report:", err);
 
@@ -226,7 +232,7 @@ export default function useReports({ userId = null, admin = false } = {}) {
    * ============================================================
    */
 
-  const markDismissed = useCallback(async (reportId, adminUid) => {
+  const markDismissed = useCallback(async (reportId, adminUid, adminNotes = "") => {
     if (!reportId) {
       throw new Error("Report ID is required.");
     }
@@ -239,7 +245,7 @@ export default function useReports({ userId = null, admin = false } = {}) {
       setActionLoading(true);
       setActionError(null);
 
-      return await dismissReport(reportId, adminUid);
+      return await dismissReport(reportId, adminUid, adminNotes);
     } catch (err) {
       console.error("Failed to dismiss report:", err);
 

@@ -160,7 +160,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
                 title="Report this user"
                 aria-label="Report user"
               >
-                <i className="ri-shield-alert-line text-lg" />
+                <i className="ri-alert-line text-lg" />
               </button>
             )}
             <button

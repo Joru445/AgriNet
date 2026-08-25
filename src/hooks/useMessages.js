@@ -30,6 +30,8 @@ import {
   searchUsers,
 } from "../services/user.service";
 
+import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
+
 import { getProductById } from "../services/product.service";
 
 import { acceptProductInquiry } from "../services/inquiry.service";
@@ -369,15 +371,18 @@ export default function useMessages() {
               conversation.participantInfo?.[otherUid] || {};
 
             const cachedProfile = otherUid
-              ? userProfileCacheRef.current.get(otherUid)
+              ? (getCachedUserProfile(otherUid) || userProfileCacheRef.current.get(otherUid))
               : null;
 
-            // Check if participantInfo has sufficient display data
+            // Check if participantInfo has sufficient display data AND profilePicture
             const hasBasicInfo = Boolean(
               otherInfo.fullname || otherInfo.username,
             );
+            const hasProfilePic = Boolean(
+              cachedProfile?.profilePicture || otherInfo.profilePicture,
+            );
 
-            if (!hasBasicInfo && !cachedProfile && otherUid) {
+            if ((!hasBasicInfo || !hasProfilePic) && otherUid) {
               missingProfileUids.push(otherUid);
             }
 
@@ -388,6 +393,10 @@ export default function useMessages() {
                 uid: otherUid,
                 ...otherInfo,
                 ...(cachedProfile || {}),
+                profilePicture:
+                  cachedProfile?.profilePicture ||
+                  otherInfo.profilePicture ||
+                  "",
                 verified:
                   cachedProfile?.verified ??
                   otherInfo.verified === true,
@@ -402,7 +411,7 @@ export default function useMessages() {
 
           setConversations(mapped);
 
-          // Only fetch profiles if participantInfo is completely empty/missing and not yet in cache
+          // Fetch profiles if participantInfo is missing profilePicture or data
           if (missingProfileUids.length > 0) {
             const uniqueMissing = [...new Set(missingProfileUids)];
             uniqueMissing.forEach(async (uid) => {
@@ -410,6 +419,7 @@ export default function useMessages() {
                 const user = await getUserProfile(uid);
                 if (user) {
                   userProfileCacheRef.current.set(uid, user);
+                  setCachedUserProfile(uid, user);
                   setConversations((prev) =>
                     prev.map((c) =>
                       c.otherUser?.uid === uid
@@ -418,11 +428,25 @@ export default function useMessages() {
                             otherUser: {
                               ...c.otherUser,
                               ...user,
+                              profilePicture: user.profilePicture || c.otherUser?.profilePicture || "",
                               verified: user.verified === true,
                             },
                           }
                         : c,
                     ),
+                  );
+                  setActiveConversation((prev) =>
+                    prev && prev.otherUser?.uid === uid
+                      ? {
+                          ...prev,
+                          otherUser: {
+                            ...prev.otherUser,
+                            ...user,
+                            profilePicture: user.profilePicture || prev.otherUser?.profilePicture || "",
+                            verified: user.verified === true,
+                          },
+                        }
+                      : prev,
                   );
                 }
               } catch (error) {
@@ -599,8 +623,7 @@ export default function useMessages() {
           }
 
           /*
-           * Use participantInfo as the immediate
-           * fallback.
+           * Use participantInfo and cached profile.
            */
 
           const otherUser =
@@ -608,14 +631,45 @@ export default function useMessages() {
               otherUid
             ] || {};
 
+          const cachedProfile = otherUid
+            ? (getCachedUserProfile(otherUid) || userProfileCacheRef.current.get(otherUid))
+            : null;
+
+          if ((!cachedProfile || !cachedProfile.profilePicture) && otherUid) {
+            getUserProfile(otherUid).then((freshUser) => {
+              if (freshUser && !cancelled) {
+                userProfileCacheRef.current.set(otherUid, freshUser);
+                setCachedUserProfile(otherUid, freshUser);
+                setActiveConversation((prev) =>
+                  prev && (prev.id === conversation.id || prev.otherUser?.uid === otherUid)
+                    ? {
+                        ...prev,
+                        otherUser: {
+                          ...prev.otherUser,
+                          ...freshUser,
+                          profilePicture: freshUser.profilePicture || prev.otherUser?.profilePicture || "",
+                          verified: freshUser.verified === true,
+                        },
+                      }
+                    : prev,
+                );
+              }
+            }).catch(() => {});
+          }
+
           setActiveConversation({
             ...conversation,
 
             otherUser: {
               uid: otherUid,
               ...otherUser,
-
+              ...(cachedProfile || {}),
+              profilePicture:
+                cachedProfile?.profilePicture ||
+                otherUser.profilePicture ||
+                "",
               verified:
+                cachedProfile?.verified ??
                 otherUser.verified === true,
             },
           });
@@ -645,6 +699,12 @@ export default function useMessages() {
 
       if (userId) {
         try {
+          // Instant synchronous preview of user profile if cached
+          const initialCachedUser = getCachedUserProfile(userId);
+          if (initialCachedUser) {
+            setActiveUser(initialCachedUser);
+          }
+
           // Check local conversations list first to save a Firestore read
           const existingInState = conversations.find((c) =>
             c.participants?.includes(userId),
