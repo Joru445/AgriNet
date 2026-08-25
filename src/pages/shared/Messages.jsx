@@ -23,6 +23,7 @@ export default function Messages() {
 
     inquiryProduct,
     inquiryProducts,
+    cancelInquiryProduct,
     sendInquiry,
     acceptInquiry,
 
@@ -80,6 +81,7 @@ export default function Messages() {
             onSend={sendMessage}
             inquiryProduct={inquiryProduct}
             inquiryProducts={inquiryProducts}
+            onCancelInquiry={cancelInquiryProduct}
             onSendInquiry={sendInquiry}
             onAcceptInquiry={acceptInquiry}
             isOnline={isOnline}

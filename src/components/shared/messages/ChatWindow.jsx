@@ -16,6 +16,7 @@ export default function ChatWindow({
   onSend,
   inquiryProduct,
   inquiryProducts,
+  onCancelInquiry,
   onSendInquiry,
   onAcceptInquiry,
   isOnline = true,
@@ -62,6 +63,7 @@ export default function ChatWindow({
         onChange={onMessageChange}
         onSend={onSend}
         inquiryProduct={inquiryProduct}
+        onCancelInquiry={onCancelInquiry}
         onSendInquiry={onSendInquiry}
         selectedImage={selectedImage}
         onSelectImage={onSelectImage}

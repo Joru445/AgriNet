@@ -6,6 +6,7 @@ export default function MessageInput({
   onChange,
   onSend,
   inquiryProduct,
+  onCancelInquiry,
   onSendInquiry,
   selectedImage,
   onSelectImage,
@@ -238,13 +239,24 @@ export default function MessageInput({
 
       {inquiryProduct && (
         <div
-          className="mb-3 rounded-2xl border p-3"
+          className="relative mb-3 rounded-2xl border p-3"
           style={{
             backgroundColor: "var(--agri-bg-surface)",
             borderColor: "var(--agri-border)",
           }}
         >
-          <div className="flex items-center gap-3">
+          {onCancelInquiry && (
+            <button
+              type="button"
+              onClick={onCancelInquiry}
+              className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:text-gray-600 transition"
+              title="Cancel inquiry"
+            >
+              <i className="ri-close-line text-lg" />
+            </button>
+          )}
+
+          <div className="flex items-center gap-3 pr-8">
             {inquiryProduct.images?.[0] && (
               <img
                 src={inquiryProduct.images[0].url}

@@ -1805,6 +1805,7 @@ export default function useMessages() {
 
     inquiryProduct,
     inquiryProducts,
+    cancelInquiryProduct: () => setInquiryProduct(null),
 
     sendInquiry:
       handleSendInquiry,
