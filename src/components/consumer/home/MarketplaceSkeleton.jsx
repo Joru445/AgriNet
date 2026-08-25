@@ -1,3 +1,36 @@
+export function ProductGridSkeleton({ count = 8 }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 lg:gap-6 animate-pulse">
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className="overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-gray-200 shadow-2xs"
+        >
+          <div className="aspect-square bg-gray-200" />
+
+          <div className="space-y-3 p-3 sm:p-4">
+            <div className="h-4 sm:h-5 w-3/4 rounded bg-gray-200" />
+            <div className="h-5 sm:h-6 w-1/2 rounded bg-gray-200" />
+
+            <div className="flex items-center gap-2 rounded-xl bg-gray-100 p-2">
+              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gray-200 shrink-0" />
+              <div className="flex-1 space-y-1">
+                <div className="h-2.5 sm:h-3 w-2/3 rounded bg-gray-200" />
+                <div className="h-2 sm:h-2.5 w-1/2 rounded bg-gray-200" />
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-2 border-t border-gray-100">
+              <div className="h-3 sm:h-4 w-16 rounded bg-gray-200" />
+              <div className="h-3 sm:h-4 w-20 rounded bg-gray-200" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function MarketplaceSkeleton() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 animate-pulse">
@@ -36,34 +69,7 @@ export default function MarketplaceSkeleton() {
           <div className="mb-5 flex items-center justify-between h-10 rounded-xl bg-gray-200" />
 
           {/* Product Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 lg:gap-6">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div
-                key={index}
-                className="overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-gray-200"
-              >
-                <div className="aspect-square bg-gray-200" />
-
-                <div className="space-y-3 p-4">
-                  <div className="h-5 w-3/4 rounded bg-gray-200" />
-                  <div className="h-6 w-1/2 rounded bg-gray-200" />
-
-                  <div className="flex items-center gap-2.5 rounded-xl bg-gray-100 p-2">
-                    <div className="h-8 w-8 rounded-full bg-gray-200" />
-                    <div className="flex-1 space-y-1.5">
-                      <div className="h-3 w-2/3 rounded bg-gray-200" />
-                      <div className="h-2.5 w-1/2 rounded bg-gray-200" />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between pt-2 border-t border-gray-100">
-                    <div className="h-4 w-16 rounded bg-gray-200" />
-                    <div className="h-4 w-20 rounded bg-gray-200" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ProductGridSkeleton />
         </section>
       </div>
     </div>

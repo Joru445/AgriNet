@@ -45,6 +45,7 @@ export default function useMessages() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [loading, setLoading] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -770,6 +771,7 @@ export default function useMessages() {
       !activeConversation?.id
     ) {
       setMessages([]);
+      setLoadingMessages(false);
       setHasMoreOlder(false);
       setLoadingOlder(false);
       oldestDocSnapRef.current = null;
@@ -783,6 +785,7 @@ export default function useMessages() {
 
     // Reset pagination tracking when switching conversation
     setMessages([]);
+    setLoadingMessages(true);
     setHasMoreOlder(false);
     setLoadingOlder(false);
     oldestDocSnapRef.current = null;
@@ -792,6 +795,8 @@ export default function useMessages() {
       subscribeMessages(
         convId,
         (incomingMessages, meta) => {
+          setLoadingMessages(false);
+
           // Initialize oldest doc cursor for pagination on first snapshot
           if (!oldestDocSnapRef.current && meta?.oldestDocSnapshot) {
             oldestDocSnapRef.current = meta.oldestDocSnapshot;
@@ -1790,6 +1795,8 @@ export default function useMessages() {
 
     messages:
       combinedMessages,
+
+    loadingMessages,
 
     // Pagination
     hasMoreOlder,

@@ -3,13 +3,7 @@ import { useParams } from "react-router-dom";
 
 import { getFarmerById } from "../services/farmer.service";
 import { getFarmerProducts } from "../services/product.service";
-
-import {
-  getFarmerReviews,
-  getFarmerReviewCount,
-  getAverageFarmerRating,
-} from "../services/farmer-review.service";
-
+import { getFarmerReviews } from "../services/farmer-review.service";
 import { getProductReviewSummaries } from "../services/product-review.service";
 
 export default function useStoreProfile() {
@@ -37,15 +31,24 @@ export default function useStoreProfile() {
         farmerData,
         productsData,
         reviewsData,
-        reviewCountData,
-        averageRatingData,
       ] = await Promise.all([
         getFarmerById(uid),
         getFarmerProducts(uid),
         getFarmerReviews(uid),
-        getFarmerReviewCount(uid),
-        getAverageFarmerRating(uid),
       ]);
+
+      const reviewCountData = reviewsData.length;
+      const averageRatingData =
+        reviewCountData > 0
+          ? Number(
+              (
+                reviewsData.reduce(
+                  (sum, r) => sum + Number(r.rating || 0),
+                  0,
+                ) / reviewCountData
+              ).toFixed(1),
+            )
+          : 0;
 
       /*
        * Get all product IDs belonging to this farmer.

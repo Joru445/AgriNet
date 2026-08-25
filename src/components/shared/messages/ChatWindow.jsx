@@ -6,6 +6,7 @@ export default function ChatWindow({
   conversation,
   user,
   messages,
+  loadingMessages = false,
   hasMoreOlder = false,
   loadingOlder = false,
   onLoadOlder,
@@ -46,6 +47,7 @@ export default function ChatWindow({
         user={user}
         conversation={conversation}
         messages={messages}
+        loading={loadingMessages}
         hasMoreOlder={hasMoreOlder}
         loadingOlder={loadingOlder}
         onLoadOlder={onLoadOlder}

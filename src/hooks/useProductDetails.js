@@ -4,10 +4,6 @@ import { useParams } from "react-router-dom";
 import { getProductById } from "../services/product.service";
 import { getFarmerById } from "../services/farmer.service";
 
-import {
-  getReviewsByProduct,
-} from "../services/product-review.service";
-
 export default function useProductDetails() {
   const { id } = useParams();
 
@@ -16,15 +12,11 @@ export default function useProductDetails() {
   const [product, setProduct] = useState(null);
   const [farmer, setFarmer] = useState(null);
 
-  const [reviews, setReviews] = useState([]);
-
   const [reviewCount, setReviewCount] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
 
   const hasImages = product?.images?.length > 0;
-
   const primaryImage = hasImages ? product.images[0] : null;
-
   const isAvailable = product?.available === true;
 
   const loadProduct = useCallback(async () => {
@@ -40,26 +32,19 @@ export default function useProductDetails() {
         return;
       }
 
-      const [farmer, reviews] = await Promise.all([
-        getFarmerById(product.farmerId),
-        getReviewsByProduct(product.id),
-      ]);
+      const farmer = product.farmerId
+        ? await getFarmerById(product.farmerId).catch(() => null)
+        : null;
 
-      const reviewCount = reviews.length;
-      const averageRating = reviewCount
-        ? Number(
-            (
-              reviews.reduce((total, review) => total + Number(review.rating), 0) /
-              reviewCount
-            ).toFixed(1),
-          )
-        : 0;
+      const reviewCount = Number(
+        product.ratingSummary?.count ?? product.reviewCount ?? 0,
+      );
+      const averageRating = Number(
+        product.ratingSummary?.average ?? product.productRating ?? 0,
+      );
 
       setProduct(product);
       setFarmer(farmer);
-
-      setReviews(reviews);
-
       setReviewCount(reviewCount);
       setAverageRating(averageRating);
     } catch (error) {

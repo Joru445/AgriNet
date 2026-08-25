@@ -1,6 +1,5 @@
 import useMessages from "../../hooks/useMessages";
 
-import MessagesSkeleton from "../../components/shared/messages/MessageSkeleton";
 import ConversationList from "../../components/shared/messages/ConversationList";
 import ChatWindow from "../../components/shared/messages/ChatWindow";
 import EmptyConversation from "../../components/shared/messages/EmptyConversation";
@@ -16,6 +15,7 @@ export default function Messages() {
     activeUser,
 
     messages,
+    loadingMessages,
 
     hasMoreOlder,
     loadingOlder,
@@ -47,10 +47,6 @@ export default function Messages() {
     deleteFailedMessage,
   } = useMessages();
 
-  if (loading) {
-    return <MessagesSkeleton />;
-  }
-
   const hasChat = Boolean(activeConversation || activeUser);
 
   return (
@@ -60,6 +56,7 @@ export default function Messages() {
           conversations={filteredConversations}
           users={userResults}
           drafts={drafts}
+          loading={loading}
           search={search}
           onSearch={setSearch}
           activeConversation={activeConversation}
@@ -73,6 +70,7 @@ export default function Messages() {
             conversation={activeConversation}
             user={activeConversation?.otherUser ?? activeUser}
             messages={messages}
+            loadingMessages={loadingMessages}
             hasMoreOlder={hasMoreOlder}
             loadingOlder={loadingOlder}
             onLoadOlder={loadOlderMessages}

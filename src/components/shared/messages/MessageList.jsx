@@ -11,6 +11,7 @@ export default function MessageList({
   conversation,
   user,
   messages,
+  loading = false,
   hasMoreOlder = false,
   loadingOlder = false,
   onLoadOlder,
@@ -97,6 +98,25 @@ export default function MessageList({
 
     prevMessagesLengthRef.current = messages.length;
   }, [messages, profile?.uid]);
+
+  if (loading && !messages.length) {
+    return (
+      <div className="flex-1 min-w-0 p-4 space-y-4 animate-pulse overflow-hidden">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}
+          >
+            <div
+              className={`h-12 rounded-2xl bg-gray-200 ${
+                i % 2 === 0 ? "w-48 sm:w-60" : "w-56 sm:w-72"
+              }`}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (!messages.length) {
     return (

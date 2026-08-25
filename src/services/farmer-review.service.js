@@ -49,22 +49,75 @@ export async function getFarmerReviews(farmerId) {
   );
 
   const snapshot = await getDocs(q);
+  const reviews = snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
 
-  return Promise.all(
-    snapshot.docs.map(async (reviewDoc) => {
-      const review = {
-        id: reviewDoc.id,
-        ...reviewDoc.data(),
-      };
+  const uniqueReviewerIds = [
+    ...new Set(reviews.map((r) => r.reviewerId).filter(Boolean)),
+  ];
 
-      const reviewer = await getUserProfile(review.reviewerId);
-
-      return {
-        ...review,
-        reviewer,
-      };
+  const reviewerProfiles = await Promise.all(
+    uniqueReviewerIds.map(async (uid) => {
+      try {
+        const user = await getUserProfile(uid);
+        return [uid, user];
+      } catch (_) {
+        return [uid, null];
+      }
     }),
   );
+
+  const reviewerMap = new Map(reviewerProfiles.filter(([, u]) => u != null));
+
+  return reviews.map((review) => ({
+    ...review,
+    reviewer: reviewerMap.get(review.reviewerId) || {
+      fullname: review.reviewerName || "Anonymous",
+      profilePicture: review.reviewerAvatar || "",
+    },
+  }));
+}
+
+export async function getRecentFarmerReviews(farmerId, maxLimit = 3) {
+  const q = query(
+    reviewsRef,
+    where("farmerId", "==", farmerId),
+    orderBy("createdAt", "desc"),
+  );
+
+  const snapshot = await getDocs(q);
+  const recentDocs = snapshot.docs.slice(0, maxLimit);
+  const reviews = recentDocs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  const uniqueReviewerIds = [
+    ...new Set(reviews.map((r) => r.reviewerId).filter(Boolean)),
+  ];
+
+  const reviewerProfiles = await Promise.all(
+    uniqueReviewerIds.map(async (uid) => {
+      try {
+        const user = await getUserProfile(uid);
+        return [uid, user];
+      } catch (_) {
+        return [uid, null];
+      }
+    }),
+  );
+
+  const reviewerMap = new Map(reviewerProfiles.filter(([, u]) => u != null));
+
+  return reviews.map((review) => ({
+    ...review,
+    reviewer: reviewerMap.get(review.reviewerId) || {
+      fullname: review.reviewerName || "Anonymous",
+      profilePicture: review.reviewerAvatar || "",
+    },
+  }));
 }
 
 export async function getAverageFarmerRating(farmerId) {
@@ -137,6 +190,29 @@ export async function createReview(data) {
 
     createdAt: serverTimestamp(),
   });
+
+  // Persist aggregated rating & reviewCount on farmer and user documents
+  try {
+    const q = query(reviewsRef, where("farmerId", "==", farmerId));
+    const allReviewsSnap = await getDocs(q);
+    const totalRating =
+      allReviewsSnap.docs.reduce((sum, r) => sum + Number(r.data().rating || 0), 0);
+    const newCount = allReviewsSnap.size;
+    const newAverage = newCount > 0 ? Number((totalRating / newCount).toFixed(1)) : 0;
+
+    await Promise.all([
+      updateDoc(doc(db, "farmers", farmerId), {
+        rating: newAverage,
+        reviewCount: newCount,
+      }).catch(() => {}),
+      updateDoc(doc(db, "users", farmerId), {
+        rating: newAverage,
+        reviewCount: newCount,
+      }).catch(() => {}),
+    ]);
+  } catch (err) {
+    console.warn("Could not update farmer aggregate rating:", err);
+  }
 
   return reviewRef.id;
 }

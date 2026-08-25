@@ -4,6 +4,7 @@ export default function ConversationList({
   conversations = [],
   users = [],
   drafts = {},
+  loading = false,
 
   search,
   onSearch,
@@ -56,7 +57,22 @@ export default function ConversationList({
               </p>
             </div>
 
-            {conversations.length === 0 ? (
+            {loading ? (
+              <div className="space-y-1 p-2 animate-pulse">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex gap-3 items-center px-3 py-2.5 rounded-xl"
+                  >
+                    <div className="w-11 h-11 rounded-full bg-gray-200 shrink-0" />
+                    <div className="flex-1 space-y-1.5 min-w-0">
+                      <div className="h-3.5 w-24 bg-gray-200 rounded" />
+                      <div className="h-2.5 w-36 bg-gray-100 rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : conversations.length === 0 ? (
               <div className="text-center text-gray-400 py-10 px-6">
                 No conversations yet.
               </div>

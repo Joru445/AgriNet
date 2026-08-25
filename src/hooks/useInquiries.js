@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -29,6 +29,7 @@ export default function useInquiries() {
 
   const [activeTab, setActiveTab] = useState("all");
   const [updatingId, setUpdatingId] = useState(null);
+  const farmerCacheRef = useRef(new Map());
 
   /*
    * --------------------------------------------------
@@ -83,7 +84,7 @@ export default function useInquiries() {
     );
 
     return unsubscribe;
-  }, [profile?.uid, profile?.role, profile?.completedDeals, profile?.totalDeals, profile?.cancelledDeals]);
+  }, [profile?.uid, profile?.role]);
 
   /*
    * --------------------------------------------------
@@ -113,8 +114,12 @@ export default function useInquiries() {
         const [farmerProfiles, legacyResults] = await Promise.all([
           Promise.all(
             farmerIds.map(async (fId) => {
+              if (farmerCacheRef.current.has(fId)) {
+                return [fId, farmerCacheRef.current.get(fId)];
+              }
               try {
                 const farmer = await getFarmerById(fId);
+                if (farmer) farmerCacheRef.current.set(fId, farmer);
                 return [fId, farmer];
               } catch (_) {
                 return [fId, null];

@@ -1,7 +1,7 @@
 export default function ProductDetailsSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 animate-pulse">
-      <div className="grid lg:grid-cols-2 gap-8">
+    <div className="animate-pulse">
+      <div className="grid lg:grid-cols-2 gap-8 mb-8">
         {/* Gallery */}
         <div>
           <div className="aspect-square w-full rounded-3xl bg-gray-200" />

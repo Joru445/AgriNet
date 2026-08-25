@@ -19,70 +19,79 @@ export default function ProductDetails() {
   const [showReportModal, setShowReportModal] = useState(false);
 
   const { loading, product, farmer, reviewCount, averageRating } = useProductDetails();
-
   const { reviews, loading: reviewsLoading } = useProductReviews(product?.id);
 
-  if (loading) {
-    return <ProductDetailsSkeleton />;
-  }
+  const isOwner = product?.farmerId === profile?.uid;
 
-  if (!product) {
+  if (!loading && !product) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-8">Product not found.</div>
+      <main className="mx-auto max-w-7xl px-4 py-8 pb-18 md:pb-4">
+        <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center">
+          <i className="ri-error-warning-line text-5xl text-gray-300 mb-3" />
+          <h2 className="text-lg font-bold text-gray-800">Product Not Found</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            The requested product does not exist or has been removed.
+          </p>
+        </div>
+      </main>
     );
   }
 
-  const isOwner = product.farmerId === profile?.uid;
-
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 pb-18 md:pb-4">
-      <div className="grid gap-8 lg:grid-cols-2 mb-4">
-        <ProductGallery product={product} />
+    <main className="mx-auto max-w-7xl px-4 py-8 pb-18 md:pb-4">
+      {loading ? (
+        <ProductDetailsSkeleton />
+      ) : (
+        <>
+          <div className="grid gap-8 lg:grid-cols-2 mb-4">
+            <ProductGallery product={product} />
 
-        <div className="space-y-6">
-          <ProductInfo
-            product={product}
-            reviewCount={reviewCount}
-            averageRating={averageRating}
-            isOwner={isOwner}
-            onReport={() => setShowReportModal(true)}
+            <div className="space-y-6">
+              <ProductInfo
+                product={product}
+                reviewCount={reviewCount}
+                averageRating={averageRating}
+                isOwner={isOwner}
+                onReport={() => setShowReportModal(true)}
+              />
+
+              <ProductDescription product={product} />
+
+              <ProductSeller farmer={farmer} isOwner={isOwner} />
+
+              <ProductActions product={product} farmer={farmer} isOwner={isOwner} />
+            </div>
+          </div>
+
+          {/* Reviews */}
+          <ReviewSection
+            title="Product Reviews"
+            reviews={reviews}
+            loading={reviewsLoading}
+            type="product"
           />
 
-          <ProductDescription product={product} />
-
-          <ProductSeller farmer={farmer} isOwner={isOwner} />
-
-          <ProductActions product={product} farmer={farmer} isOwner={isOwner} />
-        </div>
-      </div>
-
-      {/* Reviews */}
-      <ReviewSection
-        title="Product Reviews"
-        reviews={reviews}
-        loading={reviewsLoading}
-        type="product"
-      />
-
-      {/* Report Product Modal */}
-      <ReportModal
-        isOpen={showReportModal}
-        onClose={() => setShowReportModal(false)}
-        targetType="product"
-        targetId={product.id}
-        targetTitle={product.name}
-        reportedUser={farmer ? {
-          uid: farmer.uid || farmer.id || product.farmerId,
-          fullname: farmer.fullname || farmer.storeName || "Farmer",
-          username: farmer.username || "",
-          role: "farmer",
-          email: farmer.email || "",
-        } : {
-          uid: product.farmerId,
-          fullname: "Farmer",
-          role: "farmer",
-        }}
-      />
-    </div>
+          {/* Report Product Modal */}
+          <ReportModal
+            isOpen={showReportModal}
+            onClose={() => setShowReportModal(false)}
+            targetType="product"
+            targetId={product.id}
+            targetTitle={product.name}
+            reportedUser={farmer ? {
+              uid: farmer.uid || farmer.id || product.farmerId,
+              fullname: farmer.fullname || farmer.storeName || "Farmer",
+              username: farmer.username || "",
+              role: "farmer",
+              email: farmer.email || "",
+            } : {
+              uid: product.farmerId,
+              fullname: "Farmer",
+              role: "farmer",
+            }}
+          />
+        </>
+      )}
+    </main>
   );
 }

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 import { getFarmerProducts } from "../services/product.service";
-import { getFarmerReviews } from "../services/farmer-review.service";
+import { getRecentFarmerReviews } from "../services/farmer-review.service";
 import { subscribeUserConversations } from "../services/conversation.service";
 
 import { showToast } from "../utils/toast";
@@ -33,28 +33,31 @@ export default function useDashboard() {
 
       const [products, reviews] = await Promise.all([
         getFarmerProducts(profile.uid),
-        getFarmerReviews(profile.uid),
+        getRecentFarmerReviews(profile.uid, 3),
       ]);
 
       const averageRating =
-        reviews.length === 0
+        Number(profile?.rating) ||
+        (reviews.length === 0
           ? 0
           : Number(
               (
                 reviews.reduce(
-                  (sum, review) => sum + Number(review.rating),
+                  (sum, review) => sum + Number(review.rating || 0),
                   0,
                 ) / reviews.length
               ).toFixed(1),
-            );
+            ));
+
+      const reviewCount = Number(profile?.reviewCount ?? reviews.length);
 
       setRecentProducts(products.slice(0, 4));
-      setRecentReviews(reviews.slice(0, 3));
+      setRecentReviews(reviews);
 
       setStats((prev) => ({
         ...prev,
         totalProducts: products.length,
-        reviewCount: reviews.length,
+        reviewCount,
         averageRating,
       }));
     } catch (error) {

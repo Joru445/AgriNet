@@ -35,10 +35,6 @@ export default function Profile() {
     handleAvatar,
   } = useProfile(profile);
 
-  if (loading) {
-    return <ProfileSkeleton />;
-  }
-
   async function handleLogout() {
     try {
       setLoggingOut(true);
@@ -58,29 +54,33 @@ export default function Profile() {
 
   return (
     <main className="flex-1">
-      <div className="bg-white mx-auto max-w-6xl shadow-sm overflow-hidden pb-16 md:pb-8">
-        <ProfileHeader
-          profile={form}
-          editing={editing}
-          uploadingAvatar={uploadingAvatar}
-          onEdit={() => setEditing(true)}
-          onCancel={handleCancel}
-          onSave={handleSave}
-          onLogout={() => setShowLogoutModal(true)}
-          onAvatarChange={handleAvatar}
-        />
-
-        <ProfileForm location={profile.location} form={form} editing={editing} onChange={handleChange} />
-
-        {form.role === "farmer" && (
-          <FarmerSection
-            form={form}
-            stats={stats}
+      {loading ? (
+        <ProfileSkeleton />
+      ) : (
+        <div className="bg-white mx-auto max-w-6xl shadow-sm overflow-hidden pb-16 md:pb-8">
+          <ProfileHeader
+            profile={form}
             editing={editing}
-            onChange={handleChange}
+            uploadingAvatar={uploadingAvatar}
+            onEdit={() => setEditing(true)}
+            onCancel={handleCancel}
+            onSave={handleSave}
+            onLogout={() => setShowLogoutModal(true)}
+            onAvatarChange={handleAvatar}
           />
-        )}
-      </div>
+
+          <ProfileForm location={profile?.location} form={form} editing={editing} onChange={handleChange} />
+
+          {form.role === "farmer" && (
+            <FarmerSection
+              form={form}
+              stats={stats}
+              editing={editing}
+              onChange={handleChange}
+            />
+          )}
+        </div>
+      )}
 
       <LogoutConfirmModal
         open={showLogoutModal}

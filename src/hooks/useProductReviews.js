@@ -30,37 +30,70 @@ export default function useProductReviews(productId) {
           return;
         }
 
-        const enrichedReviews = await Promise.all(
-          productReviews.map(async (review) => {
-            let reviewer = null;
-            let inquiry = null;
+        const uniqueReviewerIds = [
+          ...new Set(
+            productReviews
+              .map((r) => r.reviewerId)
+              .filter(Boolean),
+          ),
+        ];
 
+        const reviewerProfiles = await Promise.all(
+          uniqueReviewerIds.map(async (uid) => {
             try {
-              if (review.reviewerId) {
-                reviewer = await getUserProfile(review.reviewerId).catch(() => null);
-              }
-            } catch (e) {
-              console.warn("Could not fetch reviewer:", e);
+              const profile = await getUserProfile(uid);
+              return [uid, profile];
+            } catch (_) {
+              return [uid, null];
             }
-
-            try {
-              if (review.inquiryId) {
-                inquiry = await getInquiry(review.inquiryId).catch(() => null);
-              }
-            } catch (e) {
-              console.warn("Could not fetch inquiry:", e);
-            }
-
-            return {
-              ...review,
-              reviewer: reviewer || {
-                fullname: review.reviewerName || "Verified Buyer",
-                profilePicture: "",
-              },
-              inquiry,
-            };
           }),
         );
+
+        const reviewerMap = new Map(
+          reviewerProfiles.filter(([, p]) => p != null),
+        );
+
+        // Only fetch inquiry if transaction proof is needed and not already on review
+        const neededInquiryIds = [
+          ...new Set(
+            productReviews
+              .filter((r) => !r.proof?.url && r.inquiryId)
+              .map((r) => r.inquiryId),
+          ),
+        ];
+
+        const inquiryDocs = await Promise.all(
+          neededInquiryIds.map(async (inqId) => {
+            try {
+              const inq = await getInquiry(inqId);
+              return [inqId, inq];
+            } catch (_) {
+              return [inqId, null];
+            }
+          }),
+        );
+
+        const inquiryMap = new Map(
+          inquiryDocs.filter(([, i]) => i != null),
+        );
+
+        if (cancelled) {
+          return;
+        }
+
+        const enrichedReviews = productReviews.map((review) => {
+          const reviewer = reviewerMap.get(review.reviewerId);
+          const inquiry = inquiryMap.get(review.inquiryId);
+
+          return {
+            ...review,
+            reviewer: reviewer || {
+              fullname: review.reviewerName || "Verified Buyer",
+              profilePicture: review.reviewerAvatar || "",
+            },
+            inquiry: inquiry || (review.proof ? { proof: review.proof } : null),
+          };
+        });
 
         if (cancelled) {
           return;

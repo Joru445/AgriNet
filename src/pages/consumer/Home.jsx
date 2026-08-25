@@ -7,7 +7,7 @@ import MobileFiltersDrawer from "../../components/consumer/home/MobileFiltersDra
 import ProductsToolbar from "../../components/consumer/home/ProductsToolbar";
 import ProductGrid from "../../components/consumer/home/ProductGrid";
 import ProductPagination from "../../components/consumer/home/ProductPagination";
-import MarketplaceSkeleton from "../../components/consumer/home/MarketplaceSkeleton";
+import { ProductGridSkeleton } from "../../components/consumer/home/MarketplaceSkeleton";
 
 export default function Home() {
   const {
@@ -31,14 +31,6 @@ export default function Home() {
     showFilters,
     setShowFilters,
   } = useMarketplace();
-
-  if (loading) {
-    return (
-      <main className="max-w-7xl mx-auto px-4 py-6 md:px-6 pb-16 md:pb-8">
-        <MarketplaceSkeleton />
-      </main>
-    );
-  }
 
   return (
     <>
@@ -67,30 +59,37 @@ export default function Home() {
           <section className="min-w-0 flex-1">
             <ProductsToolbar
               total={totalProducts}
+              loading={loading}
               sort={filters.sort}
               onSort={(value) => updateFilter("sort", value)}
               onOpenFilters={() => setShowFilters(true)}
             />
 
-            <ProductGrid products={filteredProducts} />
+            {loading ? (
+              <ProductGridSkeleton />
+            ) : (
+              <>
+                <ProductGrid products={filteredProducts} />
 
-            <ProductPagination
-              page={page}
-              totalPages={totalPages}
-              onChange={setPage}
-            />
+                <ProductPagination
+                  page={page}
+                  totalPages={totalPages}
+                  onChange={setPage}
+                />
 
-            {hasMore && (
-              <div className="mt-8 flex justify-center">
-                <button
-                  type="button"
-                  onClick={loadMore}
-                  disabled={loadingMore}
-                  className="rounded-2xl border-2 border-[#2D6A4F] bg-white px-6 py-3 text-sm font-bold text-[#2D6A4F] hover:bg-[#E8F5EE] disabled:opacity-50 transition-all cursor-pointer shadow-xs"
-                >
-                  {loadingMore ? "Loading more produce..." : "Load More Products"}
-                </button>
-              </div>
+                {hasMore && (
+                  <div className="mt-8 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      className="rounded-2xl border-2 border-[#2D6A4F] bg-white px-6 py-3 text-sm font-bold text-[#2D6A4F] hover:bg-[#E8F5EE] disabled:opacity-50 transition-all cursor-pointer shadow-xs"
+                    >
+                      {loadingMore ? "Loading more produce..." : "Load More Products"}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </section>
         </div>

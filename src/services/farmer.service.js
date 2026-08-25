@@ -37,53 +37,28 @@ export async function createFarmerProfile(data) {
 
 export async function getFarmers() {
   try {
-    const [farmersSnap, usersSnap, reviewsSnap] = await Promise.all([
+    const [farmersSnap, usersSnap] = await Promise.all([
       getDocs(collection(db, "farmers")),
       getDocs(query(collection(db, "users"), where("role", "==", "farmer"))),
-      getDocs(collection(db, "reviews")),
     ]);
-
-    // Calculate rating and review count per farmer from reviews collection
-    const ratingMap = new Map();
-    reviewsSnap.docs.forEach((doc) => {
-      const data = doc.data();
-      if (data.farmerId) {
-        const current = ratingMap.get(data.farmerId) || { total: 0, count: 0 };
-        current.total += Number(data.rating || 0);
-        current.count += 1;
-        ratingMap.set(data.farmerId, current);
-      }
-    });
 
     const farmerMap = new Map();
 
     usersSnap.docs.forEach((doc) => {
-      const stats = ratingMap.get(doc.id);
-      const rating =
-        stats && stats.count > 0
-          ? Number((stats.total / stats.count).toFixed(1))
-          : doc.data().rating || 0;
-      const reviewCount = stats ? stats.count : doc.data().reviewCount || 0;
-
+      const data = doc.data();
       farmerMap.set(doc.id, {
         uid: doc.id,
-        ...doc.data(),
-        rating,
-        reviewCount,
+        ...data,
+        rating: Number(data.rating || 0),
+        reviewCount: Number(data.reviewCount || 0),
       });
     });
 
     farmersSnap.docs.forEach((doc) => {
       const existing = farmerMap.get(doc.id) || {};
-      const stats = ratingMap.get(doc.id);
       const data = doc.data();
-      const rating =
-        stats && stats.count > 0
-          ? Number((stats.total / stats.count).toFixed(1))
-          : data.rating || existing.rating || 0;
-      const reviewCount = stats
-        ? stats.count
-        : data.reviewCount || existing.reviewCount || 0;
+      const rating = Number(data.rating ?? existing.rating ?? 0);
+      const reviewCount = Number(data.reviewCount ?? existing.reviewCount ?? 0);
 
       farmerMap.set(doc.id, {
         ...existing,

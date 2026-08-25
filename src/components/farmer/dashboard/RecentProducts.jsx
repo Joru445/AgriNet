@@ -4,9 +4,8 @@ import ProductCard from "../../common/ProductCard";
 // Show max 4 products (2 columns × 2 rows)
 const MAX_DISPLAY = 4;
 
-export default function RecentProducts({ products }) {
+export default function RecentProducts({ products = [], loading = false }) {
   const displayedProducts = products.slice(0, MAX_DISPLAY);
-  const hasMore = products.length > MAX_DISPLAY;
 
   return (
     <section className="space-y-4">
@@ -15,7 +14,9 @@ export default function RecentProducts({ products }) {
         <div>
           <h2 className="text-xl font-bold text-gray-900">Recent Products</h2>
           <p className="text-xs font-medium text-gray-500 mt-0.5">
-            Showing {displayedProducts.length} of {products.length} products
+            {loading
+              ? "Loading recent products..."
+              : `Showing ${displayedProducts.length} of ${products.length} products`}
           </p>
         </div>
 
@@ -28,19 +29,31 @@ export default function RecentProducts({ products }) {
         </Link>
       </div>
 
-      {products.length === 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 animate-pulse">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-2xs"
+            >
+              <div className="aspect-square bg-gray-200" />
+              <div className="p-3 space-y-2">
+                <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                <div className="h-4 w-1/2 bg-gray-200 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : products.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center text-gray-500">
           No products yet.
         </div>
       ) : (
-        <>
-          {/* Mobile: 2 cols × 2 rows | Desktop: 4 cols × 1 row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            {displayedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} hideFooter />
-            ))}
-          </div>
-        </>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          {displayedProducts.map((product) => (
+            <ProductCard key={product.id} product={product} hideFooter />
+          ))}
+        </div>
       )}
     </section>
   );
