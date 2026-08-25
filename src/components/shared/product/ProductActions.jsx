@@ -5,7 +5,10 @@ export default function ProductActions({ product, farmer, isOwner }) {
   const navigate = useNavigate();
 
   function handleInquiry() {
-    navigate(`${getMessagesPath("consumer")}?user=${farmer.uid}`, {
+    const farmerId = farmer?.uid || farmer?.id || product?.farmerId;
+    if (!farmerId) return;
+
+    navigate(`${getMessagesPath("consumer")}?user=${farmerId}`, {
       state: {
         inquiryProduct: product,
       },

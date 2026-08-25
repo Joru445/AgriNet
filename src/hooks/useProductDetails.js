@@ -64,8 +64,6 @@ export default function useProductDetails() {
     product,
     farmer,
 
-    reviews,
-
     reviewCount,
     averageRating,
 
