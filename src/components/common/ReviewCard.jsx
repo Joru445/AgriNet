@@ -34,6 +34,7 @@ export default function ReviewCard({ review, type = "product" }) {
           <img
             src={reviewerAvatar}
             alt={reviewerName}
+            loading="lazy"
             onClick={() => setActiveImage({ src: reviewerAvatar, title: `${reviewerName}'s Profile Picture` })}
             className="h-10 w-10 shrink-0 rounded-full object-cover cursor-pointer hover:opacity-90 transition"
             title="Click to view photo"

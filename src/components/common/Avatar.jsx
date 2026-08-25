@@ -16,6 +16,7 @@ export default function Avatar({ src, name, size = "md", className = "" }) {
       <img
         src={src}
         alt={name || "User"}
+        loading="lazy"
         className={`${sizeClass} shrink-0 rounded-full object-cover object-top ${className}`}
       />
     );

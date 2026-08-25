@@ -69,6 +69,7 @@ function ProductGalleryImages({ product }) {
               <img
                 src={image.url || image}
                 alt={`${product.name} ${index + 1}`}
+                loading="lazy"
                 className="w-full h-full object-cover select-none"
                 draggable={false}
               />
@@ -107,15 +108,15 @@ function ProductGalleryImages({ product }) {
               key={image.publicId || index}
               type="button"
               onClick={() => handleThumbnailClick(index)}
-              className={`overflow-hidden rounded-xl border-2 transition-all duration-200 aspect-square cursor-pointer ${
-                selected === index
+              className={`overflow-hidden rounded-xl border-2 transition-all duration-200 aspect-square cursor-pointer ${selected === index
                   ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 scale-[1.02]"
                   : "border-transparent opacity-70 hover:opacity-100 hover:border-gray-300"
-              }`}
+                }`}
             >
               <img
                 src={image.url || image}
                 alt=""
+                loading="lazy"
                 className="aspect-square w-full h-full object-cover"
               />
             </button>

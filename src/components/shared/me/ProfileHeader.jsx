@@ -38,6 +38,7 @@ export default function ProfileHeader({
           <img
             src={profile.coverPhoto || landscape}
             alt="Cover"
+            loading="lazy"
             className="h-full w-full object-cover"
           />
 

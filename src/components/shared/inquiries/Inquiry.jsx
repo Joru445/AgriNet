@@ -10,6 +10,7 @@ export default function Inquiry({ productData, counterparty }) {
       <img
         src={getProductImage(productData)}
         alt={productData?.name || "Product"}
+        loading="lazy"
         className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-2xl object-cover border border-gray-100 shadow-xs"
       />
 
