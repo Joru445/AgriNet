@@ -73,7 +73,7 @@ export default function useRegisterForm() {
 
       await register(form);
 
-      showToast.success("Account created! Please check your email to verify your account.");
+      showToast.success("Account created! Please check your inbox or spam folder to verify your account.");
 
       navigate("/verify-account", { replace: true });
     } catch (error) {

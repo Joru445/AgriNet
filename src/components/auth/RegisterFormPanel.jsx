@@ -19,7 +19,7 @@ export default function RegisterForm({
 }) {
   return (
     <div
-      className="flex-1 relative h-screen min-h-0 overflow-y-auto scrollbar-none"
+      className="flex-1 w-full min-w-0 relative h-full min-h-0 overflow-y-auto scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       style={{ backgroundColor: 'var(--agri-bg-surface)' }}
     >
       {/* Mobile-only agricultural landscape background */}
@@ -32,25 +32,25 @@ export default function RegisterForm({
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a2e1a]/85 via-[#1B4332]/75 to-[#2D6A4F]/65" />
       </div>
 
-      <div className="relative z-10 min-h-full flex items-center justify-center p-3 sm:p-6 md:p-12">
-        <div className="w-full max-w-md bg-white/90 backdrop-blur-md border border-white/60 shadow-2xl rounded-2xl p-5 sm:p-8 md:p-10 lg:bg-white lg:border-transparent lg:shadow-xl lg:backdrop-blur-none my-auto">
+      <div className="relative z-10 w-full min-h-full flex flex-col items-center justify-start lg:justify-center p-3 sm:p-6 md:p-12 py-6 sm:py-8 pb-24 sm:pb-12">
+        <div className="w-full max-w-md bg-white/95 backdrop-blur-md border border-white/60 shadow-2xl rounded-2xl p-5 sm:p-7 md:p-9 lg:bg-white lg:border-transparent lg:shadow-xl lg:backdrop-blur-none">
           {/* Mobile Logo */}
-          <div className="border-b-2 border-[#1B4332]/20 pb-3 mb-3 sm:pb-4 sm:mb-6 lg:hidden">
-            <Link className="flex items-center gap-2 no-underline hover:no-underline" to="/">
+          <div className="border-b-2 border-[#1B4332]/20 pb-3 mb-3.5 sm:pb-4 sm:mb-5 lg:hidden">
+            <Link className="flex items-center gap-2.5 no-underline hover:no-underline" to="/">
               <img
                 src={logo}
                 alt="AgriNet Logo"
-                className="h-7 w-7 sm:h-8 sm:w-8 object-contain"
+                className="h-8 w-8 sm:h-9 sm:w-9 object-contain"
               />
 
-              <span className="font-bold text-[#1B4332] text-base sm:text-lg">
+              <span className="font-bold text-[#1B4332] text-lg sm:text-xl">
                 AgriNet <span className="font-light">Lucena</span>
               </span>
             </Link>
           </div>
 
           {/* Header */}
-          <div className="mb-4 sm:mb-6">
+          <div className="mb-4 sm:mb-5">
             <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332]">
               Create Your Account
             </h1>

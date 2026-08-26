@@ -91,9 +91,8 @@ export default function LandingPage() {
             </Link>
           </div>
           <button
-            className={`md:hidden w-10 h-10 flex items-center justify-center focus:outline-none cursor-pointer transition-colors duration-200 ${
-              isScrolled ? "text-gray-800 hover:text-[#2D6A4F]" : "text-white hover:text-green-200"
-            }`}
+            className={`md:hidden w-10 h-10 flex items-center justify-center focus:outline-none cursor-pointer transition-colors duration-200 ${isScrolled ? "text-gray-800 hover:text-[#2D6A4F]" : "text-white hover:text-green-200"
+              }`}
             aria-label="Open menu"
             onClick={() => setIsDrawerOpen(true)}
           >
@@ -203,7 +202,7 @@ export default function LandingPage() {
               Local Farmers
             </h1>
             <p className="text-lg md:text-xl text-white/85 leading-relaxed mb-10 max-w-xl">
-              AgriNet Lucena eliminates middlemen, giving farm ers fair prices
+              AgriNet Lucena eliminates middlemen, giving farmers fair prices
               and consumers access to the freshest local agricultural products.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">

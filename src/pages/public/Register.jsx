@@ -20,7 +20,7 @@ export default function Register() {
   } = useRegisterForm();
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen h-screen w-full flex">
       <SidePanel step={step} />
 
       <RegisterForm

@@ -201,7 +201,10 @@ export default function ReportDetailsModal({
                 <p className="text-xs font-bold text-gray-800 uppercase tracking-wide">
                   Attached Evidence
                 </p>
-                <div className="relative group inline-block rounded-2xl overflow-hidden border border-gray-200 bg-black/5 shadow-xs">
+                <div
+                  onClick={() => setShowEvidenceViewer(true)}
+                  className="relative group inline-block rounded-2xl overflow-hidden border border-gray-200 bg-black/5 shadow-xs cursor-pointer"
+                >
                   <img
                     src={report.evidenceUrl}
                     alt="Report evidence"
@@ -209,11 +212,14 @@ export default function ReportDetailsModal({
                   />
                   <button
                     type="button"
-                    onClick={() => setShowEvidenceViewer(true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowEvidenceViewer(true);
+                    }}
                     className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 group-hover:opacity-100 transition font-bold text-xs gap-1.5 cursor-pointer"
                   >
                     <i className="ri-zoom-in-line text-base" />
-                    View Fullscreen
+                    View Fullscreen & Zoom
                   </button>
                 </div>
               </div>
@@ -385,6 +391,7 @@ export default function ReportDetailsModal({
         <ImageViewerModal
           isOpen={showEvidenceViewer}
           onClose={() => setShowEvidenceViewer(false)}
+          src={report.evidenceUrl}
           imageUrl={report.evidenceUrl}
           title="Report Evidence Photo"
         />

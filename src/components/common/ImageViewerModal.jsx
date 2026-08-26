@@ -15,10 +15,13 @@ import { useEffect, useRef, useState, useCallback } from "react";
 export default function ImageViewerModal({
   isOpen,
   src,
+  imageUrl,
   alt = "Image preview",
   title,
   onClose,
 }) {
+  const imageSrc = src || imageUrl;
+
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -36,7 +39,7 @@ export default function ImageViewerModal({
       setPosition({ x: 0, y: 0 });
       setIsDragging(false);
     }
-  }, [isOpen, src]);
+  }, [isOpen, imageSrc]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -204,7 +207,7 @@ export default function ImageViewerModal({
     }
   };
 
-  if (!isOpen || !src) return null;
+  if (!isOpen || !imageSrc) return null;
 
   return (
     <div
@@ -248,17 +251,6 @@ export default function ImageViewerModal({
             <i className="ri-zoom-out-line text-base font-semibold" />
           </button>
 
-          {/* Reset Zoom Button */}
-          <button
-            type="button"
-            onClick={resetZoom}
-            disabled={scale === 1 && position.x === 0 && position.y === 0}
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg hover:bg-white/20 active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-            title="Reset zoom (0)"
-          >
-            <i className="ri-aspect-ratio-line text-base font-semibold" />
-          </button>
-
           {/* Zoom In Button */}
           <button
             type="button"
@@ -270,11 +262,23 @@ export default function ImageViewerModal({
             <i className="ri-zoom-in-line text-base font-semibold" />
           </button>
 
+          {/* Reset Zoom Button */}
+          {scale > 1 && (
+            <button
+              type="button"
+              onClick={resetZoom}
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg hover:bg-white/20 active:scale-95 transition cursor-pointer"
+              title="Reset Zoom (0)"
+            >
+              <i className="ri-restart-line text-base font-semibold" />
+            </button>
+          )}
+
           {/* Close Button */}
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/70 backdrop-blur-md text-white hover:bg-red-600 border border-white/10 shadow-lg active:scale-95 transition cursor-pointer ml-1"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 text-white border border-white/20 hover:bg-white/30 active:scale-95 transition cursor-pointer shadow-lg ml-1"
             title="Close (Esc)"
           >
             <i className="ri-close-line text-xl font-bold" />
@@ -293,7 +297,7 @@ export default function ImageViewerModal({
       >
         <img
           ref={imageRef}
-          src={src}
+          src={imageSrc}
           alt={alt}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}

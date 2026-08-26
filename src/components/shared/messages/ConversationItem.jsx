@@ -106,6 +106,15 @@ export default function ConversationItem({
                 <i className="ri-verified-badge-fill" />
               </span>
             )}
+            {user?.role === "admin" && (
+              <span
+                title="Official Admin"
+                aria-label="Official Admin"
+                className="inline-flex shrink-0 items-center rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-800 border border-purple-200"
+              >
+                Admin
+              </span>
+            )}
           </div>
 
           {!searching && (
