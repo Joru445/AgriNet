@@ -40,10 +40,6 @@ export default function ProductCard({ product, hideFooter = false }) {
   const categoryIcon =
     CATEGORY_ICONS[product.category] || "ri-shopping-basket-2-line";
 
-  const storeName =
-    product.farmer?.farmName || product.farmer?.fullname || "Local Farm";
-  const farmerName = product.farmer?.fullname || "Verified Farmer";
-
   return (
     <Link
       to={`${getProductPath(profile?.role || "consumer")}/${product.id}`}

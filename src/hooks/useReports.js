@@ -4,8 +4,6 @@ import { useAuth } from "../context/AuthContext";
 import {
   subscribeReports,
   subscribeUserReports,
-  getReport,
-  getUserReports,
   createReport,
   updateReportStatus,
   startReportReview,

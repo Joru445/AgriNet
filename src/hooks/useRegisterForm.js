@@ -73,9 +73,9 @@ export default function useRegisterForm() {
 
       await register(form);
 
-      showToast.success("Account created successfully!");
+      showToast.success("Account created! Please check your email to verify your account.");
 
-      navigate("/");
+      navigate("/verify-account", { replace: true });
     } catch (error) {
       console.error(error);
       showToast.error(error.message);

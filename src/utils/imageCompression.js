@@ -9,7 +9,6 @@ export async function compressImage(file, options = {}) {
     maxWidth = 1280,
     maxHeight = 1280,
     quality = 0.8,
-    maxSizeMB = 1,
   } = options;
 
   if (!file || !(file instanceof Blob)) {

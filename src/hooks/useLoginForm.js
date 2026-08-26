@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { login } from "../services/login.service";
 import { getRoleHome } from "../utils/routes";
@@ -13,6 +13,7 @@ export function useLoginForm() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,7 +37,7 @@ export function useLoginForm() {
     try {
       setLoading(true);
 
-      const { profile } = await login(form);
+      const { user, profile } = await login(form);
 
       if (!profile?.role) {
         setErrors({
@@ -46,7 +47,42 @@ export function useLoginForm() {
         return;
       }
 
-      navigate(getRoleHome(profile.role));
+      if (profile.status === "suspended") {
+        navigate("/suspended", { replace: true });
+        return;
+      }
+
+      if (!user?.emailVerified) {
+        navigate("/verify-account", { replace: true });
+        return;
+      }
+
+      const from = location.state?.from;
+      let targetPath = null;
+
+      if (from) {
+        const pathname = typeof from === "string" ? from : from.pathname || "";
+        const search = typeof from === "object" && from.search ? from.search : "";
+        const hash = typeof from === "object" && from.hash ? from.hash : "";
+
+        const publicRoutes = ["/login", "/register", "/forgot-password", "/landing", "/suspended", "/"];
+        if (!publicRoutes.includes(pathname) && pathname.startsWith("/")) {
+          const role = profile.role;
+          const isAdminRoute = pathname.startsWith("/admin");
+          const isFarmerRoute = pathname.startsWith("/farmer");
+          const isConsumerRoute = !isAdminRoute && !isFarmerRoute;
+
+          if (
+            (role === "admin" && isAdminRoute) ||
+            (role === "farmer" && isFarmerRoute) ||
+            (role === "consumer" && isConsumerRoute)
+          ) {
+            targetPath = `${pathname}${search}${hash}`;
+          }
+        }
+      }
+
+      navigate(targetPath || getRoleHome(profile.role), { replace: true });
     } catch (error) {
       console.error(error);
 

@@ -18,8 +18,6 @@ import { createNotification } from "./notification.service";
 
 const reportsRef = collection(db, "reports");
 
-const REPORT_PAGE_SIZE = 20;
-
 const REPORT_STATUSES = ["pending", "reviewing", "resolved", "dismissed"];
 
 /**

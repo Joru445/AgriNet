@@ -25,11 +25,23 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [farmer, setFarmer] = useState(null);
+  const [emailVerified, setEmailVerified] = useState(false);
 
   const [loading, setLoading] = useState(true);
 
   async function logout() {
     await signOut(auth);
+  }
+
+  async function refreshUser() {
+    if (!auth.currentUser) {
+      return null;
+    }
+    await auth.currentUser.reload();
+    const isVerified = Boolean(auth.currentUser.emailVerified);
+    setUser(auth.currentUser);
+    setEmailVerified(isVerified);
+    return auth.currentUser;
   }
 
   useEffect(() => {
@@ -50,12 +62,14 @@ export function AuthProvider({ children }) {
           setUser(null);
           setProfile(null);
           setFarmer(null);
+          setEmailVerified(false);
           setLoading(false);
           return;
         }
 
         setLoading(true);
         setUser(firebaseUser);
+        setEmailVerified(Boolean(firebaseUser.emailVerified));
         setProfile(null);
         setFarmer(null);
 
@@ -194,6 +208,11 @@ export function AuthProvider({ children }) {
         loading,
 
         suspended: profile?.status === "suspended",
+        emailVerified: Boolean(user?.emailVerified || emailVerified),
+        verificationComplete: Boolean(user?.emailVerified || emailVerified),
+
+        refreshUser,
+        reloadUser: refreshUser,
 
         logout,
       }}

@@ -10,7 +10,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
   const mePath = getMePath(user.role);
 
   return (
-    <header className="shrink-0 sticky top-0 right-0 z-9996 flex h-16 items-center justify-between bg-[#FAFAFA]/95 border-b border-[#DDDDDD] px-4 md:px-6">
+    <header className="shrink-0 sticky top-0 right-0 z-9996 flex h-[calc(4rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] items-center justify-between bg-[#FAFAFA]/95 border-b border-[#DDDDDD] px-4 md:px-6">
       <div className="flex items-center">
         {hideBackButton ? (
           <span
@@ -26,7 +26,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
       </div>
 
       {user.status === "suspended" && (
-        <span className="text-red-500">Your account are suspended!</span>
+        <span className="text-red-500">Your account is suspended!</span>
       )}
 
       <div className="flex items-center gap-2">

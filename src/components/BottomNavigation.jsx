@@ -21,7 +21,7 @@ export default function BottomNavigation({ items }) {
   }
 
   return (
-    <nav className="shrink-0 h-16 border-t lg:hidden z-30 bg-[#FAFAFA]" style={{ borderColor: 'var(--agri-border)' }}>
+    <nav className="shrink-0 border-t lg:hidden z-30 bg-[#FAFAFA] border-agri-border pb-[env(safe-area-inset-bottom,0px)]">
       <div className="flex h-16">
         {items.map((item) => {
           const isMessages = item.to.includes("messages");

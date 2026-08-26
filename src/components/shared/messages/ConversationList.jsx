@@ -19,7 +19,7 @@ export default function ConversationList({
 
   return (
     <aside
-      className={`w-full lg:w-80 md:w-64 flex flex-col border-r ${hasChat ? "hidden md:flex" : "flex"}`}
+      className={`w-full lg:w-80 md:w-64 flex flex-col scrollbar-none border-r color-agri-border- ${hasChat ? "hidden md:flex" : "flex"}`}
       style={{ backgroundColor: 'var(--agri-bg)', borderColor: 'var(--agri-border)' }}
     >
       <div className="p-4">

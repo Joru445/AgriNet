@@ -27,5 +27,11 @@ export async function register(form) {
     });
   }
 
+  try {
+    await authService.sendVerificationEmail(user);
+  } catch (emailError) {
+    console.warn("Verification email sending failed during registration:", emailError);
+  }
+
   return user;
 }
