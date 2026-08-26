@@ -4,10 +4,29 @@
   --color-agri-bg: #f5fbf7;
   --color-agri-bg-card: #f0f7f2;
   --color-agri-bg-surface: #eaf4ee;
+
+  --color-agri-dark: #1b4332;
+  --color-agri-primary: #2d6a4f;
   --color-agri-green-dark: #1b4332;
   --color-agri-green-mid: #2d6a4f;
   --color-agri-green-light: #52b788;
   --color-agri-border: #d4e8da;
+}
+
+@utility glass {
+  @apply relative overflow-hidden rounded-2xl
+    border border-white/40
+    bg-white/45
+    backdrop-blur-2xl
+    backdrop-saturate-150
+    shadow-lg shadow-agri-green-dark/5;
+}
+
+@utility glass-hover {
+  @apply transition-all duration-300
+    hover:bg-white/55
+    hover:shadow-xl
+    hover:shadow-agri-green-dark/10;
 }
 
 *,
@@ -55,7 +74,8 @@ body {
   display: none;
 }
 .scrollbar-none {
-  -ms-overflow-style: none; scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* ── Leaflet Popup Content Reset ── */

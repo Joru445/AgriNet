@@ -19,7 +19,7 @@ import { getFarmerById } from "../services/farmer.service";
 import { showToast } from "../utils/toast";
 
 export default function useInquiries() {
-  const { profile, loading: authLoading } = useAuth();
+  const { profile } = useAuth();
 
   const [inquiries, setInquiries] = useState([]);
   const [inquiryData, setInquiryData] = useState({});
@@ -43,6 +43,7 @@ export default function useInquiries() {
     }
 
     setLoading(true);
+    setError(null);
 
     const unsubscribe = subscribeUserInquiries(
       profile.uid,
@@ -73,13 +74,14 @@ export default function useInquiries() {
           }
         }
       },
-      (error) => {
-        console.error("Failed to load inquiries:", error);
+      (err) => {
+        console.error("Failed to load inquiries:", err);
 
         setInquiries([]);
+        setError(err);
         setLoading(false);
 
-        showToast.error(error.message || "Failed to load inquiries.");
+        showToast.error(err.message || "Failed to load inquiries.");
       },
     );
 
@@ -121,7 +123,7 @@ export default function useInquiries() {
                 const farmer = await getFarmerById(fId);
                 if (farmer) farmerCacheRef.current.set(fId, farmer);
                 return [fId, farmer];
-              } catch (_) {
+              } catch {
                 return [fId, null];
               }
             }),
@@ -138,7 +140,7 @@ export default function useInquiries() {
                     : null,
                 ]);
                 return { id: inquiry.id, product, consumer };
-              } catch (_) {
+              } catch {
                 return { id: inquiry.id, product: null, consumer: null };
               }
             }),

@@ -71,7 +71,7 @@ export default function ConversationItem({
       onClick={handleClick}
       className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-all duration-150 cursor-pointer ${
         isSelected
-          ? "bg-[#D8F3DC]/45 border-r-4 border-[#2D6A4F] shadow-xs"
+          ? "bg-[#D8F3DC]/45 border-r-4 border-agri-primary shadow-xs"
           : "hover:bg-black/3 border-r-4 border-transparent"
       }`}
     >
@@ -89,7 +89,7 @@ export default function ConversationItem({
             <h3
               className={`truncate ${
                 isSelected
-                  ? "font-bold text-[#1B4332]"
+                  ? "font-semibold text-agri-dark"
                   : !searching && !isMine && item.unreadCount > 0
                     ? "font-bold text-gray-900"
                     : "font-semibold text-gray-800"

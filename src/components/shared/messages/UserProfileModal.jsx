@@ -56,7 +56,9 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
           if (freshUser && isMounted) {
             setProfileData((prev) => ({ ...prev, ...freshUser }));
           }
-        } catch (_) {}
+        } catch {
+          // Keep existing cached profile if fresh fetch fails
+        }
 
         let completed = freshUser?.completedDeals ?? 0;
         let total = freshUser?.totalDeals ?? 0;

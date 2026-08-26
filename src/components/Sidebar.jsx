@@ -43,7 +43,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside
-      className={`hidden lg:flex fixed top-0 left-0 h-full bg-[#1B4332] flex-col z-9996 transition-all duration-300 ease-in-out ${
+      className={`hidden lg:flex fixed top-0 left-0 h-full bg-agri-dark flex-col z-9996 transition-all duration-300 ease-in-out ${
         collapsed ? "w-20" : "w-64"
       }`}
     >

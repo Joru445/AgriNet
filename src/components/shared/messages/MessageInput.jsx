@@ -238,13 +238,7 @@ export default function MessageInput({
       />
 
       {inquiryProduct && (
-        <div
-          className="relative mb-3 rounded-2xl border p-3"
-          style={{
-            backgroundColor: "var(--agri-bg-surface)",
-            borderColor: "var(--agri-border)",
-          }}
-        >
+        <div className="relative mb-3 rounded-2xl border border-agri-border bg-agri-bg-surface p-3">
           {onCancelInquiry && (
             <button
               type="button"

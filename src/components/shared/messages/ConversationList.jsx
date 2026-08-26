@@ -19,14 +19,13 @@ export default function ConversationList({
 
   return (
     <aside
-      className={`w-full lg:w-80 md:w-64 flex flex-col scrollbar-none border-r color-agri-border- ${hasChat ? "hidden md:flex" : "flex"}`}
-      style={{ backgroundColor: 'var(--agri-bg)', borderColor: 'var(--agri-border)' }}
+      className={`w-full lg:w-80 md:w-64 flex flex-col border-r border-agri-border ${hasChat ? "hidden md:flex" : "flex"}`}
     >
       <div className="p-4">
-        <h2 className="text-xl font-bold text-[#1B4332] mb-4">Messages</h2>
+        <h2 className="text-xl font-bold text-agri-dark mb-4">Messages</h2>
 
-        <div className="relative flex items-center gap-2 bg-white rounded-xl px-3 py-1.5 border-2 border-[#D6E6DC] shadow-xs focus-within:border-[#2D6A4F] focus-within:shadow-md focus-within:ring-3 focus-within:ring-[#2D6A4F]/15 transition-all">
-          <i className="ri-search-line text-[#2D6A4F] text-lg font-bold shrink-0" />
+        <div className="relative flex items-center gap-2 bg-white rounded-xl px-3 py-1.5 border-2 border-[#D6E6DC] shadow-xs focus-within:border-agri-primary focus-within:shadow-md focus-within:ring-3 focus-within:ring-[#2D6A4F]/15 transition-all">
+          <i className="ri-search-line text-agri-primary text-lg font-bold shrink-0" />
 
           <input
             value={search}
@@ -48,7 +47,7 @@ export default function ConversationList({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto scrollbar-none">
         {!searching ? (
           <>
             <div className="px-4 pt-4 pb-2">

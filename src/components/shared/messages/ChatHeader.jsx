@@ -55,12 +55,7 @@ export default function ChatHeader({ user }) {
   return (
     <>
       <header
-        className="w-full h-16 sm:h-18 shrink-0 border-b px-4 sm:px-6 flex items-center justify-between shadow-xs z-10"
-        style={{
-          backgroundColor: "rgba(247,250,248,0.97)",
-          borderColor: "var(--agri-border)",
-          backdropFilter: "blur(8px)",
-        }}
+        className="w-full h-16 sm:h-18 shrink-0 bg-agri-bg/90 border-b border-agri-border px-4 sm:px-6 flex items-center justify-between shadow-xs z-10"
       >
         <div className="flex items-center gap-3 min-w-0">
           <BackButton className="flex sm:hidden" />
@@ -76,7 +71,7 @@ export default function ChatHeader({ user }) {
                 <span
                   title="Verified Farmer"
                   aria-label="Verified Farmer"
-                  className="inline-flex shrink-0 items-center text-[#2D6A4F] text-base"
+                  className="inline-flex shrink-0 items-center text-agri-primary text-base"
                 >
                   <i className="ri-verified-badge-fill" />
                 </span>

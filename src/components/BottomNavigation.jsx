@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { NavLink, useLocation, useSearchParams } from "react-router-dom";
 import { useUnreadMessages } from "../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../context/UnreadInquiriesContext";

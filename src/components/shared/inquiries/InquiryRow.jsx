@@ -81,9 +81,6 @@ export default function InquiryRow({
     Boolean(inquiry.farmerReviewId) ||
     Boolean(inquiry.productReviewId);
 
-  // --- Determine banner config ---
-  const banner = getBanner(status, userRole, isReviewed);
-
   // --- Determine which buttons get red dots ---
   const dots = getRedDots(status, userRole, isReviewed);
 
