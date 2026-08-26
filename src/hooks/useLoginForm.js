@@ -53,6 +53,7 @@ export function useLoginForm() {
       }
 
       if (!user?.emailVerified) {
+        showToast.info("Please verify your email to log in. Check your inbox or spam folder.");
         navigate("/verify-account", { replace: true });
         return;
       }
