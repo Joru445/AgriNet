@@ -3,6 +3,8 @@ import {
   signInWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
+  reload,
 } from "firebase/auth";
 
 import { auth } from "../firebase/auth";
@@ -29,4 +31,25 @@ export function logout() {
 
 export async function resetPassword(email) {
   await sendPasswordResetEmail(auth, email);
+}
+
+export async function sendVerificationEmail(user = null) {
+  const targetUser = user || auth.currentUser;
+  if (!targetUser) {
+    throw new Error("No authenticated user found to send verification email.");
+  }
+  await sendEmailVerification(targetUser);
+}
+
+export async function reloadUser(user = null) {
+  const targetUser = user || auth.currentUser;
+  if (!targetUser) {
+    return null;
+  }
+  await reload(targetUser);
+  return targetUser;
+}
+
+export function getCurrentUser() {
+  return auth.currentUser;
 }

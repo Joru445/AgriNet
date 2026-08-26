@@ -2,15 +2,12 @@ import {
   collection,
   doc,
   getDoc,
-  getDocs,
   onSnapshot,
-  orderBy,
   query,
   serverTimestamp,
   setDoc,
   updateDoc,
   where,
-  writeBatch,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";

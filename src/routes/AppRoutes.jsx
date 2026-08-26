@@ -5,6 +5,7 @@ import HomeRedirect from "./HomeRedirect";
 import PublicRoute from "./PublicRoute";
 import RoleRoute from "./RoleRoute";
 import SuspendedRoute from "./SuspendedRoute";
+import VerificationRoute from "./VerificationRoute";
 
 import PublicLayout from "../layouts/PublicLayout";
 import AppLayout from "../layouts/AppLayout";
@@ -14,6 +15,7 @@ const Landing = lazy(() => import("../pages/public/Landing"));
 const Login = lazy(() => import("../pages/public/Login"));
 const Register = lazy(() => import("../pages/public/Register"));
 const ForgotPassword = lazy(() => import("../pages/public/ForgotPassword"));
+const VerifyAccount = lazy(() => import("../pages/public/VerifyAccount"));
 
 // Suspended Page
 const Suspended = lazy(() => import("../pages/Suspended.jsx"));
@@ -55,6 +57,8 @@ export default function AppRoutes() {
           <Route path="/suspended" element={<Suspended />} />
         </Route>
 
+        <Route path="/verify-account" element={<VerifyAccount />} />
+
         {/* PUBLIC */}
 
         <Route element={<PublicRoute />}>
@@ -66,95 +70,99 @@ export default function AppRoutes() {
           </Route>
         </Route>
 
-        {/* CONSUMER */}
+        {/* VERIFICATION GATE FOR PROTECTED ROUTES */}
 
-        <Route element={<RoleRoute allowedRole="consumer" />}>
-          <Route element={<AppLayout />}>
-            <Route path="/home" element={<ConsumerHome />} />
+        <Route element={<VerificationRoute />}>
+          {/* CONSUMER */}
 
-            <Route path="/nearby" element={<Nearby />} />
+          <Route element={<RoleRoute allowedRole="consumer" />}>
+            <Route element={<AppLayout />}>
+              <Route path="/home" element={<ConsumerHome />} />
 
-            <Route path="/product/:id" element={<ProductDetails />} />
+              <Route path="/nearby" element={<Nearby />} />
 
-            <Route path="/profile/:uid" element={<StoreProfile />} />
+              <Route path="/product/:id" element={<ProductDetails />} />
 
-            <Route path="/inquiries" element={<Inquiries />} />
+              <Route path="/profile/:uid" element={<StoreProfile />} />
 
-            <Route
-              path="/inquiries/:inquiryId/proof"
-              element={<TransactionProof />}
-            />
+              <Route path="/inquiries" element={<Inquiries />} />
 
-            <Route
-              path="/inquiries/:inquiryId/review"
-              element={<TransactionReview />}
-            />
+              <Route
+                path="/inquiries/:inquiryId/proof"
+                element={<TransactionProof />}
+              />
 
-            <Route path="/messages" element={<Messages />} />
+              <Route
+                path="/inquiries/:inquiryId/review"
+                element={<TransactionReview />}
+              />
 
-            <Route path="/me" element={<Profile />} />
+              <Route path="/messages" element={<Messages />} />
 
-            <Route path="/notifications" element={<Notifications />} />
+              <Route path="/me" element={<Profile />} />
+
+              <Route path="/notifications" element={<Notifications />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* FARMER */}
+          {/* FARMER */}
 
-        <Route element={<RoleRoute allowedRole="farmer" />}>
-          <Route element={<AppLayout />}>
-            <Route path="/farmer" element={<FarmerDashboard />} />
+          <Route element={<RoleRoute allowedRole="farmer" />}>
+            <Route element={<AppLayout />}>
+              <Route path="/farmer" element={<FarmerDashboard />} />
 
-            <Route path="/farmer/product/:id" element={<ProductDetails />} />
+              <Route path="/farmer/product/:id" element={<ProductDetails />} />
 
-            <Route path="/farmer/products" element={<MyProducts />} />
+              <Route path="/farmer/products" element={<MyProducts />} />
 
-            <Route path="/farmer/inquiries" element={<Inquiries />} />
+              <Route path="/farmer/inquiries" element={<Inquiries />} />
 
-            <Route
-              path="/farmer/inquiries/:inquiryId/proof"
-              element={<TransactionProof />}
-            />
+              <Route
+                path="/farmer/inquiries/:inquiryId/proof"
+                element={<TransactionProof />}
+              />
 
-            <Route
-              path="/farmer/inquiries/:inquiryId/review"
-              element={<TransactionReview />}
-            />
+              <Route
+                path="/farmer/inquiries/:inquiryId/review"
+                element={<TransactionReview />}
+              />
 
-            <Route path="/farmer/reviews" element={<Reviews />} />
+              <Route path="/farmer/reviews" element={<Reviews />} />
 
-            <Route path="/farmer/messages" element={<Messages />} />
+              <Route path="/farmer/messages" element={<Messages />} />
 
-            <Route path="/farmer/me" element={<Profile />} />
+              <Route path="/farmer/me" element={<Profile />} />
 
-            <Route path="/farmer/notifications" element={<Notifications />} />
+              <Route path="/farmer/notifications" element={<Notifications />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* ADMIN */}
+          {/* ADMIN */}
 
-        <Route element={<RoleRoute allowedRole="admin" />}>
-          <Route element={<AppLayout />}>
-            <Route path="/admin" element={<AdminDashboard />} />
+          <Route element={<RoleRoute allowedRole="admin" />}>
+            <Route element={<AppLayout />}>
+              <Route path="/admin" element={<AdminDashboard />} />
 
-            <Route path="/admin/users" element={<Users />} />
+              <Route path="/admin/users" element={<Users />} />
 
-            <Route path="/admin/reports" element={<Reports />} />
+              <Route path="/admin/reports" element={<Reports />} />
 
-            <Route
-              path="/admin/inquiries/:inquiryId/proof"
-              element={<TransactionProof />}
-            />
+              <Route
+                path="/admin/inquiries/:inquiryId/proof"
+                element={<TransactionProof />}
+              />
 
-            <Route
-              path="/admin/inquiries/:inquiryId/review"
-              element={<TransactionReview />}
-            />
+              <Route
+                path="/admin/inquiries/:inquiryId/review"
+                element={<TransactionReview />}
+              />
 
-            <Route path="/admin/messages" element={<Messages />} />
+              <Route path="/admin/messages" element={<Messages />} />
 
-            <Route path="/admin/me" element={<Profile />} />
+              <Route path="/admin/me" element={<Profile />} />
 
-            <Route path="/admin/notifications" element={<Notifications />} />
+              <Route path="/admin/notifications" element={<Notifications />} />
+            </Route>
           </Route>
         </Route>
 

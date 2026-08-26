@@ -28,7 +28,10 @@ export default function MessageList({
   const prevConvIdRef = useRef(null);
   const prevScrollHeightRef = useRef(0);
   const loadingOlderRef = useRef(false);
-  loadingOlderRef.current = loadingOlder;
+
+  useEffect(() => {
+    loadingOlderRef.current = loadingOlder;
+  }, [loadingOlder]);
 
   const scrollToBottom = (behavior = "smooth") => {
     if (!containerRef.current) return;
@@ -173,7 +176,7 @@ export default function MessageList({
             : typeof message.createdAt === "number"
               ? message.createdAt / 1000
               : 0)
-        : Math.floor(Date.now() / 1000);
+        : Infinity;
 
       if (readSeconds >= msgSeconds && readSeconds > 0) return true;
     }

@@ -1,10 +1,9 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
-
 import Loading from "../components/Loading";
 
-export default function RoleRoute({ allowedRole }) {
+export default function VerificationRoute() {
   const { user, profile, loading, suspended, emailVerified } = useAuth();
   const location = useLocation();
 
@@ -16,32 +15,16 @@ export default function RoleRoute({ allowedRole }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Suspended users cannot access normal application routes.
+  // Suspended users always go to /suspended first
   if (suspended) {
     return <Navigate to="/suspended" replace />;
   }
 
-  // Unverified users must verify their email first.
+  // Email verification check
   if (!emailVerified) {
     return <Navigate to="/verify-account" replace />;
   }
 
-  // Redirect users who try to access another role's routes.
-  if (profile.role !== allowedRole) {
-    switch (profile.role) {
-      case "admin":
-        return <Navigate to="/admin" replace />;
-
-      case "farmer":
-        return <Navigate to="/farmer" replace />;
-
-      case "consumer":
-        return <Navigate to="/home" replace />;
-
-      default:
-        return <Navigate to="/login" replace />;
-    }
-  }
-
   return <Outlet />;
 }
+

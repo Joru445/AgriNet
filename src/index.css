@@ -1,14 +1,13 @@
 @import "tailwindcss";
 
-/* ── AgriNet Global Base ── */
-:root {
-  --agri-bg:          #f5fbf7;   /* very soft sage green */
-  --agri-bg-card:     #f0f7f2;   /* near-white with a green cast */
-  --agri-bg-surface:  #eaf4ee;   /* light mint for panels */
-  --agri-green-dark:  #1B4332;
-  --agri-green-mid:   #2D6A4F;
-  --agri-green-light: #52b788;
-  --agri-border:      #d4e8da;   /* soft green border */
+@theme {
+  --color-agri-bg: #f5fbf7;
+  --color-agri-bg-card: #f0f7f2;
+  --color-agri-bg-surface: #eaf4ee;
+  --color-agri-green-dark: #1b4332;
+  --color-agri-green-mid: #2d6a4f;
+  --color-agri-green-light: #52b788;
+  --color-agri-border: #d4e8da;
 }
 
 *,
@@ -29,7 +28,7 @@ body,
 }
 
 body {
-  background-color: var(--agri-bg);
+  background-color: var(--color-agri-bg);
   color: #1a2e1f;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -56,8 +55,7 @@ body {
   display: none;
 }
 .scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none; scrollbar-width: none;
 }
 
 /* ── Leaflet Popup Content Reset ── */
