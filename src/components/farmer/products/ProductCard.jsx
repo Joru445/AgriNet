@@ -1,6 +1,6 @@
 import productPlaceholder from "../../../assets/img/productPlaceholder.png";
 
-import { getFormatPrice, getDiscount, hasProductDiscount } from "../../../  utils/price";
+import { getFormatPrice, getDiscount, hasProductDiscount } from "../../../utils/price";
 
 const CATEGORY_ICONS = {
   Vegetables: "ri-plant-line",
