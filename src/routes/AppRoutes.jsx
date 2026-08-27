@@ -115,6 +115,8 @@ export default function AppRoutes() {
 
               <Route path="/farmer/products" element={<MyProducts />} />
 
+              <Route path="/farmer/profile/:uid" element={<StoreProfile />} />
+
               <Route path="/farmer/inquiries" element={<Inquiries />} />
 
               <Route
