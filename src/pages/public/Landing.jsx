@@ -24,7 +24,7 @@ export default function LandingPage() {
     <>
       <header className={`
         fixed top-0 w-full z-50 transition-all duration-300
-        ${isScrolled ? "bg-white/90 backdrop-blur-md shadow-sm" : "bg-transparent"}
+        ${isScrolled ? "bg-white/70 backdrop-blur-md shadow-xs border-b border-black/5" : "bg-transparent"}
       `}>
         <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between h-16 md:h-20">
           <a className="flex items-center gap-2 cursor-pointer" href="/">
