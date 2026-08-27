@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useAuth } from "../../../context/AuthContext";
+
 import Avatar from "../../common/Avatar";
 import BackButton from "../../common/BackButton";
 import UserProfileModal from "./UserProfileModal";
@@ -9,6 +11,8 @@ import ReportModal from "../../common/ReportModal";
 import { getProfilePath } from "../../../utils/routes";
 
 export default function ChatHeader({ user }) {
+  const { profile } = useAuth();
+
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -39,7 +43,7 @@ export default function ChatHeader({ user }) {
   const isFarmer = user.role === "farmer";
   const isAdmin = user.role === "admin";
 
-  const profilePath = getProfilePath(user.role)
+  const profilePath = getProfilePath(profile.role)
 
   function handleAction() {
     setMenuOpen(false);
