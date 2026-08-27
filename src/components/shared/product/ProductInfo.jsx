@@ -1,3 +1,5 @@
+import { getFormatPrice, getDiscount, hasProductDiscount } from "../../../utils/price";
+
 export default function ProductInfo({
   product,
   reviewCount,
@@ -7,28 +9,13 @@ export default function ProductInfo({
 }) {
   const originalPriceNum = Number(product.originalPrice);
   const priceNum = Number(product.price ?? 0);
-  const hasDiscount =
-    !isNaN(originalPriceNum) &&
-    originalPriceNum > 0 &&
-    priceNum > 0 &&
-    originalPriceNum > priceNum;
-
+  const hasDiscount = hasProductDiscount(product.originalPrice, product.price);
   const discountPercent = hasDiscount
-    ? Math.round(((originalPriceNum - priceNum) / originalPriceNum) * 100)
+    ? getDiscount(product.originalPrice, product.price)
     : 0;
 
-  const formatPrice = (val) => {
-    const num = Number(val ?? 0);
-    return num % 1 === 0
-      ? num.toLocaleString("en-PH")
-      : num.toLocaleString("en-PH", {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 2,
-        });
-  };
-
-  const priceFormatted = formatPrice(priceNum);
-  const originalPriceFormatted = formatPrice(originalPriceNum);
+  const priceFormatted = getFormatPrice(priceNum);
+  const originalPriceFormatted = getFormatPrice(originalPriceNum);
 
   return (
     <section>

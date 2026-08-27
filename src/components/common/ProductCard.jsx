@@ -29,10 +29,10 @@ export default function ProductCard({ product, hideFooter = false }) {
   const isAvailable = product.available !== false && stockNum > 0;
   const isLowStock = isAvailable && stockNum <= 5;
 
-  const originalPriceNum = getOriginalPrice(product.price ?? 0);
+  const originalPriceNum = getOriginalPrice(product.originalPrice ?? 0);
   const priceNum = Number(product.price ?? 0);
 
-  const discountPercent = getDiscount(product.price ?? 0);
+  const discountPercent = getDiscount(product.originalPrice ?? 0);
 
   const priceFormatted = getFormatPrice(priceNum);
   const originalPriceFormatted = getFormatPrice(originalPriceNum);

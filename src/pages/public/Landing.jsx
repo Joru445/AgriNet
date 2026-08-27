@@ -568,7 +568,7 @@ export default function LandingPage() {
                 <img
                   alt="AgriNet Logo"
                   className="h-10 w-10 object-contain"
-                  src="./src/assets/img/logo.png"
+                  src={logo}
                 />
                 <span className="font-bold text-lg text-[#1B4332]">
                   AgriNet <span className="font-light">Lucena</span>
