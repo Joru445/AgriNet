@@ -151,22 +151,8 @@ export default function TransactionProof() {
             <TransactionProofReview
               inquiry={inquiry}
               processing={processing}
-              onConfirm={async () => {
-                if (
-                  window.confirm("Confirm that this transaction is complete?")
-                ) {
-                  await confirmProof();
-                }
-              }}
-              onReject={async () => {
-                if (
-                  window.confirm(
-                    "Reject this proof and ask the consumer to upload another?",
-                  )
-                ) {
-                  await rejectProof();
-                }
-              }}
+              onConfirm={confirmProof}
+              onReject={rejectProof}
             />
           </div>
         )}

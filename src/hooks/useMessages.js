@@ -1245,6 +1245,32 @@ export default function useMessages() {
        */
 
       if (!activeConversation?.id) {
+        const otherUserInfo = activeUser || { uid: receiverId };
+        setActiveConversation({
+          id: conversationId,
+          participants: [profile.uid, receiverId].filter(Boolean),
+          participantInfo: {
+            [profile.uid]: {
+              fullname: profile.fullname || "",
+              username: profile.username || "",
+              profilePicture: profile.profilePicture || "",
+              role: profile.role || "",
+            },
+            ...(otherUserInfo?.uid
+              ? {
+                  [otherUserInfo.uid]: {
+                    fullname: otherUserInfo.fullname || "",
+                    username: otherUserInfo.username || "",
+                    profilePicture: otherUserInfo.profilePicture || "",
+                    role: otherUserInfo.role || "",
+                  },
+                }
+              : {}),
+          },
+          otherUser: otherUserInfo,
+          unreadCount: {},
+        });
+        setActiveUser(null);
         setSearchParams(
           {
             conversation:
@@ -1620,10 +1646,36 @@ export default function useMessages() {
       });
 
       /*
-       * Only navigate after the inquiry succeeds.
+       * Set active conversation and change URL after inquiry succeeds.
        */
 
       if (!activeConversation?.id) {
+        const otherUserInfo = activeUser || { uid: receiverId };
+        setActiveConversation({
+          id: conversationId,
+          participants: [profile.uid, receiverId].filter(Boolean),
+          participantInfo: {
+            [profile.uid]: {
+              fullname: profile.fullname || "",
+              username: profile.username || "",
+              profilePicture: profile.profilePicture || "",
+              role: profile.role || "",
+            },
+            ...(otherUserInfo?.uid
+              ? {
+                  [otherUserInfo.uid]: {
+                    fullname: otherUserInfo.fullname || "",
+                    username: otherUserInfo.username || "",
+                    profilePicture: otherUserInfo.profilePicture || "",
+                    role: otherUserInfo.role || "",
+                  },
+                }
+              : {}),
+          },
+          otherUser: otherUserInfo,
+          unreadCount: {},
+        });
+        setActiveUser(null);
         setSearchParams(
           {
             conversation:
@@ -1636,14 +1688,6 @@ export default function useMessages() {
       }
 
       setInquiryProduct(null);
-
-      navigate(
-        `${location.pathname}${location.search}`,
-        {
-          replace: true,
-          state: null,
-        },
-      );
 
       showToast.success(
         "Inquiry sent successfully.",

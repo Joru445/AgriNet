@@ -9,13 +9,13 @@ export default function ProductReviewForm({
   disabled = false,
 }) {
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+    <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-md">
       <div className="mb-4">
-        <h2 className="text-base font-semibold text-gray-900">
-          Rate the product
+        <h2 className="text-base font-bold text-gray-900">
+          Rate the Product
         </h2>
 
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm font-medium text-gray-600">
           How satisfied are you with the product you received?
         </p>
       </div>

@@ -100,18 +100,19 @@ function ProductGalleryImages({ product }) {
         )}
       </div>
 
-      {/* Desktop/Tablet Thumbnail selector */}
+      {/* Thumbnail selector on both mobile and desktop */}
       {images.length > 1 && (
-        <div className="hidden md:grid grid-cols-5 gap-3">
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-1 scrollbar-none md:grid md:grid-cols-5 md:overflow-visible">
           {images.map((image, index) => (
             <button
               key={image.publicId || index}
               type="button"
               onClick={() => handleThumbnailClick(index)}
-              className={`overflow-hidden rounded-xl border-2 transition-all duration-200 aspect-square cursor-pointer ${selected === index
-                  ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 scale-[1.02]"
-                  : "border-transparent opacity-70 hover:opacity-100 hover:border-gray-300"
-                }`}
+              className={`shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-auto md:h-auto overflow-hidden rounded-xl border-2 transition-all duration-200 aspect-square cursor-pointer ${
+                selected === index
+                  ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 scale-[1.02] opacity-100"
+                  : "border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-300"
+              }`}
             >
               <img
                 src={image.url || image}

@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { getMarketplaceProductsPage } from "../services/product.service";
 import useUserLocation from "./useUserLocation";
 import { getDistanceKm } from "../utils/distance";
+import { isProductExpired } from "../utils/productExpiration";
 import { showToast } from "../utils/toast";
 
 const PRODUCTS_PER_PAGE = 12;
@@ -121,7 +122,8 @@ export default function useMarketplace() {
 
     data = data.filter((product) => {
       const stockNum = Number(product.stock ?? 0);
-      const isAvailable = product.available !== false && stockNum > 0;
+      const isExpired = isProductExpired(product);
+      const isAvailable = product.available !== false && stockNum > 0 && !isExpired;
 
       if (!filters.showUnavailable && !isAvailable) {
         return false;

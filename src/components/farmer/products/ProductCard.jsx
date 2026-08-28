@@ -1,6 +1,7 @@
 import productPlaceholder from "../../../assets/img/productPlaceholder.png";
 
 import { getFormatPrice, getDiscount, hasProductDiscount } from "../../../utils/price";
+import { isProductExpired, getRemainingTime } from "../../../utils/productExpiration";
 
 const CATEGORY_ICONS = {
   Vegetables: "ri-plant-line",
@@ -10,13 +11,16 @@ const CATEGORY_ICONS = {
   Herbs: "ri-medicine-bottle-line",
   "Root Crops": "ri-earth-line",
   Seafood: "ri-water-flash-line",
+  Others: "ri-shopping-basket-2-line",
 };
 
 export default function ProductCard({ product, view, onEdit, onDelete }) {
   const image = product.images?.[0]?.url || productPlaceholder;
 
+  const isExpired = isProductExpired(product);
+  const remainingTime = getRemainingTime(product);
   const stockNum = Number(product.stock ?? 0);
-  const isAvailable = product.available !== false && stockNum > 0;
+  const isAvailable = product.available !== false && stockNum > 0 && !isExpired;
   const isLowStock = isAvailable && stockNum <= 5;
 
   const originalPriceNum = Number(product.originalPrice);
@@ -51,13 +55,22 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
               <span>{product.category || "Produce"}</span>
             </span>
 
-            {!isAvailable ? (
+            {isExpired ? (
+              <span className="rounded-md bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-700">
+                Expired
+              </span>
+            ) : !isAvailable ? (
               <span className="rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
                 Out of Stock
               </span>
             ) : isLowStock ? (
               <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
                 {stockNum} left
+              </span>
+            ) : remainingTime ? (
+              <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 flex items-center gap-0.5">
+                <i className="ri-time-line text-[9px]" />
+                {remainingTime}
               </span>
             ) : (
               <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
@@ -136,14 +149,23 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
           <span className="truncate">{product.category || "Produce"}</span>
         </div>
 
-        {/* Stock Badge - Stuck to Top Right Corner */}
-        {!isAvailable ? (
+        {/* Stock / Expiration Badge - Stuck to Top Right Corner */}
+        {isExpired ? (
+          <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-gray-700 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
+            Expired
+          </div>
+        ) : !isAvailable ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-red-600 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
             Out of Stock
           </div>
         ) : isLowStock ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-[#E63946] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
             {stockNum} left
+          </div>
+        ) : remainingTime ? (
+          <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-[#2D6A4F] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs flex items-center gap-0.5">
+            <i className="ri-time-line text-[9px]" />
+            <span>{remainingTime}</span>
           </div>
         ) : (
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-[#2D6A4F] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">

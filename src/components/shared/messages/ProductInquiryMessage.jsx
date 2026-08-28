@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 
 import defaultAvatar from "../../../assets/img/defaultAvatar.png";
@@ -108,6 +109,7 @@ export default function ProductInquiryMessage({
                   px-3 py-2
                   text-sm font-medium text-white
                   hover:bg-[#1B4332]
+                  cursor-pointer transition-colors shadow-xs
                 "
               >
                 Accept Inquiry
@@ -115,8 +117,18 @@ export default function ProductInquiryMessage({
             )}
 
             {message.inquiryStatus === "accepted" && (
-              <div className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-center text-sm font-medium text-green-700">
-                Inquiry Accepted
+              <div className="mt-3 space-y-2">
+                <div className="rounded-lg bg-green-50 px-3 py-1.5 text-center text-xs font-semibold text-green-700 flex items-center justify-center gap-1.5 border border-green-200/60">
+                  <i className="ri-checkbox-circle-fill text-green-600" />
+                  <span>Inquiry Accepted</span>
+                </div>
+                <Link
+                  to={isFarmer ? `/farmer/inquiries` : `/inquiries`}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#2D6A4F] hover:bg-[#1B4332] px-3 py-2 text-xs sm:text-sm font-semibold text-white transition-colors cursor-pointer no-underline shadow-xs"
+                >
+                  <i className="ri-file-list-3-line" />
+                  <span>Go to Inquiry</span>
+                </Link>
               </div>
             )}
 

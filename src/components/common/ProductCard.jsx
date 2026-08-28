@@ -6,6 +6,7 @@ import UserIdentity from "../common/UserIdentity";
 
 import { getProductPath } from "../../utils/routes";
 import { getFormatPrice, getDiscount, hasProductDiscount } from "../../utils/price";
+import { isProductExpired } from "../../utils/productExpiration";
 
 import productPlaceholder from "../../assets/img/productPlaceholder.png";
 
@@ -17,6 +18,7 @@ const CATEGORY_ICONS = {
   Herbs: "ri-medicine-bottle-line",
   "Root Crops": "ri-earth-line",
   Seafood: "ri-water-flash-line",
+  Others: "ri-shopping-basket-2-line",
 };
 
 export default function ProductCard({
@@ -29,8 +31,9 @@ export default function ProductCard({
   const rawImage = product.images?.[0]?.url ?? product.images?.[0];
   const image = imgError || !rawImage ? productPlaceholder : rawImage;
 
+  const isExpired = isProductExpired(product);
   const stockNum = Number(product.stock ?? 0);
-  const isAvailable = product.available !== false && stockNum > 0;
+  const isAvailable = product.available !== false && stockNum > 0 && !isExpired;
   const isLowStock = isAvailable && stockNum <= 5;
 
   const priceNum = Number(product.price ?? 0);

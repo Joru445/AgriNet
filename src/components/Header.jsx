@@ -29,10 +29,10 @@ export default function Header({ user, collapsed, hideBackButton }) {
         <span className="text-red-500">Your account is suspended!</span>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         <Link
           to={notificationPath}
-          className="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#2D6A4F]"
+          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#2D6A4F]"
           aria-label="Notifications"
         >
           <i className="ri-notification-3-line text-lg" />
@@ -42,7 +42,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
 
         <Link
           to={mePath}
-          className="flex items-center gap-2 border-l border-gray-200 pl-2"
+          className="flex items-center gap-2 border-l border-gray-200 pl-2 min-w-0 max-w-[130px] sm:max-w-[200px] md:max-w-[280px]"
         >
           <UserIdentity user={user} showUsername={false} showRole={true} />
         </Link>

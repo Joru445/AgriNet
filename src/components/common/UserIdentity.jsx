@@ -49,18 +49,19 @@ export default function UserIdentity({
         <img
           src={user.profilePicture}
           alt={user.fullname}
-          className="h-10 w-10 rounded-full object-cover"
+          className={`${currentSize.image} shrink-0 rounded-full object-cover`}
         />
       ) : (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] text-sm font-semibold text-[#2D6A4F]">
+        <div className={`flex ${currentSize.image} shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] text-sm font-semibold text-[#2D6A4F]`}>
           {getInitials(user.fullname)}
         </div>
       )}
       {!onlyPic && (
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-1.5">
             <p
               className={`truncate font-semibold ${currentSize.name} ${colorWhite ? "text-gray-200" : "text-gray-900"}`}
+              title={user.fullname}
             >
               {user.fullname || "Unknown User"}
             </p>

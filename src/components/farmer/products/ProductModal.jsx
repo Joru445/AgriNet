@@ -141,5 +141,6 @@ const initialForm = {
   stock: "",
   unit: "",
   available: true,
+  durationHours: "",
   images: [],
 };
