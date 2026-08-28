@@ -1,4 +1,5 @@
 import { getFormatPrice, getDiscount, hasProductDiscount } from "../../../utils/price";
+import { useLiveRemainingTime } from "../../../utils/productExpiration";
 
 const CATEGORY_ICONS = {
   Vegetables: "ri-plant-line",
@@ -25,6 +26,8 @@ export default function ProductInfo({
     ? getDiscount(product.originalPrice, product.price)
     : 0;
 
+  const { remainingTime, isExpired } = useLiveRemainingTime(product);
+  const isAvailable = product.available !== false && !isExpired;
   const priceFormatted = getFormatPrice(priceNum);
   const originalPriceFormatted = getFormatPrice(originalPriceNum);
   const categoryIcon =
@@ -32,7 +35,7 @@ export default function ProductInfo({
 
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
-      {/* Top Badges Row: Category (Readable with Shadow) + Stock Status + Report Button */}
+      {/* Top Badges Row: Category (Readable with Shadow) + Stock Status + Duration + Report Button */}
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 flex-wrap">
           {/* Category Pill with Icon & Shadow */}
@@ -44,18 +47,25 @@ export default function ProductInfo({
           {/* Stock Status */}
           <span
             className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold shadow-2xs border ${
-              product.available
+              isAvailable
                 ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                 : "bg-red-50 text-red-700 border-red-200"
             }`}
           >
             <span
               className={`h-1.5 w-1.5 rounded-full ${
-                product.available ? "bg-emerald-600" : "bg-red-600"
+                isAvailable ? "bg-emerald-600" : "bg-red-600"
               }`}
             />
-            {product.available ? "In Stock" : "Out of Stock"}
+            {isAvailable ? "In Stock" : "Out of Stock"}
           </span>
+
+          {/* Duration Badge if set */}
+          {remainingTime && isAvailable && (
+            <span className="inline-flex items-center rounded-full bg-gray-50 border border-gray-200 px-2.5 py-0.5 text-xs font-bold text-gray-700 shadow-2xs">
+              <span>{remainingTime}</span>
+            </span>
+          )}
         </div>
 
         {!isOwner && onReport && (

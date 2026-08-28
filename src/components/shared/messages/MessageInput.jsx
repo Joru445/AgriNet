@@ -372,8 +372,8 @@ export default function MessageInput({
         </div>
       )}
 
-      {/* Main Input Container */}
-      <div className="relative flex flex-col w-full rounded-2xl border bg-[#FAFAFA] border-[#DDDDDD] shadow-xs focus-within:border-[#2D6A4F] transition-colors duration-150">
+      {/* Main Input Container - High Contrast and Clear Readability */}
+      <div className="relative flex flex-col w-full rounded-2xl border-2 bg-white border-gray-300 shadow-xs focus-within:border-[#2D6A4F] focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 transition-all duration-150">
         {/* Selected Image Preview */}
         {selectedImage?.previewUrl && (
           <div className="p-3 pb-1 flex items-center gap-3 border-b border-gray-200/60 bg-gray-50/50 rounded-t-2xl">
@@ -487,7 +487,7 @@ export default function MessageInput({
                 ? "Add a caption (optional)..."
                 : "Type a message..."
             }
-            className="min-w-0 flex-1 resize-none overflow-y-auto py-3 focus:outline-none bg-transparent text-base sm:text-sm font-medium text-gray-800 placeholder-gray-400"
+            className="min-w-0 flex-1 resize-none overflow-y-auto py-3 focus:outline-none bg-transparent text-sm sm:text-base font-semibold text-gray-900 placeholder-gray-500"
           />
 
           <button
@@ -501,7 +501,7 @@ export default function MessageInput({
             aria-label="Send message"
             className={`h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center transition ${
               canSend
-                ? "text-[#2D6A4F] hover:text-[#1B4332] cursor-pointer hover:scale-105 active:scale-95"
+                ? "text-[#2D6A4F] hover:text-[#1B4332] hover:bg-[#E8F5EE] cursor-pointer hover:scale-105 active:scale-95"
                 : "text-gray-300 cursor-not-allowed"
             }`}
           >

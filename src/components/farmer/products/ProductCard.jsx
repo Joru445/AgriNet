@@ -1,7 +1,7 @@
 import productPlaceholder from "../../../assets/img/productPlaceholder.png";
 
 import { getFormatPrice, getDiscount, hasProductDiscount } from "../../../utils/price";
-import { isProductExpired, getRemainingTime } from "../../../utils/productExpiration";
+import { useLiveRemainingTime } from "../../../utils/productExpiration";
 
 const CATEGORY_ICONS = {
   Vegetables: "ri-plant-line",
@@ -17,8 +17,7 @@ const CATEGORY_ICONS = {
 export default function ProductCard({ product, view, onEdit, onDelete }) {
   const image = product.images?.[0]?.url || productPlaceholder;
 
-  const isExpired = isProductExpired(product);
-  const remainingTime = getRemainingTime(product);
+  const { remainingTime, isExpired } = useLiveRemainingTime(product);
   const stockNum = Number(product.stock ?? 0);
   const isAvailable = product.available !== false && stockNum > 0 && !isExpired;
   const isLowStock = isAvailable && stockNum <= 5;
@@ -162,14 +161,16 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-[#E63946] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
             {stockNum} left
           </div>
-        ) : remainingTime ? (
-          <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-[#2D6A4F] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs flex items-center gap-0.5">
-            <i className="ri-time-line text-[9px]" />
-            <span>{remainingTime}</span>
-          </div>
         ) : (
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-[#2D6A4F] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
             In Stock
+          </div>
+        )}
+
+        {/* Duration / Auto-Disappear Badge - Bottom Left of Image */}
+        {remainingTime && isAvailable && (
+          <div className="absolute bottom-1.5 left-1.5 z-10 flex items-center rounded-full bg-black/70 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-sm backdrop-blur-xs border border-white/20">
+            <span>{remainingTime}</span>
           </div>
         )}
       </div>
@@ -185,20 +186,9 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
             {product.name}
           </h3>
 
-          {/* Price Tag & Slashed Original Price */}
-          <div className="mt-1 flex items-end justify-between gap-1">
-            <div>
-              {hasDiscount && (
-                <div className="flex items-center gap-1 mb-0.5">
-                  <span className="text-[11px] sm:text-xs font-bold text-gray-500 line-through decoration-gray-400">
-                    ₱{originalPriceFormatted}
-                  </span>
-                  <span className="inline-flex items-center rounded bg-red-50 border border-red-200/80 px-1 py-0.2 text-[8px] sm:text-[9px] font-black text-red-600 leading-tight">
-                    -{discountPercent}%
-                  </span>
-                </div>
-              )}
-
+          {/* Price with Slashed Original Price + Percent beside it on the right side */}
+          <div className="mt-1 flex items-baseline justify-between gap-1 flex-wrap">
+            <div className="flex items-baseline gap-1.5 flex-wrap">
               <div className="flex items-baseline gap-0.5">
                 <span className="text-sm sm:text-base md:text-lg font-black text-[#1B4332] leading-none">
                   ₱{priceFormatted}
@@ -207,6 +197,17 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
                   /{product.unit || "kg"}
                 </span>
               </div>
+
+              {hasDiscount && (
+                <div className="flex items-center gap-1">
+                  <span className="text-[11px] sm:text-xs font-bold text-gray-400 line-through decoration-gray-400">
+                    ₱{originalPriceFormatted}
+                  </span>
+                  <span className="inline-flex items-center rounded bg-red-50 border border-red-200/80 px-1 py-0.2 text-[8px] sm:text-[9px] font-black text-red-600 leading-tight">
+                    -{discountPercent}%
+                  </span>
+                </div>
+              )}
             </div>
 
             <span className="text-[10px] sm:text-[11px] font-semibold text-gray-500 shrink-0">

@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+
 /**
  * Utility to check if a product listing has exceeded its expiration time.
  */
@@ -12,7 +14,7 @@ export function isProductExpired(product) {
           : new Date(product.expiresAt).getTime();
 
     if (!isNaN(expireTime) && expireTime > 0) {
-      return Date.now() > expireTime;
+      return Date.now() >= expireTime;
     }
   } catch {
     return false;
@@ -21,7 +23,7 @@ export function isProductExpired(product) {
 }
 
 /**
- * Formats the remaining time until product expiration.
+ * Formats the remaining time until product expiration in hours and minutes only (no seconds).
  */
 export function getRemainingTime(product) {
   if (!product || !product.expiresAt) return null;
@@ -38,18 +40,57 @@ export function getRemainingTime(product) {
     const diffMs = expireTime - Date.now();
     if (diffMs <= 0) return "Expired";
 
-    const hours = Math.floor(diffMs / (1000 * 60 * 60));
-    const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const totalMinutes = Math.ceil(diffMs / (1000 * 60));
+    const days = Math.floor(totalMinutes / (60 * 24));
+    const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+    const mins = totalMinutes % 60;
 
-    if (hours > 24) {
-      const days = Math.floor(hours / 24);
-      return `${days}d left`;
+    if (days > 0) {
+      return hours > 0 ? `${days}d ${hours}h left` : `${days}d left`;
     }
     if (hours > 0) {
-      return `${hours}h ${mins}m left`;
+      return mins > 0 ? `${hours}h ${mins}m left` : `${hours}h left`;
     }
-    return `${mins}m left`;
+    return `${Math.max(1, mins)}m left`;
   } catch {
     return null;
   }
+}
+
+/**
+ * React Hook for real-time live countdown timer (ticks automatically without page refresh).
+ */
+export function useLiveRemainingTime(product) {
+  const [remainingTime, setRemainingTime] = useState(() =>
+    getRemainingTime(product)
+  );
+  const [isExpired, setIsExpired] = useState(() => isProductExpired(product));
+
+  useEffect(() => {
+    if (!product?.expiresAt) {
+      setRemainingTime(null);
+      setIsExpired(false);
+      return;
+    }
+
+    const update = () => {
+      const time = getRemainingTime(product);
+      const expired = isProductExpired(product);
+      setRemainingTime(time);
+      setIsExpired(expired);
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [
+    product?.expiresAt,
+    typeof product?.expiresAt?.toMillis === "function"
+      ? product?.expiresAt?.toMillis()
+      : typeof product?.expiresAt?.seconds === "number"
+        ? product?.expiresAt?.seconds
+        : product?.expiresAt,
+  ]);
+
+  return { remainingTime, isExpired };
 }

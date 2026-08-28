@@ -36,6 +36,7 @@ function CustomDropdown({
   className = "",
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpwards, setOpenUpwards] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -54,6 +55,20 @@ function CustomDropdown({
     };
   }, [isOpen]);
 
+  function handleToggle() {
+    if (!isOpen && dropdownRef.current) {
+      const rect = dropdownRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      // If space below is constrained (less than 230px), open upwards!
+      if (spaceBelow < 230 && rect.top > 200) {
+        setOpenUpwards(true);
+      } else {
+        setOpenUpwards(false);
+      }
+    }
+    setIsOpen((prev) => !prev);
+  }
+
   const selectedOption = options.find((opt) =>
     typeof opt === "string" ? opt === value : opt.value === value
   );
@@ -65,7 +80,10 @@ function CustomDropdown({
     : "";
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div
+      className={`relative ${isOpen ? "z-50" : "z-10"} ${className}`}
+      ref={dropdownRef}
+    >
       {label && (
         <label className="text-sm font-semibold text-gray-800 block mb-2">
           {label}
@@ -75,7 +93,7 @@ function CustomDropdown({
       {/* Trigger Button */}
       <button
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={handleToggle}
         className={`w-full border rounded-xl px-4 py-3 text-sm flex items-center justify-between bg-white text-left transition-all cursor-pointer ${
           isOpen
             ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 shadow-xs"
@@ -84,7 +102,9 @@ function CustomDropdown({
       >
         <span
           className={`truncate ${
-            displayLabel ? "text-gray-900 font-medium" : "text-gray-400 font-normal"
+            displayLabel
+              ? "text-gray-900 font-medium"
+              : "text-gray-400 font-normal"
           }`}
         >
           {displayLabel || placeholder}
@@ -93,14 +113,18 @@ function CustomDropdown({
         {/* Animated Chevron: turns upwards smoothly when open */}
         <i
           className={`ri-arrow-down-s-line text-xl text-gray-500 transition-transform duration-200 shrink-0 ml-2 ${
-            isOpen ? "rotate-180 text-[#2D6A4F]" : ""
+            isOpen ? (openUpwards ? "" : "rotate-180 text-[#2D6A4F]") : ""
           }`}
         />
       </button>
 
-      {/* Popup Menu */}
+      {/* Popup Menu with Smart Upward / Downward Drop */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto py-1 scrollbar-thin">
+        <div
+          className={`absolute left-0 right-0 z-50 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-56 overflow-y-auto py-1 scrollbar-thin ${
+            openUpwards ? "bottom-full mb-1.5" : "top-full mt-1.5"
+          }`}
+        >
           {options.map((opt) => {
             const optValue = typeof opt === "string" ? opt : opt.value;
             const optLabel = typeof opt === "string" ? opt : opt.label;
@@ -154,11 +178,17 @@ export default function ProductForm({ form, onChange }) {
       : "0";
 
   const [isCustomDuration, setIsCustomDuration] = useState(() => {
-    return currentDurationStr !== "0" && !standardDurations.includes(currentDurationStr);
+    return (
+      currentDurationStr !== "0" &&
+      !standardDurations.includes(currentDurationStr)
+    );
   });
 
   useEffect(() => {
-    if (currentDurationStr !== "0" && !standardDurations.includes(currentDurationStr)) {
+    if (
+      currentDurationStr !== "0" &&
+      !standardDurations.includes(currentDurationStr)
+    ) {
       setIsCustomDuration(true);
     }
   }, [currentDurationStr]);
@@ -178,9 +208,9 @@ export default function ProductForm({ form, onChange }) {
   }
 
   return (
-    <div className="grid md:grid-cols-2 gap-5">
-      {/* 1. Product Name */}
-      <div className="md:col-span-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      {/* 1. Product Name - Full Width */}
+      <div className="col-span-1 sm:col-span-2 order-1">
         <label className="text-sm font-semibold text-gray-800 block mb-2">
           Product Name
         </label>
@@ -194,8 +224,8 @@ export default function ProductForm({ form, onChange }) {
         />
       </div>
 
-      {/* 2. Category Custom Dropdown with Flip Arrow */}
-      <div>
+      {/* 2. Category Custom Dropdown */}
+      <div className="order-2 sm:order-2">
         <CustomDropdown
           label="Category"
           value={form.category}
@@ -212,8 +242,8 @@ export default function ProductForm({ form, onChange }) {
         />
       </div>
 
-      {/* 3. Unit Custom Dropdown with Flip Arrow */}
-      <div>
+      {/* 3. Unit Custom Dropdown */}
+      <div className="order-3 sm:order-3">
         <CustomDropdown
           label="Unit"
           value={form.unit}
@@ -230,23 +260,27 @@ export default function ProductForm({ form, onChange }) {
         />
       </div>
 
-      {/* 4. Product Listing Duration (Auto-disappear in Hours) - IN BETWEEN UNIT AND SELLING PRICE */}
-      <div className="md:col-span-2">
+      {/* 4. Product Listing Duration:
+          - Mobile (order-4): In between Unit and Selling Price
+          - Desktop (sm:order-6): In row 3 on the left side, directly beside Stock Quantity! */}
+      <div className="order-4 sm:order-6">
         <div className="flex items-center justify-between mb-2">
           <label className="text-sm font-semibold text-gray-800">
             Listing Duration
           </label>
-          <span className="text-xs text-gray-400 font-medium">Auto-disappear</span>
+          <span className="text-xs text-gray-400 font-medium">
+            Auto-disappear
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-2.5">
           <CustomDropdown
             value={
               isCustomDuration
                 ? "custom"
                 : currentDurationStr === ""
-                ? "0"
-                : currentDurationStr
+                  ? "0"
+                  : currentDurationStr
             }
             options={durationOptions}
             placeholder="Select duration"
@@ -275,7 +309,7 @@ export default function ProductForm({ form, onChange }) {
       </div>
 
       {/* 5. Selling / Discounted Price */}
-      <div>
+      <div className="order-5 sm:order-4">
         <div className="flex items-center justify-between mb-2">
           <label className="text-sm font-semibold text-gray-800">
             Selling Price <span className="text-red-500">*</span>
@@ -306,7 +340,7 @@ export default function ProductForm({ form, onChange }) {
       </div>
 
       {/* 6. Original Price (For Slash Discount) */}
-      <div>
+      <div className="order-6 sm:order-5">
         <label className="text-sm font-semibold text-gray-800 block mb-2">
           Original Price{" "}
           <span className="text-xs text-gray-400 font-normal">
@@ -332,8 +366,10 @@ export default function ProductForm({ form, onChange }) {
         </div>
       </div>
 
-      {/* 7. Stock Quantity */}
-      <div className="md:col-span-2">
+      {/* 7. Stock Quantity:
+          - Desktop (sm:order-7): Beside Listing Duration on the right side!
+          - Mobile (order-7): Below original price */}
+      <div className="order-7 sm:order-7">
         <label className="text-sm font-semibold text-gray-800 block mb-2">
           Stock Quantity
         </label>
@@ -350,7 +386,7 @@ export default function ProductForm({ form, onChange }) {
       </div>
 
       {/* 8. Available Checkbox */}
-      <div className="md:col-span-2">
+      <div className="col-span-1 sm:col-span-2 order-8 sm:order-8">
         <label className="flex items-center gap-3 cursor-pointer select-none">
           <input
             type="checkbox"

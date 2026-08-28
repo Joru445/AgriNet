@@ -97,7 +97,7 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
         </div>
 
         {/* Scrollable Form Body */}
-        <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8 scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-6 scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <ProductImageUploader images={form.images} onChange={handleImages} />
           <ProductForm form={form} onChange={handleChange} />
         </div>
