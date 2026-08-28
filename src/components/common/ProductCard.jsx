@@ -5,7 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import UserIdentity from "../common/UserIdentity";
 
 import { getProductPath } from "../../utils/routes";
-import { getFormatPrice, getDiscount, getOriginalPrice } from "../../utils/price";
+import { getFormatPrice, getDiscount, hasProductDiscount } from "../../utils/price";
 
 import productPlaceholder from "../../assets/img/productPlaceholder.png";
 
@@ -19,7 +19,11 @@ const CATEGORY_ICONS = {
   Seafood: "ri-water-flash-line",
 };
 
-export default function ProductCard({ product, hideFooter = false }) {
+export default function ProductCard({
+  product,
+  hideFooter = false,
+  hideDiscount = false,
+}) {
   const { profile } = useAuth();
   const [imgError, setImgError] = useState(false);
   const rawImage = product.images?.[0]?.url ?? product.images?.[0];
@@ -29,10 +33,12 @@ export default function ProductCard({ product, hideFooter = false }) {
   const isAvailable = product.available !== false && stockNum > 0;
   const isLowStock = isAvailable && stockNum <= 5;
 
-  const originalPriceNum = getOriginalPrice(product.originalPrice ?? 0);
   const priceNum = Number(product.price ?? 0);
-
-  const discountPercent = getDiscount(product.originalPrice ?? 0);
+  const originalPriceNum = Number(product.originalPrice ?? 0);
+  const hasDiscount = hasProductDiscount(product.originalPrice, product.price);
+  const discountPercent = hasDiscount
+    ? getDiscount(product.originalPrice, product.price)
+    : 0;
 
   const priceFormatted = getFormatPrice(priceNum);
   const originalPriceFormatted = getFormatPrice(originalPriceNum);
@@ -82,15 +88,17 @@ export default function ProductCard({ product, hideFooter = false }) {
         {/* Price Tag & Stock Count */}
         <div className="mt-1 flex items-end justify-between gap-1">
           <div>
-            {/* Slashed Original Price + Top-Right Discount Badge */}
-            <div className="flex items-center gap-1 mb-0.5">
-              <span className="text-xs sm:text-sm font-bold text-gray-500 line-through decoration-gray-400">
-                ₱{originalPriceFormatted}
-              </span>
-              <span className="inline-flex items-center rounded bg-red-50 border border-red-200/80 px-1 py-0.2 text-[8px] sm:text-[9px] font-black text-red-600 leading-tight">
-                -{discountPercent}%
-              </span>
-            </div>
+            {/* Slashed Original Price + Top-Right Discount Badge (Only shown if hasDiscount is true and not hidden) */}
+            {hasDiscount && !hideDiscount && (
+              <div className="flex items-center gap-1 mb-0.5">
+                <span className="text-xs sm:text-sm font-bold text-gray-500 line-through decoration-gray-400">
+                  ₱{originalPriceFormatted}
+                </span>
+                <span className="inline-flex items-center rounded bg-red-50 border border-red-200/80 px-1 py-0.2 text-[8px] sm:text-[9px] font-black text-red-600 leading-tight">
+                  -{discountPercent}%
+                </span>
+              </div>
+            )}
 
             {/* Main Selling Price */}
             <div className="flex items-baseline gap-1">

@@ -51,7 +51,12 @@ export default function RecentProducts({ products = [], loading = false }) {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {displayedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} hideFooter />
+            <ProductCard
+              key={product.id}
+              product={product}
+              hideFooter
+              hideDiscount
+            />
           ))}
         </div>
       )}
