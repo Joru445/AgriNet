@@ -107,35 +107,36 @@ export function getCurrentUser() {
 }
 
 /**
- * Initializes and manages Firebase invisible RecaptchaVerifier.
- * Clears prior widgets and DOM residues to prevent 'already rendered' errors.
+ * Initializes and manages Firebase invisible RecaptchaVerifier with caching.
+ * Uses a fresh dynamically mounted DOM node each time to completely prevent 'already rendered' errors.
  */
-export function initPhoneRecaptcha(containerId = "recaptcha-container", onSolved, onExpired) {
+export function getOrCreatePhoneRecaptcha(containerId = "recaptcha-container", onSolved, onExpired) {
   if (typeof window === "undefined") return null;
 
+  // Re-use existing healthy verifier instance
+  if (window.recaptchaVerifier) {
+    return window.recaptchaVerifier;
+  }
+
+  const containerElement = document.getElementById(containerId);
+  if (!containerElement) {
+    console.warn(`reCAPTCHA container #${containerId} not found in DOM`);
+    return null;
+  }
+
   try {
-    if (window.recaptchaVerifier) {
-      try {
-        window.recaptchaVerifier.clear();
-      } catch (_) {}
-      window.recaptchaVerifier = null;
-    }
-
-    const containerElement = document.getElementById(containerId);
-    if (!containerElement) {
-      console.warn(`reCAPTCHA container #${containerId} not found in DOM`);
-      return null;
-    }
-
-    // Clear any previous rendered reCAPTCHA elements inside the container
     containerElement.innerHTML = "";
+    const freshNode = document.createElement("div");
+    freshNode.id = `rc-${Date.now()}`;
+    containerElement.appendChild(freshNode);
 
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, freshNode, {
       size: "invisible",
       callback: (response) => {
         onSolved?.(response);
       },
       "expired-callback": () => {
+        resetPhoneRecaptcha(containerId);
         onExpired?.();
       },
     });
@@ -146,6 +147,22 @@ export function initPhoneRecaptcha(containerId = "recaptcha-container", onSolved
     return null;
   }
 }
+
+export function resetPhoneRecaptcha(containerId = "recaptcha-container") {
+  if (typeof window === "undefined") return;
+  if (window.recaptchaVerifier) {
+    try {
+      window.recaptchaVerifier.clear();
+    } catch (_) {}
+    window.recaptchaVerifier = null;
+  }
+  const containerElement = document.getElementById(containerId);
+  if (containerElement) {
+    containerElement.innerHTML = "";
+  }
+}
+
+export const initPhoneRecaptcha = getOrCreatePhoneRecaptcha;
 
 /**
  * Sends an SMS verification code to the specified phone number using PhoneAuthProvider.

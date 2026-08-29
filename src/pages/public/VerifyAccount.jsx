@@ -4,6 +4,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
   initPhoneRecaptcha,
+  resetPhoneRecaptcha,
   sendPhoneVerificationOtp,
   verifyAndLinkPhone,
   sendVerificationEmail,
@@ -160,19 +161,20 @@ export default function VerifyAccount() {
       showToast.success(`Verification code sent to ${formatPhilippinePhoneNumber(normalized)}`);
     } catch (error) {
       console.error("Failed to send OTP:", error);
+      resetPhoneRecaptcha();
 
       if (error.code === "auth/invalid-phone-number") {
         setPhoneError("The phone number format is invalid.");
       } else if (error.code === "auth/too-many-requests") {
-        setPhoneError("Too many SMS requests sent. Please wait a few minutes before trying again.");
+        setPhoneError("Too many SMS requests sent. Please wait a few minutes before trying again or test with another number.");
       } else if (error.code === "auth/quota-exceeded") {
         setPhoneError("SMS quota exceeded. Please contact support or try again later.");
       } else if (error.code === "auth/operation-not-allowed") {
         setPhoneError("Phone authentication or SMS region (+63 Philippines) is not enabled in Firebase Console.");
       } else if (error.code === "auth/billing-not-enabled") {
         setPhoneError("SMS sending requires Firebase Blaze plan or adding a Test Phone Number in Firebase Console.");
-      } else if (error.code === "auth/invalid-app-credential") {
-        setPhoneError("SMS verification check failed. Please ensure localhost is in Authorized Domains in Firebase Console.");
+      } else if (error.code?.includes("-39") || error.code === "auth/invalid-app-credential") {
+        setPhoneError("SMS verification check failed. Please refresh the page and try again.");
       } else {
         setPhoneError(error.message || "Failed to send verification SMS. Please try again.");
       }
@@ -346,6 +348,9 @@ export default function VerifyAccount() {
                     inputMode="numeric"
                     placeholder="0917 123 4567"
                     value={phoneInput}
+                    onFocus={() => {
+                      if (phoneError) setPhoneError("");
+                    }}
                     onChange={(e) => {
                       setPhoneInput(e.target.value);
                       if (phoneError) setPhoneError("");

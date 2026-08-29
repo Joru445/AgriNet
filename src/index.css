@@ -43,6 +43,11 @@ body {
   padding: 0;
 }
 
+/* Hide floating Google reCAPTCHA badge in bottom right corner */
+.grecaptcha-badge {
+  visibility: hidden !important;
+}
+
 #root {
   min-height: 100%;
   width: 100%;
