@@ -93,18 +93,6 @@ export default function VerifyAccount() {
     }
   }, [step]);
 
-  // Initialize visible reCAPTCHA when on the phone input step
-  useEffect(() => {
-    if (step === "phone") {
-      const timer = setTimeout(() => {
-        initPhoneRecaptcha("recaptcha-container", () => {
-          setPhoneError("");
-        });
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
   // Clean up reCAPTCHA verifier on component unmount
   useEffect(() => {
     return () => {
@@ -155,11 +143,7 @@ export default function VerifyAccount() {
     try {
       setSendingOtp(true);
 
-      let recaptchaVerifier = window.recaptchaVerifier;
-      if (!recaptchaVerifier) {
-        recaptchaVerifier = initPhoneRecaptcha("recaptcha-container");
-      }
-
+      const recaptchaVerifier = initPhoneRecaptcha("recaptcha-container");
       if (!recaptchaVerifier) {
         throw new Error("Unable to initialize reCAPTCHA. Please refresh the page and try again.");
       }
@@ -188,7 +172,7 @@ export default function VerifyAccount() {
       } else if (error.code === "auth/billing-not-enabled") {
         setPhoneError("SMS sending requires Firebase Blaze plan or adding a Test Phone Number in Firebase Console.");
       } else if (error.code === "auth/invalid-app-credential") {
-        setPhoneError("App verification failed. Please ensure localhost is in Authorized Domains in Firebase Console.");
+        setPhoneError("SMS verification check failed. Please ensure localhost is in Authorized Domains in Firebase Console.");
       } else {
         setPhoneError(error.message || "Failed to send verification SMS. Please try again.");
       }
@@ -387,9 +371,7 @@ export default function VerifyAccount() {
               </div>
 
               {/* reCAPTCHA container */}
-              <div className="my-2 flex justify-center items-center min-h-[78px]">
-                <div id="recaptcha-container" />
-              </div>
+              <div id="recaptcha-container" />
 
               <button
                 type="submit"

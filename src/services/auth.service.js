@@ -107,10 +107,10 @@ export function getCurrentUser() {
 }
 
 /**
- * Initializes and manages Firebase RecaptchaVerifier.
+ * Initializes and manages Firebase invisible RecaptchaVerifier.
  * Clears prior widgets and DOM residues to prevent 'already rendered' errors.
  */
-export function initPhoneRecaptcha(containerId = "recaptcha-container", onSolved, onExpired, size = "normal") {
+export function initPhoneRecaptcha(containerId = "recaptcha-container", onSolved, onExpired) {
   if (typeof window === "undefined") return null;
 
   try {
@@ -131,18 +131,13 @@ export function initPhoneRecaptcha(containerId = "recaptcha-container", onSolved
     containerElement.innerHTML = "";
 
     window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
-      size: size,
+      size: "invisible",
       callback: (response) => {
         onSolved?.(response);
       },
       "expired-callback": () => {
         onExpired?.();
       },
-    });
-
-    // Render the reCAPTCHA widget into the DOM container
-    window.recaptchaVerifier.render().catch((err) => {
-      console.warn("reCAPTCHA widget render notice:", err);
     });
 
     return window.recaptchaVerifier;
