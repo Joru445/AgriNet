@@ -10,17 +10,22 @@ import ProfileStep from "./ProfileStep";
 export default function RegisterForm({
   step,
   form,
-  loading,
+  errors = {},
+  touched = {},
+  loading = false,
+  isCheckingEmail = false,
   updateField,
+  setFieldTouched,
   updateLocation,
-  nextStep,
+  handleStep1Continue,
+  handleStep2Continue,
   previousStep,
   submit,
 }) {
   return (
     <div
       className="flex-1 w-full min-w-0 relative h-full min-h-0 overflow-y-auto scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      style={{ backgroundColor: 'var(--agri-bg-surface)' }}
+      style={{ backgroundColor: "var(--agri-bg-surface)" }}
     >
       {/* Mobile-only agricultural landscape background */}
       <div className="fixed inset-0 lg:hidden pointer-events-none overflow-hidden">
@@ -36,7 +41,10 @@ export default function RegisterForm({
         <div className="w-full max-w-md bg-white/95 backdrop-blur-md border border-white/60 shadow-2xl rounded-2xl p-5 sm:p-7 md:p-9 lg:bg-white lg:border-transparent lg:shadow-xl lg:backdrop-blur-none">
           {/* Mobile Logo */}
           <div className="border-b-2 border-[#1B4332]/20 pb-3 mb-3.5 sm:pb-4 sm:mb-5 lg:hidden">
-            <Link className="flex items-center gap-2.5 no-underline hover:no-underline" to="/">
+            <Link
+              className="flex items-center gap-2.5 no-underline hover:no-underline"
+              to="/"
+            >
               <img
                 src={logo}
                 alt="AgriNet Logo"
@@ -55,7 +63,9 @@ export default function RegisterForm({
               Create Your Account
             </h1>
 
-            <p className="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1">Join AgriNet today.</p>
+            <p className="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1">
+              Join AgriNet today.
+            </p>
           </div>
 
           {/* Step Indicator */}
@@ -98,26 +108,35 @@ export default function RegisterForm({
           {step === 1 && (
             <AccountStep
               form={form}
+              errors={errors}
+              touched={touched}
+              isCheckingEmail={isCheckingEmail}
               updateField={updateField}
-              onContinue={nextStep}
+              setFieldTouched={setFieldTouched}
+              onContinue={handleStep1Continue}
             />
           )}
 
           {step === 2 && (
             <PasswordStep
               form={form}
-              errors={{}}
-              onChange={(e) => updateField(e.target.name, e.target.value)}
+              errors={errors}
+              touched={touched}
+              updateField={updateField}
+              setFieldTouched={setFieldTouched}
               onBack={previousStep}
-              onContinue={nextStep}
+              onContinue={handleStep2Continue}
             />
           )}
 
           {step === 3 && (
             <ProfileStep
               form={form}
+              errors={errors}
+              touched={touched}
               loading={loading}
               updateField={updateField}
+              setFieldTouched={setFieldTouched}
               updateLocation={updateLocation}
               onBack={previousStep}
               onSubmit={submit}

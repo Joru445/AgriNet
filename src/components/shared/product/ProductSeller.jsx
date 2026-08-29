@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 
 export default function ProductSeller({ farmer, isOwner }) {
-  if (!farmer) return null;
-
   const [expandedAddress, setExpandedAddress] = useState(false);
+
+  if (!farmer) return null;
 
   const farmerName =
     farmer.fullname || farmer.storeName || farmer.username || "Farmer";

@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import Loading from "../components/Loading";
 
 export default function RoleRoute({ allowedRole }) {
-  const { user, profile, loading, suspended, emailVerified } = useAuth();
+  const { user, profile, loading, suspended, phoneVerified } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -21,8 +21,8 @@ export default function RoleRoute({ allowedRole }) {
     return <Navigate to="/suspended" replace />;
   }
 
-  // Unverified users must verify their email first.
-  if (!emailVerified) {
+  // Phone verification is REQUIRED to access the application.
+  if (!phoneVerified) {
     return <Navigate to="/verify-account" replace />;
   }
 

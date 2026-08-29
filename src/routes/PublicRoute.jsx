@@ -5,7 +5,7 @@ import Loading from "../components/Loading";
 import { getRoleHome } from "../utils/routes";
 
 export default function PublicRoute() {
-  const { user, profile, loading, suspended, emailVerified } = useAuth();
+  const { user, profile, loading, suspended, phoneVerified } = useAuth();
   const location = useLocation();
 
   if (loading) return <Loading />;
@@ -16,7 +16,7 @@ export default function PublicRoute() {
     return <Navigate to="/suspended" replace />;
   }
 
-  if (!emailVerified) {
+  if (!phoneVerified) {
     return <Navigate to="/verify-account" replace />;
   }
 

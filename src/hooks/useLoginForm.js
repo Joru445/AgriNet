@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { login } from "../services/login.service";
 import { getRoleHome } from "../utils/routes";
 import { validateLoginForm } from "../utils/validators";
+import { showToast } from "../utils/toast";
 
 const EMPTY_ERRORS = { email: "", password: "", general: "" };
 
@@ -52,8 +53,13 @@ export function useLoginForm() {
         return;
       }
 
-      if (!user?.emailVerified) {
-        showToast.info("Please verify your email to log in. Check your inbox or spam folder.");
+      const phoneVerified = Boolean(
+        user?.phoneNumber ||
+        user?.providerData?.some((p) => p.providerId === "phone")
+      );
+
+      if (!phoneVerified) {
+        showToast.info("Please verify your phone number to access your account.");
         navigate("/verify-account", { replace: true });
         return;
       }
