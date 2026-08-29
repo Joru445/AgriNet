@@ -107,15 +107,18 @@ export function getCurrentUser() {
 }
 
 /**
- * Initializes and manages Firebase invisible RecaptchaVerifier with caching.
- * Uses a fresh dynamically mounted DOM node each time to completely prevent 'already rendered' errors.
+ * Initializes a fresh Firebase invisible RecaptchaVerifier for each SMS attempt.
+ * A single-use fresh token prevents 'too-many-requests' caused by token reuse.
  */
 export function getOrCreatePhoneRecaptcha(containerId = "recaptcha-container", onSolved, onExpired) {
   if (typeof window === "undefined") return null;
 
-  // Re-use existing healthy verifier instance
+  // Clean up any previously used verifier to guarantee a fresh single-use token
   if (window.recaptchaVerifier) {
-    return window.recaptchaVerifier;
+    try {
+      window.recaptchaVerifier.clear();
+    } catch (_) {}
+    window.recaptchaVerifier = null;
   }
 
   const containerElement = document.getElementById(containerId);
