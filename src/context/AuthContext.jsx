@@ -5,7 +5,7 @@ import {
   useState,
 } from "react";
 
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, reload } from "firebase/auth";
 import {
   collection,
   doc,
@@ -33,15 +33,15 @@ export function AuthProvider({ children }) {
     await signOut(auth);
   }
 
-  async function refreshUser() {
+  async function refreshAuthUser() {
     if (!auth.currentUser) {
       return null;
     }
-    await auth.currentUser.reload();
-    const isVerified = Boolean(auth.currentUser.emailVerified);
-    setUser(auth.currentUser);
-    setEmailVerified(isVerified);
-    return auth.currentUser;
+    await reload(auth.currentUser);
+    const refreshed = auth.currentUser;
+    setUser(refreshed);
+    setEmailVerified(Boolean(refreshed.emailVerified));
+    return refreshed;
   }
 
   useEffect(() => {
@@ -198,6 +198,17 @@ export function AuthProvider({ children }) {
       }
     : null;
 
+  // Firebase Auth is the single source of truth for verification states
+  const phoneVerified = Boolean(
+    user?.phoneNumber ||
+      user?.providerData?.some((p) => p.providerId === "phone")
+  );
+
+  const isEmailVerified = Boolean(user?.emailVerified || emailVerified);
+
+  // Phone verification is REQUIRED to access the application; email verification is OPTIONAL
+  const verificationComplete = phoneVerified;
+
   return (
     <AuthContext.Provider
       value={{
@@ -208,11 +219,13 @@ export function AuthProvider({ children }) {
         loading,
 
         suspended: profile?.status === "suspended",
-        emailVerified: Boolean(user?.emailVerified || emailVerified),
-        verificationComplete: Boolean(user?.emailVerified || emailVerified),
+        emailVerified: isEmailVerified,
+        phoneVerified,
+        verificationComplete,
 
-        refreshUser,
-        reloadUser: refreshUser,
+        refreshAuthUser,
+        refreshUser: refreshAuthUser,
+        reloadUser: refreshAuthUser,
 
         logout,
       }}

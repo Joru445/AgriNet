@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import ImageViewerModal from "../../common/ImageViewerModal";
 
 export default function TransactionProofReview({
@@ -8,7 +9,20 @@ export default function TransactionProofReview({
   onReject,
 }) {
   const [showFullscreen, setShowFullscreen] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+
   const proofUrl = inquiry?.proof?.url;
+
+  const handleConfirmAction = async () => {
+    setShowConfirmModal(false);
+    await onConfirm?.();
+  };
+
+  const handleRejectAction = async () => {
+    setShowRejectModal(false);
+    await onReject?.();
+  };
 
   return (
     <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
@@ -54,13 +68,14 @@ export default function TransactionProofReview({
         <button
           type="button"
           disabled={processing}
-          onClick={onReject}
+          onClick={() => setShowRejectModal(true)}
           className="
             flex-1 rounded-xl
             border border-red-200
             px-4 py-3
             text-sm font-semibold text-red-600
             transition hover:bg-red-50
+            cursor-pointer
             disabled:cursor-not-allowed
             disabled:opacity-50
           "
@@ -71,13 +86,14 @@ export default function TransactionProofReview({
         <button
           type="button"
           disabled={processing || !proofUrl}
-          onClick={onConfirm}
+          onClick={() => setShowConfirmModal(true)}
           className="
             flex-1 rounded-xl
             bg-[#2D6A4F]
             px-4 py-3
             text-sm font-semibold text-white
             transition hover:bg-[#24583F]
+            cursor-pointer
             disabled:cursor-not-allowed
             disabled:opacity-50
           "
@@ -85,6 +101,114 @@ export default function TransactionProofReview({
           {processing ? "Processing..." : "Confirm & Complete"}
         </button>
       </div>
+
+      {/* Confirm & Complete Modal Card */}
+      {showConfirmModal &&
+        createPortal(
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md transition-all">
+            <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl animate-scale-in">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-[#2D6A4F]">
+                  <i className="ri-checkbox-circle-fill text-2xl text-[#2D6A4F]" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-bold text-gray-900">
+                    Confirm & Complete Transaction
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600 font-medium leading-relaxed">
+                    Confirm that this transaction is complete?
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmModal(false)}
+                  disabled={processing}
+                  className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleConfirmAction}
+                  disabled={processing}
+                  className="rounded-xl bg-[#2D6A4F] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#1B4332] shadow-xs cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                >
+                  {processing ? (
+                    <>
+                      <i className="ri-loader-4-line animate-spin" />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <i className="ri-check-line" />
+                      <span>Confirm & Complete</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {/* Reject Proof Modal Card */}
+      {showRejectModal &&
+        createPortal(
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md transition-all">
+            <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl animate-scale-in">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                  <i className="ri-error-warning-fill text-2xl text-red-600" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-bold text-gray-900">
+                    Reject Transaction Proof
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600 font-medium leading-relaxed">
+                    Reject this proof and ask the consumer to upload another?
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowRejectModal(false)}
+                  disabled={processing}
+                  className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleRejectAction}
+                  disabled={processing}
+                  className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-700 shadow-xs cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                >
+                  {processing ? (
+                    <>
+                      <i className="ri-loader-4-line animate-spin" />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <i className="ri-close-line" />
+                      <span>Reject Proof</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {/* Fullscreen Zoomable Image Modal */}
       <ImageViewerModal

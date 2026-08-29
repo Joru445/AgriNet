@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import Loading from "../components/Loading";
 
 export default function VerificationRoute() {
-  const { user, profile, loading, suspended, emailVerified } = useAuth();
+  const { user, profile, loading, suspended, phoneVerified } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -20,8 +20,8 @@ export default function VerificationRoute() {
     return <Navigate to="/suspended" replace />;
   }
 
-  // Email verification check
-  if (!emailVerified) {
+  // Phone verification check
+  if (!phoneVerified) {
     return <Navigate to="/verify-account" replace />;
   }
 

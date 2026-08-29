@@ -80,6 +80,22 @@ export async function createProduct(data) {
 
     available: data.available ?? true,
 
+    durationHours:
+      data.durationHours !== "" &&
+      data.durationHours != null &&
+      !isNaN(Number(data.durationHours)) &&
+      Number(data.durationHours) > 0
+        ? Number(data.durationHours)
+        : null,
+
+    expiresAt:
+      data.durationHours !== "" &&
+      data.durationHours != null &&
+      !isNaN(Number(data.durationHours)) &&
+      Number(data.durationHours) > 0
+        ? new Date(Date.now() + Number(data.durationHours) * 3600 * 1000)
+        : null,
+
     ratingSummary: {
       average: 0,
       count: 0,
@@ -92,7 +108,23 @@ export async function createProduct(data) {
 }
 
 export async function updateProduct(id, data) {
-  await updateDoc(doc(db, "products", id), data);
+  const updatePayload = { ...data };
+  if (data.durationHours !== undefined) {
+    const durNum =
+      data.durationHours !== "" &&
+      data.durationHours != null &&
+      !isNaN(Number(data.durationHours)) &&
+      Number(data.durationHours) > 0
+        ? Number(data.durationHours)
+        : null;
+
+    updatePayload.durationHours = durNum;
+    updatePayload.expiresAt = durNum
+      ? new Date(Date.now() + durNum * 3600 * 1000)
+      : null;
+  }
+
+  await updateDoc(doc(db, "products", id), updatePayload);
 }
 
 export async function deleteProduct(id) {

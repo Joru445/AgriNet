@@ -1,12 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useAuth } from "../../../context/AuthContext";
+
 import Avatar from "../../common/Avatar";
 import BackButton from "../../common/BackButton";
 import UserProfileModal from "./UserProfileModal";
 import ReportModal from "../../common/ReportModal";
 
+import { getProfilePath } from "../../../utils/routes";
+
 export default function ChatHeader({ user }) {
+  const { profile } = useAuth();
+
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -37,11 +43,13 @@ export default function ChatHeader({ user }) {
   const isFarmer = user.role === "farmer";
   const isAdmin = user.role === "admin";
 
+  const profilePath = getProfilePath(profile.role)
+
   function handleAction() {
     setMenuOpen(false);
     if (isFarmer) {
       if (targetUid) {
-        navigate(`/profile/${targetUid}`);
+        navigate(`${profilePath}/${targetUid}`);
       }
     } else {
       setShowProfileModal(true);
@@ -99,9 +107,8 @@ export default function ChatHeader({ user }) {
             <button
               type="button"
               onClick={() => setMenuOpen((prev) => !prev)}
-              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition cursor-pointer ${
-                menuOpen ? "bg-gray-200 text-gray-900" : "hover:bg-gray-100 text-gray-600"
-              }`}
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition cursor-pointer ${menuOpen ? "bg-gray-200 text-gray-900" : "hover:bg-gray-100 text-gray-600"
+                }`}
               title="More options"
               aria-expanded={menuOpen}
             >

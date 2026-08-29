@@ -35,12 +35,12 @@ export default function InquiryRow({
     userRole === "farmer"
       ? (inquiry.consumerSnapshot ?? consumer)
       : {
-          ...(inquiry.farmerSnapshot ?? {}),
-          ...(farmer ?? {}),
-          verified:
-            farmer?.verified === true ||
-            inquiry.farmerSnapshot?.verified === true,
-        };
+        ...(inquiry.farmerSnapshot ?? {}),
+        ...(farmer ?? {}),
+        verified:
+          farmer?.verified === true ||
+          inquiry.farmerSnapshot?.verified === true,
+      };
 
   function openConversation() {
     if (!inquiry.conversationId) {
@@ -80,6 +80,9 @@ export default function InquiryRow({
     inquiry.reviewed === true ||
     Boolean(inquiry.farmerReviewId) ||
     Boolean(inquiry.productReviewId);
+
+  // --- Determine banner config ---
+  const banner = getBanner(status, userRole, isReviewed);
 
   // --- Determine which buttons get red dots ---
   const dots = getRedDots(status, userRole, isReviewed);

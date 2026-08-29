@@ -5,7 +5,7 @@ import Loading from "../components/Loading";
 import { getRoleHome } from "../utils/routes";
 
 export default function HomeRedirect() {
-  const { user, profile, loading, suspended, emailVerified } = useAuth();
+  const { user, profile, loading, suspended, phoneVerified } = useAuth();
 
   if (loading) return <Loading />;
 
@@ -15,7 +15,7 @@ export default function HomeRedirect() {
     return <Navigate to="/suspended" replace />;
   }
 
-  if (!emailVerified) {
+  if (!phoneVerified) {
     return <Navigate to="/verify-account" replace />;
   }
 

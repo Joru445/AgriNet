@@ -1,5 +1,8 @@
 import productPlaceholder from "../../../assets/img/productPlaceholder.png";
 
+import { getFormatPrice, getDiscount, hasProductDiscount } from "../../../utils/price";
+import { useLiveRemainingTime } from "../../../utils/productExpiration";
+
 const CATEGORY_ICONS = {
   Vegetables: "ri-plant-line",
   Fruits: "ri-seedling-line",
@@ -8,39 +11,27 @@ const CATEGORY_ICONS = {
   Herbs: "ri-medicine-bottle-line",
   "Root Crops": "ri-earth-line",
   Seafood: "ri-water-flash-line",
+  Others: "ri-shopping-basket-2-line",
 };
 
 export default function ProductCard({ product, view, onEdit, onDelete }) {
   const image = product.images?.[0]?.url || productPlaceholder;
 
+  const { remainingTime, isExpired } = useLiveRemainingTime(product);
   const stockNum = Number(product.stock ?? 0);
-  const isAvailable = product.available !== false && stockNum > 0;
+  const isAvailable = product.available !== false && stockNum > 0 && !isExpired;
   const isLowStock = isAvailable && stockNum <= 5;
 
   const originalPriceNum = Number(product.originalPrice);
   const priceNum = Number(product.price ?? 0);
-  const hasDiscount =
-    !isNaN(originalPriceNum) &&
-    originalPriceNum > 0 &&
-    priceNum > 0 &&
-    originalPriceNum > priceNum;
+  const hasDiscount = hasProductDiscount(product.originalPrice, product.price);
 
   const discountPercent = hasDiscount
-    ? Math.round(((originalPriceNum - priceNum) / originalPriceNum) * 100)
+    ? getDiscount(product.originalPrice, product.price)
     : 0;
 
-  const formatPrice = (val) => {
-    const num = Number(val ?? 0);
-    return num % 1 === 0
-      ? num.toLocaleString("en-PH")
-      : num.toLocaleString("en-PH", {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 2,
-        });
-  };
-
-  const priceFormatted = formatPrice(priceNum);
-  const originalPriceFormatted = formatPrice(originalPriceNum);
+  const priceFormatted = getFormatPrice(priceNum);
+  const originalPriceFormatted = getFormatPrice(originalPriceNum);
 
   const categoryIcon =
     CATEGORY_ICONS[product.category] || "ri-shopping-basket-2-line";
@@ -63,13 +54,22 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
               <span>{product.category || "Produce"}</span>
             </span>
 
-            {!isAvailable ? (
+            {isExpired ? (
+              <span className="rounded-md bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-700">
+                Expired
+              </span>
+            ) : !isAvailable ? (
               <span className="rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
                 Out of Stock
               </span>
             ) : isLowStock ? (
               <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
                 {stockNum} left
+              </span>
+            ) : remainingTime ? (
+              <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 flex items-center gap-0.5">
+                <i className="ri-time-line text-[9px]" />
+                {remainingTime}
               </span>
             ) : (
               <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
@@ -148,8 +148,12 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
           <span className="truncate">{product.category || "Produce"}</span>
         </div>
 
-        {/* Stock Badge - Stuck to Top Right Corner */}
-        {!isAvailable ? (
+        {/* Stock / Expiration Badge - Stuck to Top Right Corner */}
+        {isExpired ? (
+          <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-gray-700 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
+            Expired
+          </div>
+        ) : !isAvailable ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-red-600 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
             Out of Stock
           </div>
@@ -160,6 +164,13 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
         ) : (
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-[#2D6A4F] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
             In Stock
+          </div>
+        )}
+
+        {/* Duration / Auto-Disappear Badge - Bottom Left of Image */}
+        {remainingTime && isAvailable && (
+          <div className="absolute bottom-1.5 left-1.5 z-10 flex items-center rounded-full bg-black/70 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-sm backdrop-blur-xs border border-white/20">
+            <span>{remainingTime}</span>
           </div>
         )}
       </div>
@@ -175,20 +186,9 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
             {product.name}
           </h3>
 
-          {/* Price Tag & Slashed Original Price */}
-          <div className="mt-1 flex items-end justify-between gap-1">
-            <div>
-              {hasDiscount && (
-                <div className="flex items-center gap-1 mb-0.5">
-                  <span className="text-[11px] sm:text-xs font-bold text-gray-500 line-through decoration-gray-400">
-                    ₱{originalPriceFormatted}
-                  </span>
-                  <span className="inline-flex items-center rounded bg-red-50 border border-red-200/80 px-1 py-0.2 text-[8px] sm:text-[9px] font-black text-red-600 leading-tight">
-                    -{discountPercent}%
-                  </span>
-                </div>
-              )}
-
+          {/* Price with Slashed Original Price + Percent beside it on the right side */}
+          <div className="mt-1 flex items-baseline justify-between gap-1 flex-wrap">
+            <div className="flex items-baseline gap-1.5 flex-wrap">
               <div className="flex items-baseline gap-0.5">
                 <span className="text-sm sm:text-base md:text-lg font-black text-[#1B4332] leading-none">
                   ₱{priceFormatted}
@@ -197,6 +197,17 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
                   /{product.unit || "kg"}
                 </span>
               </div>
+
+              {hasDiscount && (
+                <div className="flex items-center gap-1">
+                  <span className="text-[11px] sm:text-xs font-bold text-gray-400 line-through decoration-gray-400">
+                    ₱{originalPriceFormatted}
+                  </span>
+                  <span className="inline-flex items-center rounded bg-red-50 border border-red-200/80 px-1 py-0.2 text-[8px] sm:text-[9px] font-black text-red-600 leading-tight">
+                    -{discountPercent}%
+                  </span>
+                </div>
+              )}
             </div>
 
             <span className="text-[10px] sm:text-[11px] font-semibold text-gray-500 shrink-0">
