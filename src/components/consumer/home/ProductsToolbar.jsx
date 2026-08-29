@@ -4,18 +4,25 @@ export default function ProductsToolbar({
   sort,
   onSort,
   onOpenFilters,
+  hasActiveFilters,
 }) {
   return (
-    <div className="flex items-center justify-between mb-5">
-      {loading ? (
-        <span className="inline-block h-5 w-24 bg-gray-200 rounded-md animate-pulse" />
-      ) : (
-        <span className="text-sm font-semibold text-gray-700">
-          {total} product{total !== 1 ? "s" : ""}
-        </span>
+    <div className="flex items-center justify-betweenaw">
+      {/* Product Count */}
+      {hasActiveFilters && (
+        <>
+          {loading ? (
+            <span className="inline-block h-5 w-24 bg-gray-200 rounded-md animate-pulse" />
+          ) : (
+            <span className="text-sm font-semibold text-gray-700">
+              {total} product{total !== 1 ? "s" : ""}
+            </span>
+          )}
+        </>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 ml-auto">
+        {/* Mobile Filters */}
         <button
           type="button"
           onClick={onOpenFilters}
@@ -25,11 +32,13 @@ export default function ProductsToolbar({
           <span>Filters</span>
         </button>
 
+        {/* Sort */}
         <select
           value={sort}
           onChange={(e) => onSort(e.target.value)}
           className="bg-white px-3 py-2 border border-gray-200 rounded-xl font-semibold outline-none text-xs sm:text-sm cursor-pointer"
         >
+          <option value="relevant">Relevant</option>
           <option value="newest">Newest</option>
           <option value="price-low">Price: Low to High</option>
           <option value="price-high">Price: High to Low</option>

@@ -5,18 +5,20 @@ import CategoryChips from "../../components/consumer/home/CategoryChips";
 import FiltersSidebar from "../../components/consumer/home/FiltersSidebar";
 import MobileFiltersDrawer from "../../components/consumer/home/MobileFiltersDrawer";
 import ProductsToolbar from "../../components/consumer/home/ProductsToolbar";
-import ProductGrid from "../../components/consumer/home/ProductGrid";
-import ProductPagination from "../../components/consumer/home/ProductPagination";
-import { ProductGridSkeleton } from "../../components/consumer/home/MarketplaceSkeleton";
+import ProductsContainer from "../../components/consumer/home/ProductsContainer";
+
+import ProductGridSkeleton from "../../components/consumer/home/MarketplaceSkeleton";
 
 export default function Home() {
   const {
     loading,
 
+    products,
     filteredProducts,
     totalProducts,
 
     filters,
+    hasActiveFilters,
     updateFilter,
     resetFilters,
 
@@ -27,6 +29,8 @@ export default function Home() {
     hasMore,
     loadingMore,
     loadMore,
+
+    userLocation,
 
     showFilters,
     setShowFilters,
@@ -63,33 +67,24 @@ export default function Home() {
               sort={filters.sort}
               onSort={(value) => updateFilter("sort", value)}
               onOpenFilters={() => setShowFilters(true)}
+              hasActiveFilters={hasActiveFilters}
             />
 
             {loading ? (
               <ProductGridSkeleton />
             ) : (
-              <>
-                <ProductGrid products={filteredProducts} />
-
-                <ProductPagination
-                  page={page}
-                  totalPages={totalPages}
-                  onChange={setPage}
-                />
-
-                {hasMore && (
-                  <div className="mt-8 flex justify-center">
-                    <button
-                      type="button"
-                      onClick={loadMore}
-                      disabled={loadingMore}
-                      className="rounded-2xl border-2 border-[#2D6A4F] bg-white px-6 py-3 text-sm font-bold text-[#2D6A4F] hover:bg-[#E8F5EE] disabled:opacity-50 transition-all cursor-pointer shadow-xs"
-                    >
-                      {loadingMore ? "Loading more produce..." : "Load More Products"}
-                    </button>
-                  </div>
-                )}
-              </>
+              <ProductsContainer
+                products={products}
+                filteredProducts={filteredProducts}
+                hasActiveFilter={hasActiveFilters}
+                userLocation={userLocation}
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                hasMore={hasMore}
+                loadingMore={loadingMore}
+                onLoadMore={loadMore}
+              />
             )}
           </section>
         </div>

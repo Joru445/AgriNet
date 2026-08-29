@@ -5,9 +5,14 @@ import { useAuth } from "../../context/AuthContext";
 import UserIdentity from "../common/UserIdentity";
 
 import { getProductPath } from "../../utils/routes";
-import { getFormatPrice, getDiscount, getOriginalPrice } from "../../utils/price";
+import {
+  getFormatPrice,
+  getDiscount,
+  getOriginalPrice,
+} from "../../utils/price";
 
 import productPlaceholder from "../../assets/img/productPlaceholder.png";
+import { formatTimestamp } from "../../utils/date";
 
 const CATEGORY_ICONS = {
   Vegetables: "ri-plant-line",
@@ -37,6 +42,8 @@ export default function ProductCard({ product, hideFooter = false }) {
   const priceFormatted = getFormatPrice(priceNum);
   const originalPriceFormatted = getFormatPrice(originalPriceNum);
 
+  const createdAtFormatted = formatTimestamp(product.createdAt);
+
   const categoryIcon =
     CATEGORY_ICONS[product.category] || "ri-shopping-basket-2-line";
 
@@ -57,7 +64,9 @@ export default function ProductCard({ product, hideFooter = false }) {
 
         {/* Category Pill - Top Left */}
         <div className="absolute left-1.5 top-1.5 sm:left-2.5 sm:top-2.5 flex items-center gap-1 rounded-full bg-white/95 px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-bold text-[#1B4332] shadow-sm backdrop-blur-md border border-gray-100 max-w-[50%] truncate">
-          <i className={`${categoryIcon} text-[#2D6A4F] text-xs sm:text-sm shrink-0`} />
+          <i
+            className={`${categoryIcon} text-[#2D6A4F] text-xs sm:text-sm shrink-0`}
+          />
           <span className="truncate">{product.category || "Produce"}</span>
         </div>
 
@@ -78,9 +87,9 @@ export default function ProductCard({ product, hideFooter = false }) {
       </div>
 
       {/* Card Content Body */}
-      <div className="flex flex-1 flex-col justify-between p-2.5 sm:p-4 space-y-2 sm:space-y-3">
+      <div className="flex flex-1 flex-col justify-between p-2.5 sm:p-4 pt-1 space-y-2 sm:space-y-3">
         {/* Price Tag & Stock Count */}
-        <div className="mt-1 flex items-end justify-between gap-1">
+        <div className="flex items-end justify-between gap-1">
           <div>
             {/* Slashed Original Price + Top-Right Discount Badge */}
             <div className="flex items-center gap-1 mb-0.5">
@@ -111,12 +120,17 @@ export default function ProductCard({ product, hideFooter = false }) {
         </div>
         <div>
           {/* Produce Name */}
-          <h3
-            className="text-xs sm:text-base md:text-lg font-bold text-gray-700 line-clamp-2 leading-snug transition-colors group-hover:text-gray-900"
-            title={product.name}
-          >
-            {product.name}
-          </h3>
+          <div className="flex justify-between">
+            <h3
+              className="text-xs sm:text-base md:text-lg font-bold text-gray-700 line-clamp-2 leading-snug transition-colors group-hover:text-gray-900"
+              title={product.name}
+            >
+              {product.name}
+            </h3>
+            <span className="text-[10px] sm:text-xs font-semibold text-gray-500 shrink-0">
+              {createdAtFormatted}
+            </span>
+          </div>
 
           {/* Store / Farmer Info Section (Highly readable) */}
           {product.farmer && (
@@ -142,9 +156,7 @@ export default function ProductCard({ product, hideFooter = false }) {
                   </span>
                 </>
               ) : (
-                <span className="text-gray-400 font-medium">
-                  No reviews
-                </span>
+                <span className="text-gray-400 font-medium">No reviews</span>
               )}
             </div>
 

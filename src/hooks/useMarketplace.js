@@ -37,8 +37,12 @@ export default function useMarketplace() {
           localStorage.getItem("agri_consumer_distance") ??
           DEFAULT_FILTERS.distance,
       ),
-      minPrice: Number(searchParams.get("minPrice") ?? DEFAULT_FILTERS.minPrice),
-      maxPrice: Number(searchParams.get("maxPrice") ?? DEFAULT_FILTERS.maxPrice),
+      minPrice: Number(
+        searchParams.get("minPrice") ?? DEFAULT_FILTERS.minPrice,
+      ),
+      maxPrice: Number(
+        searchParams.get("maxPrice") ?? DEFAULT_FILTERS.maxPrice,
+      ),
       rating: Number(searchParams.get("rating") ?? DEFAULT_FILTERS.rating),
       sort: searchParams.get("sort") ?? DEFAULT_FILTERS.sort,
       showUnavailable: searchParams.get("showUnavailable") === "true",
@@ -74,6 +78,14 @@ export default function useMarketplace() {
       setLoadingMore(false);
     }
   }, []);
+
+  const hasActiveFilters =
+    filters.search.trim() !== "" ||
+    filters.category !== DEFAULT_FILTERS.category ||
+    filters.minPrice > 0 ||
+    filters.maxPrice > 0 ||
+    filters.rating > 0 ||
+    filters.showUnavailable;
 
   useEffect(() => {
     loadProducts({ reset: true });
@@ -163,7 +175,10 @@ export default function useMarketplace() {
     return data;
   }, [marketplaceProducts, filters, userLocation]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE),
+  );
   const paginatedProducts = useMemo(() => {
     const start = (page - 1) * PRODUCTS_PER_PAGE;
     return filteredProducts.slice(start, start + PRODUCTS_PER_PAGE);
@@ -206,6 +221,7 @@ export default function useMarketplace() {
     filteredProducts: paginatedProducts,
     totalProducts: filteredProducts.length,
     filters,
+    hasActiveFilters,
     updateFilter,
     resetFilters: () => {
       localStorage.removeItem("agri_consumer_distance");
