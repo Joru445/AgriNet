@@ -346,7 +346,7 @@ export default function VerifyAccount() {
                   <input
                     type="tel"
                     inputMode="numeric"
-                    placeholder="0917 123 4567"
+                    placeholder="Enter mobile number"
                     value={phoneInput}
                     onFocus={() => {
                       if (phoneError) setPhoneError("");
@@ -363,14 +363,10 @@ export default function VerifyAccount() {
                   />
                 </div>
 
-                {phoneError ? (
+                {phoneError && (
                   <p className="mt-1.5 text-xs text-red-500 font-medium flex items-center gap-1">
                     <i className="ri-error-warning-line text-xs" />
                     <span>{phoneError}</span>
-                  </p>
-                ) : (
-                  <p className="mt-1 text-[11px] text-gray-500">
-                    Accepts: 09XXXXXXXXX, +639XXXXXXXXX, or 9XXXXXXXXX
                   </p>
                 )}
               </div>
