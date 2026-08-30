@@ -1,32 +1,161 @@
+import { useNavigate } from "react-router-dom";
+
+import all from "../../../assets/categories/all.webp";
+import vegetables from "../../../assets/categories/vegetables.webp";
+import fruits from "../../../assets/categories/fruits.webp";
+import grains from "../../../assets/categories/grains.webp";
+import livestocks from "../../../assets/categories/livestocks.webp";
+import poultry from "../../../assets/categories/poultry.webp";
+import herbs from "../../../assets/categories/herbs.webp";
+import rootCrops from "../../../assets/categories/root-crops.webp";
+
 const categories = [
-  { id: "All", label: "All Produce", icon: "ri-apps-2-line" },
-  { id: "Vegetables", label: "Vegetables", icon: "ri-plant-line" },
-  { id: "Fruits", label: "Fruits", icon: "ri-seedling-line" },
-  { id: "Grains", label: "Grains & Rice", icon: "ri-leaf-line" },
-  { id: "Livestock", label: "Livestock", icon: "ri-heart-pulse-line" },
-  { id: "Poultry", label: "Poultry", icon: "ri-heart-line" },
-  { id: "Herbs", label: "Herbs", icon: "ri-medicine-bottle-line" },
-  { id: "Root Crops", label: "Root Crops", icon: "ri-earth-line" },
+  {
+    id: "All",
+    label: "All Produce",
+    image: all,
+  },
+  {
+    id: "Vegetables",
+    label: "Vegetables",
+    image: vegetables,
+  },
+  {
+    id: "Fruits",
+    label: "Fruits",
+    image: fruits,
+  },
+  {
+    id: "Grains",
+    label: "Grains & Rice",
+    image: grains,
+  },
+  {
+    id: "Livestock",
+    label: "Livestock",
+    image: livestocks,
+  },
+  {
+    id: "Poultry",
+    label: "Poultry",
+    image: poultry,
+  },
+  {
+    id: "Herbs",
+    label: "Herbs",
+    image: herbs,
+  },
+  {
+    id: "Root Crops",
+    label: "Root Crops",
+    image: rootCrops,
+  },
 ];
 
-export default function CategoryChips({ value, onChange }) {
+export default function CategoryChips({ value = "All", onChange }) {
+  const navigate = useNavigate();
+
+  function handleCategoryChange(category) {
+    // Marketplace page
+    if (onChange) {
+      onChange(category);
+      return;
+    }
+
+    // Home page
+    const params = new URLSearchParams();
+
+    if (category !== "All") {
+      params.set("category", category);
+    }
+
+    navigate(
+      params.toString()
+        ? `/marketplace?${params.toString()}`
+        : "/marketplace",
+    );
+  }
+
   return (
-    <div className="w-full flex items-center justify-start sm:justify-center gap-2 overflow-x-auto py-2 scrollbar-none">
+    <div className="w-full flex items-center justify-start lg:justify-center gap-3 overflow-x-auto px-2 py-2 scrollbar-none">
       {categories.map((cat) => {
-        const active = (value || "All") === cat.id;
+        const active = value === cat.id;
 
         return (
           <button
             key={cat.id}
             type="button"
-            onClick={() => onChange(cat.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 cursor-pointer shadow-2xs ${active
-              ? "bg-[#1B4332] text-white shadow-md shadow-[#1B4332]/20 ring-2 ring-[#2D6A4F]/30 scale-[1.02]"
-              : "bg-white border border-[#DCE8DF] text-gray-700 hover:border-[#2D6A4F] hover:text-[#2D6A4F] hover:bg-[#F4F9F5]"
-              }`}
+            onClick={() => handleCategoryChange(cat.id)}
+            className={`
+              relative
+              isolate
+              flex
+              h-24
+              min-w-24
+              sm:h-32
+              sm:min-w-32
+              shrink-0
+              items-end
+              overflow-hidden
+              rounded-2xl
+              px-3
+              py-2.5
+              text-xs
+              sm:text-sm
+              font-bold
+              whitespace-nowrap
+              transition-all
+              duration-200
+              cursor-pointer
+              shadow-sm
+              ${active
+                ? "ring-2 ring-[#2D6A4F] ring-offset-2 scale-[1.02]"
+                : "hover:scale-[1.02] hover:shadow-md"
+              }
+            `}
           >
-            <i className={`${cat.icon} text-base ${active ? "text-emerald-300" : "text-[#2D6A4F]"}`} />
-            <span>{cat.label}</span>
+            {/* Background Image */}
+            <img
+              src={cat.image}
+              alt=""
+              aria-hidden="true"
+              className="
+                absolute
+                inset-0
+                -z-20
+                h-full
+                w-full
+                object-cover
+                transition-transform
+                duration-300
+                group-hover:scale-105
+              "
+            />
+
+            {/* Dark gradient */}
+            <div
+              className={`
+                absolute
+                inset-0
+                -z-10
+                bg-gradient-to-t
+                from-black/75
+                via-black/20
+                to-transparent
+                transition-opacity
+                ${active ? "opacity-90" : "opacity-80"}
+              `}
+            />
+
+            {/* Active overlay */}
+            {active && (
+              <div className="absolute inset-0 -z-10 bg-[#1B4332]/25" />
+            )}
+
+            {/* Label */}
+            <span className="relative z-10 text-left leading-tight text-white drop-shadow-md">
+              {cat.label}
+            </span>
           </button>
         );
       })}

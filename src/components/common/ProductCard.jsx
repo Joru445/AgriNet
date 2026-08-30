@@ -5,8 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { getProductPath } from "../../utils/routes";
 import {
   getFormatPrice,
-  getDiscount,
-  getOriginalPrice,
+  getDiscount,  
   hasProductDiscount,
 } from "../../utils/price";
 
@@ -108,36 +107,7 @@ export default function ProductCard({
 
       {/* Card Content Body */}
       <div className="flex flex-1 flex-col justify-between p-2.5 sm:p-4 pt-1 space-y-2 sm:space-y-3">
-        {/* Price Tag & Stock Count */}
-        <div className="flex items-end justify-between gap-1">
-          <div>
-            {/* Slashed Original Price + Top-Right Discount Badge */}
-            <div className="flex items-center gap-1 mb-0.5">
-              <span className="text-xs sm:text-sm font-bold text-gray-500 line-through decoration-gray-400">
-                ₱{originalPriceFormatted}
-              </span>
-              <span className="inline-flex items-center rounded bg-red-50 border border-red-200/80 px-1 py-0.2 text-[8px] sm:text-[9px] font-black text-red-600 leading-tight">
-                -{discountPercent}%
-              </span>
-            </div>
-
-            {/* Main Selling Price */}
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm sm:text-xl md:text-2xl font-black text-[#1B4332] leading-none">
-                ₱{priceFormatted}
-              </span>
-              <span className="text-[10px] sm:text-xs font-bold text-gray-600">
-                /{product.unit || "kg"}
-              </span>
-            </div>
-          </div>
-
-          {isAvailable && (
-            <span className="text-[10px] sm:text-xs font-semibold text-gray-500 shrink-0">
-              {stockNum} stocks
-            </span>
-          )}
-        </div>
+        
         <div>
           {/* Produce Name */}
           <div className="flex justify-between">

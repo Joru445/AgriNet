@@ -22,6 +22,7 @@ const Suspended = lazy(() => import("../pages/Suspended.jsx"));
 
 // Consumer Pages
 const ConsumerHome = lazy(() => import("../pages/consumer/Home"));
+const MarketPlace = lazy(() => import("../pages/consumer/Marketplace"))
 const Nearby = lazy(() => import("../pages/consumer/Nearby"));
 
 // Farmer Pages
@@ -78,6 +79,8 @@ export default function AppRoutes() {
           <Route element={<RoleRoute allowedRole="consumer" />}>
             <Route element={<AppLayout />}>
               <Route path="/home" element={<ConsumerHome />} />
+
+              <Route path="/marketplace" element={<MarketPlace />} />
 
               <Route path="/nearby" element={<Nearby />} />
 

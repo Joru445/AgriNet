@@ -1,8 +1,8 @@
-import NearYouSection from "./NearYouSection";
-import RecentProductsSection from "./RecentProductsSection";
+import NearYouSection from "../home/NearYouSection";
+import RecentProductsSection from "../home/RecentProductsSection";
 import ProductGrid from "./ProductGrid";
-import EmptyProducts from "./EmptyProducts";
-import ProductPagination from "./ProductPagination";
+import EmptyProducts from "../home/EmptyProducts";
+import ProductPagination from "../home/ProductPagination";
 
 export default function ProductsContainer({
   products = [],
