@@ -55,9 +55,15 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
             </span>
 
             {isExpired ? (
-              <span className="rounded-md bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-700">
-                Expired
-              </span>
+              <>
+                <span className="rounded-md bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-700">
+                  Expired
+                </span>
+                <span className="rounded-md bg-red-100 text-red-700 px-1.5 py-0.5 text-[10px] font-bold flex items-center gap-1">
+                  <i className="ri-eye-off-line text-[9px]" />
+                  No display in selling
+                </span>
+              </>
             ) : !isAvailable ? (
               <span className="rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
                 Out of Stock
@@ -167,12 +173,17 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
           </div>
         )}
 
-        {/* Duration / Auto-Disappear Badge - Bottom Left of Image */}
-        {remainingTime && isAvailable && (
+        {/* Bottom Left of Image: Expiration Status or Remaining Time */}
+        {isExpired ? (
+          <div className="absolute bottom-1.5 left-1.5 z-10 flex items-center gap-1 rounded-full bg-red-950/80 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-red-200 shadow-sm backdrop-blur-xs border border-red-500/30">
+            <i className="ri-eye-off-line text-[10px] text-red-300 shrink-0" />
+            <span>No display in selling</span>
+          </div>
+        ) : remainingTime && isAvailable ? (
           <div className="absolute bottom-1.5 left-1.5 z-10 flex items-center rounded-full bg-black/70 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-sm backdrop-blur-xs border border-white/20">
             <span>{remainingTime}</span>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Card Content Body */}

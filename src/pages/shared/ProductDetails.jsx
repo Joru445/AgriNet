@@ -3,6 +3,7 @@ import useProductDetails from "../../hooks/useProductDetails";
 import useProductReviews from "../../hooks/useProductReviews";
 
 import { useAuth } from "../../context/AuthContext";
+import { isProductExpired } from "../../utils/productExpiration";
 
 import ProductGallery from "../../components/shared/product/ProductGallery";
 import ProductInfo from "../../components/shared/product/ProductInfo";
@@ -23,14 +24,14 @@ export default function ProductDetails() {
 
   const isOwner = product?.farmerId === profile?.uid;
 
-  if (!loading && !product) {
+  if (!loading && (!product || (isProductExpired(product) && !isOwner))) {
     return (
       <main className="mx-auto max-w-7xl px-4 py-8 pb-18 md:pb-4">
         <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center">
           <i className="ri-error-warning-line text-5xl text-gray-300 mb-3" />
-          <h2 className="text-lg font-bold text-gray-800">Product Not Found</h2>
+          <h2 className="text-lg font-bold text-gray-800">Product Unavailable</h2>
           <p className="text-sm text-gray-500 mt-1">
-            The requested product does not exist or has been removed.
+            This listing has ended and is no longer available.
           </p>
         </div>
       </main>
