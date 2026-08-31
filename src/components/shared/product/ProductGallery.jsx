@@ -45,9 +45,9 @@ function ProductGalleryImages({ product }) {
   const currentImageUrl = images[selected]?.url || images[selected];
 
   return (
-    <div className="space-y-3 md:space-y-4">
+    <div className="space-y-2 md:space-y-4">
       {/* Main Image / Swipeable Carousel */}
-      <div className="relative aspect-square w-full rounded-2xl md:rounded-3xl border border-gray-200 bg-black/5 overflow-hidden shadow-xs group">
+      <div className="relative aspect-square w-full sm:rounded-2xl md:rounded-3xl sm:border sm:border-gray-200 bg-black/5 overflow-hidden shadow-xs group">
         {/* Horizontal scroll snap container */}
         <div
           ref={scrollContainerRef}
@@ -102,16 +102,16 @@ function ProductGalleryImages({ product }) {
 
       {/* Thumbnail selector on both mobile and desktop */}
       {images.length > 1 && (
-        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-1 scrollbar-none md:grid md:grid-cols-5 md:overflow-visible">
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto px-2 py-1 scrollbar-none md:grid md:grid-cols-5 md:overflow-visible">
           {images.map((image, index) => (
             <button
               key={image.publicId || index}
               type="button"
               onClick={() => handleThumbnailClick(index)}
-              className={`shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-auto md:h-auto overflow-hidden rounded-xl border-2 transition-all duration-200 aspect-square cursor-pointer ${
+              className={`shrink-0 w-20 h-20 md:w-auto md:h-auto overflow-hidden rounded sm:rounded-xl transition-all duration-200 aspect-square cursor-pointer ${
                 selected === index
                   ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 scale-[1.02] opacity-100"
-                  : "border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-300"
+                  : "border-gray-200 opacity-80 hover:opacity-100 hover:border-gray-300"
               }`}
             >
               <img

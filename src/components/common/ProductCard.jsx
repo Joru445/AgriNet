@@ -112,7 +112,7 @@ export default function ProductCard({
           {/* Produce Name */}
           <div className="flex justify-between">
             <h3
-              className="text-xs sm:text-base md:text-lg font-bold text-gray-700 line-clamp-2 leading-snug transition-colors group-hover:text-gray-900"
+              className="text-sm sm:text-base md:text-lg font-bold text-gray-700 line-clamp-2 leading-snug transition-colors group-hover:text-gray-900"
               title={product.name}
             >
               {product.name}

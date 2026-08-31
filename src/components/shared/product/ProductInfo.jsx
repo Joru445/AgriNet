@@ -1,4 +1,8 @@
-import { getFormatPrice, getDiscount, hasProductDiscount } from "../../../utils/price";
+import {
+  getFormatPrice,
+  getDiscount,
+  hasProductDiscount,
+} from "../../../utils/price";
 import { useLiveRemainingTime } from "../../../utils/productExpiration";
 
 const CATEGORY_ICONS = {
@@ -35,39 +39,11 @@ export default function ProductInfo({
 
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
-      {/* Top Badges Row: Category (Readable with Shadow) + Stock Status + Duration + Report Button */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Category Pill with Icon & Shadow */}
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F5EE] border border-[#2D6A4F]/20 px-3 py-1 text-xs font-bold text-[#1B4332] shadow-xs">
-            <i className={`${categoryIcon} text-[#2D6A4F] text-sm`} />
-            <span>{product.category || "Produce"}</span>
-          </span>
-
-          {/* Stock Status */}
-          <span
-            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold shadow-2xs border ${
-              isAvailable
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : "bg-red-50 text-red-700 border-red-200"
-            }`}
-          >
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                isAvailable ? "bg-emerald-600" : "bg-red-600"
-              }`}
-            />
-            {isAvailable ? "In Stock" : "Out of Stock"}
-          </span>
-
-          {/* Duration Badge if set */}
-          {remainingTime && isAvailable && (
-            <span className="inline-flex items-center rounded-full bg-gray-50 border border-gray-200 px-2.5 py-0.5 text-xs font-bold text-gray-700 shadow-2xs">
-              <span>{remainingTime}</span>
-            </span>
-          )}
-        </div>
-
+      {/* Product Name */}
+      <div className="flex justify-between">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1B4332] leading-tight">
+          {product.name}
+        </h1>{" "}
         {!isOwner && onReport && (
           <button
             type="button"
@@ -80,11 +56,6 @@ export default function ProductInfo({
           </button>
         )}
       </div>
-
-      {/* Product Name */}
-      <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1B4332] leading-tight">
-        {product.name}
-      </h1>
 
       {/* Price Block */}
       <div className="mt-4 flex items-center gap-3.5 flex-wrap">
@@ -106,6 +77,38 @@ export default function ProductInfo({
               -{discountPercent}%
             </span>
           </div>
+        )}
+      </div>
+
+      {/* Top Badges Row: Category (Readable with Shadow) + Stock Status + Duration + Report Button */}
+      <div className="flex items-center gap-2 flex-wrap mt-2">
+        {/* Category Pill with Icon & Shadow */}
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F5EE] border border-[#2D6A4F]/20 px-3 py-1 text-xs font-bold text-[#1B4332] shadow-xs">
+          <i className={`${categoryIcon} text-[#2D6A4F] text-sm`} />
+          <span>{product.category || "Produce"}</span>
+        </span>
+
+        {/* Stock Status */}
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold shadow-2xs border ${
+            isAvailable
+              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+              : "bg-red-50 text-red-700 border-red-200"
+          }`}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${
+              isAvailable ? "bg-emerald-600" : "bg-red-600"
+            }`}
+          />
+          {isAvailable ? "In Stock" : "Out of Stock"}
+        </span>
+
+        {/* Duration Badge if set */}
+        {remainingTime && isAvailable && (
+          <span className="inline-flex items-center rounded-full bg-gray-50 border border-gray-200 px-2.5 py-0.5 text-xs font-bold text-gray-700 shadow-2xs">
+            <span>{remainingTime}</span>
+          </span>
         )}
       </div>
 

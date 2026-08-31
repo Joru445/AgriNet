@@ -4,21 +4,16 @@ export default function ProductsToolbar({
   sort,
   onSort,
   onOpenFilters,
-  hasActiveFilters,
 }) {
   return (
     <div className="flex items-center justify-betweenaw">
       {/* Product Count */}
-      {hasActiveFilters && (
-        <>
-          {loading ? (
-            <span className="inline-block h-5 w-24 bg-gray-200 rounded-md animate-pulse" />
-          ) : (
-            <span className="text-sm font-semibold text-gray-700">
-              {total} product{total !== 1 ? "s" : ""}
-            </span>
-          )}
-        </>
+      {loading ? (
+        <span className="inline-block h-5 w-24 bg-gray-200 rounded-md animate-pulse" />
+      ) : (
+        <span className="text-sm font-semibold text-gray-700">
+          {total} product{total !== 1 ? "s" : ""}
+        </span>
       )}
 
       <div className="flex items-center gap-2 ml-auto">

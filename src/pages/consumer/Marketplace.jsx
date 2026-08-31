@@ -1,13 +1,13 @@
 import useMarketplace from "../../hooks/useMarketplace";
 
-import SearchBar from "../../components/consumer/marketplace/SearchBar";
-import CategoryChips from "../../components/consumer/home/CategoryChips";
+import CategoryChips from "../../components/consumer/layout/CategoryChips";
 import FiltersSidebar from "../../components/consumer/marketplace/FiltersSidebar";
 import MobileFiltersDrawer from "../../components/consumer/marketplace/MobileFiltersDrawer";
 import ProductsToolbar from "../../components/consumer/marketplace/ProductsToolbar";
 import ProductsContainer from "../../components/consumer/marketplace/ProductsContainer";
 
 import ProductGridSkeleton from "../../components/consumer/marketplace/MarketplaceSkeleton";
+import MarketplaceSubHeader from "../../components/consumer/layout/MarketplaceSubHeader";
 
 export default function Marketplace() {
   const {
@@ -35,19 +35,16 @@ export default function Marketplace() {
 
   return (
     <>
-      <main className="max-w-7xl mx-auto px-4 py-6 md:px-6 pb-18 md:pb-8">
-        {/* Search */}
-        <section className="space-y-4 mb-6">
-          <SearchBar
-            value={filters.search}
-            onChange={(value) => updateFilter("search", value)}
-          />
+      <main className="max-w-6xl mx-auto pb-8 space-y-4">
+        <MarketplaceSubHeader
+          searchValue={filters.search}
+          onSearchChange={(value) => updateFilter("search", value)}
+        />
 
-          <CategoryChips
-            value={filters.category}
-            onChange={(value) => updateFilter("category", value)}
-          />
-        </section>
+        <CategoryChips
+          value={filters.category}
+          onChange={(value) => updateFilter("category", value)}
+        />
 
         <div className="flex flex-col lg:flex-row gap-6">
           <FiltersSidebar
@@ -56,7 +53,7 @@ export default function Marketplace() {
             onReset={resetFilters}
           />
 
-          <section className="min-w-0 flex-1">
+          <section className="min-w-0 flex-1 space-y-4 px-2">
             <ProductsToolbar
               total={totalProducts}
               loading={loading}

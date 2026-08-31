@@ -14,18 +14,21 @@ import ProductDetailsSkeleton from "../../components/shared/product/ProductDetai
 import ReviewSection from "../../components/common/ReviewSection";
 import ReportModal from "../../components/common/ReportModal";
 
+import SkeletonBox from "../../components/common/SkeletonBox"
+
 export default function ProductDetails() {
   const { profile } = useAuth();
   const [showReportModal, setShowReportModal] = useState(false);
 
-  const { loading, product, farmer, reviewCount, averageRating } = useProductDetails();
+  const { loading, product, farmer, reviewCount, averageRating } =
+    useProductDetails();
   const { reviews, loading: reviewsLoading } = useProductReviews(product?.id);
 
   const isOwner = product?.farmerId === profile?.uid;
 
   if (!loading && !product) {
     return (
-      <main className="mx-auto max-w-7xl px-4 py-8 pb-18 md:pb-4">
+      <main className="mx-auto max-w-7xl px-2 py-8 pb-18 md:pb-4">
         <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center">
           <i className="ri-error-warning-line text-5xl text-gray-300 mb-3" />
           <h2 className="text-lg font-bold text-gray-800">Product Not Found</h2>
@@ -38,15 +41,15 @@ export default function ProductDetails() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 pb-18 md:pb-4">
+    <main className="mx-auto max-w-7xl md:pt-2 pb-8 space-y-4">
       {loading ? (
         <ProductDetailsSkeleton />
       ) : (
         <>
-          <div className="grid gap-8 lg:grid-cols-2 mb-4">
+          <div className="grid gap-2 sm:gap-4 lg:grid-cols-2">
             <ProductGallery product={product} />
 
-            <div className="space-y-6">
+            <div className="px-2 space-y-1 sm:space-y-4">
               <ProductInfo
                 product={product}
                 reviewCount={reviewCount}
@@ -59,17 +62,26 @@ export default function ProductDetails() {
 
               <ProductSeller farmer={farmer} isOwner={isOwner} />
 
-              <ProductActions product={product} farmer={farmer} isOwner={isOwner} />
+              <ProductActions
+                product={product}
+                farmer={farmer}
+                isOwner={isOwner}
+              />
             </div>
           </div>
 
           {/* Reviews */}
-          <ReviewSection
-            title="Product Reviews"
-            reviews={reviews}
-            loading={reviewsLoading}
-            type="product"
-          />
+
+          {reviewsLoading ? (
+            <SkeletonBox className="w-full h-full" />
+          ) : (
+            <ReviewSection
+              title="Product Reviews"
+              reviews={reviews}
+              loading={reviewsLoading}
+              type="product"
+            />
+          )}
 
           {/* Report Product Modal */}
           <ReportModal
@@ -78,17 +90,21 @@ export default function ProductDetails() {
             targetType="product"
             targetId={product.id}
             targetTitle={product.name}
-            reportedUser={farmer ? {
-              uid: farmer.uid || farmer.id || product.farmerId,
-              fullname: farmer.fullname || farmer.storeName || "Farmer",
-              username: farmer.username || "",
-              role: "farmer",
-              email: farmer.email || "",
-            } : {
-              uid: product.farmerId,
-              fullname: "Farmer",
-              role: "farmer",
-            }}
+            reportedUser={
+              farmer
+                ? {
+                    uid: farmer.uid || farmer.id || product.farmerId,
+                    fullname: farmer.fullname || farmer.storeName || "Farmer",
+                    username: farmer.username || "",
+                    role: "farmer",
+                    email: farmer.email || "",
+                  }
+                : {
+                    uid: product.farmerId,
+                    fullname: "Farmer",
+                    role: "farmer",
+                  }
+            }
           />
         </>
       )}

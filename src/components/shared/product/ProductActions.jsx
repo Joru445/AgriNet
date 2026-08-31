@@ -20,7 +20,7 @@ export default function ProductActions({ product, farmer, isOwner }) {
   }
 
   return (
-    <section className="sticky bottom-20 lg:bottom-6 bg-white">
+    <section className="sticky bottom-0">
       {isOwner ? (
         <button
           onClick={handleProduct}

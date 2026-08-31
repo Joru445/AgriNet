@@ -28,12 +28,11 @@ export default function AppLayout() {
         <Header user={profile} collapsed={collapsed} hideBackButton={isTabRoutes} />
 
         <div
-          className={`flex-1 min-h-0 overscroll-none ${
+          className={`flex-1 min-h-0 overscroll-none scrollbar-none bg-agri-bg ${
             isMessages
               ? "flex flex-col overflow-hidden"
               : "overflow-y-auto"
           }`}
-          style={{ backgroundColor: "var(--agri-bg)" }}
         >
           <Outlet />
         </div>

@@ -3,12 +3,18 @@ import { useNavigate } from "react-router-dom";
 
 import useHomeProducts from "../../hooks/useHomeProducts";
 
+import {
+  NearYouSkeleton,
+  RecentProductsSkeleton,
+  RelevantProductsSkeleton,
+} from "../../components/consumer/home/SectionSkeletons";
+
 import NearYouSection from "../../components/consumer/home/NearYouSection";
 import RecentProductsSection from "../../components/consumer/home/RecentProductsSection";
 import RelevantProductsSection from "../../components/consumer/home/RelevantProductsSection";
 
-import SearchBar from "../../components/consumer/marketplace/SearchBar";
-import CategoryChips from "../../components/consumer/home/CategoryChips";
+import CategoryChips from "../../components/consumer/layout/CategoryChips";
+import MarketplaceSubHeader from "../../components/consumer/layout/MarketplaceSubHeader";
 
 export default function Home() {
   const {
@@ -33,20 +39,22 @@ export default function Home() {
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-6 md:px-6 pb-18 md:pb-8 space-y-8">
+    <main className="max-w-6xl mx-auto pb-8 space-y-4">
+      <MarketplaceSubHeader
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        onSearchSubmit={handleSearch}
+      />
+
+      <CategoryChips />
       {loading ? (
         <div className="space-y-8">
-          {/* Add Home-specific section skeletons here */}
+          <NearYouSkeleton />
+          <RecentProductsSkeleton />
+          <RelevantProductsSkeleton />
         </div>
       ) : (
-        <>
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onSubmit={handleSearch}
-          />
-
-          <CategoryChips />
+        <div className="px-2 space-y-8">
           <NearYouSection
             products={nearbyProducts}
             userLocation={userLocation}
@@ -55,7 +63,7 @@ export default function Home() {
           <RecentProductsSection products={recentProducts} />
 
           <RelevantProductsSection products={relevantProducts} />
-        </>
+        </div>
       )}
     </main>
   );

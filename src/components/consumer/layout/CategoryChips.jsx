@@ -118,6 +118,7 @@ export default function CategoryChips({ value = "All", onChange }) {
             <img
               src={cat.image}
               alt=""
+              loading="lazy"
               aria-hidden="true"
               className="
                 absolute
