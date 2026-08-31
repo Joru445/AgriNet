@@ -184,18 +184,84 @@ export default function ProductForm({ form, onChange }) {
     );
   });
 
+  const [customUnit, setCustomUnit] = useState(() => {
+    const num = Number(form.durationHours);
+    if (!isNaN(num) && num > 0 && num < 1) {
+      return "minutes";
+    }
+    return "hours";
+  });
+
+  const [customValue, setCustomValue] = useState(() => {
+    const num = Number(form.durationHours);
+    if (!isNaN(num) && num > 0) {
+      if (num < 1) {
+        return String(Math.round(num * 60));
+      }
+      return String(num);
+    }
+    return "";
+  });
+
   useEffect(() => {
     if (
       currentDurationStr !== "0" &&
       !standardDurations.includes(currentDurationStr)
     ) {
       setIsCustomDuration(true);
+      const num = Number(form.durationHours);
+      if (!isNaN(num) && num > 0) {
+        if (num < 1) {
+          setCustomUnit("minutes");
+          setCustomValue(String(Math.round(num * 60)));
+        } else {
+          setCustomUnit("hours");
+          setCustomValue(String(num));
+        }
+      }
     }
-  }, [currentDurationStr]);
+  }, [currentDurationStr, form.durationHours]);
+
+  function handleCustomChange(newVal, newUnit) {
+    const val = newVal !== undefined ? newVal : customValue;
+    const unit = newUnit !== undefined ? newUnit : customUnit;
+    setCustomValue(val);
+    setCustomUnit(unit);
+
+    const num = parseFloat(val);
+    if (!isNaN(num) && num > 0) {
+      const hours = unit === "minutes" ? num / 60 : num;
+      onChange({
+        target: {
+          name: "durationHours",
+          value: hours,
+        },
+      });
+    } else {
+      onChange({
+        target: {
+          name: "durationHours",
+          value: "",
+        },
+      });
+    }
+  }
 
   function handleDurationSelectChange(val) {
     if (val === "custom") {
       setIsCustomDuration(true);
+      if (customValue) {
+        const num = parseFloat(customValue);
+        if (!isNaN(num) && num > 0) {
+          const hours = customUnit === "minutes" ? num / 60 : num;
+          onChange({
+            target: {
+              name: "durationHours",
+              value: hours,
+            },
+          });
+        }
+      }
     } else {
       setIsCustomDuration(false);
       onChange({
@@ -287,22 +353,31 @@ export default function ProductForm({ form, onChange }) {
             onChange={handleDurationSelectChange}
           />
 
-          {/* Custom Hours Input when custom is chosen */}
+          {/* Custom Duration (Value + Custom Hours/Minutes dropdown with arrow) */}
           {isCustomDuration && (
-            <div className="relative">
-              <input
-                type="number"
-                name="durationHours"
-                min="1"
-                step="1"
-                placeholder="e.g. 5"
-                value={form.durationHours || ""}
-                onChange={onChange}
-                className="w-full border border-gray-300 rounded-xl pl-4 pr-16 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400 select-none">
-                hours
-              </span>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder={customUnit === "minutes" ? "e.g. 30" : "e.g. 5"}
+                  value={customValue}
+                  onChange={(e) => handleCustomChange(e.target.value, customUnit)}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
+                />
+              </div>
+
+              <div className="w-32 shrink-0">
+                <CustomDropdown
+                  value={customUnit}
+                  options={[
+                    { value: "hours", label: "Hours" },
+                    { value: "minutes", label: "Minutes" },
+                  ]}
+                  onChange={(unit) => handleCustomChange(customValue, unit)}
+                />
+              </div>
             </div>
           )}
         </div>

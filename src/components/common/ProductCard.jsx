@@ -40,6 +40,11 @@ export default function ProductCard({
   const isAvailable = product.available !== false && stockNum > 0 && !isExpired;
   const isLowStock = isAvailable && stockNum <= 5;
 
+  // Auto delete / vanish completely from consumer view once duration is done
+  if (isExpired) {
+    return null;
+  }
+
   const priceNum = Number(product.price ?? 0);
   const originalPriceNum = Number(product.originalPrice ?? 0);
   const hasDiscount = hasProductDiscount(product.originalPrice, product.price);
@@ -79,11 +84,7 @@ export default function ProductCard({
         </div>
 
         {/* Stock Badge - Stuck to Top Right Corner */}
-        {isExpired ? (
-          <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-gray-700 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
-            Expired
-          </div>
-        ) : !isAvailable ? (
+        {!isAvailable ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
             Out of Stock
           </div>

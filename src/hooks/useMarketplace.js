@@ -28,6 +28,15 @@ export default function useMarketplace() {
   const [hasMore, setHasMore] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const cursorRef = useRef(null);
+  const [, setTick] = useState(0);
+
+  // Auto-tick every second so expired listings disappear immediately without refresh
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTick((t) => (t + 1) % 1000000);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const filters = useMemo(
     () => ({
@@ -135,7 +144,13 @@ export default function useMarketplace() {
     data = data.filter((product) => {
       const stockNum = Number(product.stock ?? 0);
       const isExpired = isProductExpired(product);
-      const isAvailable = product.available !== false && stockNum > 0 && !isExpired;
+      
+      // Expired items are automatically deleted/vanished from marketplace
+      if (isExpired) {
+        return false;
+      }
+
+      const isAvailable = product.available !== false && stockNum > 0;
 
       if (!filters.showUnavailable && !isAvailable) {
         return false;

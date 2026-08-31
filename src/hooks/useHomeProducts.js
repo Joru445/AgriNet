@@ -14,6 +14,15 @@ export default function useHomeProducts() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [, setTick] = useState(0);
+
+  // Auto-tick every second so expired listings disappear immediately without refresh
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTick((t) => (t + 1) % 1000000);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const loadProducts = useCallback(async () => {
     try {
@@ -60,7 +69,7 @@ export default function useHomeProducts() {
   }, [products, userLocation]);
 
   /*
-   * Only show products that are actually purchasable.
+   * Only show products that are actually purchasable and unexpired.
    */
   const availableProducts = useMemo(() => {
     return marketplaceProducts.filter((product) => {
@@ -70,7 +79,7 @@ export default function useHomeProducts() {
         product.available !== false && stock > 0 && !isProductExpired(product)
       );
     });
-  }, [marketplaceProducts]);
+  }, [marketplaceProducts, products]);
 
   /*
    * Nearby products

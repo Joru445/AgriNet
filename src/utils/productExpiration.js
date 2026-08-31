@@ -38,7 +38,7 @@ export function getRemainingTime(product) {
     if (isNaN(expireTime) || expireTime <= 0) return null;
 
     const diffMs = expireTime - Date.now();
-    if (diffMs <= 0) return "Expired";
+    if (diffMs <= 0) return null;
 
     const totalMinutes = Math.ceil(diffMs / (1000 * 60));
     const days = Math.floor(totalMinutes / (60 * 24));
