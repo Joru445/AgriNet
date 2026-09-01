@@ -1,537 +1,103 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import {
-  useLocation,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 
 import {
-  markConversationRead,
-  createConversation,
-  findConversation,
   getConversation,
-  subscribeUserConversations,
+  findConversation,
 } from "../services/conversation.service";
 
-import {
-  subscribeMessages,
-  fetchOlderMessages,
-  sendMessage as sendMessageService,
-  DEFAULT_MESSAGE_LIMIT,
-} from "../services/message.service";
-
-import { uploadMessageImage } from "../services/cloudinary.service";
-import { compressImage } from "../utils/imageCompression";
+import { getUserProfile } from "../services/user.service";
 
 import {
-  getUserProfile,
-  searchUsers,
-} from "../services/user.service";
+  getCachedUserProfile,
+  setCachedUserProfile,
+} from "../utils/userProfileCache";
 
-import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
-
-import { getProductById } from "../services/product.service";
-
-import { acceptProductInquiry } from "../services/inquiry.service";
-
-import { showToast } from "../utils/toast";
+import useOnlineStatus from "./messages/useOnlineStatus";
+import useDrafts from "./messages/useDrafts";
+import useConversationList from "./messages/useConversationList";
+import useUserSearch from "./messages/useUserSearch";
+import useMessageSubscription from "./messages/useMessageSubscription";
+import useMessageActions from "./messages/useMessageActions";
+import useInquiryFlow from "./messages/useInquiryFlow";
 
 export default function useMessages() {
   const { profile } = useAuth();
-
-  const location = useLocation();
-  const navigate = useNavigate();
-
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [loading, setLoading] = useState(true);
-  const [loadingMessages, setLoadingMessages] = useState(false);
-
-  const [conversations, setConversations] = useState([]);
-  const [messages, setMessages] = useState([]);
-
-  // Pagination states
-  const [hasMoreOlder, setHasMoreOlder] = useState(false);
-  const [loadingOlder, setLoadingOlder] = useState(false);
-  const oldestDocSnapRef = useRef(null);
-  const messagesMapRef = useRef(new Map());
-
-  // In-memory profile cache to avoid redundant getDoc calls
-  const userProfileCacheRef = useRef(new Map());
-
-  const [activeConversation, setActiveConversation] =
-    useState(null);
-
+  const [activeConversation, setActiveConversation] = useState(null);
   const [activeUser, setActiveUser] = useState(null);
 
-  const [search, setSearch] = useState("");
+  const currentTargetKey = useMemo(() => {
+    if (activeConversation?.id) return activeConversation.id;
+    if (activeUser?.uid) return `user_${activeUser.uid}`;
+    return null;
+  }, [activeConversation?.id, activeUser?.uid]);
 
-  const [message, setMessage] = useState("");
+  const isOnline = useOnlineStatus();
+  const { message, setMessage, drafts, clearCurrentDraft } =
+    useDrafts(currentTargetKey);
+  const { conversations, loading } = useConversationList(profile?.uid);
+  const {
+    search,
+    setSearch,
+    userResults,
+    searching,
+  } = useUserSearch(profile?.uid, conversations);
+  const {
+    messages,
+    loadingMessages,
+    hasMoreOlder,
+    loadingOlder,
+    loadOlderMessages,
+  } = useMessageSubscription(profile?.uid, activeConversation?.id);
 
-  const [drafts, setDrafts] = useState(() => {
-    try {
-      const saved = localStorage.getItem(
-        "agri_message_drafts",
-      );
-
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
+  const {
+    failedMessages,
+    uploadingImage,
+    sendMessage: sendAction,
+    retryMessage,
+    deleteFailedMessage,
+  } = useMessageActions({
+    profile,
+    activeConversation,
+    activeUser,
+    setActiveConversation,
+    setActiveUser,
+    setSearchParams,
+    message,
+    selectedImage: null,
+    setSelectedImage: () => {},
+    clearCurrentDraft,
   });
 
-  const [isOnline, setIsOnline] = useState(() =>
-    typeof navigator !== "undefined"
-      ? navigator.onLine
-      : true,
-  );
-
-  const [failedMessages, setFailedMessages] = useState([]);
+  const {
+    inquiryProduct,
+    inquiryProducts,
+    loadInquiryProducts,
+    sendInquiry,
+    acceptInquiry,
+    cancelInquiryProduct,
+  } = useInquiryFlow({
+    profile,
+    activeConversation,
+    activeUser,
+    setActiveConversation,
+    setActiveUser,
+    setSearchParams,
+  });
 
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const [uploadingImage, setUploadingImage] =
-    useState(false);
-
-  const [userResults, setUserResults] = useState([]);
-
-  const [inquiryProduct, setInquiryProduct] = useState(
-    () => location.state?.inquiryProduct || null,
+  const sendMessage = useCallback(
+    (customImage) => {
+      sendAction(customImage || selectedImage);
+      setSelectedImage(null);
+    },
+    [sendAction, selectedImage],
   );
-
-  const [inquiryProducts, setInquiryProducts] =
-    useState({});
-
-  const productCache = useRef(new Map());
-
-  const searching = search.trim().length > 0;
-
-  const currentTargetKey = useMemo(() => {
-    if (activeConversation?.id) {
-      return activeConversation.id;
-    }
-
-    if (activeUser?.uid) {
-      return `user_${activeUser.uid}`;
-    }
-
-    return null;
-  }, [
-    activeConversation?.id,
-    activeUser?.uid,
-  ]);
-
-  /*
-   * ==================================================
-   * PERSIST DRAFTS
-   * ==================================================
-   */
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "agri_message_drafts",
-        JSON.stringify(drafts),
-      );
-    } catch (error) {
-      console.error(
-        "Failed to save drafts to localStorage:",
-        error,
-      );
-    }
-  }, [drafts]);
-
-  /*
-   * ==================================================
-   * SYNC ACTIVE DRAFT
-   * ==================================================
-   */
-
-  useEffect(() => {
-    if (currentTargetKey) {
-      setMessage(
-        drafts[currentTargetKey] || "",
-      );
-    } else {
-      setMessage("");
-    }
-  }, [currentTargetKey]);
-
-  /*
-   * ==================================================
-   * NETWORK STATUS
-   * ==================================================
-   */
-
-  useEffect(() => {
-    function handleOnline() {
-      setIsOnline(true);
-    }
-
-    function handleOffline() {
-      setIsOnline(false);
-
-      showToast.error(
-        "No internet connection.",
-      );
-    }
-
-    window.addEventListener(
-      "online",
-      handleOnline,
-    );
-
-    window.addEventListener(
-      "offline",
-      handleOffline,
-    );
-
-    return () => {
-      window.removeEventListener(
-        "online",
-        handleOnline,
-      );
-
-      window.removeEventListener(
-        "offline",
-        handleOffline,
-      );
-    };
-  }, []);
-
-  /*
-   * ==================================================
-   * HANDLE MESSAGE INPUT
-   * ==================================================
-   */
-
-  function handleMessageChange(value) {
-    setMessage(value);
-
-    if (!currentTargetKey) {
-      return;
-    }
-
-    setDrafts((previous) => {
-      if (!value?.trim()) {
-        const next = {
-          ...previous,
-        };
-
-        delete next[currentTargetKey];
-
-        return next;
-      }
-
-      return {
-        ...previous,
-        [currentTargetKey]: value,
-      };
-    });
-  }
-
-  /*
-   * ==================================================
-   * SYNC INQUIRY PRODUCT FROM NAVIGATION STATE
-   * ==================================================
-   */
-
-  useEffect(() => {
-    const product =
-      location.state?.inquiryProduct;
-
-    if (product) {
-      setInquiryProduct(product);
-    }
-  }, [location.state]);
-
-  /*
-   * ==================================================
-   * PRODUCT CACHE
-   * ==================================================
-   */
-
-  async function getCachedProduct(productId) {
-    if (!productId) {
-      return null;
-    }
-
-    if (
-      productCache.current.has(productId)
-    ) {
-      return productCache.current.get(
-        productId,
-      );
-    }
-
-    try {
-      const product =
-        await getProductById(productId);
-
-      const cachedProduct =
-        product || null;
-
-      productCache.current.set(
-        productId,
-        cachedProduct,
-      );
-
-      setInquiryProducts((current) => ({
-        ...current,
-        [productId]: cachedProduct,
-      }));
-
-      return cachedProduct;
-    } catch (error) {
-      console.error(
-        "Failed to load inquiry product:",
-        error,
-      );
-
-      productCache.current.set(
-        productId,
-        null,
-      );
-
-      setInquiryProducts((current) => ({
-        ...current,
-        [productId]: null,
-      }));
-
-      return null;
-    }
-  }
-
-  /*
-   * ==================================================
-   * LOAD PRODUCTS USED BY INQUIRY MESSAGES
-   * ==================================================
-   */
-
-  useEffect(() => {
-    if (!messages.length) {
-      return;
-    }
-
-    const productIds = [
-      ...new Set(
-        messages
-          .filter(
-            (messageItem) =>
-              messageItem.type ===
-                "product_inquiry" &&
-              messageItem.productId,
-          )
-          .map(
-            (messageItem) =>
-              messageItem.productId,
-          ),
-      ),
-    ];
-
-    productIds.forEach((productId) => {
-      getCachedProduct(productId);
-    });
-  }, [messages]);
-
-  /*
-   * ==================================================
-   * SUBSCRIBE TO CONVERSATIONS
-   *
-   * participantInfo from the conversation document is
-   * the primary source for displaying the other user.
-   * In-memory cache is used only if participant data is missing.
-   * ==================================================
-   */
-
-  useEffect(() => {
-    if (!profile?.uid) {
-      setConversations([]);
-      setLoading(false);
-
-      return;
-    }
-
-    setLoading(true);
-
-    const unsubscribe = subscribeUserConversations(
-      profile.uid,
-      (data) => {
-        try {
-          const missingProfileUids = [];
-
-          const mapped = data.map((conversation) => {
-            const otherUid = conversation.participants?.find(
-              (uid) => uid !== profile.uid,
-            );
-
-            const otherInfo =
-              conversation.participantInfo?.[otherUid] || {};
-
-            const cachedProfile = otherUid
-              ? (getCachedUserProfile(otherUid) || userProfileCacheRef.current.get(otherUid))
-              : null;
-
-            // Check if participantInfo has sufficient display data AND profilePicture
-            const hasBasicInfo = Boolean(
-              otherInfo.fullname || otherInfo.username,
-            );
-            const hasProfilePic = Boolean(
-              cachedProfile?.profilePicture || otherInfo.profilePicture,
-            );
-
-            if ((!hasBasicInfo || !hasProfilePic) && otherUid) {
-              missingProfileUids.push(otherUid);
-            }
-
-            return {
-              ...conversation,
-
-              otherUser: {
-                uid: otherUid,
-                ...otherInfo,
-                ...(cachedProfile || {}),
-                profilePicture:
-                  cachedProfile?.profilePicture ||
-                  otherInfo.profilePicture ||
-                  "",
-                verified:
-                  cachedProfile?.verified ??
-                  otherInfo.verified === true,
-              },
-
-              unreadCount:
-                conversation.unreadCount?.[profile.uid] ?? 0,
-
-              rawUnreadCount: conversation.unreadCount || {},
-            };
-          });
-
-          setConversations(mapped);
-
-          // Fetch profiles if participantInfo is missing profilePicture or data
-          if (missingProfileUids.length > 0) {
-            const uniqueMissing = [...new Set(missingProfileUids)];
-            uniqueMissing.forEach(async (uid) => {
-              try {
-                const user = await getUserProfile(uid);
-                if (user) {
-                  userProfileCacheRef.current.set(uid, user);
-                  setCachedUserProfile(uid, user);
-                  setConversations((prev) =>
-                    prev.map((c) =>
-                      c.otherUser?.uid === uid
-                        ? {
-                            ...c,
-                            otherUser: {
-                              ...c.otherUser,
-                              ...user,
-                              profilePicture: user.profilePicture || c.otherUser?.profilePicture || "",
-                              verified: user.verified === true,
-                            },
-                          }
-                        : c,
-                    ),
-                  );
-                  setActiveConversation((prev) =>
-                    prev && prev.otherUser?.uid === uid
-                      ? {
-                          ...prev,
-                          otherUser: {
-                            ...prev.otherUser,
-                            ...user,
-                            profilePicture: user.profilePicture || prev.otherUser?.profilePicture || "",
-                            verified: user.verified === true,
-                          },
-                        }
-                      : prev,
-                  );
-                }
-              } catch (error) {
-                console.error(`Failed to load fallback user profile for ${uid}:`, error);
-              }
-            });
-          }
-        } catch (error) {
-          console.error(
-            "Failed to process conversations:",
-            error,
-          );
-
-          setConversations([]);
-        } finally {
-          setLoading(false);
-        }
-      },
-    );
-
-    return () => {
-      unsubscribe();
-    };
-  }, [profile?.uid]);
-
-  /*
-   * ==================================================
-   * SEARCH USERS
-   * ==================================================
-   */
-
-  useEffect(() => {
-    if (!profile?.uid) {
-      return;
-    }
-
-    async function loadSearch() {
-      if (!search.trim()) {
-        setUserResults([]);
-
-        return;
-      }
-
-      try {
-        const users =
-          await searchUsers(
-            search,
-            profile.uid,
-          );
-
-        const conversationUserIds =
-          new Set(
-            conversations
-              .map(
-                (conversation) =>
-                  conversation.otherUser
-                    ?.uid,
-              )
-              .filter(Boolean),
-          );
-
-        setUserResults(
-          users.filter(
-            (user) =>
-              !conversationUserIds.has(
-                user.uid,
-              ),
-          ),
-        );
-      } catch (error) {
-        console.error(
-          "Failed to search users:",
-          error,
-        );
-
-        setUserResults([]);
-      }
-    }
-
-    loadSearch();
-  }, [
-    search,
-    conversations,
-    profile?.uid,
-  ]);
 
   /*
    * ==================================================
@@ -543,123 +109,85 @@ export default function useMessages() {
    */
 
   useEffect(() => {
-    if (!profile?.uid) {
-      return;
-    }
+    if (!profile?.uid) return;
 
-    const conversationId =
-      searchParams.get("conversation");
-
-    const userId =
-      searchParams.get("user");
+    const conversationId = searchParams.get("conversation");
+    const userId = searchParams.get("user");
 
     let cancelled = false;
 
     async function loadConversation() {
-      /*
-       * Existing conversation.
-       */
-
       if (conversationId) {
         try {
-          /*
-           * Prefer the already enriched conversation
-           * from the conversation list.
-           */
-
-          const existing =
-            conversations.find(
-              (conversation) =>
-                conversation.id ===
-                conversationId,
-            );
+          const existing = conversations.find(
+            (c) => c.id === conversationId,
+          );
 
           if (existing) {
             if (!cancelled) {
-              setActiveConversation(
-                existing,
-              );
-
+              setActiveConversation(existing);
               setActiveUser(null);
             }
-
             return;
           }
 
-          /*
-           * Fallback if the conversation list has not
-           * loaded yet.
-           */
+          const conversation = await getConversation(conversationId);
 
-          const conversation =
-            await getConversation(
-              conversationId,
-            );
-
-          if (cancelled) {
-            return;
-          }
+          if (cancelled) return;
 
           if (!conversation) {
             setActiveConversation(null);
             setActiveUser(null);
-            setMessages([]);
-
             return;
           }
 
-          const otherUid =
-            conversation.participants?.find(
-              (uid) =>
-                uid !== profile.uid,
-            );
+          const otherUid = conversation.participants?.find(
+            (uid) => uid !== profile.uid,
+          );
 
           if (!otherUid) {
             setActiveConversation(null);
             setActiveUser(null);
-            setMessages([]);
-
             return;
           }
 
-          /*
-           * Use participantInfo and cached profile.
-           */
-
           const otherUser =
-            conversation.participantInfo?.[
-              otherUid
-            ] || {};
+            conversation.participantInfo?.[otherUid] || {};
 
           const cachedProfile = otherUid
-            ? (getCachedUserProfile(otherUid) || userProfileCacheRef.current.get(otherUid))
+            ? getCachedUserProfile(otherUid)
             : null;
 
-          if ((!cachedProfile || !cachedProfile.profilePicture) && otherUid) {
-            getUserProfile(otherUid).then((freshUser) => {
-              if (freshUser && !cancelled) {
-                userProfileCacheRef.current.set(otherUid, freshUser);
-                setCachedUserProfile(otherUid, freshUser);
-                setActiveConversation((prev) =>
-                  prev && (prev.id === conversation.id || prev.otherUser?.uid === otherUid)
-                    ? {
-                        ...prev,
-                        otherUser: {
-                          ...prev.otherUser,
-                          ...freshUser,
-                          profilePicture: freshUser.profilePicture || prev.otherUser?.profilePicture || "",
-                          verified: freshUser.verified === true,
-                        },
-                      }
-                    : prev,
-                );
-              }
-            }).catch(() => {});
+          if (!cachedProfile?.profilePicture && otherUid) {
+            getUserProfile(otherUid)
+              .then((freshUser) => {
+                if (freshUser && !cancelled) {
+                  setCachedUserProfile(otherUid, freshUser);
+                  setActiveConversation((prev) =>
+                    prev &&
+                    (prev.id === conversation.id ||
+                      prev.otherUser?.uid === otherUid)
+                      ? {
+                          ...prev,
+                          otherUser: {
+                            ...prev.otherUser,
+                            ...freshUser,
+                            profilePicture:
+                              freshUser.profilePicture ||
+                              prev.otherUser?.profilePicture ||
+                              "",
+                            verified: freshUser.verified === true,
+                          },
+                        }
+                      : prev,
+                  );
+                }
+              })
+              .catch(() => {});
           }
 
           setActiveConversation({
             ...conversation,
-
             otherUser: {
               uid: otherUid,
               ...otherUser,
@@ -675,118 +203,74 @@ export default function useMessages() {
           });
 
           setActiveUser(null);
-
-          return;
         } catch (error) {
           if (!cancelled) {
-            console.error(
-              "Failed to load conversation:",
-              error,
-            );
-
+            console.error("Failed to load conversation:", error);
             setActiveConversation(null);
             setActiveUser(null);
-            setMessages([]);
           }
-
-          return;
         }
+        return;
       }
-
-      /*
-       * User without conversation.
-       */
 
       if (userId) {
         try {
-          // Instant synchronous preview of user profile if cached
           const initialCachedUser = getCachedUserProfile(userId);
           if (initialCachedUser) {
             setActiveUser(initialCachedUser);
           }
 
-          // Check local conversations list first to save a Firestore read
           const existingInState = conversations.find((c) =>
             c.participants?.includes(userId),
           );
 
           if (existingInState) {
             setSearchParams(
-              {
-                conversation: existingInState.id,
-              },
-              {
-                replace: true,
-              },
+              { conversation: existingInState.id },
+              { replace: true },
             );
             return;
           }
 
-          const existingConversation =
-            await findConversation(
-              profile.uid,
-              userId,
-            );
+          const existingConversation = await findConversation(
+            profile.uid,
+            userId,
+          );
 
-          if (cancelled) {
-            return;
-          }
+          if (cancelled) return;
 
           if (existingConversation) {
             setSearchParams(
-              {
-                conversation:
-                  existingConversation.id,
-              },
-              {
-                replace: true,
-              },
+              { conversation: existingConversation.id },
+              { replace: true },
             );
-
             return;
           }
 
-          const user =
-            await getUserProfile(
-              userId,
-            );
+          const user = await getUserProfile(userId);
 
-          if (cancelled) {
-            return;
-          }
+          if (cancelled) return;
 
           if (!user) {
             setActiveConversation(null);
             setActiveUser(null);
-            setMessages([]);
-
             return;
           }
 
           setActiveConversation(null);
           setActiveUser(user);
-          setMessages([]);
-
-          return;
         } catch (error) {
           if (!cancelled) {
-            console.error(
-              "Failed to load user:",
-              error,
-            );
-
+            console.error("Failed to load user:", error);
             setActiveConversation(null);
             setActiveUser(null);
-            setMessages([]);
           }
-
-          return;
         }
+        return;
       }
 
       setActiveConversation(null);
       setActiveUser(null);
-      setMessages([]);
     }
 
     loadConversation();
@@ -794,1082 +278,79 @@ export default function useMessages() {
     return () => {
       cancelled = true;
     };
-  }, [
-    profile?.uid,
-    searchParams,
-    setSearchParams,
-    conversations,
-  ]);
+  }, [profile?.uid, searchParams, setSearchParams, conversations]);
 
   /*
    * ==================================================
-   * HELPER: SORT MESSAGES BY CREATED AT ASCENDING
-   * ==================================================
-   */
-
-  const sortByCreatedAt = useCallback((a, b) => {
-    const getSeconds = (item) => {
-      if (!item?.createdAt) return 0;
-      if (item.createdAt.seconds != null) return item.createdAt.seconds;
-      if (typeof item.createdAt.toMillis === "function")
-        return item.createdAt.toMillis() / 1000;
-      if (typeof item.createdAt === "number") return item.createdAt / 1000;
-      return 0;
-    };
-    return getSeconds(a) - getSeconds(b);
-  }, []);
-
-  /*
-   * ==================================================
-   * SUBSCRIBE TO MESSAGES (PAGINATED REALTIME WINDOW)
+   * SYNC INQUIRY PRODUCTS FROM MESSAGES
    * ==================================================
    */
 
   useEffect(() => {
-    if (
-      !profile?.uid ||
-      !activeConversation?.id
-    ) {
-      setMessages([]);
-      setLoadingMessages(false);
-      setHasMoreOlder(false);
-      setLoadingOlder(false);
-      oldestDocSnapRef.current = null;
-      messagesMapRef.current.clear();
-
-      return;
-    }
-
-    const convId = activeConversation.id;
-    const currentUid = profile.uid;
-
-    // Reset pagination tracking when switching conversation
-    setMessages([]);
-    setLoadingMessages(true);
-    setHasMoreOlder(false);
-    setLoadingOlder(false);
-    oldestDocSnapRef.current = null;
-    messagesMapRef.current.clear();
-
-    const unsubscribe =
-      subscribeMessages(
-        convId,
-        (incomingMessages, meta) => {
-          setLoadingMessages(false);
-
-          // Initialize oldest doc cursor for pagination on first snapshot
-          if (!oldestDocSnapRef.current && meta?.oldestDocSnapshot) {
-            oldestDocSnapRef.current = meta.oldestDocSnapshot;
-            setHasMoreOlder(meta.hasMore);
-          }
-
-          // Merge incoming realtime messages
-          incomingMessages.forEach((msg) => {
-            messagesMapRef.current.set(msg.id, msg);
-          });
-
-          const sorted = Array.from(
-            messagesMapRef.current.values(),
-          ).sort(sortByCreatedAt);
-
-          setMessages(sorted);
-
-          // Smart mark as read: only mark if visible and unread exists from other user
-          if (document.visibilityState === "visible") {
-            const hasUnreadFromOther = incomingMessages.some(
-              (m) =>
-                m.senderId !== currentUid &&
-                m.read !== true,
-            );
-            const currentUnread =
-              activeConversation?.unreadCount ?? 0;
-
-            if (hasUnreadFromOther || currentUnread > 0) {
-              markConversationRead(
-                convId,
-                currentUid,
-              ).catch((error) => {
-                console.error(
-                  "Failed to mark conversation as read:",
-                  error,
-                );
-              });
-            }
-          }
-        },
-        DEFAULT_MESSAGE_LIMIT,
-      );
-
-    // Initial mark as read when entering (only if unreadCount > 0)
-    if (activeConversation?.unreadCount > 0) {
-      markConversationRead(
-        convId,
-        currentUid,
-      ).catch((error) => {
-        console.error(
-          "Failed to mark conversation as read:",
-          error,
-        );
-      });
-    }
-
-    function handleVisibilityOrFocus() {
-      if (document.visibilityState === "visible") {
-        if (activeConversation?.unreadCount > 0) {
-          markConversationRead(
-            convId,
-            currentUid,
-          ).catch((error) => {
-            console.error(
-              "Failed to mark conversation as read on focus:",
-              error,
-            );
-          });
-        }
-      }
-    }
-
-    window.addEventListener("focus", handleVisibilityOrFocus);
-    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
-
-    return () => {
-      window.removeEventListener("focus", handleVisibilityOrFocus);
-      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
-      unsubscribe();
-    };
-  }, [
-    activeConversation?.id,
-    profile?.uid,
-    sortByCreatedAt,
-  ]);
+    loadInquiryProducts(messages);
+  }, [messages, loadInquiryProducts]);
 
   /*
    * ==================================================
-   * LOAD OLDER MESSAGES (PAGINATION)
-   * ==================================================
-   */
-
-  const loadOlderMessages = useCallback(async () => {
-    if (
-      loadingOlder ||
-      !hasMoreOlder ||
-      !oldestDocSnapRef.current ||
-      !activeConversation?.id
-    ) {
-      return;
-    }
-
-    setLoadingOlder(true);
-
-    try {
-      const result = await fetchOlderMessages(
-        activeConversation.id,
-        oldestDocSnapRef.current,
-        DEFAULT_MESSAGE_LIMIT,
-      );
-
-      if (result.messages && result.messages.length > 0) {
-        result.messages.forEach((msg) => {
-          messagesMapRef.current.set(msg.id, msg);
-        });
-
-        oldestDocSnapRef.current = result.oldestDocSnapshot;
-        setHasMoreOlder(result.hasMore);
-
-        const sorted = Array.from(
-          messagesMapRef.current.values(),
-        ).sort(sortByCreatedAt);
-
-        setMessages(sorted);
-      } else {
-        setHasMoreOlder(false);
-      }
-    } catch (error) {
-      console.error("Failed to load older messages:", error);
-    } finally {
-      setLoadingOlder(false);
-    }
-  }, [
-    loadingOlder,
-    hasMoreOlder,
-    activeConversation?.id,
-    sortByCreatedAt,
-  ]);
-
-  /*
-   * ==================================================
-   * SELECT CONVERSATION
+   * SELECT CONVERSATION / USER
    * ==================================================
    */
 
   function selectConversation(conversation) {
     setSearch("");
-
-    setSearchParams({
-      conversation:
-        conversation.id,
-    });
+    setSearchParams({ conversation: conversation.id });
   }
-
-  /*
-   * ==================================================
-   * SELECT USER
-   * ==================================================
-   */
 
   function selectUser(user) {
     setSearch("");
-
-    setSearchParams({
-      user: user.uid,
-    });
+    setSearchParams({ user: user.uid });
   }
 
   /*
    * ==================================================
-   * CREATE FAILED MESSAGE
-   * ==================================================
-   */
-
-  function createFailedMessage({
-    conversationId,
-    text,
-    image,
-    error,
-    stage,
-  }) {
-    return {
-      id: `failed_${Date.now()}`,
-
-      conversationId:
-        conversationId || "temp",
-
-      senderId:
-        profile?.uid || null,
-
-      text,
-
-      type: image
-        ? "image"
-        : "text",
-
-      imageUrl:
-        image?.previewUrl || null,
-
-      imageId: null,
-
-      status: "failed",
-
-      error:
-        error ||
-        "Failed to send message",
-
-      stage,
-
-      createdAt: {
-        seconds: Math.floor(
-          Date.now() / 1000,
-        ),
-      },
-    };
-  }
-
-  /*
-   * ==================================================
-   * CLEAR CURRENT DRAFT
-   * ==================================================
-   */
-
-  function clearCurrentDraft() {
-    if (!currentTargetKey) {
-      return;
-    }
-
-    setDrafts((previous) => {
-      const next = {
-        ...previous,
-      };
-
-      delete next[currentTargetKey];
-
-      return next;
-    });
-  }
-
-  /*
-   * ==================================================
-   * SEND MESSAGE
-   * ==================================================
-   */
-
-  async function handleSend(
-    customImage = null,
-  ) {
-    const activeImg =
-      customImage || selectedImage;
-
-    const text = message.trim();
-
-    if (!text && !activeImg) {
-      return;
-    }
-
-    if (!profile?.uid) {
-      showToast.error(
-        "You must be logged in to send a message.",
-      );
-
-      return;
-    }
-
-    let conversationId =
-      activeConversation?.id;
-
-    let stage = "prepare";
-
-    if (
-      !conversationId &&
-      !activeUser?.uid
-    ) {
-      showToast.error(
-        "No user selected.",
-      );
-
-      return;
-    }
-
-    if (!navigator.onLine) {
-      const failedMessage =
-        createFailedMessage({
-          conversationId,
-          text,
-          image: activeImg,
-          error:
-            "No internet connection",
-          stage: "offline",
-        });
-
-      setFailedMessages((previous) => [
-        ...previous,
-        failedMessage,
-      ]);
-
-      setMessage("");
-      setSelectedImage(null);
-
-      clearCurrentDraft();
-
-      showToast.error(
-        "Unable to send. No internet connection.",
-      );
-
-      return;
-    }
-
-    try {
-      if (activeImg) {
-        setUploadingImage(true);
-      }
-
-      /*
-       * Create conversation if needed.
-       */
-
-      if (!conversationId) {
-        stage =
-          "create-conversation";
-
-        conversationId =
-          await createConversation(
-            profile,
-            activeUser,
-          );
-      }
-
-      /*
-       * Upload image if present.
-       */
-
-      let imageUrl = null;
-      let imageId = null;
-
-      if (activeImg?.file) {
-        stage = "upload-image";
-
-        const fileToUpload = await compressImage(activeImg.file);
-
-        const uploaded =
-          await uploadMessageImage(
-            fileToUpload,
-          );
-
-        imageUrl =
-          uploaded?.url || null;
-
-        imageId =
-          uploaded?.publicId || null;
-      }
-
-      /*
-       * Send Firestore message.
-       */
-
-      stage = "send-message";
-
-      const receiverId =
-        activeUser?.uid ||
-        activeConversation?.otherUser?.uid ||
-        null;
-
-      await sendMessageService({
-        conversationId,
-
-        senderId:
-          profile.uid,
-
-        receiverId,
-
-        text,
-
-        type: activeImg
-          ? "image"
-          : "text",
-
-        imageUrl,
-        imageId,
-      });
-
-      /*
-       * Only change URL after the message
-       * was successfully sent.
-       */
-
-      if (!activeConversation?.id) {
-        const otherUserInfo = activeUser || { uid: receiverId };
-        setActiveConversation({
-          id: conversationId,
-          participants: [profile.uid, receiverId].filter(Boolean),
-          participantInfo: {
-            [profile.uid]: {
-              fullname: profile.fullname || "",
-              username: profile.username || "",
-              profilePicture: profile.profilePicture || "",
-              role: profile.role || "",
-            },
-            ...(otherUserInfo?.uid
-              ? {
-                  [otherUserInfo.uid]: {
-                    fullname: otherUserInfo.fullname || "",
-                    username: otherUserInfo.username || "",
-                    profilePicture: otherUserInfo.profilePicture || "",
-                    role: otherUserInfo.role || "",
-                  },
-                }
-              : {}),
-          },
-          otherUser: otherUserInfo,
-          unreadCount: {},
-        });
-        setActiveUser(null);
-        setSearchParams(
-          {
-            conversation:
-              conversationId,
-          },
-          {
-            replace: true,
-          },
-        );
-      }
-
-      setMessage("");
-      setSelectedImage(null);
-
-      clearCurrentDraft();
-    } catch (error) {
-      console.error(
-        `[Messages] Failed during "${stage}":`,
-        error,
-      );
-
-      console.error(
-        "[Messages] Error code:",
-        error.code,
-      );
-
-      console.error(
-        "[Messages] Error message:",
-        error.message,
-      );
-
-      const failedMessage =
-        createFailedMessage({
-          conversationId,
-          text,
-          image: activeImg,
-          error:
-            error.message,
-          stage,
-        });
-
-      setFailedMessages((previous) => [
-        ...previous,
-        failedMessage,
-      ]);
-
-      setMessage("");
-      setSelectedImage(null);
-
-      clearCurrentDraft();
-
-      if (
-        error.code ===
-        "permission-denied"
-      ) {
-        showToast.error(
-          `Message blocked by Firestore permissions (${stage}).`,
-        );
-      } else {
-        showToast.error(
-          error.message ||
-            "Unable to send message.",
-        );
-      }
-    } finally {
-      setUploadingImage(false);
-    }
-  }
-
-  /*
-   * ==================================================
-   * RETRY FAILED MESSAGE
-   * ==================================================
-   */
-
-  async function retryMessage(
-    failedMessage,
-  ) {
-    setFailedMessages((previous) =>
-      previous.filter(
-        (messageItem) =>
-          messageItem.id !==
-          failedMessage.id,
-      ),
-    );
-
-    if (!navigator.onLine) {
-      setFailedMessages((previous) => [
-        ...previous,
-        failedMessage,
-      ]);
-
-      showToast.error(
-        "Unable to send. No internet connection.",
-      );
-
-      return;
-    }
-
-    /*
-     * A blob URL is only a local preview.
-     * The original File is gone, so it cannot
-     * be uploaded again.
-     */
-
-    if (
-      failedMessage.type ===
-        "image" &&
-      (!failedMessage.imageUrl ||
-        failedMessage.imageUrl.startsWith(
-          "blob:",
-        ))
-    ) {
-      setFailedMessages((previous) => [
-        ...previous,
-        failedMessage,
-      ]);
-
-      showToast.error(
-        "Please select the image again before retrying.",
-      );
-
-      return;
-    }
-
-    let stage = "prepare";
-
-    try {
-      let conversationId =
-        failedMessage.conversationId;
-
-      if (
-        !conversationId ||
-        conversationId === "temp"
-      ) {
-        conversationId =
-          activeConversation?.id;
-      }
-
-      if (
-        !conversationId &&
-        activeUser?.uid
-      ) {
-        stage =
-          "create-conversation";
-
-        conversationId =
-          await createConversation(
-            profile,
-            activeUser,
-          );
-      }
-
-      if (!conversationId) {
-        throw new Error(
-          "No conversation found.",
-        );
-      }
-
-      stage = "send-message";
-
-      const receiverId =
-        failedMessage.receiverId ||
-        activeUser?.uid ||
-        activeConversation?.otherUser?.uid ||
-        null;
-
-      await sendMessageService({
-        conversationId,
-
-        senderId:
-          profile.uid,
-
-        receiverId,
-
-        text:
-          failedMessage.text || "",
-
-        type:
-          failedMessage.type ||
-          "text",
-
-        imageUrl:
-          failedMessage.imageUrl?.startsWith(
-            "blob:",
-          )
-            ? null
-            : failedMessage.imageUrl ||
-              null,
-
-        imageId:
-          failedMessage.imageId ||
-          null,
-      });
-
-      if (!activeConversation?.id) {
-        setSearchParams(
-          {
-            conversation:
-              conversationId,
-          },
-          {
-            replace: true,
-          },
-        );
-      }
-    } catch (error) {
-      console.error(
-        `[Messages] Retry failed during "${stage}":`,
-        error,
-      );
-
-      setFailedMessages((previous) => [
-        ...previous,
-        {
-          ...failedMessage,
-
-          error:
-            error.message ||
-            "Failed to retry message",
-
-          stage,
-        },
-      ]);
-
-      if (
-        error.code ===
-        "permission-denied"
-      ) {
-        showToast.error(
-          `Message blocked by Firestore permissions (${stage}).`,
-        );
-      } else {
-        showToast.error(
-          error.message ||
-            "Unable to send message.",
-        );
-      }
-    }
-  }
-
-  /*
-   * ==================================================
-   * DELETE FAILED MESSAGE
-   * ==================================================
-   */
-
-  function deleteFailedMessage(id) {
-    setFailedMessages((previous) =>
-      previous.filter(
-        (messageItem) =>
-          messageItem.id !== id,
-      ),
-    );
-  }
-
-  /*
-   * ==================================================
-   * SEND PRODUCT INQUIRY
-   * ==================================================
-   */
-
-  async function handleSendInquiry(
-    quantity,
-  ) {
-    if (!inquiryProduct) {
-      showToast.error(
-        "No product selected for inquiry.",
-      );
-
-      return;
-    }
-
-    if (!profile?.uid) {
-      showToast.error(
-        "You must be logged in.",
-      );
-
-      return;
-    }
-
-    const parsedQuantity =
-      Number(quantity);
-
-    const stock = Number(
-      inquiryProduct.stock,
-    );
-
-    if (
-      !Number.isInteger(
-        parsedQuantity,
-      ) ||
-      parsedQuantity < 1
-    ) {
-      showToast.error(
-        "Please enter a valid quantity.",
-      );
-
-      return;
-    }
-
-    if (
-      inquiryProduct.available !== true ||
-      !Number.isInteger(stock) ||
-      stock < 1
-    ) {
-      showToast.error(
-        "This product is currently unavailable.",
-      );
-
-      return;
-    }
-
-    if (parsedQuantity > stock) {
-      showToast.error(
-        `Only ${stock} ${
-          inquiryProduct.unit ||
-          "units"
-        } available.`,
-      );
-
-      return;
-    }
-
-    try {
-      let conversationId =
-        activeConversation?.id;
-
-      if (!conversationId) {
-        if (!activeUser?.uid) {
-          showToast.error(
-            "Unable to determine the farmer.",
-          );
-
-          return;
-        }
-
-        conversationId =
-          await createConversation(
-            profile,
-            activeUser,
-          );
-      }
-
-      const receiverId =
-        activeUser?.uid ||
-        activeConversation?.otherUser?.uid ||
-        inquiryProduct.farmerId ||
-        null;
-
-      await sendMessageService({
-        conversationId,
-
-        senderId:
-          profile.uid,
-
-        receiverId,
-
-        text:
-          `I'm interested in ${inquiryProduct.name}.`,
-
-        type:
-          "product_inquiry",
-
-        productId:
-          inquiryProduct.id,
-
-        quantity:
-          parsedQuantity,
-
-        inquiryStatus:
-          "pending",
-      });
-
-      /*
-       * Set active conversation and change URL after inquiry succeeds.
-       */
-
-      if (!activeConversation?.id) {
-        const otherUserInfo = activeUser || { uid: receiverId };
-        setActiveConversation({
-          id: conversationId,
-          participants: [profile.uid, receiverId].filter(Boolean),
-          participantInfo: {
-            [profile.uid]: {
-              fullname: profile.fullname || "",
-              username: profile.username || "",
-              profilePicture: profile.profilePicture || "",
-              role: profile.role || "",
-            },
-            ...(otherUserInfo?.uid
-              ? {
-                  [otherUserInfo.uid]: {
-                    fullname: otherUserInfo.fullname || "",
-                    username: otherUserInfo.username || "",
-                    profilePicture: otherUserInfo.profilePicture || "",
-                    role: otherUserInfo.role || "",
-                  },
-                }
-              : {}),
-          },
-          otherUser: otherUserInfo,
-          unreadCount: {},
-        });
-        setActiveUser(null);
-        setSearchParams(
-          {
-            conversation:
-              conversationId,
-          },
-          {
-            replace: true,
-          },
-        );
-      }
-
-      setInquiryProduct(null);
-
-      showToast.success(
-        "Inquiry sent successfully.",
-      );
-    } catch (error) {
-      console.error(
-        "Failed to send inquiry:",
-        error,
-      );
-
-      showToast.error(
-        error.message ||
-          "Failed to send inquiry.",
-      );
-    }
-  }
-
-  /*
-   * ==================================================
-   * ACCEPT PRODUCT INQUIRY
-   * ==================================================
-   */
-
-  async function handleAcceptInquiry(
-    inquiryMessage,
-  ) {
-    if (!inquiryMessage?.id) {
-      showToast.error(
-        "Invalid inquiry message.",
-      );
-
-      return;
-    }
-
-    if (
-      inquiryMessage.type !==
-      "product_inquiry"
-    ) {
-      showToast.error(
-        "This message is not an inquiry.",
-      );
-
-      return;
-    }
-
-    if (
-      inquiryMessage.inquiryStatus !==
-      "pending"
-    ) {
-      showToast.error(
-        "This inquiry has already been processed.",
-      );
-
-      return;
-    }
-
-    if (!profile?.uid) {
-      showToast.error(
-        "You must be logged in.",
-      );
-
-      return;
-    }
-
-    try {
-      await acceptProductInquiry({
-        inquiryMessage,
-        farmer: profile,
-      });
-
-      showToast.success(
-        "Inquiry accepted.",
-      );
-    } catch (error) {
-      console.error(
-        "Failed to accept inquiry:",
-        error,
-      );
-
-      showToast.error(
-        error.message ||
-          "Failed to accept inquiry.",
-      );
-
-      throw error;
-    }
-  }
-
-  /*
-   * ==================================================
-   * FILTER CONVERSATIONS
+   * FILTERED & LIVE CONVERSATIONS
    * ==================================================
    */
 
   const filteredConversations = useMemo(() => {
-    if (!search.trim()) {
-      return conversations;
-    }
+    if (!search.trim()) return conversations;
 
-    const keyword =
-      search.toLowerCase();
+    const keyword = search.toLowerCase();
 
     return conversations.filter(
       ({ otherUser }) =>
-        otherUser?.fullname
-          ?.toLowerCase()
-          .includes(keyword) ||
-        otherUser?.username
-          ?.toLowerCase()
-          .includes(keyword),
+        otherUser?.fullname?.toLowerCase().includes(keyword) ||
+        otherUser?.username?.toLowerCase().includes(keyword),
     );
-  }, [
-    conversations,
-    search,
-  ]);
+  }, [conversations, search]);
 
-  /*
-   * ==================================================
-   * KEEP ACTIVE CONVERSATION IN SYNC WITH
-   * ENRICHED CONVERSATION LIST
-   * ==================================================
-   */
+  const activeConversationLive = useMemo(() => {
+    if (!activeConversation?.id) return activeConversation;
 
-  const activeConversationLive =
-    useMemo(() => {
-      if (!activeConversation?.id) {
-        return activeConversation;
-      }
+    const found = conversations.find(
+      (c) => c.id === activeConversation.id,
+    );
 
-      const found =
-        conversations.find(
-          (conversation) =>
-            conversation.id ===
-            activeConversation.id,
-        );
+    if (!found) return activeConversation;
 
-      if (!found) {
-        return activeConversation;
-      }
-
-      return {
-        ...activeConversation,
-        ...found,
-
-        otherUser:
-          found.otherUser ||
-          activeConversation.otherUser,
-      };
-    }, [
-      activeConversation,
-      conversations,
-    ]);
-
-  /*
-   * ==================================================
-   * COMBINE REAL AND FAILED MESSAGES
-   * ==================================================
-   */
+    return {
+      ...activeConversation,
+      ...found,
+      otherUser: found.otherUser || activeConversation.otherUser,
+    };
+  }, [activeConversation, conversations]);
 
   const combinedMessages = useMemo(() => {
-    const targetConversationId =
-      activeConversation?.id;
+    const targetConversationId = activeConversation?.id;
 
-    const currentFailed =
-      failedMessages.filter(
-        (messageItem) =>
-          (
-            targetConversationId &&
-            messageItem.conversationId ===
-              targetConversationId
-          ) ||
-          (
-            messageItem.conversationId ===
-              "temp" &&
-            Boolean(activeUser)
-          ),
-      );
+    const currentFailed = failedMessages.filter(
+      (m) =>
+        (targetConversationId &&
+          m.conversationId === targetConversationId) ||
+        (m.conversationId === "temp" && Boolean(activeUser)),
+    );
 
-    return [
-      ...messages,
-      ...currentFailed,
-    ];
+    return [...messages, ...currentFailed];
   }, [
     messages,
     failedMessages,
@@ -1877,68 +358,36 @@ export default function useMessages() {
     activeUser,
   ]);
 
-  /*
-   * ==================================================
-   * RETURN
-   * ==================================================
-   */
-
   return {
     loading,
-
     searching,
-
     conversations,
     filteredConversations,
     userResults,
-
-    activeConversation:
-      activeConversationLive,
-
+    activeConversation: activeConversationLive,
     activeUser,
-
-    messages:
-      combinedMessages,
-
+    messages: combinedMessages,
     loadingMessages,
-
-    // Pagination
     hasMoreOlder,
     loadingOlder,
     loadOlderMessages,
-
     inquiryProduct,
     inquiryProducts,
-    cancelInquiryProduct: () => setInquiryProduct(null),
-
-    sendInquiry:
-      handleSendInquiry,
-
-    acceptInquiry:
-      handleAcceptInquiry,
-
+    cancelInquiryProduct,
+    sendInquiry,
+    acceptInquiry,
     search,
     setSearch,
-
     message,
-
-    setMessage:
-      handleMessageChange,
-
+    setMessage,
     selectedImage,
     setSelectedImage,
-
     uploadingImage,
-
     drafts,
     isOnline,
-
     selectConversation,
     selectUser,
-
-    sendMessage:
-      handleSend,
-
+    sendMessage,
     retryMessage,
     deleteFailedMessage,
   };

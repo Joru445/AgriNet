@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 import { getReviewsByProduct } from "../services/product-review.service";
 
 import { getUserProfile } from "../services/user.service";
 import { getInquiry } from "../services/inquiry.service";
 
-export default function useProductReviews(productId) {
+export default function useProductReviews() {
+  const { id: productId } = useParams();
+
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -43,7 +46,7 @@ export default function useProductReviews(productId) {
             try {
               const profile = await getUserProfile(uid);
               return [uid, profile];
-            } catch (_) {
+            } catch {
               return [uid, null];
             }
           }),
@@ -53,7 +56,6 @@ export default function useProductReviews(productId) {
           reviewerProfiles.filter(([, p]) => p != null),
         );
 
-        // Only fetch inquiry if transaction proof is needed and not already on review
         const neededInquiryIds = [
           ...new Set(
             productReviews
@@ -67,7 +69,7 @@ export default function useProductReviews(productId) {
             try {
               const inq = await getInquiry(inqId);
               return [inqId, inq];
-            } catch (_) {
+            } catch {
               return [inqId, null];
             }
           }),

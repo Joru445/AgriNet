@@ -15,15 +15,13 @@ import ProductDetailsSkeleton from "../../components/shared/product/ProductDetai
 import ReviewSection from "../../components/common/ReviewSection";
 import ReportModal from "../../components/common/ReportModal";
 
-import SkeletonBox from "../../components/common/SkeletonBox"
-
 export default function ProductDetails() {
   const { profile } = useAuth();
   const [showReportModal, setShowReportModal] = useState(false);
 
   const { loading, product, farmer, reviewCount, averageRating } =
     useProductDetails();
-  const { reviews, loading: reviewsLoading } = useProductReviews(product?.id);
+  const { reviews, loading: reviewsLoading } = useProductReviews();
 
   const isOwner = product?.farmerId === profile?.uid;
 
@@ -71,18 +69,14 @@ export default function ProductDetails() {
             </div>
           </div>
 
-          {/* Reviews */}
+          {/* Reviews - loads independently */}
 
-          {reviewsLoading ? (
-            <SkeletonBox className="w-full h-full" />
-          ) : (
-            <ReviewSection
-              title="Product Reviews"
-              reviews={reviews}
-              loading={reviewsLoading}
-              type="product"
-            />
-          )}
+          <ReviewSection
+            title="Product Reviews"
+            reviews={reviews}
+            loading={reviewsLoading}
+            type="product"
+          />
 
           {/* Report Product Modal */}
           <ReportModal

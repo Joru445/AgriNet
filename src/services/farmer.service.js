@@ -79,10 +79,9 @@ export async function getFarmers() {
 import { setCachedUserProfile } from "../utils/userProfileCache";
 
 export async function getFarmerById(uid) {
-  const [farmerSnap, userSnap, reviewsSnap] = await Promise.all([
+  const [farmerSnap, userSnap] = await Promise.all([
     getDoc(doc(db, "farmers", uid)),
     getDoc(doc(db, "users", uid)),
-    getDocs(query(collection(db, "reviews"), where("farmerId", "==", uid))),
   ]);
 
   if (!farmerSnap.exists() && !userSnap.exists()) {
@@ -92,15 +91,8 @@ export async function getFarmerById(uid) {
   const userData = userSnap.exists() ? userSnap.data() : {};
   const farmerData = farmerSnap.exists() ? farmerSnap.data() : {};
 
-  let rating = farmerData.rating || userData.rating || 0;
-  const reviewCount = reviewsSnap.size;
-  if (reviewCount > 0) {
-    const total = reviewsSnap.docs.reduce(
-      (sum, d) => sum + Number(d.data().rating || 0),
-      0,
-    );
-    rating = Number((total / reviewCount).toFixed(1));
-  }
+  const rating = farmerData.rating || userData.rating || 0;
+  const reviewCount = farmerData.reviewCount || userData.reviewCount || 0;
 
   const farmerResult = {
     uid,

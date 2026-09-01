@@ -7,7 +7,8 @@ import { getFarmerById } from "../services/farmer.service";
 export default function useProductDetails() {
   const { id } = useParams();
 
-  const [loading, setLoading] = useState(true);
+  const [loadingProduct, setLoadingProduct] = useState(true);
+  const [loadingFarmer, setLoadingFarmer] = useState(false);
 
   const [product, setProduct] = useState(null);
   const [farmer, setFarmer] = useState(null);
@@ -23,34 +24,37 @@ export default function useProductDetails() {
     if (!id) return;
 
     try {
-      setLoading(true);
+      setLoadingProduct(true);
 
-      const product = await getProductById(id);
+      const productData = await getProductById(id);
 
-      if (!product) {
+      if (!productData) {
         setProduct(null);
         return;
       }
 
-      const farmer = product.farmerId
-        ? await getFarmerById(product.farmerId).catch(() => null)
-        : null;
-
       const reviewCount = Number(
-        product.ratingSummary?.count ?? product.reviewCount ?? 0,
+        productData.ratingSummary?.count ?? productData.reviewCount ?? 0,
       );
       const averageRating = Number(
-        product.ratingSummary?.average ?? product.productRating ?? 0,
+        productData.ratingSummary?.average ?? productData.productRating ?? 0,
       );
 
-      setProduct(product);
-      setFarmer(farmer);
+      setProduct(productData);
       setReviewCount(reviewCount);
       setAverageRating(averageRating);
+
+      if (productData.farmerId) {
+        setLoadingFarmer(true);
+        getFarmerById(productData.farmerId)
+          .then(setFarmer)
+          .catch(() => setFarmer(null))
+          .finally(() => setLoadingFarmer(false));
+      }
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      setLoadingProduct(false);
     }
   }, [id]);
 
@@ -59,7 +63,8 @@ export default function useProductDetails() {
   }, [loadProduct]);
 
   return {
-    loading,
+    loading: loadingProduct,
+    loadingFarmer,
 
     product,
     farmer,

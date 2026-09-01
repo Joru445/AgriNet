@@ -4,6 +4,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
   orderBy,
   query,
   serverTimestamp,
@@ -42,23 +43,21 @@ export async function getProductReviewById(id) {
   };
 }
 
-export async function getReviewsByProduct(productId) {
+export async function getReviewsByProduct(productId, { maxReviews = 20 } = {}) {
   try {
     const q = query(
       productReviewsRef,
       where("productId", "==", productId),
+      orderBy("createdAt", "desc"),
+      limit(maxReviews),
     );
 
     const snapshot = await getDocs(q);
 
-    const reviews = snapshot.docs.map((reviewDoc) => ({
+    return snapshot.docs.map((reviewDoc) => ({
       id: reviewDoc.id,
       ...reviewDoc.data(),
     }));
-
-    return reviews.sort(
-      (a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0),
-    );
   } catch (err) {
     console.error("Error fetching product reviews:", err);
     return [];

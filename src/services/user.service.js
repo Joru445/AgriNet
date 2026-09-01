@@ -81,6 +81,10 @@ export async function getUserProfile(uid) {
 
   const cached = getCachedUserProfile(uid);
 
+  if (cached) {
+    return cached;
+  }
+
   const userRef = doc(db, "users", uid);
 
   const snapshot = await getDoc(userRef);
@@ -100,12 +104,12 @@ export async function getUserProfile(uid) {
         return res;
       }
     } catch (_) {}
-    return cached || null;
+    return null;
   }
 
   const data = snapshot.data();
-  let profilePicture = data.profilePicture || cached?.profilePicture || "";
-  let profilePictureId = data.profilePictureId || cached?.profilePictureId || "";
+  let profilePicture = data.profilePicture || "";
+  let profilePictureId = data.profilePictureId || "";
   let verified = data.verified === true;
 
   if (data.role === "farmer" || !profilePicture) {

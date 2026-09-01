@@ -11,6 +11,9 @@ export default function StoreProfile() {
 
   const {
     loading,
+    loadingProducts,
+    loadingReviews,
+
     farmer,
     products,
     averageRating,
@@ -35,12 +38,10 @@ export default function StoreProfile() {
 
   return (
     <main className="mx-auto max-w-6xl overflow-hidden bg-white pb-16 shadow-sm md:pb-8">
+      {/* Header skeleton or actual header */}
       {loading ? (
         <div className="animate-pulse">
-          {/* Cover Skeleton */}
           <div className="h-56 sm:h-72 md:h-80 lg:h-[380px] bg-gray-200 sm:rounded-b-2xl" />
-
-          {/* Profile Header Skeleton */}
           <div className="px-4 sm:px-6 pb-6 pt-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 -mt-16 sm:-mt-20">
               <div className="flex items-end gap-4">
@@ -52,47 +53,40 @@ export default function StoreProfile() {
               </div>
               <div className="h-10 w-32 bg-gray-200 rounded-xl shrink-0" />
             </div>
-
             <div className="mt-6 space-y-2 max-w-xl">
               <div className="h-4 w-full bg-gray-100 rounded" />
               <div className="h-4 w-3/4 bg-gray-100 rounded" />
             </div>
           </div>
-
-          {/* Products Skeleton */}
-          <section className="px-4 sm:px-6 py-6 border-t border-gray-100">
-            <div className="h-6 w-32 bg-gray-200 rounded mb-5" />
-            <ProductGridSkeleton count={4} />
-          </section>
-
-          {/* Reviews Skeleton */}
-          <section className="px-4 sm:px-6 py-6 border-t border-gray-100">
-            <div className="h-6 w-40 bg-gray-200 rounded mb-5" />
-            <div className="space-y-4">
-              {[1, 2].map((i) => (
-                <div key={i} className="h-28 bg-gray-100 rounded-2xl" />
-              ))}
-            </div>
-          </section>
         </div>
       ) : (
-        <>
-          <StoreHeader
-            farmer={farmer}
-            averageRating={averageRating}
-            reviewCount={reviewCount}
-            onMessage={() => startConversation(farmer)}
-          />
-
-          <StoreProducts farmer={farmer} products={products} />
-
-          <ReviewSection
-            title="Farmer Reviews"
-            reviews={reviews}
-            type="farmer"
-          />
-        </>
+        <StoreHeader
+          farmer={farmer}
+          averageRating={averageRating}
+          reviewCount={reviewCount}
+          onMessage={() => startConversation(farmer)}
+        />
       )}
+
+      {/* Products section */}
+      {loadingProducts ? (
+        <section className="px-4 sm:px-6 py-6 border-t border-gray-100">
+          <div className="h-6 w-32 bg-gray-200 rounded mb-5 animate-pulse" />
+          <ProductGridSkeleton count={4} />
+        </section>
+      ) : (
+        <StoreProducts farmer={farmer} products={products} />
+      )}
+
+      {/* Reviews section */}
+      <div className="px-4 sm:px-6 py-6 border-t border-gray-100">
+        <ReviewSection
+          title="Farmer Reviews"
+          reviews={reviews}
+          loading={loadingReviews}
+          type="farmer"
+        />
+      </div>
     </main>
   );
 }

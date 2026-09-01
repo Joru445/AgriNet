@@ -9,33 +9,72 @@ import { getProductReviewSummaries } from "../services/product-review.service";
 export default function useStoreProfile() {
   const { uid } = useParams();
 
-  const [loading, setLoading] = useState(true);
+  const [loadingFarmer, setLoadingFarmer] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingReviews, setLoadingReviews] = useState(true);
 
   const [farmer, setFarmer] = useState(null);
   const [products, setProducts] = useState([]);
-
   const [reviews, setReviews] = useState([]);
   const [reviewCount, setReviewCount] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
 
-  const loadStore = useCallback(async () => {
+  const loadFarmer = useCallback(async () => {
     if (!uid) {
-      setLoading(false);
+      setLoadingFarmer(false);
       return;
     }
 
     try {
-      setLoading(true);
+      setLoadingFarmer(true);
+      const farmerData = await getFarmerById(uid);
+      setFarmer(farmerData);
+    } catch (error) {
+      console.error("Failed to load farmer profile:", error);
+    } finally {
+      setLoadingFarmer(false);
+    }
+  }, [uid]);
 
-      const [
-        farmerData,
-        productsData,
-        reviewsData,
-      ] = await Promise.all([
-        getFarmerById(uid),
-        getFarmerProducts(uid),
-        getFarmerReviews(uid),
-      ]);
+  const loadProducts = useCallback(async () => {
+    if (!uid) {
+      setLoadingProducts(false);
+      return;
+    }
+
+    try {
+      setLoadingProducts(true);
+      const productsData = await getFarmerProducts(uid);
+
+      const productIds = productsData.map((product) => product.id);
+      const reviewSummaries = await getProductReviewSummaries(productIds);
+
+      const productsWithRatings = productsData.map((product) => {
+        const summary = reviewSummaries.get(product.id);
+        return {
+          ...product,
+          productRating: summary?.average ?? 0,
+          reviewCount: summary?.count ?? 0,
+        };
+      });
+
+      setProducts(productsWithRatings);
+    } catch (error) {
+      console.error("Failed to load store products:", error);
+    } finally {
+      setLoadingProducts(false);
+    }
+  }, [uid]);
+
+  const loadReviews = useCallback(async () => {
+    if (!uid) {
+      setLoadingReviews(false);
+      return;
+    }
+
+    try {
+      setLoadingReviews(true);
+      const reviewsData = await getFarmerReviews(uid);
 
       const reviewCountData = reviewsData.length;
       const averageRatingData =
@@ -50,60 +89,28 @@ export default function useStoreProfile() {
             )
           : 0;
 
-      /*
-       * Get all product IDs belonging to this farmer.
-       */
-      const productIds = productsData.map((product) => product.id);
-
-      /*
-       * Load review summaries from product-reviews collection.
-       *
-       * Returns a Map:
-       *
-       * productId => {
-       *   average,
-       *   count
-       * }
-       */
-      const reviewSummaries = await getProductReviewSummaries(productIds);
-
-      /*
-       * Attach review data directly to every product.
-       */
-      const productsWithRatings = productsData.map((product) => {
-        const summary = reviewSummaries.get(product.id);
-
-        return {
-          ...product,
-
-          productRating: summary?.average ?? 0,
-
-          reviewCount: summary?.count ?? 0,
-        };
-      });
-
-      setFarmer(farmerData);
-
-      setProducts(productsWithRatings);
-
       setReviews(reviewsData);
-
       setReviewCount(Number(reviewCountData) || 0);
-
       setAverageRating(Number(averageRatingData) || 0);
     } catch (error) {
-      console.error("Failed to load store profile:", error);
+      console.error("Failed to load store reviews:", error);
     } finally {
-      setLoading(false);
+      setLoadingReviews(false);
     }
   }, [uid]);
 
   useEffect(() => {
-    loadStore();
-  }, [loadStore]);
+    loadFarmer();
+    loadProducts();
+    loadReviews();
+  }, [loadFarmer, loadProducts, loadReviews]);
+
+  const loading = loadingFarmer;
 
   return {
     loading,
+    loadingProducts,
+    loadingReviews,
 
     farmer,
 
@@ -115,6 +122,10 @@ export default function useStoreProfile() {
 
     reviewCount,
 
-    refresh: loadStore,
+    refresh: () => {
+      loadFarmer();
+      loadProducts();
+      loadReviews();
+    },
   };
 }
