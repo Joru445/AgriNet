@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { sendMessage as sendMessageService } from "../../services/message.service";
 import { createConversation } from "../../services/conversation.service";
 import { uploadMessageImage } from "../../services/cloudinary.service";
 import { buildFailedMessage } from "../../utils/messaging/buildFailedMessage";
 import { buildOptimisticConversation } from "../../utils/messaging/buildOptimisticConversation";
 import { showToast } from "../../utils/toast";
+import useOfflineQueue from "./useOfflineQueue";
 
 export default function useMessageActions({
   profile,
@@ -18,6 +19,26 @@ export default function useMessageActions({
 }) {
   const [failedMessages, setFailedMessages] = useState([]);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  const {
+    queuedMessages,
+    enqueueMessage,
+    removeMessage,
+    getRetryableMessages,
+  } = useOfflineQueue();
+
+  // Merge queued messages into failedMessages on mount
+  useEffect(() => {
+    if (queuedMessages.length > 0) {
+      setFailedMessages((prev) => {
+        const existingIds = new Set(prev.map((m) => m.id));
+        const newQueued = queuedMessages.filter((m) => !existingIds.has(m.id));
+        return newQueued.length > 0 ? [...prev, ...newQueued] : prev;
+      });
+    }
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const sendMessage = useCallback(
     async (activeImg = null) => {
@@ -49,6 +70,7 @@ export default function useMessageActions({
         });
 
         setFailedMessages((prev) => [...prev, failedMessage]);
+        enqueueMessage(failedMessage);
         clearCurrentDraft();
         showToast.error("Unable to send. No internet connection.");
         return;
@@ -116,6 +138,7 @@ export default function useMessageActions({
         });
 
         setFailedMessages((prev) => [...prev, failedMessage]);
+        enqueueMessage(failedMessage);
         clearCurrentDraft();
 
         if (error.code === "permission-denied") {
@@ -138,6 +161,7 @@ export default function useMessageActions({
       setActiveUser,
       setSearchParams,
       clearCurrentDraft,
+      enqueueMessage,
     ],
   );
 
@@ -146,9 +170,11 @@ export default function useMessageActions({
       setFailedMessages((prev) =>
         prev.filter((m) => m.id !== failedMessage.id),
       );
+      removeMessage(failedMessage.id);
 
       if (!navigator.onLine) {
         setFailedMessages((prev) => [...prev, failedMessage]);
+        enqueueMessage(failedMessage);
         showToast.error("Unable to send. No internet connection.");
         return;
       }
@@ -213,14 +239,14 @@ export default function useMessageActions({
           error,
         );
 
-        setFailedMessages((prev) => [
-          ...prev,
-          {
-            ...failedMessage,
-            error: error.message || "Failed to retry message",
-            stage,
-          },
-        ]);
+        const retryFailed = {
+          ...failedMessage,
+          error: error.message || "Failed to retry message",
+          stage,
+        };
+
+        setFailedMessages((prev) => [...prev, retryFailed]);
+        enqueueMessage(retryFailed);
 
         if (error.code === "permission-denied") {
           showToast.error(
@@ -231,12 +257,33 @@ export default function useMessageActions({
         }
       }
     },
-    [profile, activeConversation, activeUser, setSearchParams],
+    [profile, activeConversation, activeUser, setSearchParams, removeMessage, enqueueMessage],
   );
 
-  const deleteFailedMessage = useCallback((id) => {
-    setFailedMessages((prev) => prev.filter((m) => m.id !== id));
-  }, []);
+  const deleteFailedMessage = useCallback(
+    (id) => {
+      setFailedMessages((prev) => prev.filter((m) => m.id !== id));
+      removeMessage(id);
+    },
+    [removeMessage],
+  );
+
+  // Auto-retry queued messages when coming back online
+  useEffect(() => {
+    if (!navigator.onLine) return;
+
+    const retryable = getRetryableMessages();
+    if (retryable.length === 0) return;
+
+    const timer = setTimeout(() => {
+      retryable.forEach((msg) => {
+        retryMessage(msg);
+      });
+    }, 2000);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigator.onLine]);
 
   return {
     failedMessages,

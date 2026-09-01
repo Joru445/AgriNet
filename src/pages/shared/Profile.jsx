@@ -6,6 +6,7 @@ import ProfileForm from "../../components/shared/me/ProfileForm";
 import FarmerSection from "../../components/shared/me/FarmerSection";
 import ProfileSkeleton from "../../components/shared/me/ProfileSkeleton";
 import LogoutConfirmModal from "../../components/common/LogoutConfirmModal";
+import PushNotificationManager from "../../components/common/PushNotificationManager";
 
 import { useAuth } from "../../context/AuthContext";
 import useProfile from "../../hooks/useProfile";
@@ -79,6 +80,14 @@ export default function Profile() {
               onChange={handleChange}
             />
           )}
+
+          {/* Push Notification Settings */}
+          <div className="px-4 sm:px-6 py-4 border-t border-gray-100">
+            <h3 className="text-sm font-bold text-gray-900 mb-3">
+              Notifications
+            </h3>
+            <PushNotificationManager />
+          </div>
         </div>
       )}
 
