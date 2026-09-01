@@ -4,8 +4,8 @@ import LocationPicker from "../../location/LocationPicker";
 
 export default function FarmerSection({ form, stats, editing, onChange }) {
   return (
-    <div className="border-t border-gray-200 px-4 lg:px-8 py-8">
-      <h2 className="text-lg font-bold text-[#1B4332] mb-6">
+    <div className="border-t border-[var(--agri-border-subtle)] px-4 lg:px-8 py-8">
+      <h2 className="text-lg font-bold text-[var(--agri-text)] mb-6">
         Farmer Information
       </h2>
 
@@ -27,7 +27,7 @@ export default function FarmerSection({ form, stats, editing, onChange }) {
 
         {/* Rating */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-[var(--agri-text-secondary)] mb-2">
             Rating
           </label>
 
@@ -39,7 +39,7 @@ export default function FarmerSection({ form, stats, editing, onChange }) {
 
       {/* Farm Description */}
       <div className="mt-6">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-[var(--agri-text-secondary)] mb-2">
           Farm Description
         </label>
 
@@ -50,42 +50,42 @@ export default function FarmerSection({ form, stats, editing, onChange }) {
           onChange={onChange}
           disabled={!editing}
           placeholder="Tell customers about your farm..."
-          className="w-full px-4 py-3 rounded-xl border border-gray-300 disabled:bg-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+          className="w-full px-4 py-3 rounded-xl border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)] text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] disabled:opacity-60 resize-none focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
         />
       </div>
 
       {/* Statistics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
-        <div className="rounded-2xl border border-gray-200 p-5 text-center">
+        <div className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-elevated)] p-5 text-center">
           <p className="text-3xl font-bold text-[#2D6A4F]">
             {stats.products ?? 0}
           </p>
 
-          <p className="text-sm text-gray-500 mt-2">Products</p>
+          <p className="text-sm text-[var(--agri-text-muted)] mt-2">Products</p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 p-5 text-center">
+        <div className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-elevated)] p-5 text-center">
           <p className="text-3xl font-bold text-[#2D6A4F]">
             {stats.reviews ?? 0}
           </p>
 
-          <p className="text-sm text-gray-500 mt-2">Reviews</p>
+          <p className="text-sm text-[var(--agri-text-muted)] mt-2">Reviews</p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 p-5 text-center">
+        <div className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-elevated)] p-5 text-center">
           <p className="text-3xl font-bold text-[#2D6A4F]">
-            {stats.inquiriesCount ?? 0}
+            {stats.inquiries ?? 0}
           </p>
 
-          <p className="text-sm text-gray-500 mt-2">Inquiries</p>
+          <p className="text-sm text-[var(--agri-text-muted)] mt-2">Inquiries</p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 p-5 text-center">
+        <div className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-elevated)] p-5 text-center">
           <p className="text-3xl font-bold text-[#2D6A4F]">
-            {stats.ordersCompleted ?? 0}
+            {stats.completed ?? 0}
           </p>
 
-          <p className="text-sm text-gray-500 mt-2">Completed</p>
+          <p className="text-sm text-[var(--agri-text-muted)] mt-2">Completed</p>
         </div>
       </div>
     </div>

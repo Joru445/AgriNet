@@ -16,21 +16,21 @@ export default function ReviewTextarea({
         w-full
         resize-none
         rounded-xl
-        border border-gray-200
-        bg-white
+        border border-[var(--agri-input-border)]
+        bg-[var(--agri-input-bg)]
         px-3
         py-3
         text-sm
-        text-gray-900
-        placeholder:text-gray-400
+        text-[var(--agri-text)]
+        placeholder:text-[var(--agri-text-muted)]
         outline-none
         transition
         focus:border-[#2D6A4F]
         focus:ring-2
         focus:ring-[#2D6A4F]/10
         disabled:cursor-not-allowed
-        disabled:bg-gray-50
-        disabled:text-gray-500
+        disabled:bg-[var(--agri-hover)]
+        disabled:text-[var(--agri-text-muted)]
       "
     />
   );

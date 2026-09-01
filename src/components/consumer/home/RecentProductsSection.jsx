@@ -19,7 +19,7 @@ export default function RecentProductsSection({ products = [] }) {
         <div>
           <div className="flex items-center gap-2">
 
-            <h2 className="text-lg sm:text-xl font-black text-[#1B4332]">
+            <h2 className="text-lg sm:text-xl font-black text-[#1B4332] dark:text-[var(--agri-brand-light)]">
               Recently Added
             </h2>
           </div>
@@ -31,7 +31,7 @@ export default function RecentProductsSection({ products = [] }) {
 
         <Link
           to="?sort=newest"
-          className="shrink-0 text-xs sm:text-sm font-bold text-[#2D6A4F] transition-colors hover:text-[#1B4332]"
+          className="shrink-0 text-xs sm:text-sm font-bold text-[#2D6A4F] transition-colors hover:text-[#1B4332] dark:text-[var(--agri-brand-light)]"
         >
           View all
           <i className="ri-arrow-right-line ml-1" />

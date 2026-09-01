@@ -44,14 +44,14 @@ export default function ProductsContainer({
               rounded-2xl
               border-2
               border-[#2D6A4F]
-              bg-white
+              bg-[var(--agri-card)]
               px-6
               py-3
               text-sm
               font-bold
-              text-[#2D6A4F]
+              text-[#2D6A4F] dark:text-[var(--agri-brand)]
               transition-all
-              hover:bg-[#E8F5EE]
+              hover:bg-[#E8F5EE] dark:hover:bg-[var(--agri-brand-bg-alt)]
               disabled:cursor-not-allowed
               disabled:opacity-50
               cursor-pointer

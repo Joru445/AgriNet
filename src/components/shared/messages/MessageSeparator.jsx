@@ -4,7 +4,7 @@ export default function MessageSeparator({ timestamp }) {
   return (
     <div className="flex justify-center items-center gap-3 my-5">
 
-      <span className="text-xs text-gray-400 whitespace-nowrap">
+      <span className="text-xs text-[var(--agri-text-muted)] whitespace-nowrap">
         {formatSeparator(timestamp)}
       </span>
 

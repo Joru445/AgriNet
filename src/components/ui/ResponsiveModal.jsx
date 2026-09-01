@@ -13,8 +13,27 @@ export default function ResponsiveModal({
   const [isDragging, setIsDragging] = useState(false);
   const dragStartY = useRef(0);
 
+  // Animation state: keeps component mounted during exit animation
+  const [shouldRender, setShouldRender] = useState(false);
+  const [animating, setAnimating] = useState(false);
+
   useEffect(() => {
     if (open) {
+      setShouldRender(true);
+      setAnimating(false);
+    } else if (shouldRender) {
+      // Start exit animation
+      setAnimating(true);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+        setAnimating(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [open, shouldRender]);
+
+  useEffect(() => {
+    if (shouldRender) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -23,7 +42,7 @@ export default function ResponsiveModal({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [open]);
+  }, [shouldRender]);
 
   useEffect(() => {
     function handleKeyDown(e) {
@@ -62,33 +81,35 @@ export default function ResponsiveModal({
     setDragY(0);
   }, [dragY, onClose]);
 
-  if (!open) return null;
+  if (!shouldRender) return null;
+
+  const isClosing = animating;
 
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-[9998] bg-black/40 transition-opacity"
+        className={`fixed inset-0 z-[9998] bg-black/40 ${isClosing ? "anim-fade-out" : "anim-fade-in"}`}
         onClick={onClose}
       />
 
       {/* Desktop: centered modal */}
       <div className="hidden lg:fixed lg:inset-0 lg:z-[9999] lg:flex lg:items-center lg:justify-center lg:p-4">
         <div
-          className={`relative w-full ${maxWidth} rounded-2xl bg-white shadow-2xl`}
+          className={`relative w-full ${maxWidth} rounded-2xl bg-[var(--agri-card)] shadow-2xl ${isClosing ? "anim-fade-out" : "anim-scale-in"}`}
           onClick={(e) => e.stopPropagation()}
         >
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-[var(--agri-border-subtle)] px-5 py-4">
               {title && (
-                <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+                <h2 className="text-lg font-bold text-[var(--agri-text)]">{title}</h2>
               )}
 
               {showCloseButton && (
                 <button
                   type="button"
                   onClick={onClose}
-                  className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
+                  className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] cursor-pointer"
                   aria-label="Close"
                 >
                   <i className="ri-close-line text-xl" />
@@ -104,16 +125,18 @@ export default function ResponsiveModal({
       {/* Mobile: bottom drawer */}
       <div className="fixed inset-0 z-[9999] lg:hidden flex items-end">
         <div
-          className="absolute inset-0 bg-black/40 transition-opacity"
+          className={`absolute inset-0 bg-black/40 ${isClosing ? "anim-fade-out" : "anim-fade-in"}`}
           onClick={onClose}
         />
 
         <div
           ref={drawerRef}
-          className="relative w-full rounded-t-3xl bg-white shadow-2xl transition-transform"
+          className={`relative w-full rounded-t-3xl bg-[var(--agri-card)] shadow-2xl ${isClosing ? "anim-slide-down-out" : "anim-slide-up"}`}
           style={{
-            transform: `translateY(${isDragging ? dragY : 0}px)`,
-            transition: isDragging ? "none" : "transform 0.3s ease",
+            transform: isClosing
+              ? undefined
+              : `translateY(${isDragging ? dragY : 0}px)`,
+            transition: isDragging ? "none" : undefined,
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -122,20 +145,20 @@ export default function ResponsiveModal({
         >
           {/* Drag handle */}
           <div className="flex justify-center pt-3 pb-1">
-            <div className="h-1 w-10 rounded-full bg-gray-300" />
+            <div className="h-1 w-10 rounded-full bg-[var(--agri-border)]" />
           </div>
 
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
+            <div className="flex items-center justify-between border-b border-[var(--agri-border-subtle)] px-5 py-3">
               {title && (
-                <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+                <h2 className="text-lg font-bold text-[var(--agri-text)]">{title}</h2>
               )}
 
               {showCloseButton && (
                 <button
                   type="button"
                   onClick={onClose}
-                  className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
+                  className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] cursor-pointer"
                   aria-label="Close"
                 >
                   <i className="ri-close-line text-xl" />

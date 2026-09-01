@@ -71,7 +71,7 @@ export default function ConversationItem({
       onClick={handleClick}
       className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-all duration-150 cursor-pointer ${
         isSelected
-          ? "bg-[#D8F3DC]/45 border-r-4 border-agri-primary shadow-xs"
+          ? "bg-[var(--agri-card)]/45 border-r-4 border-agri-primary shadow-xs"
           : "hover:bg-black/3 border-r-4 border-transparent"
       }`}
     >
@@ -79,7 +79,7 @@ export default function ConversationItem({
         <Avatar src={user?.profilePicture} name={user?.fullname} />
 
         {user?.online && (
-          <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />
+          <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-[var(--agri-card)]" />
         )}
       </div>
 
@@ -89,10 +89,10 @@ export default function ConversationItem({
             <h3
               className={`truncate ${
                 isSelected
-                  ? "font-semibold text-agri-dark"
+                  ? "font-semibold text-agri-dark dark:text-(--agri-dark)"
                   : !searching && !isMine && item.unreadCount > 0
-                    ? "font-bold text-gray-900"
-                    : "font-semibold text-gray-800"
+                    ? "font-bold text-[var(--agri-text)]"
+                    : "font-semibold text-[var(--agri-text)]"
               }`}
             >
               {user?.fullname}
@@ -101,7 +101,7 @@ export default function ConversationItem({
               <span
                 title="Verified Farmer"
                 aria-label="Verified Farmer"
-                className="inline-flex shrink-0 items-center text-[#2D6A4F] text-sm"
+                className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-[var(--agri-brand)] text-sm"
               >
                 <i className="ri-verified-badge-fill" />
               </span>
@@ -110,7 +110,7 @@ export default function ConversationItem({
               <span
                 title="Official Admin"
                 aria-label="Official Admin"
-                className="inline-flex shrink-0 items-center rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-800 border border-purple-200"
+                className="inline-flex shrink-0 items-center rounded-md bg-purple-500/10 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 dark:text-purple-300 border border-purple-500/20"
               >
                 Admin
               </span>
@@ -118,7 +118,7 @@ export default function ConversationItem({
           </div>
 
           {!searching && (
-            <span className="text-xs text-gray-400 whitespace-nowrap">
+            <span className="text-xs text-[var(--agri-text-muted)] whitespace-nowrap">
               {formatTimestamp(item.lastMessageAt)}
             </span>
           )}
@@ -127,27 +127,27 @@ export default function ConversationItem({
         {hasDraft ? (
           <p className="text-sm truncate">
             <span className="text-red-900/75 font-bold">Draft: </span>
-            <span className="text-gray-600">{draft}</span>
+            <span className="text-[var(--agri-text-secondary)]">{draft}</span>
           </p>
         ) : searching ? (
-          <p className="text-sm text-gray-500 truncate">@{user?.username}</p>
+          <p className="text-sm text-[var(--agri-text-muted)] truncate">@{user?.username}</p>
         ) : isMine ? (
           <div className="flex items-center justify-between gap-1.5 min-w-0">
-            <p className="text-sm text-gray-500 truncate flex-1 min-w-0">
-              <span className="text-gray-600 font-medium">You: </span>
+            <p className="text-sm text-[var(--agri-text-muted)] truncate flex-1 min-w-0">
+              <span className="text-[var(--agri-text-secondary)] font-medium">You: </span>
               {item.lastMessage || "Sent a message"}
             </p>
             <span className="shrink-0 flex items-center gap-0.5 text-[11px] font-bold">
               {isSeen ? (
                 <span
-                  className="text-gray-400 flex items-center gap-0.5"
+                  className="text-[var(--agri-text-muted)] flex items-center gap-0.5"
                   title="Seen"
                 >
                   Seen
                 </span>
               ) : (
                 <span
-                  className="text-gray-400 flex items-center gap-0.5 font-semibold"
+                  className="text-[var(--agri-text-muted)] flex items-center gap-0.5 font-semibold"
                   title="Sent"
                 >
                   Sent
@@ -158,7 +158,7 @@ export default function ConversationItem({
         ) : (
           <p
             className={`text-sm truncate ${
-              item.unreadCount > 0 ? "font-bold text-gray-900" : "text-gray-500"
+              item.unreadCount > 0 ? "font-bold text-[var(--agri-text)]" : "text-[var(--agri-text-muted)]"
             }`}
           >
             {item.lastMessage || "Start a conversation"}

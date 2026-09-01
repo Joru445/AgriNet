@@ -88,20 +88,20 @@ export default function InquiryRow({
   const dots = getRedDots(status, userRole, isReviewed);
 
   return (
-    <article className="flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-md transition-all hover:shadow-xl">
+    <article className="flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-md transition-all hover:shadow-xl">
       <div>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-300 bg-gray-50 px-4 py-3 sm:px-5">
+        <div className="flex items-center justify-between border-b border-[var(--agri-border)] bg-[var(--agri-hover)] px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2">
-            <i className="ri-shopping-bag-3-line text-[#2D6A4F]" />
+            <i className="ri-shopping-bag-3-line text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
 
-            <span className="text-xs font-bold text-gray-800">
+            <span className="text-xs font-bold text-[var(--agri-text)]">
               {userRole === "farmer" ? "Purchase Inquiry" : "My Inquiry"}
             </span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden text-xs text-gray-500 font-medium sm:inline">
+            <span className="hidden text-xs text-[var(--agri-text-muted)] font-medium sm:inline">
               {formatFullDateTime(getInquiryDisplayTime(inquiry))}
             </span>
 
@@ -110,7 +110,7 @@ export default function InquiryRow({
             <button
               type="button"
               onClick={() => setShowReportModal(true)}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--agri-text-muted)] hover:text-red-600 hover:bg-red-500/10 transition cursor-pointer"
               title="Report this transaction / user"
               aria-label="Report inquiry"
             >
@@ -124,7 +124,7 @@ export default function InquiryRow({
           <Inquiry productData={productData} counterparty={counterparty} />
 
           {/* Mobile date */}
-          <p className="mt-3 text-xs text-gray-500 font-medium sm:hidden">
+          <p className="mt-3 text-xs text-[var(--agri-text-muted)] font-medium sm:hidden">
             {formatFullDateTime(getInquiryDisplayTime(inquiry))}
           </p>
         </div>
@@ -141,14 +141,14 @@ export default function InquiryRow({
       </div>
 
       {/* Actions */}
-      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-gray-200 bg-gray-50/60 px-4 py-3 sm:px-5">
+      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/60 px-4 py-3 sm:px-5">
         {/* View conversation */}
         <Action
           updating={false}
           label="View conversation"
           icon="ri-message-3-line"
           showDot={dots.viewConversation}
-          className="border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+          className="border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]"
           disabled={!inquiry.conversationId}
           onClick={openConversation}
         />
@@ -211,7 +211,7 @@ export default function InquiryRow({
             label="Cancel"
             icon="ri-close-circle-line"
             showDot={false}
-            className="border border-red-200 bg-white text-red-600 hover:bg-red-50"
+            className="border border-red-500/20 bg-[var(--agri-card)] text-red-600 hover:bg-red-500/10"
             onClick={cancelInquiry}
           />
         )}
@@ -223,7 +223,7 @@ export default function InquiryRow({
             label="View transaction"
             icon="ri-file-text-line"
             showDot={false}
-            className="border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 font-semibold"
+            className="border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text)] hover:bg-[var(--agri-hover)] font-semibold"
             onClick={openProofPage}
           />
         )}
@@ -255,14 +255,14 @@ export default function InquiryRow({
         {/* Waiting for farmer */}
         {userRole === "consumer" && status === "proof_submitted" && (
           <span
-            className="
+              className="
                 inline-flex items-center justify-center gap-1.5
-                rounded-xl border border-gray-200 bg-white
+                rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)]
                 px-3.5 py-2
-                text-xs font-bold text-gray-600
+                text-xs font-bold text-[var(--agri-text-secondary)]
               "
           >
-            <i className="ri-time-line text-[#2D6A4F]" />
+            <i className="ri-time-line text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
             Waiting for farmer confirmation
           </span>
         )}
@@ -330,49 +330,49 @@ function getBanner(status, userRole, isReviewed) {
       return {
         message: "Waiting for the farmer to respond...",
         icon: "ri-time-line",
-        className: "bg-gray-50 text-gray-500 border border-gray-200",
+        className: "bg-[var(--agri-hover)] text-[var(--agri-text-muted)] border border-[var(--agri-border)]",
       };
     }
     if (status === "accepted") {
       return {
         message: "Your inquiry was accepted! View the conversation.",
         icon: "ri-checkbox-circle-fill",
-        className: "bg-green-50 text-green-700 border border-green-200",
+        className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20",
       };
     }
     if (status === "ongoing") {
       return {
         message: "Transaction is ongoing. Mark complete when your product is received.",
         icon: "ri-exchange-line",
-        className: "bg-blue-50 text-blue-700 border border-blue-200",
+        className: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20",
       };
     }
     if (status === "awaiting_proof") {
       return {
         message: "Please upload the product you received.",
         icon: "ri-upload-cloud-2-line",
-        className: "bg-yellow-50 text-yellow-700 border border-yellow-200",
+        className: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20",
       };
     }
     if (status === "proof_submitted") {
       return {
         message: "Proof submitted. Waiting for farmer confirmation.",
         icon: "ri-time-line",
-        className: "bg-gray-50 text-gray-500 border border-gray-200",
+        className: "bg-[var(--agri-hover)] text-[var(--agri-text-muted)] border border-[var(--agri-border)]",
       };
     }
     if (status === "completed") {
       return {
         message: "Transaction complete.",
         icon: "ri-checkbox-circle-fill",
-        className: "bg-green-50 text-green-700 border border-green-200",
+        className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20",
       };
     }
     if (status === "cancelled") {
       return {
         message: "Transaction cancelled.",
         icon: "ri-close-circle-fill",
-        className: "bg-red-50 text-red-700 border border-red-200",
+        className: "bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20",
       };
     }
   }
@@ -382,35 +382,35 @@ function getBanner(status, userRole, isReviewed) {
       return {
         message: "You accepted this inquiry. Start the transaction when ready.",
         icon: "ri-play-circle-fill",
-        className: "bg-green-50 text-green-700 border border-green-200 font-medium",
+        className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 font-medium",
       };
     }
     if (status === "ongoing") {
       return {
         message: "Transaction is ongoing.",
         icon: "ri-exchange-line",
-        className: "bg-blue-50 text-blue-700 border border-blue-200 font-medium",
+        className: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 font-medium",
       };
     }
     if (status === "proof_submitted") {
       return {
         message: "Consumer submitted proof of product received. Please review it.",
         icon: "ri-file-search-line",
-        className: "bg-orange-50 text-orange-700 border border-orange-200 font-medium",
+        className: "bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-500/20 font-medium",
       };
     }
     if (status === "completed") {
       return {
         message: "Transaction complete.",
         icon: "ri-checkbox-circle-fill",
-        className: "bg-green-50 text-green-700 border border-green-200",
+        className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20",
       };
     }
     if (status === "cancelled") {
       return {
         message: "Transaction cancelled.",
         icon: "ri-close-circle-fill",
-        className: "bg-red-50 text-red-700 border border-red-200",
+        className: "bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20",
       };
     }
   }

@@ -11,24 +11,24 @@ export default function Inquiry({ productData, counterparty }) {
         src={getProductImage(productData)}
         alt={productData?.name || "Product"}
         loading="lazy"
-        className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-2xl object-cover border border-gray-100 shadow-xs"
+        className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-2xl object-cover border border-[var(--agri-border-subtle)] shadow-xs"
       />
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="truncate text-base font-bold text-gray-900 sm:text-lg">
+          <h3 className="truncate text-base font-bold text-[var(--agri-text)] sm:text-lg">
             {productData?.name || "Product unavailable"}
           </h3>
 
           {productData?.quantity != null && productData?.unit && (
-            <span className="inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">
+            <span className="inline-flex items-center rounded-lg bg-[var(--agri-hover)] px-2.5 py-1 text-xs font-semibold text-[var(--agri-text-secondary)]">
               {productData.quantity} {productData.unit}
             </span>
           )}
         </div>
 
         {productData?.unit && (
-          <p className="mt-0.5 text-xs text-gray-500 font-medium">
+          <p className="mt-0.5 text-xs text-[var(--agri-text-muted)] font-medium">
             ₱{price.toLocaleString()} per {productData.unit}
           </p>
         )}
@@ -37,13 +37,13 @@ export default function Inquiry({ productData, counterparty }) {
           <span className="text-lg font-extrabold text-[#2D6A4F] sm:text-xl">
             ₱{total.toLocaleString()}
           </span>
-          <span className="text-xs text-gray-400 font-medium">total</span>
+          <span className="text-xs text-[var(--agri-text-muted)] font-medium">total</span>
         </div>
 
-        <div className="mt-2.5 flex items-center gap-1.5 text-xs text-gray-600 min-w-0">
-          <i className="ri-user-3-line text-gray-400 shrink-0 text-sm" />
+        <div className="mt-2.5 flex items-center gap-1.5 text-xs text-[var(--agri-text-secondary)] min-w-0">
+          <i className="ri-user-3-line text-[var(--agri-text-muted)] shrink-0 text-sm" />
 
-          <span className="font-semibold text-gray-700 truncate">
+          <span className="font-semibold text-[var(--agri-text-secondary)] truncate">
             {counterparty?.fullname ||
               (counterparty?.username
                 ? `@${counterparty.username}`

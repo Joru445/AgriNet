@@ -29,16 +29,16 @@ export default function PushNotificationManager() {
   // Not supported in this browser
   if (!supported) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
             <i className="ri-notification-off-line text-lg" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-700">
+            <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
               Push Notifications
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[var(--agri-text-muted)]">
               Not supported in this browser
             </p>
           </div>
@@ -50,16 +50,16 @@ export default function PushNotificationManager() {
   // Permission denied by user
   if (permission === "denied") {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-500">
             <i className="ri-notification-off-line text-lg" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-700">
+            <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
               Push Notifications
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[var(--agri-text-muted)]">
               Blocked by browser settings. Enable in your browser's site
               settings.
             </p>
@@ -72,17 +72,17 @@ export default function PushNotificationManager() {
   // Currently subscribed
   if (subscribed) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] text-[#2D6A4F]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)] text-[#2D6A4F] dark:text-[var(--agri-brand)]">
               <i className="ri-notification-3-line text-lg" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-700">
+              <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
                 Push Notifications
               </p>
-              <p className="text-xs text-[#2D6A4F] font-medium">
+              <p className="text-xs text-[#2D6A4F] dark:text-[var(--agri-brand)] font-medium">
                 Enabled
               </p>
             </div>
@@ -90,7 +90,7 @@ export default function PushNotificationManager() {
           <button
             type="button"
             onClick={unsubscribe}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+            className="rounded-lg border border-[var(--agri-border)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition-colors cursor-pointer"
           >
             Disable
           </button>
@@ -101,17 +101,17 @@ export default function PushNotificationManager() {
 
   // Not subscribed — show enable button
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
+    <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
             <i className="ri-notification-off-line text-lg" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-700">
+            <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
               Push Notifications
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[var(--agri-text-muted)]">
               Get notified about new messages and inquiries
             </p>
           </div>

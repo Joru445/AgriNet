@@ -55,23 +55,23 @@ export default function UserDetailsModal({ user, onClose }) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-3xl bg-white p-4 sm:p-5 shadow-2xl border border-gray-200 max-h-[92vh] overflow-y-auto"
+        className="w-full max-w-md rounded-3xl bg-[var(--agri-card)] p-4 sm:p-5 shadow-2xl border border-[var(--agri-border)] max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-2.5 border-b border-gray-200">
+        <div className="flex items-center justify-between pb-2.5 border-b border-[var(--agri-border)]">
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">
+            <h3 className="text-lg sm:text-xl font-bold text-[var(--agri-text)] tracking-tight">
               User Details
             </h3>
-            <p className="text-xs font-medium text-gray-500">
+            <p className="text-xs font-medium text-[var(--agri-text-muted)]">
               Complete account and system information
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer"
             aria-label="Close"
           >
             <i className="ri-close-line text-xl" />
@@ -95,7 +95,7 @@ export default function UserDetailsModal({ user, onClose }) {
                 title="Click to view photo"
               />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F3DC] text-xl font-black text-[#2D6A4F] ring-3 ring-[#D8F3DC]/40">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)] text-xl font-black text-[#2D6A4F] dark:text-[var(--agri-brand)] ring-3 ring-[#D8F3DC]/40">
                 {user.fullname
                   ?.split(/\s+/)
                   .slice(0, 2)
@@ -115,11 +115,11 @@ export default function UserDetailsModal({ user, onClose }) {
             )}
           </div>
 
-          <h4 className="text-base font-bold text-gray-900">
+          <h4 className="text-base font-bold text-[var(--agri-text)]">
             {user.fullname || "Unnamed User"}
           </h4>
 
-          <p className="text-xs font-medium text-gray-500 mb-1.5">
+          <p className="text-xs font-medium text-[var(--agri-text-muted)] mb-1.5">
             @{user.username || "user"}
           </p>
 
@@ -147,25 +147,25 @@ export default function UserDetailsModal({ user, onClose }) {
         <div className="space-y-2 text-left my-2">
           {/* Full Name & Username */}
           <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
-              <i className="ri-user-3-line text-base text-[#2D6A4F] shrink-0" />
+            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+              <i className="ri-user-3-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                   Full Name
                 </p>
-                <p className="text-xs font-semibold text-gray-900 truncate mt-0.5">
+                <p className="text-xs font-semibold text-[var(--agri-text)] truncate mt-0.5">
                   {user.fullname || "N/A"}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
-              <i className="ri-at-line text-base text-[#2D6A4F] shrink-0" />
+            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+              <i className="ri-at-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                   Username
                 </p>
-                <p className="text-xs font-semibold text-gray-900 truncate mt-0.5">
+                <p className="text-xs font-semibold text-[var(--agri-text)] truncate mt-0.5">
                   @{user.username || "user"}
                 </p>
               </div>
@@ -173,43 +173,43 @@ export default function UserDetailsModal({ user, onClose }) {
           </div>
 
           {/* Email Address */}
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
-            <i className="ri-mail-line text-base text-[#2D6A4F] shrink-0" />
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+            <i className="ri-mail-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                 Email Address
               </p>
-              <p className="text-xs font-semibold text-gray-900 break-all mt-0.5">
+              <p className="text-xs font-semibold text-[var(--agri-text)] break-all mt-0.5">
                 {user.email || "No email provided"}
               </p>
             </div>
           </div>
 
           {/* Phone Number */}
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
-            <i className="ri-phone-line text-base text-[#2D6A4F] shrink-0" />
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+            <i className="ri-phone-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                 Phone Number
               </p>
-              <p className="text-xs font-semibold text-gray-900 mt-0.5">
+              <p className="text-xs font-semibold text-[var(--agri-text)] mt-0.5">
                 {user.phone || user.contactNumber || "No phone provided"}
               </p>
             </div>
           </div>
 
           {/* Full Location */}
-          <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
-            <i className="ri-map-pin-2-line text-base text-[#2D6A4F] shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+            <i className="ri-map-pin-2-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                 Full Location / Address
               </p>
-              <p className="text-xs font-semibold text-gray-900 whitespace-normal break-words leading-snug mt-0.5">
+              <p className="text-xs font-semibold text-[var(--agri-text)] whitespace-normal break-words leading-snug mt-0.5">
                 {fullLocation}
               </p>
               {user.location?.latitude && user.location?.longitude && (
-                <p className="text-[11px] text-gray-500 font-mono mt-0.5">
+                <p className="text-[11px] text-[var(--agri-text-muted)] font-mono mt-0.5">
                   GPS: {user.location.latitude}, {user.location.longitude}
                 </p>
               )}
@@ -218,25 +218,25 @@ export default function UserDetailsModal({ user, onClose }) {
 
           {/* Registration & Update Dates */}
           <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
-              <i className="ri-calendar-line text-base text-[#2D6A4F] shrink-0" />
+            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+              <i className="ri-calendar-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                   Created
                 </p>
-                <p className="text-xs font-semibold text-gray-900 mt-0.5">
+                <p className="text-xs font-semibold text-[var(--agri-text)] mt-0.5">
                   {formatFullDateTime(user.createdAt)}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
-              <i className="ri-time-line text-base text-[#2D6A4F] shrink-0" />
+            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+              <i className="ri-time-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                   Updated
                 </p>
-                <p className="text-xs font-semibold text-gray-900 mt-0.5">
+                <p className="text-xs font-semibold text-[var(--agri-text)] mt-0.5">
                   {formatFullDateTime(user.updatedAt || user.createdAt)}
                 </p>
               </div>
@@ -245,11 +245,11 @@ export default function UserDetailsModal({ user, onClose }) {
 
           {/* Bio / Description */}
           {user.bio && (
-            <div className="p-2.5 rounded-xl bg-gray-50/90 border border-gray-200/80">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-0.5">
+            <div className="p-2.5 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)] mb-0.5">
                 Bio / About
               </p>
-              <p className="text-xs text-gray-900 font-medium whitespace-pre-wrap leading-relaxed">
+              <p className="text-xs text-[var(--agri-text)] font-medium whitespace-pre-wrap leading-relaxed">
                 {user.bio}
               </p>
             </div>

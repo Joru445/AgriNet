@@ -12,8 +12,8 @@ export default function RecentProducts({ products = [], loading = false }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Recent Products</h2>
-          <p className="text-xs font-medium text-gray-500 mt-0.5">
+          <h2 className="text-xl font-bold text-[var(--agri-text)]">Recent Products</h2>
+          <p className="text-xs font-medium text-[var(--agri-text-muted)] mt-0.5">
             {loading
               ? "Loading recent products..."
               : `Showing ${displayedProducts.length} of ${products.length} products`}
@@ -34,18 +34,18 @@ export default function RecentProducts({ products = [], loading = false }) {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-2xs"
+              className="overflow-hidden rounded-2xl bg-[var(--agri-card)] border border-[var(--agri-border)] shadow-2xs"
             >
-              <div className="aspect-square bg-gray-200" />
+              <div className="aspect-square bg-[var(--agri-hover)]" />
               <div className="p-3 space-y-2">
-                <div className="h-4 w-3/4 bg-gray-200 rounded" />
-                <div className="h-4 w-1/2 bg-gray-200 rounded" />
+                <div className="h-4 w-3/4 bg-[var(--agri-hover)] rounded" />
+                <div className="h-4 w-1/2 bg-[var(--agri-hover)] rounded" />
               </div>
             </div>
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center text-gray-500">
+        <div className="rounded-2xl border border-dashed border-[var(--agri-border)] bg-[var(--agri-card)] p-10 text-center text-[var(--agri-text-muted)]">
           No products yet.
         </div>
       ) : (

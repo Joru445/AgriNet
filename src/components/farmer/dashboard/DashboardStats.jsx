@@ -7,11 +7,11 @@ export default function DashboardStats({ stats = {}, loading = false }) {
         {[1, 2, 3, 4].map((item) => (
           <div
             key={item}
-            className="h-28 rounded-2xl bg-white border border-gray-200 p-5 space-y-3 shadow-2xs"
+            className="h-28 rounded-2xl bg-[var(--agri-card)] border border-[var(--agri-border)] p-5 space-y-3 shadow-2xs"
           >
-            <div className="h-4 w-24 bg-gray-200 rounded" />
-            <div className="h-7 w-16 bg-gray-200 rounded" />
-            <div className="h-3 w-32 bg-gray-100 rounded" />
+            <div className="h-4 w-24 bg-[var(--agri-hover)] rounded" />
+            <div className="h-7 w-16 bg-[var(--agri-hover)] rounded" />
+            <div className="h-3 w-32 bg-[var(--agri-hover)] rounded" />
           </div>
         ))}
       </div>

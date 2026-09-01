@@ -44,7 +44,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside
-      className={`hidden lg:flex fixed top-0 left-0 h-full bg-agri-dark flex-col z-9996 transition-all duration-300 ease-in-out ${
+      className={`hidden lg:flex fixed top-0 left-0 h-full bg-agri-dark dark:bg-(--agri-brand-bg) flex-col z-9996 transition-all duration-300 ease-in-out ${
         collapsed ? "w-20" : "w-64"
       }`}
     >
@@ -115,8 +115,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               {/* Speech bubble — messages */}
               {isMessages && showPopup && (
                 <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 z-50 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-left-2">
-                  <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#1B4332] shadow-2xl shadow-black/20 border border-gray-100 ring-1 ring-black/5">
-                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rotate-45 border-l border-b border-gray-100" />
+                  <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-2xl shadow-black/20 border border-[var(--agri-border-subtle)] ring-1 ring-black/5">
+                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-[var(--agri-card)] rotate-45 border-l border-b border-[var(--agri-border-subtle)]" />
                     <span className="relative z-10 flex items-center gap-2">
                       <PulsingDot />
                       <span>New messages</span>
@@ -128,8 +128,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               {/* Speech bubble — inquiries */}
               {isInquiries && showInquiryPopup && (
                 <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 z-50 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-left-2">
-                  <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#1B4332] shadow-2xl shadow-black/20 border border-gray-100 ring-1 ring-black/5">
-                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rotate-45 border-l border-b border-gray-100" />
+                  <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-2xl shadow-black/20 border border-[var(--agri-border-subtle)] ring-1 ring-black/5">
+                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-[var(--agri-card)] rotate-45 border-l border-b border-[var(--agri-border-subtle)]" />
                     <span className="relative z-10 flex items-center gap-2">
                       <PulsingDot />
                       <span>{inquiryPopupMessage}</span>
@@ -141,8 +141,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               {/* Speech bubble — reports */}
               {isReports && showReportPopup && (
                 <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 z-50 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-left-2">
-                  <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#1B4332] shadow-2xl shadow-black/20 border border-gray-100 ring-1 ring-black/5">
-                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rotate-45 border-l border-b border-gray-100" />
+                  <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-2xl shadow-black/20 border border-[var(--agri-border-subtle)] ring-1 ring-black/5">
+                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-[var(--agri-card)] rotate-45 border-l border-b border-[var(--agri-border-subtle)]" />
                     <span className="relative z-10 flex items-center gap-2">
                       <PulsingDot />
                       <span>{reportPopupMessage || "New report needs review!"}</span>

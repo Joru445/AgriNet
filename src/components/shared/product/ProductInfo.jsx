@@ -38,17 +38,17 @@ export default function ProductInfo({
     CATEGORY_ICONS[product.category] || "ri-shopping-basket-2-line";
 
   return (
-    <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
+    <section className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-5 sm:p-6 shadow-sm">
       {/* Product Name */}
       <div className="flex justify-between">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1B4332] leading-tight">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--agri-text)] leading-tight">
           {product.name}
         </h1>{" "}
         {!isOwner && onReport && (
           <button
             type="button"
             onClick={onReport}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-gray-400 hover:text-red-600 hover:bg-red-50 px-2.5 py-1 rounded-lg transition cursor-pointer"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--agri-text-muted)] hover:text-red-600 hover:bg-red-500/10 px-2.5 py-1 rounded-lg transition cursor-pointer"
             title="Report this product"
           >
             <i className="ri-alert-line text-sm" />
@@ -59,9 +59,9 @@ export default function ProductInfo({
 
       {/* Price Block */}
       <div className="mt-4 flex items-center gap-3.5 flex-wrap">
-        <p className="text-3xl sm:text-4xl font-extrabold text-[#1B4332] tracking-tight">
+        <p className="text-3xl sm:text-4xl font-extrabold text-[#1B4332] dark:text-[var(--agri-brand-light)] tracking-tight">
           ₱{priceFormatted}
-          <span className="text-base sm:text-lg font-semibold text-gray-500 ml-1">
+          <span className="text-base sm:text-lg font-semibold text-[var(--agri-text-muted)] ml-1">
             /{product.unit}
           </span>
         </p>
@@ -69,7 +69,7 @@ export default function ProductInfo({
         {hasDiscount && (
           <div className="flex items-start gap-1.5">
             {/* Slashed original price */}
-            <span className="text-base sm:text-lg font-bold text-gray-400 line-through">
+            <span className="text-base sm:text-lg font-bold text-[var(--agri-text-muted)] line-through">
               ₱{originalPriceFormatted}
             </span>
             {/* Percent in right side top of slash */}
@@ -83,8 +83,8 @@ export default function ProductInfo({
       {/* Top Badges Row: Category (Readable with Shadow) + Stock Status + Duration + Report Button */}
       <div className="flex items-center gap-2 flex-wrap mt-2">
         {/* Category Pill with Icon & Shadow */}
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F5EE] border border-[#2D6A4F]/20 px-3 py-1 text-xs font-bold text-[#1B4332] shadow-xs">
-          <i className={`${categoryIcon} text-[#2D6A4F] text-sm`} />
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2D6A4F]/10 border border-[#2D6A4F]/20 px-3 py-1 text-xs font-bold text-[var(--agri-text)] shadow-xs">
+          <i className={`${categoryIcon} text-[#2D6A4F] dark:text-[var(--agri-brand)] text-sm`} />
           <span>{product.category || "Produce"}</span>
         </span>
 
@@ -92,8 +92,8 @@ export default function ProductInfo({
         <span
           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold shadow-2xs border ${
             isAvailable
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-red-50 text-red-700 border-red-200"
+              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
+              : "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20"
           }`}
         >
           <span
@@ -106,27 +106,27 @@ export default function ProductInfo({
 
         {/* Duration Badge if set */}
         {remainingTime && isAvailable && (
-          <span className="inline-flex items-center rounded-full bg-gray-50 border border-gray-200 px-2.5 py-0.5 text-xs font-bold text-gray-700 shadow-2xs">
+          <span className="inline-flex items-center rounded-full bg-[var(--agri-hover)] border border-[var(--agri-border)] px-2.5 py-0.5 text-xs font-bold text-[var(--agri-text-secondary)] shadow-2xs">
             <span>{remainingTime}</span>
           </span>
         )}
       </div>
 
       {/* Rating & Reviews + Stock Info - Solid readable divider line */}
-      <div className="mt-4 pt-3.5 border-t-2 border-gray-200 flex items-center gap-2.5 flex-wrap">
-        <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md text-xs font-bold text-amber-800">
+      <div className="mt-4 pt-3.5 border-t-2 border-[var(--agri-border-subtle)] flex items-center gap-2.5 flex-wrap">
+        <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md text-xs font-bold text-amber-700 dark:text-amber-300">
           <i className="ri-star-fill text-amber-500 text-sm" />
           <span>{averageRating.toFixed(1)}</span>
         </div>
 
-        <span className="text-xs sm:text-sm font-semibold text-gray-600">
+        <span className="text-xs sm:text-sm font-semibold text-[var(--agri-text-secondary)]">
           ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
         </span>
 
         {product.stock != null && (
           <>
-            <span className="text-gray-300 font-bold">•</span>
-            <span className="text-xs sm:text-sm font-bold text-gray-700">
+            <span className="text-[var(--agri-border)] font-bold">•</span>
+            <span className="text-xs sm:text-sm font-bold text-[var(--agri-text-secondary)]">
               {product.stock} {product.unit || "units"} available
             </span>
           </>

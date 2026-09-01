@@ -3,7 +3,7 @@ import ReviewCard from "../../common/ReviewCard";
 export default function ReviewList({ reviews }) {
   if (!reviews.length) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-gray-500">
+      <div className="bg-[var(--agri-card)] rounded-2xl border border-[var(--agri-border)] p-12 text-center text-[var(--agri-text-muted)]">
         No reviews yet.
       </div>
     );
@@ -14,7 +14,7 @@ export default function ReviewList({ reviews }) {
       {reviews.map((review) => (
         <div
           key={review.id}
-          className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs transition-all hover:shadow-md"
+          className="overflow-hidden rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-xs transition-all hover:shadow-md"
         >
           <ReviewCard review={review} />
         </div>

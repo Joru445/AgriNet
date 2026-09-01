@@ -67,7 +67,7 @@ export default function UserIdentity({
           className={`${currentSize.image} shrink-0 rounded-full object-cover`}
         />
       ) : (
-        <div className={`flex ${currentSize.image} shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] text-sm font-semibold text-[#2D6A4F]`}>
+        <div className={`flex ${currentSize.image} shrink-0 items-center justify-center rounded-full bg-[#2D6A4F]/10 text-sm font-semibold text-[#2D6A4F] dark:text-[var(--agri-brand)]`}>
           {getInitials(user.fullname)}
         </div>
       )}
@@ -75,7 +75,7 @@ export default function UserIdentity({
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-1.5">
             <p
-              className={`truncate font-semibold ${currentSize.name} ${colorWhite ? "text-gray-200" : "text-gray-900"}`}
+              className={`truncate font-semibold ${currentSize.name} ${colorWhite ? "text-white" : "text-[var(--agri-text)]"}`}
               title={user.fullname}
             >
               {user.fullname || "Unknown User"}
@@ -85,27 +85,27 @@ export default function UserIdentity({
               <span
                 title="Verified Farmer"
                 aria-label="Verified Farmer"
-                className={`inline-flex shrink-0 items-center text-[#2D6A4F] ${currentSize.badge}`}
+                className={`inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-[var(--agri-brand)] ${currentSize.badge}`}
               >
                 <i className="ri-verified-badge-fill" />
               </span>
             )}
 
             {isCurrentUser && (
-              <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+              <span className="shrink-0 rounded-full bg-[var(--agri-hover)] px-2 py-0.5 text-[10px] font-medium text-[var(--agri-text-muted)]">
                 You
               </span>
             )}
           </div>
 
           {showUsername && user.username && (
-            <p className={`truncate ${currentSize.username} ${colorWhite ? "text-gray-400" : "text-gray-500"} `}>
+            <p className={`truncate ${currentSize.username} ${colorWhite ? "text-white/60" : "text-[var(--agri-text-muted)]"} `}>
               @{user.username}
             </p>
           )}
 
           {showRole && user.role && (
-            <p className={`truncate ${currentSize.username} ${colorWhite ? "text-gray-400" : "text-gray-500"}`}>
+            <p className={`truncate ${currentSize.username} ${colorWhite ? "text-white/60" : "text-[var(--agri-text-muted)]"}`}>
               {user.role}
             </p>
           )}

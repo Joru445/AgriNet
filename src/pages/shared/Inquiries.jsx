@@ -28,22 +28,22 @@ export default function Inquiries() {
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-[#1B4332]">Inquiry Records</h2>
+          <h2 className="text-xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">Inquiry Records</h2>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-[var(--agri-text-muted)]">
             Manage and track your product inquiries
           </p>
         </div>
 
         {/* View toggle — hidden on mobile */}
-        <div className="hidden sm:flex items-center bg-gray-100 rounded-2xl p-1.5 shrink-0 border border-gray-200 shadow-2xs gap-1">
+        <div className="hidden sm:flex items-center bg-[var(--agri-hover)] rounded-2xl p-1.5 shrink-0 border border-[var(--agri-border)] shadow-2xs gap-1">
           <button
             type="button"
             onClick={() => setView("grid")}
             className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${
               view === "grid"
-                ? "bg-white shadow-xs text-[#2D6A4F] font-bold ring-1 ring-black/5"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 font-semibold"
+                ? "bg-[var(--agri-card)] shadow-xs text-[#2D6A4F] dark:text-[var(--agri-brand)] font-bold ring-1 ring-black/5"
+                : "text-[var(--agri-text-secondary)] hover:text-[var(--agri-text)] hover:bg-[var(--agri-card)]/50 font-semibold"
             }`}
             title="Grid view"
           >
@@ -56,8 +56,8 @@ export default function Inquiries() {
             onClick={() => setView("vertical")}
             className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${
               view === "vertical"
-                ? "bg-white shadow-xs text-[#2D6A4F] font-bold ring-1 ring-black/5"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 font-semibold"
+                ? "bg-[var(--agri-card)] shadow-xs text-[#2D6A4F] dark:text-[var(--agri-brand)] font-bold ring-1 ring-black/5"
+                : "text-[var(--agri-text-secondary)] hover:text-[var(--agri-text)] hover:bg-[var(--agri-card)]/50 font-semibold"
             }`}
             title="Vertical list view"
           >

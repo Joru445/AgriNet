@@ -6,7 +6,7 @@ export default function NotificationList({
 }) {
   if (loading) {
     return (
-      <div className="py-12 text-center text-sm text-gray-500">
+      <div className="py-12 text-center text-sm text-[var(--agri-text-muted)]">
         Loading notifications...
       </div>
     );
@@ -14,16 +14,16 @@ export default function NotificationList({
 
   if (notifications.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+      <div className="rounded-2xl border border-dashed border-[var(--agri-border)] bg-[var(--agri-card)] px-6 py-16 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
           <i className="ri-notification-off-line text-2xl" />
         </div>
 
-        <h2 className="mt-4 font-semibold text-gray-900">
+        <h2 className="mt-4 font-semibold text-[var(--agri-text)]">
           No notifications yet
         </h2>
 
-        <p className="mt-1 text-sm text-gray-500">You're all caught up.</p>
+        <p className="mt-1 text-sm text-[var(--agri-text-muted)]">You're all caught up.</p>
       </div>
     );
   }

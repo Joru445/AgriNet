@@ -14,7 +14,7 @@ function ProductGalleryImages({ product }) {
 
   if (!images.length) {
     return (
-      <div className="aspect-square rounded-2xl md:rounded-3xl border border-gray-200 bg-white flex items-center justify-center text-gray-400 text-sm">
+      <div className="aspect-square rounded-2xl md:rounded-3xl border border-[var(--agri-border)] bg-[var(--agri-card)] flex items-center justify-center text-[var(--agri-text-muted)] text-sm">
         No images available
       </div>
     );
@@ -48,7 +48,7 @@ function ProductGalleryImages({ product }) {
   return (
     <div className="space-y-2 md:space-y-4">
       {/* Main Image / Swipeable Carousel */}
-      <div className="relative aspect-square w-full sm:rounded-2xl md:rounded-3xl sm:border sm:border-gray-200 bg-black/5 overflow-hidden shadow-xs group">
+      <div className="relative aspect-square w-full sm:rounded-2xl md:rounded-3xl sm:border sm:border-[var(--agri-border)] bg-black/5 overflow-hidden shadow-xs group">
         {/* Horizontal scroll snap container */}
         <div
           ref={scrollContainerRef}
@@ -64,7 +64,7 @@ function ProductGalleryImages({ product }) {
             return (
               <div
                 key={image.publicId || index}
-                className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center bg-gray-50 cursor-pointer"
+                className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center bg-[var(--agri-hover)] cursor-pointer"
                 onClick={() =>
                   setFullscreenImage({
                     src: imgSrc,
@@ -125,7 +125,7 @@ function ProductGalleryImages({ product }) {
                 className={`shrink-0 w-20 h-20 md:w-auto md:h-auto overflow-hidden rounded sm:rounded-xl transition-all duration-200 aspect-square cursor-pointer ${
                   selected === index
                     ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 scale-[1.02] opacity-100"
-                    : "border-gray-200 opacity-80 hover:opacity-100 hover:border-gray-300"
+                    : "border-[var(--agri-border)] opacity-80 hover:opacity-100 hover:border-[var(--agri-border)]"
                 }`}
               >
                 <img

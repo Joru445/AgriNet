@@ -10,7 +10,7 @@ export default function RelevantProductsSection({ products = [] }) {
       {/* Section Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+          <h2 className="text-lg sm:text-xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">
             Recommended for You
           </h2>
 
@@ -21,7 +21,7 @@ export default function RelevantProductsSection({ products = [] }) {
 
         <Link
           to="/marketplace?sort=relevant"
-          className="shrink-0 text-xs sm:text-sm font-bold text-[#2D6A4F] hover:text-[#1B4332] transition-colors"
+          className="shrink-0 text-xs sm:text-sm font-bold text-[#2D6A4F] hover:text-[#1B4332] dark:text-[var(--agri-brand-light)] transition-colors"
         >
           View all
           <i className="ri-arrow-right-line ml-1" />

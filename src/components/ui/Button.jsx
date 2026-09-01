@@ -12,17 +12,17 @@ export default function Button({
     primary: "bg-[#2D6A4F] text-white hover:bg-[#1B4332]",
 
     secondary:
-      "border border-[#2D6A4F] bg-white text-[#2D6A4F] hover:bg-green-50",
+      "border border-[#2D6A4F] bg-transparent text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:bg-[#2D6A4F]/10",
 
     danger: "bg-[#DC2626] text-white hover:bg-[#B91C1C]",
 
-    logout: "bg-red-50 text-[#B91C1C] hover:bg-red-100",
+    logout: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
 
     save: "bg-[#000080]/60 text-white hover:bg-[#000080]/80",
 
-    cancel: "border bg-white text-gray-700 hover:bg-gray-50",
+    cancel: "border border-[var(--agri-border)] bg-transparent text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]",
 
-    ghost: "text-[#2D6A4F] hover:bg-green-50",
+    ghost: "text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:bg-[#2D6A4F]/10",
   };
 
   return (

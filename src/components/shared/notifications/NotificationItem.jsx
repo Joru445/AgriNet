@@ -48,15 +48,15 @@ export default function NotificationItem({ notification }) {
       onClick={handleClick}
       className={`flex gap-4 rounded-2xl border p-4 transition ${
         !notification.read
-          ? "border-[#2D6A4F]/20 bg-[#F3FAF6] hover:bg-[#EAF6EE]"
-          : "border-gray-100 bg-white hover:bg-gray-50"
+          ? "border-[#2D6A4F]/20 bg-[#F3FAF6] dark:bg-[var(--agri-brand-bg)] hover:bg-[#EAF6EE]"
+          : "border-[var(--agri-border-subtle)] bg-[var(--agri-card)] hover:bg-[var(--agri-hover)]"
       }`}
     >
       <div
         className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
           !notification.read
             ? "bg-[#2D6A4F] text-white"
-            : "bg-gray-100 text-gray-500"
+            : "bg-[var(--agri-hover)] text-[var(--agri-text-muted)]"
         }`}
       >
         <i className={`${icon} text-lg`} />
@@ -64,18 +64,18 @@ export default function NotificationItem({ notification }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="font-semibold text-gray-900">{notification.title}</h2>
+          <h2 className="font-semibold text-[var(--agri-text)]">{notification.title}</h2>
 
           {!notification.read && (
             <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#2D6A4F]" />
           )}
         </div>
 
-        <p className="mt-1 text-sm leading-relaxed text-gray-500">
+        <p className="mt-1 text-sm leading-relaxed text-[var(--agri-text-muted)]">
           {notification.body}
         </p>
 
-        <p className="mt-2 text-xs text-gray-400">
+        <p className="mt-2 text-xs text-[var(--agri-text-muted)]">
           {formatNotificationTime(notification.createdAt)}
         </p>
       </div>

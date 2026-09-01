@@ -21,26 +21,26 @@ export default function ProductInquiryMessage({
 
   if (product === undefined) {
     return (
-      <div className="w-72 rounded-xl bg-white p-4">
-        <p className="text-sm text-gray-500">Loading product...</p>
+      <div className="w-72 rounded-xl bg-[var(--agri-card)] p-4">
+        <p className="text-sm text-[var(--agri-text-muted)]">Loading product...</p>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="w-72 rounded-xl bg-white p-4">
-        <p className="text-xs font-medium text-[#2D6A4F]">Product Inquiry</p>
+      <div className="w-72 rounded-xl bg-[var(--agri-card)] p-4">
+        <p className="text-xs font-medium text-[#2D6A4F] dark:text-[var(--agri-brand)]">Product Inquiry</p>
 
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-[var(--agri-text-muted)]">
           This product is no longer available.
         </p>
 
         {message.quantity != null && (
-          <div className="mt-3 rounded-lg bg-gray-50 px-3 py-2">
-            <p className="text-xs text-gray-500">Quantity requested</p>
+          <div className="mt-3 rounded-lg bg-[var(--agri-hover)] px-3 py-2">
+            <p className="text-xs text-[var(--agri-text-muted)]">Quantity requested</p>
 
-            <p className="mt-0.5 text-sm font-semibold text-gray-900">
+            <p className="mt-0.5 text-sm font-semibold text-[var(--agri-text)]">
               {message.quantity}
             </p>
           </div>
@@ -64,7 +64,7 @@ export default function ProductInquiryMessage({
           }`}
         />
 
-        <div className="w-64 sm:w-72 max-w-[78vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-white shadow-sm border border-gray-100">
+        <div className="w-64 sm:w-72 max-w-[78vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-[var(--agri-card)] shadow-sm border border-[var(--agri-border-subtle)]">
           <img
             src={productImage}
             alt={product.name}
@@ -72,12 +72,12 @@ export default function ProductInquiryMessage({
           />
 
           <div className="p-3">
-            <p className="text-xs font-medium text-[#2D6A4F]">Product Inquiry</p>
+            <p className="text-xs font-medium text-[#2D6A4F] dark:text-[var(--agri-brand)]">Product Inquiry</p>
 
-            <h3 className="mt-1 font-semibold text-gray-900 truncate">{product.name}</h3>
+            <h3 className="mt-1 font-semibold text-[var(--agri-text)] truncate">{product.name}</h3>
 
             {product.price != null && (
-              <p className="mt-1 text-sm font-medium text-gray-700">
+              <p className="mt-1 text-sm font-medium text-[var(--agri-text-secondary)]">
                 ₱{product.price}
                 {product.unit ? ` / ${product.unit}` : ""}
               </p>
@@ -85,19 +85,19 @@ export default function ProductInquiryMessage({
 
             {/* Quantity */}
             {message.quantity && (
-              <div className="mt-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5">
-                <p className="text-xs font-medium text-gray-500">
+              <div className="mt-3 rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)] px-3 py-2.5">
+                <p className="text-xs font-medium text-[var(--agri-text-muted)]">
                   Quantity requested
                 </p>
 
-                <p className="mt-0.5 text-base font-bold text-[#2D6A4F]">
+                <p className="mt-0.5 text-base font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                   {Number.isFinite(quantity) ? quantity : message.quantity}{" "}
                   {product.unit || "units"}
                 </p>
               </div>
             )}
 
-            <p className="mt-3 text-sm text-gray-600 break-words [overflow-wrap:anywhere] [word-break:break-word]">{message.text}</p>
+            <p className="mt-3 text-sm text-[var(--agri-text-secondary)] break-words [overflow-wrap:anywhere] [word-break:break-word]">{message.text}</p>
 
             {showAccept && (
               <button
@@ -118,8 +118,8 @@ export default function ProductInquiryMessage({
 
             {message.inquiryStatus === "accepted" && (
               <div className="mt-3 space-y-2">
-                <div className="rounded-lg bg-green-50 px-3 py-1.5 text-center text-xs font-semibold text-green-700 flex items-center justify-center gap-1.5 border border-green-200/60">
-                  <i className="ri-checkbox-circle-fill text-green-600" />
+                <div className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-center text-xs font-semibold text-emerald-700 dark:text-emerald-300 flex items-center justify-center gap-1.5 border border-emerald-500/20">
+                  <i className="ri-checkbox-circle-fill text-emerald-600" />
                   <span>Inquiry Accepted</span>
                 </div>
                 <Link
@@ -133,7 +133,7 @@ export default function ProductInquiryMessage({
             )}
 
             {message.inquiryStatus === "rejected" && (
-              <div className="mt-3 rounded-lg bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-600">
+              <div className="mt-3 rounded-lg bg-[var(--agri-hover)] px-3 py-2 text-center text-sm font-medium text-[var(--agri-text-secondary)]">
                 Inquiry Rejected
               </div>
             )}
@@ -145,13 +145,13 @@ export default function ProductInquiryMessage({
       {isOwn && isLastMine && (
         <div className="flex items-center justify-end gap-1 mt-1 mr-1 text-[11px] font-bold select-none transition-all">
           {isSeen ? (
-            <span className="flex items-center gap-1 text-[#2D6A4F]">
-              <i className="ri-check-double-line text-xs font-bold text-[#2D6A4F]" />
+            <span className="flex items-center gap-1 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+              <i className="ri-check-double-line text-xs font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
               Seen
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-gray-400 font-semibold">
-              <i className="ri-check-line text-xs text-gray-400" />
+            <span className="flex items-center gap-1 text-[var(--agri-text-muted)] font-semibold">
+              <i className="ri-check-line text-xs text-[var(--agri-text-muted)]" />
               Sent
             </span>
           )}

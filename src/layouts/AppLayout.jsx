@@ -34,7 +34,7 @@ export default function AppLayout() {
         <OfflineIndicator />
 
         <div
-          className={`flex-1 min-h-0 overscroll-none scrollbar-none bg-agri-bg ${
+          className={`flex-1 min-h-0 overscroll-none scrollbar-none bg-[var(--agri-page)] ${
             isMessages
               ? "flex flex-col overflow-hidden"
               : "overflow-y-auto"

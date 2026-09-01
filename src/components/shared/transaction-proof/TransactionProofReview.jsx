@@ -25,13 +25,13 @@ export default function TransactionProofReview({
   };
 
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <section className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-5 shadow-sm">
       <div>
-        <h2 className="font-semibold text-gray-900">
+        <h2 className="font-semibold text-[var(--agri-text)]">
           Review transaction proof
         </h2>
 
-        <p className="mt-1 text-sm leading-6 text-gray-500">
+        <p className="mt-1 text-sm leading-6 text-[var(--agri-text-muted)]">
           Review the image submitted by the consumer before confirming the
           transaction.
         </p>
@@ -39,7 +39,7 @@ export default function TransactionProofReview({
 
       {proofUrl ? (
         <div
-          className="mt-5 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 cursor-pointer group relative"
+          className="mt-5 overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)] cursor-pointer group relative"
           onClick={() => setShowFullscreen(true)}
           title="Click to view full screen & zoom"
         >
@@ -55,10 +55,10 @@ export default function TransactionProofReview({
           </div>
         </div>
       ) : (
-        <div className="mt-5 rounded-xl bg-gray-50 p-8 text-center">
-          <i className="ri-image-line text-3xl text-gray-300" />
+        <div className="mt-5 rounded-xl bg-[var(--agri-hover)] p-8 text-center">
+          <i className="ri-image-line text-3xl text-[var(--agri-text-muted)]" />
 
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-[var(--agri-text-muted)]">
             No proof image was submitted.
           </p>
         </div>
@@ -71,10 +71,10 @@ export default function TransactionProofReview({
           onClick={() => setShowRejectModal(true)}
           className="
             flex-1 rounded-xl
-            border border-red-200
+            border border-red-500/20
             px-4 py-3
             text-sm font-semibold text-red-600
-            transition hover:bg-red-50
+            transition hover:bg-red-500/10
             cursor-pointer
             disabled:cursor-not-allowed
             disabled:opacity-50
@@ -106,17 +106,17 @@ export default function TransactionProofReview({
       {showConfirmModal &&
         createPortal(
           <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md transition-all">
-            <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl animate-scale-in">
+            <div className="w-full max-w-md overflow-hidden rounded-2xl bg-[var(--agri-card)] p-6 shadow-2xl anim-scale-in">
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-[#2D6A4F]">
-                  <i className="ri-checkbox-circle-fill text-2xl text-[#2D6A4F]" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-[#2D6A4F] dark:text-[var(--agri-brand)] dark:bg-emerald-500/20">
+                  <i className="ri-checkbox-circle-fill text-2xl text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-bold text-gray-900">
+                  <h3 className="text-base font-bold text-[var(--agri-text)]">
                     Confirm & Complete Transaction
                   </h3>
-                  <p className="mt-1 text-sm text-gray-600 font-medium leading-relaxed">
+                  <p className="mt-1 text-sm text-[var(--agri-text-secondary)] font-medium leading-relaxed">
                     Confirm that this transaction is complete?
                   </p>
                 </div>
@@ -127,7 +127,7 @@ export default function TransactionProofReview({
                   type="button"
                   onClick={() => setShowConfirmModal(false)}
                   disabled={processing}
-                  className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 cursor-pointer disabled:opacity-50"
+                  className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -160,17 +160,17 @@ export default function TransactionProofReview({
       {showRejectModal &&
         createPortal(
           <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md transition-all">
-            <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl animate-scale-in">
+            <div className="w-full max-w-md overflow-hidden rounded-2xl bg-[var(--agri-card)] p-6 shadow-2xl anim-scale-in">
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
-                  <i className="ri-error-warning-fill text-2xl text-red-600" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400">
+                  <i className="ri-error-warning-fill text-2xl text-red-600 dark:text-red-400" />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-bold text-gray-900">
+                  <h3 className="text-base font-bold text-[var(--agri-text)]">
                     Reject Transaction Proof
                   </h3>
-                  <p className="mt-1 text-sm text-gray-600 font-medium leading-relaxed">
+                  <p className="mt-1 text-sm text-[var(--agri-text-secondary)] font-medium leading-relaxed">
                     Reject this proof and ask the consumer to upload another?
                   </p>
                 </div>
@@ -181,7 +181,7 @@ export default function TransactionProofReview({
                   type="button"
                   onClick={() => setShowRejectModal(false)}
                   disabled={processing}
-                  className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 cursor-pointer disabled:opacity-50"
+                  className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>

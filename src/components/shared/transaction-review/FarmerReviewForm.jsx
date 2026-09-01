@@ -9,13 +9,13 @@ export default function FarmerReviewForm({
   disabled = false,
 }) {
   return (
-    <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-md">
+    <section className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-5 sm:p-6 shadow-md">
       <div className="mb-4">
-        <h2 className="text-base font-bold text-gray-900">
+        <h2 className="text-base font-bold text-[var(--agri-text)]">
           Rate the Farmer
         </h2>
 
-        <p className="mt-1 text-sm font-medium text-gray-600">
+        <p className="mt-1 text-sm font-medium text-[var(--agri-text-secondary)]">
           How was your experience dealing with this farmer?
         </p>
       </div>
@@ -26,14 +26,14 @@ export default function FarmerReviewForm({
         disabled={disabled}
       />
 
-      <p className="mt-2 text-xs text-gray-400">
+      <p className="mt-2 text-xs text-[var(--agri-text-muted)]">
         {rating > 0 ? `${rating} out of 5 stars` : "Select a rating"}
       </p>
 
       <div className="mt-4">
         <label
           htmlFor="farmer-review"
-          className="mb-2 block text-sm font-medium text-gray-700"
+          className="mb-2 block text-sm font-medium text-[var(--agri-text-secondary)]"
         >
           Comment
         </label>

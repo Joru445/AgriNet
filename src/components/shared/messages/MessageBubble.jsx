@@ -37,7 +37,7 @@ export default function MessageBubble({
           ${isImage ? "overflow-hidden" : ""
             }
           ${isFailed
-              ? "bg-red-50 text-red-900 border border-red-300 shadow-sm"
+              ? "bg-red-50 dark:bg-red-500/10 text-red-900 dark:text-red-300 border border-red-300 dark:border-red-500/30 shadow-sm"
               : ""
             }`}
         >
@@ -47,7 +47,7 @@ export default function MessageBubble({
                 ${isImage ? "text-sm font-medium" : ""}
                 ${mine
                   ? "bg-[#2D6A4F] text-white shadow-green-900/20"
-                  : "bg-white text-gray-800 border-gray-200 shadow-black/10"
+                  : "bg-[var(--agri-elevated)] text-[var(--agri-text)] border border-[var(--agri-border)] shadow-black/10"
                 }
               `}
             >
@@ -94,7 +94,7 @@ export default function MessageBubble({
             <button
               type="button"
               onClick={() => onDeleteFailed?.(message.id)}
-              className="text-gray-400 hover:text-red-600 transition cursor-pointer ml-1 p-0.5"
+              className="text-[var(--agri-text-muted)] hover:text-red-600 transition cursor-pointer ml-1 p-0.5"
               title="Delete failed message"
             >
               <i className="ri-close-line text-sm" />
@@ -107,9 +107,9 @@ export default function MessageBubble({
       {mine && !isFailed && isLastMine && (
         <div className="flex items-center justify-end gap-1 mt-1 mr-1 text-[11px] font-bold select-none transition-all">
           {isSeen ? (
-            <span className="flex items-center gap-1 text-gray-400">Seen</span>
+            <span className="flex items-center gap-1 text-[var(--agri-text-muted)]">Seen</span>
           ) : (
-            <span className="flex items-center gap-1 text-gray-400 font-semibold">
+            <span className="flex items-center gap-1 text-[var(--agri-text-muted)] font-semibold">
               Sent
             </span>
           )}

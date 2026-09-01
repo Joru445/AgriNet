@@ -17,16 +17,16 @@ function getRoleLabel(role) {
 function getRoleClasses(role) {
   switch (role) {
     case "admin":
-      return "bg-purple-100 text-purple-700";
+      return "bg-purple-500/10 text-purple-700 dark:text-purple-300";
 
     case "farmer":
-      return "bg-green-100 text-green-700";
+      return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
 
     case "consumer":
-      return "bg-blue-100 text-blue-700";
+      return "bg-blue-500/10 text-blue-700 dark:text-blue-300";
 
     default:
-      return "bg-gray-100 text-gray-600";
+      return "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)]";
   }
 }
 

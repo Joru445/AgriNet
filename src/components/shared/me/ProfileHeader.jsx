@@ -2,14 +2,15 @@ import { useRef, useState } from "react";
 
 import landscape from "../../../assets/img/landscapeCover.jpg";
 
-import { getInitials } from "../../../utils/getInitials";
+import Avatar from "../../common/Avatar";
 import Button from "../../ui/Button";
 import ImageViewerModal from "../../common/ImageViewerModal";
-import { applyTransform, COVER_TF, PROFILE_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
+import { applyTransform, COVER_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
 
 export default function ProfileHeader({
   profile,
   editing,
+  saving = false,
   uploadingAvatar = false,
 
   onEdit,
@@ -22,26 +23,26 @@ export default function ProfileHeader({
   const fileInput = useRef(null);
   const [fullscreenImage, setFullscreenImage] = useState(null);
 
+  const coverSrc = isCloudinaryUrl(profile.coverPhoto)
+    ? applyTransform(profile.coverPhoto, COVER_TF)
+    : profile.coverPhoto || landscape;
+
   return (
-    <section className="bg-white">
+    <section className="bg-[var(--agri-card)]">
       {/* Cover Photo */}
       <div className="relative">
         <div
           className="relative h-56 overflow-hidden sm:rounded-b-2xl sm:h-72 md:h-80 lg:h-95 cursor-pointer group"
           onClick={() =>
             setFullscreenImage({
-              src: profile.coverPhoto || landscape,
+              src: coverSrc,
               title: "Cover Photo",
             })
           }
           title="Click to view cover photo"
         >
           <img
-            src={
-              isCloudinaryUrl(profile.coverPhoto)
-                ? applyTransform(profile.coverPhoto, COVER_TF)
-                : profile.coverPhoto || landscape
-            }
+            src={coverSrc}
             alt="Cover"
             loading="lazy"
             width={1600}
@@ -59,7 +60,7 @@ export default function ProfileHeader({
           relative
           -mt-8
           rounded-t-3xl
-          bg-white
+          bg-[var(--agri-card)]
           px-4
           sm:mt-0
           sm:rounded-none
@@ -71,57 +72,27 @@ export default function ProfileHeader({
           <div className="flex sm:items-end gap-4">
             {/* Avatar */}
             <div className="relative -mt-8 shrink-0 sm:-mt-20">
-              {profile.profilePicture ? (
-                <img
-                  src={
-                    isCloudinaryUrl(profile.profilePicture)
-                      ? applyTransform(profile.profilePicture, PROFILE_TF)
-                      : profile.profilePicture
-                  }
-                  alt={profile.username}
-                  width={160}
-                  height={160}
-                  onClick={() =>
-                    setFullscreenImage({
-                      src: profile.profilePicture,
-                      title: `${profile.fullname || profile.username}'s Profile Picture`,
-                    })
-                  }
-                  className="
-                    h-32 w-32
-                    rounded-full
-                    border-4 border-white
-                    bg-white
-                    object-cover
-                    shadow-sm
-                    sm:h-40 sm:w-40
-                    cursor-pointer
-                    hover:opacity-95
-                    transition
-                  "
-                  title="Click to view full photo"
+              <button
+                type="button"
+                onClick={() =>
+                  setFullscreenImage({
+                    src: profile.profilePicture,
+                    title: `${profile.fullname || profile.username}'s Profile Picture`,
+                  })
+                }
+                className="block rounded-full border-4 border-[var(--agri-card)] shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:ring-offset-2"
+                title="Click to view full photo"
+                aria-label="View profile picture"
+              >
+                <Avatar
+                  src={profile.profilePicture}
+                  name={profile.fullname}
+                  size="xl"
+                  className="!h-32 !w-32 sm:!h-40 sm:!w-40"
                 />
-              ) : (
-                <div
-                  className="
-                    flex
-                    h-32 w-32
-                    items-center justify-center
-                    rounded-full
-                    border-4 border-white
-                    bg-[#D8F3DC]
-                    text-5xl
-                    font-semibold
-                    text-[#2D6A4F]
-                    shadow-sm
-                    sm:h-40 sm:w-40
-                  "
-                >
-                  {getInitials(profile.fullname)}
-                </div>
-              )}
+              </button>
 
-              {/* Avatar Edit Camera Button - always clickable to change photo */}
+              {/* Avatar Edit Camera Button */}
               <button
                 type="button"
                 onClick={() => fileInput.current?.click()}
@@ -144,8 +115,10 @@ export default function ProfileHeader({
                   transition
                   cursor-pointer
                   disabled:opacity-60
+                  focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:ring-offset-2
                 "
                 title="Change profile picture"
+                aria-label="Change profile picture"
               >
                 {uploadingAvatar ? (
                   <i className="ri-loader-4-line animate-spin text-lg" />
@@ -160,19 +133,21 @@ export default function ProfileHeader({
                 accept="image/*"
                 className="hidden"
                 onChange={onAvatarChange}
+                aria-hidden="true"
+                tabIndex={-1}
               />
             </div>
 
             {/* Profile Text Info */}
             <div className="min-w-0 flex-1 pt-3 sm:pt-0 sm:pb-3">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
+              <h1 className="text-xl sm:text-2xl font-bold text-[var(--agri-text)] truncate">
                 {profile.fullname || "Unnamed User"}
               </h1>
-              <p className="text-sm text-gray-500 font-medium truncate">
+              <p className="text-sm text-[var(--agri-text-muted)] font-medium truncate">
                 @{profile.username || "user"}
               </p>
               {profile.bio && (
-                <p className="mt-1.5 text-xs sm:text-sm text-gray-600 line-clamp-2">
+                <p className="mt-1.5 text-xs sm:text-sm text-[var(--agri-text-secondary)] line-clamp-2">
                   {profile.bio}
                 </p>
               )}
@@ -196,12 +171,21 @@ export default function ProfileHeader({
               </>
             ) : (
               <>
-                <Button onClick={onCancel} variant="cancel">
+                <Button
+                  onClick={onCancel}
+                  variant="cancel"
+                  disabled={saving}
+                >
                   Cancel
                 </Button>
 
-                <Button onClick={onSave} variant="save">
-                  Save Changes
+                <Button
+                  onClick={onSave}
+                  variant="save"
+                  disabled={saving || uploadingAvatar}
+                  icon={saving ? "ri-loader-4-line" : undefined}
+                >
+                  {saving ? "Saving..." : "Save Changes"}
                 </Button>
               </>
             )}

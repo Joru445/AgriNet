@@ -7,6 +7,7 @@ import FarmerSection from "../../components/shared/me/FarmerSection";
 import ProfileSkeleton from "../../components/shared/me/ProfileSkeleton";
 import LogoutConfirmModal from "../../components/common/LogoutConfirmModal";
 import PushNotificationManager from "../../components/common/PushNotificationManager";
+import ThemeToggle from "../../components/common/ThemeToggle";
 
 import { useAuth } from "../../context/AuthContext";
 import useProfile from "../../hooks/useProfile";
@@ -22,6 +23,7 @@ export default function Profile() {
 
   const {
     loading,
+    saving,
     uploadingAvatar,
 
     editing,
@@ -58,10 +60,11 @@ export default function Profile() {
       {loading ? (
         <ProfileSkeleton />
       ) : (
-        <div className="bg-white mx-auto max-w-6xl shadow-sm overflow-hidden pb-16 md:pb-8">
+        <div className="bg-[var(--agri-card)] mx-auto max-w-6xl shadow-sm overflow-hidden pb-16 md:pb-8">
           <ProfileHeader
             profile={form}
             editing={editing}
+            saving={saving}
             uploadingAvatar={uploadingAvatar}
             onEdit={() => setEditing(true)}
             onCancel={handleCancel}
@@ -70,7 +73,7 @@ export default function Profile() {
             onAvatarChange={handleAvatar}
           />
 
-          <ProfileForm location={profile?.location} form={form} editing={editing} onChange={handleChange} />
+          <ProfileForm form={form} editing={editing} onChange={handleChange} />
 
           {form.role === "farmer" && (
             <FarmerSection
@@ -81,11 +84,16 @@ export default function Profile() {
             />
           )}
 
+          {/* Appearance */}
+          <div className="border-t border-[var(--agri-border-subtle)] px-4 sm:px-6 lg:px-8 py-6">
+            <ThemeToggle />
+          </div>
+
           {/* Push Notification Settings */}
-          <div className="px-4 sm:px-6 py-4 border-t border-gray-100">
-            <h3 className="text-sm font-bold text-gray-900 mb-3">
+          <div className="border-t border-[var(--agri-border-subtle)] px-4 sm:px-6 lg:px-8 py-6">
+            <h2 className="text-sm font-bold text-[var(--agri-text)] mb-4">
               Notifications
-            </h3>
+            </h2>
             <PushNotificationManager />
           </div>
         </div>

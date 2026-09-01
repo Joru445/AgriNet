@@ -12,12 +12,12 @@ export default function ReviewRating({ rating = 0 }) {
           className={
             star <= value
               ? "ri-star-fill text-yellow-400"
-              : "ri-star-line text-gray-300"
+              : "ri-star-line text-[var(--agri-border)]"
           }
         />
       ))}
 
-      <span className="ml-1 text-xs font-medium text-gray-500">
+      <span className="ml-1 text-xs font-medium text-[var(--agri-text-muted)]">
         {value.toFixed(1)}
       </span>
     </div>

@@ -1,81 +1,110 @@
 export default function ProfileForm({ form, editing, onChange }) {
   return (
-    <div className="px-4 lg:px-8 pb-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="border-t border-[var(--agri-border-subtle)] px-4 sm:px-6 lg:px-8 py-6">
+      <h2 className="text-sm font-bold text-[var(--agri-text)] mb-4">
+        Personal Information
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Full Name */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor="profile-fullname"
+            className="block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5"
+          >
             Full Name
           </label>
 
           <input
+            id="profile-fullname"
             name="fullname"
             value={form.fullname}
             onChange={onChange}
             disabled={!editing}
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+            required
+            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)] text-sm text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent transition-colors"
           />
         </div>
 
         {/* Username */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor="profile-username"
+            className="block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5"
+          >
             Username
           </label>
 
           <input
+            id="profile-username"
             name="username"
             value={form.username}
             onChange={onChange}
             disabled={!editing}
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+            required
+            pattern="[a-z0-9._]+"
+            minLength={3}
+            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)] text-sm text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent transition-colors"
           />
         </div>
 
         {/* Email */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor="profile-email"
+            className="block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5"
+          >
             Email Address
           </label>
 
           <input
+            id="profile-email"
             value={form.email}
             disabled
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 bg-gray-100"
+            readOnly
+            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)] text-sm text-[var(--agri-text-muted)] cursor-not-allowed"
           />
         </div>
 
         {/* Phone */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor="profile-phone"
+            className="block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5"
+          >
             Contact Number
           </label>
 
           <input
+            id="profile-phone"
             name="phone"
             value={form.phone || ""}
             onChange={onChange}
             disabled={!editing}
             placeholder="09XXXXXXXXX"
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)] text-sm text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent transition-colors"
           />
         </div>
       </div>
 
       {/* Bio */}
-      <div className="mt-6">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+      <div className="mt-5">
+        <label
+          htmlFor="profile-bio"
+          className="block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5"
+        >
           Bio
         </label>
 
         <textarea
-          rows={5}
+          id="profile-bio"
+          rows={4}
           name="bio"
           value={form.bio}
           onChange={onChange}
           disabled={!editing}
           placeholder="Tell people a little about yourself..."
-          className="w-full px-4 py-3 rounded-xl border border-gray-300 disabled:bg-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+          className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)] text-sm text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent transition-colors"
         />
       </div>
     </div>

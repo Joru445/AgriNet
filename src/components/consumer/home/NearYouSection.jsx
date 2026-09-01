@@ -31,7 +31,7 @@ export default function NearYouSection({ products = [], userLocation }) {
       <div className="flex items-end justify-between gap-4">
         <div>
 
-            <h2 className="text-lg sm:text-xl font-black text-[#1B4332]">
+            <h2 className="text-lg sm:text-xl font-black text-[#1B4332] dark:text-[var(--agri-brand-light)]">
               Near You
             </h2>
 
@@ -42,7 +42,7 @@ export default function NearYouSection({ products = [], userLocation }) {
 
         <Link
           to="?distance=5"
-          className="shrink-0 text-xs sm:text-sm font-bold text-[#2D6A4F] transition-colors hover:text-[#1B4332]"
+          className="shrink-0 text-xs sm:text-sm font-bold text-[#2D6A4F] transition-colors hover:text-[#1B4332] dark:text-[var(--agri-brand-light)]"
         >
           View all
           <i className="ri-arrow-right-line ml-1" />

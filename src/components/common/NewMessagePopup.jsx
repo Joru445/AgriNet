@@ -45,7 +45,7 @@ export default function NewMessagePopup({ collapsed = true }) {
     >
       <div className="flex items-center gap-3 rounded-2xl bg-white/95 backdrop-blur-md border border-[#2D6A4F]/25 p-3.5 shadow-2xl shadow-black/15 ring-1 ring-black/5 hover:scale-[1.02] transition-transform">
         {/* Page / Message icon with red dot */}
-        <div className="relative shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 border border-green-100 text-[#2D6A4F]">
+        <div className="relative shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 border border-green-100 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
           {latestPopup.senderAvatar ? (
             <Avatar
               src={latestPopup.senderAvatar}
@@ -53,7 +53,7 @@ export default function NewMessagePopup({ collapsed = true }) {
               size="md"
             />
           ) : (
-            <i className="ri-message-3-fill text-xl text-[#2D6A4F]" />
+            <i className="ri-message-3-fill text-xl text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
           )}
 
           {/* Tiny pulsing red dot */}
@@ -70,7 +70,7 @@ export default function NewMessagePopup({ collapsed = true }) {
           className="flex-1 min-w-0 group"
         >
           <div className="flex items-center justify-between gap-1">
-            <h4 className="text-xs font-bold text-[#1B4332] truncate group-hover:text-[#2D6A4F] transition-colors">
+            <h4 className="text-xs font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)] truncate group-hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] transition-colors">
               {latestPopup.senderName}
             </h4>
             <span className="text-[10px] font-semibold text-red-500 bg-red-50 px-1.5 py-0.2 rounded-full flex items-center gap-1">

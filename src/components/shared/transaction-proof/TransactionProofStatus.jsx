@@ -32,23 +32,23 @@ export default function TransactionProofStatus({ type, inquiry }) {
   const current = config[type] ?? config.viewOnly;
 
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+    <section className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-6 shadow-sm">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-[#2D6A4F]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
           <i className={`${current.icon} text-xl`} />
         </div>
 
         <div>
-          <h2 className="font-semibold text-gray-900">{current.title}</h2>
+          <h2 className="font-semibold text-[var(--agri-text)]">{current.title}</h2>
 
-          <p className="mt-1 text-sm leading-6 text-gray-500">
+          <p className="mt-1 text-sm leading-6 text-[var(--agri-text-muted)]">
             {current.description}
           </p>
         </div>
       </div>
 
       {inquiry?.proof?.url && (
-        <div className="mt-5 overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+        <div className="mt-5 overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)]">
           <img
             src={inquiry.proof.url}
             alt="Transaction proof"

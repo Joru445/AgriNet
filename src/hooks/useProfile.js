@@ -18,6 +18,13 @@ export default function useProfile(profile) {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const hasLoadedRef = useRef(false);
 
+  // Track the original profile picture so cancel can revert
+  const originalPictureRef = useRef(profile?.profilePicture || "");
+  const originalPictureIdRef = useRef(profile?.profilePictureId || "");
+
+  // Track blob URLs for cleanup
+  const blobUrlRef = useRef(null);
+
   const [form, setForm] = useState(() => ({
     fullname: profile?.fullname || "",
     username: profile?.username || "",
@@ -48,6 +55,15 @@ export default function useProfile(profile) {
     completed: 0,
   });
 
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+      }
+    };
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     const fieldName = name === "contactNumber" ? "phone" : name;
@@ -73,13 +89,43 @@ export default function useProfile(profile) {
   };
 
   async function handleSave() {
+    // Guard: don't save if avatar upload is still in progress
+    if (uploadingAvatar) {
+      showToast.error("Please wait for the profile picture to finish uploading.");
+      return;
+    }
+
+    // Basic validation
+    const trimmedFullname = form.fullname?.trim();
+    const trimmedUsername = form.username?.trim();
+
+    if (!trimmedFullname) {
+      showToast.error("Full name is required.");
+      return;
+    }
+
+    if (!trimmedUsername) {
+      showToast.error("Username is required.");
+      return;
+    }
+
+    if (trimmedUsername.length < 3) {
+      showToast.error("Username must be at least 3 characters.");
+      return;
+    }
+
+    if (!/^[a-z0-9._]+$/.test(trimmedUsername)) {
+      showToast.error("Username can only contain lowercase letters, numbers, dots, and underscores.");
+      return;
+    }
+
     setSaving(true);
 
     try {
       await updateUser(profile.uid, {
-        username: form.username.toLowerCase(),
-        fullname: form.fullname,
-        fullnameLower: form.fullname.toLowerCase(),
+        username: trimmedUsername.toLowerCase(),
+        fullname: trimmedFullname,
+        fullnameLower: trimmedFullname.toLowerCase(),
         phone: form.phone,
         bio: form.bio,
         location: form.location,
@@ -89,9 +135,9 @@ export default function useProfile(profile) {
 
       if (profile.role === "farmer") {
         await updateFarmer(profile.uid, {
-          username: form.username.toLowerCase(),
-          fullname: form.fullname,
-          fullnameLower: form.fullname.toLowerCase(),
+          username: trimmedUsername.toLowerCase(),
+          fullname: trimmedFullname,
+          fullnameLower: trimmedFullname.toLowerCase(),
           phone: form.phone,
           location: form.location,
           profilePicture: form.profilePicture,
@@ -100,10 +146,12 @@ export default function useProfile(profile) {
           description: form.description,
         });
       }
-      await loadProfile(false);
+
+      // Update tracked originals after successful save
+      originalPictureRef.current = form.profilePicture;
+      originalPictureIdRef.current = form.profilePictureId;
 
       showToast.success("Profile updated!");
-
       setEditing(false);
     } catch (error) {
       showToast.error(error.message);
@@ -113,6 +161,19 @@ export default function useProfile(profile) {
   }
 
   async function handleCancel() {
+    // Revoke any blob URL from avatar preview
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+
+    // Revert to the last-saved avatar (or original)
+    setForm((prev) => ({
+      ...prev,
+      profilePicture: originalPictureRef.current,
+      profilePictureId: originalPictureIdRef.current,
+    }));
+
     await loadProfile(false);
     setEditing(false);
   }
@@ -165,9 +226,13 @@ export default function useProfile(profile) {
           ...user,
           ...farmer,
           rating,
-          profilePicture: prev.profilePicture || user.profilePicture || "",
-          profilePictureId: prev.profilePictureId || user.profilePictureId || "",
+          profilePicture: user.profilePicture || "",
+          profilePictureId: user.profilePictureId || "",
         }));
+
+        // Sync originals
+        originalPictureRef.current = user.profilePicture || "";
+        originalPictureIdRef.current = user.profilePictureId || "";
 
         hasLoadedRef.current = true;
       } finally {
@@ -185,14 +250,33 @@ export default function useProfile(profile) {
     // Reset value so picking the same file works
     e.target.value = "";
 
-    // IMMEDIATELY switch to editing mode so "Save Changes" is visible!
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      showToast.error("Please select an image file.");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      showToast.error("Image must be less than 10 MB.");
+      return;
+    }
+
+    // Immediately switch to editing mode so "Save Changes" is visible
     setEditing(true);
+
+    // Revoke previous blob URL
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
 
     try {
       setUploadingAvatar(true);
 
-      // Instant local preview for immediate visual feedback without waiting
+      // Instant local preview
       const localPreview = URL.createObjectURL(file);
+      blobUrlRef.current = localPreview;
+
       setForm((prev) => ({
         ...prev,
         profilePicture: localPreview,
@@ -200,16 +284,24 @@ export default function useProfile(profile) {
 
       const image = await uploadProfilePicture(file);
 
+      // Clear blob URL ref since upload succeeded (Cloudinary URL now)
+      blobUrlRef.current = null;
+
       setForm((prev) => ({
         ...prev,
         profilePicture: image.url,
         profilePictureId: image.publicId,
       }));
 
-      setEditing(true);
-
-      showToast.success("Photo selected. Click Save Changes to save.");
+      showToast.success("Photo uploaded. Click Save Changes to save.");
     } catch (error) {
+      // Revert to previous avatar on failure
+      setForm((prev) => ({
+        ...prev,
+        profilePicture: originalPictureRef.current,
+        profilePictureId: originalPictureIdRef.current,
+      }));
+
       showToast.error(error.message || "Failed to upload profile picture.");
     } finally {
       setUploadingAvatar(false);

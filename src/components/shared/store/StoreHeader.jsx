@@ -24,7 +24,7 @@ export default function StoreHeader({
     : "-";
 
   return (
-    <section className="bg-white">
+    <section className="bg-[var(--agri-card)]">
       {/* Cover Photo */}
       <div className="mx-auto max-w-7xl">
         <div
@@ -32,7 +32,7 @@ export default function StoreHeader({
             relative
             h-56
             overflow-hidden
-            bg-gray-200
+            bg-[var(--agri-hover)]
             sm:h-72
             md:h-80
             lg:h-[380px]
@@ -57,178 +57,81 @@ export default function StoreHeader({
       </div>
 
       {/* Profile Information */}
-      <div
-        className="
-          relative
-          rounded-t-3xl
-          bg-white
-          px-4
-          sm:rounded-none
-          sm:px-6
-        "
-      >
-        <div className="mx-auto max-w-7xl">
-          {/* Main Profile Row */}
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between">
-            {/* Avatar + Details */}
-            <div className="flex items-end gap-4">
-              {/* Avatar */}
-              <div className="relative -mt-14 shrink-0 sm:-mt-20">
-                <Link
-                  to={getStoreProfilePath(farmer.uid || farmer.id, profile?.role)}
-                  className="block"
-                  title={`View ${farmer.fullname}'s store`}
-                >
-                  {farmer.profilePicture ? (
-                    <img
-                      src={
-                        isCloudinaryUrl(farmer.profilePicture)
-                          ? applyTransform(farmer.profilePicture, PROFILE_TF)
-                          : farmer.profilePicture
-                      }
-                      alt={farmer.username}
-                      width={160}
-                      height={160}
-                      className="
-                        h-28 w-28
-                        rounded-full
-                        border-4 border-white
-                        bg-white
-                        object-cover
-                        shadow-sm
-                        sm:h-40 sm:w-40
-                        hover:opacity-90
-                        transition
-                        cursor-pointer
-                      "
-                    />
-                  ) : (
-                    <div
-                      className="
-                        flex
-                        h-28 w-28
-                        items-center justify-center
-                        rounded-full
-                        border-4 border-white
-                        bg-[#D8F3DC]
-                        text-5xl
-                        font-semibold
-                        text-[#2D6A4F]
-                        shadow-sm
-                        sm:h-40 sm:w-40
-                        sm:text-6xl
-                        hover:opacity-90
-                        transition
-                        cursor-pointer
-                      "
-                    >
-                      {getInitials(farmer.fullname)}
-                    </div>
-                  )}
-                </Link>
-              </div>
-
-              {/* Profile Details */}
-              <div className="min-w-0 pb-3 pt-3 sm:pb-5 sm:pl-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <h1 className="truncate text-xl font-bold text-gray-900 sm:text-3xl">
-                    {farmer.fullname}
-                  </h1>
-                  {farmer.verified && (
-                    <span
-                      title="Verified Farmer"
-                      aria-label="Verified Farmer"
-                      className="inline-flex shrink-0 items-center text-[#2D6A4F] text-xl sm:text-2xl"
-                    >
-                      <i className="ri-verified-badge-fill" />
-                    </span>
-                  )}
+      <div className="relative mx-auto max-w-7xl -mt-8 px-4 sm:mt-0 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4 pt-4">
+          {/* Left side: Avatar + Info */}
+          <div className="flex items-end gap-4">
+            {/* Avatar */}
+            <Link
+              to={getStoreProfilePath(farmer)}
+              className="block shrink-0 -mt-8 sm:-mt-16 rounded-full border-4 border-[var(--agri-card)] shadow-md hover:opacity-90 transition"
+              title={`Visit ${farmer.storeName || farmer.fullname}'s profile`}
+            >
+              {farmer.profilePicture ? (
+                <img
+                  src={isCloudinaryUrl(farmer.profilePicture) ? applyTransform(farmer.profilePicture, PROFILE_TF) : farmer.profilePicture}
+                  alt={farmer.storeName || farmer.fullname}
+                  className="h-24 w-24 sm:h-32 sm:w-32 rounded-full object-cover"
+                  loading="lazy"
+                  width={128}
+                  height={128}
+                />
+              ) : (
+                <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-[#2D6A4F]/10 flex items-center justify-center text-[#2D6A4F] dark:text-[var(--agri-brand)] text-3xl font-bold">
+                  {getInitials(farmer.storeName || farmer.fullname)}
                 </div>
-
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-600 sm:mt-4 sm:gap-5">
-                  <span className="flex items-center gap-1 whitespace-nowrap">
-                    <i className="ri-star-fill text-yellow-400" />
-                    {averageRating ?? "0"} ({reviewCount ?? "0"})
-                  </span>
-
-                  {/*farmer.location?.address && (
-                    <span className="flex min-w-0 items-center gap-1">
-                      <i className="ri-map-pin-line shrink-0" />
-                      <span className="truncate">
-                        {farmer.location.address}
-                      </span>
-                    </span>
-                  )*/}
-
-                  <span className="flex items-center gap-1 whitespace-nowrap">
-                    <i className="ri-calendar-line" />
-                    Joined {joinedDate}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions: Message & Report */}
-            <div className="flex items-center gap-2 pb-4 pt-3 sm:pt-4 md:pb-5 md:pt-0">
-              <button
-                type="button"
-                onClick={onMessage}
-                className="
-                  inline-flex
-                  h-10
-                  flex-1
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-[#2D6A4F]
-                  px-5
-                  text-sm
-                  font-bold
-                  text-white
-                  shadow-sm
-                  transition-all
-                  hover:bg-[#1B4332]
-                  active:scale-95
-                  cursor-pointer
-                  sm:w-auto
-                "
-              >
-                <i className="ri-message-3-line mr-1.5" />
-                Message
-              </button>
-
-              {profile?.uid && profile?.uid !== farmer.uid && profile?.uid !== farmer.id && (
-                <button
-                  type="button"
-                  onClick={() => setShowReportModal(true)}
-                  className="
-                    inline-flex
-                    h-10
-                    items-center
-                    justify-center
-                    rounded-xl
-                    border
-                    border-gray-200
-                    bg-white
-                    px-3.5
-                    text-xs
-                    font-bold
-                    text-gray-600
-                    hover:border-red-200
-                    hover:bg-red-50
-                    hover:text-red-600
-                    transition-all
-                    active:scale-95
-                    cursor-pointer
-                    shadow-2xs
-                  "
-                  title="Report this store"
-                >
-                  <i className="ri-alert-line text-sm sm:mr-1" />
-                  <span className="hidden sm:inline">Report</span>
-                </button>
               )}
+            </Link>
+
+            {/* Text Info */}
+            <div className="min-w-0 pb-1 sm:pb-3">
+              <h1 className="text-xl sm:text-2xl font-bold text-[var(--agri-text)] truncate">
+                {farmer.storeName || farmer.fullname}
+              </h1>
+              <p className="text-sm text-[var(--agri-text-muted)] font-medium">
+                @{farmer.username}
+              </p>
             </div>
+          </div>
+
+          {/* Right side: Actions */}
+          <div className="flex flex-wrap items-center gap-3 sm:ml-auto pb-1 sm:pb-3">
+            <button
+              type="button"
+              onClick={onMessage}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#2D6A4F] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1B4332] cursor-pointer"
+            >
+              <i className="ri-chat-1-line" />
+              Message
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowReportModal(true)}
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--agri-border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer"
+            >
+              <i className="ri-flag-line" />
+              Report
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6 py-3 sm:py-4 border-t border-[var(--agri-border-subtle)]">
+          <div className="flex items-center gap-1.5">
+            <i className="ri-star-fill text-amber-500" />
+            <span className="text-sm font-bold text-[var(--agri-text)]">{averageRating?.toFixed(1) || "N/A"}</span>
+            <span className="text-xs text-[var(--agri-text-muted)]">({reviewCount || 0})</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-sm text-[var(--agri-text-muted)]">
+            <i className="ri-map-pin-line" />
+            <span className="truncate max-w-[200px]">{farmer.location?.address || "Lucena City"}</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-sm text-[var(--agri-text-muted)]">
+            <i className="ri-calendar-line" />
+            <span>Joined {joinedDate}</span>
           </div>
         </div>
       </div>
@@ -237,9 +140,9 @@ export default function StoreHeader({
       <ReportModal
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
-        targetType="profile"
+        targetType="store"
         targetId={farmer.uid || farmer.id}
-        targetTitle={`Store of ${farmer.storeName || farmer.fullname || farmer.username}`}
+        targetTitle={farmer.storeName || farmer.fullname}
         reportedUser={farmer}
       />
     </section>

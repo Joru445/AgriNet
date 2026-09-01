@@ -222,7 +222,7 @@ export default function MessageInput({
   const canSend = Boolean(value.trim() || selectedImage) && !uploadingImage;
 
   return (
-    <div className="shrink-0 w-full border-t p-3 bg-[#FAFAFA] border-[#DDD] z-10">
+    <div className="shrink-0 w-full border-t p-3 bg-[var(--agri-surface)] border-[var(--agri-border-subtle)] z-10">
       {/* Hidden file inputs for Camera and Gallery */}
       <input
         ref={galleryInputRef}
@@ -246,7 +246,7 @@ export default function MessageInput({
             <button
               type="button"
               onClick={onCancelInquiry}
-              className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:text-gray-600 transition"
+              className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full text-[var(--agri-text-muted)] hover:text-[var(--agri-text)] transition"
               title="Cancel inquiry"
             >
               <i className="ri-close-line text-lg" />
@@ -263,23 +263,23 @@ export default function MessageInput({
             )}
 
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-[#2D6A4F]">
+              <p className="text-xs font-medium text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                 Product Inquiry
               </p>
 
-              <p className="truncate text-sm font-semibold text-gray-900">
+              <p className="truncate text-sm font-semibold text-[var(--agri-text)]">
                 {inquiryProduct.name}
               </p>
 
               {inquiryProduct.price != null && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[var(--agri-text-muted)]">
                   ₱{inquiryProduct.price}
                   {inquiryProduct.unit ? ` / ${inquiryProduct.unit}` : ""}
                 </p>
               )}
 
               {isAvailable && hasStock && (
-                <p className="mt-0.5 text-xs text-gray-400">
+                <p className="mt-0.5 text-xs text-[var(--agri-text-muted)]">
                   {stock} {inquiryProduct.unit || "available"} available
                 </p>
               )}
@@ -289,11 +289,11 @@ export default function MessageInput({
           {/* Quantity + Send */}
           <div className="mt-3 flex items-center justify-between gap-3">
             <div>
-              <p className="mb-1.5 text-xs font-medium text-gray-600">
+              <p className="mb-1.5 text-xs font-medium text-[var(--agri-text-secondary)]">
                 Quantity
               </p>
 
-              <div className="flex h-10 items-center rounded-xl border border-gray-200 bg-white">
+              <div className="flex h-10 items-center rounded-xl border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)]">
                 <button
                   type="button"
                   onClick={decreaseQuantity}
@@ -301,9 +301,9 @@ export default function MessageInput({
                   className="
                     flex h-full w-10 items-center
                     justify-center
-                    text-gray-500
+                    text-[var(--agri-text-muted)]
                     transition
-                    hover:text-[#2D6A4F]
+                    hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]
                     disabled:cursor-not-allowed
                     disabled:opacity-30
                   "
@@ -320,10 +320,10 @@ export default function MessageInput({
                   onChange={handleQuantityChange}
                   className="
                     h-full w-14
-                    border-x border-gray-100
+                    border-x border-[var(--agri-border-subtle)]
                     bg-transparent
                     text-center text-sm
-                    font-semibold text-gray-900
+                    font-semibold text-[var(--agri-text)]
                     outline-none
                   "
                   aria-label="Inquiry quantity"
@@ -336,9 +336,9 @@ export default function MessageInput({
                   className="
                     flex h-full w-10 items-center
                     justify-center
-                    text-gray-500
+                    text-[var(--agri-text-muted)]
                     transition
-                    hover:text-[#2D6A4F]
+                    hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]
                     disabled:cursor-not-allowed
                     disabled:opacity-30
                   "
@@ -376,10 +376,10 @@ export default function MessageInput({
       )}
 
       {/* Main Input Container - High Contrast and Clear Readability */}
-      <div className="relative flex flex-col w-full rounded-2xl border-2 bg-white border-gray-300 shadow-xs focus-within:border-[#2D6A4F] focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 transition-all duration-150">
+      <div className="relative flex flex-col w-full rounded-2xl border-2 bg-[var(--agri-card)] border-[var(--agri-input-border)] shadow-xs focus-within:border-[#2D6A4F] focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 transition-all duration-150">
         {/* Selected Image Preview */}
         {selectedImage?.previewUrl && (
-          <div className="p-3 pb-1 flex items-center gap-3 border-b border-gray-200/60 bg-gray-50/50 rounded-t-2xl">
+          <div className="p-3 pb-1 flex items-center gap-3 border-b border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 rounded-t-2xl">
             <div className="relative inline-block">
               <img
                 src={selectedImage.previewUrl}
@@ -416,11 +416,11 @@ export default function MessageInput({
               )}
             </div>
 
-            <div className="text-xs text-gray-600">
-              <p className="font-semibold text-gray-800 flex items-center gap-1">
-                <i className="ri-image-fill text-[#2D6A4F]" /> Photo selected
+            <div className="text-xs text-[var(--agri-text-secondary)]">
+              <p className="font-semibold text-[var(--agri-text)] flex items-center gap-1">
+                <i className="ri-image-fill text-[#2D6A4F] dark:text-[var(--agri-brand)]" /> Photo selected
               </p>
-              <p className="text-gray-500 mt-0.5">
+              <p className="text-[var(--agri-text-muted)] mt-0.5">
                 {uploadingImage
                   ? "Uploading photo..."
                   : "Type an optional caption or press send"}
@@ -437,7 +437,7 @@ export default function MessageInput({
               onClick={() => setShowMenu((prev) => !prev)}
               aria-label="Add attachment"
               title="Add photo or media"
-              className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-[#2D6A4F] transition hover:text-[#1B4332] hover:bg-black/5 cursor-pointer ${
+              className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-[#2D6A4F] dark:text-[var(--agri-brand)] transition hover:text-[#1B4332] dark:hover:text-[var(--agri-brand-light)] hover:bg-black/5 cursor-pointer ${
                 showMenu ? "rotate-45" : "rotate-0"
               }`}
             >
@@ -446,16 +446,16 @@ export default function MessageInput({
 
             {/* Menu Popover */}
             {showMenu && (
-              <div className="absolute bottom-14 left-0 z-50 w-52 bg-white rounded-2xl shadow-xl border border-gray-200 p-1.5 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-150">
+              <div className="absolute bottom-14 left-0 z-50 w-52 bg-[var(--agri-card)] rounded-2xl shadow-xl border border-[var(--agri-border)] p-1.5 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-150">
                 <button
                   type="button"
                   onClick={() => {
                     setShowMenu(false);
                     cameraInputRef.current?.click();
                   }}
-                  className="flex sm:hidden items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-gray-700 hover:bg-green-50 hover:text-[#2D6A4F] transition cursor-pointer"
+                  className="flex sm:hidden items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] transition cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-green-100/70 text-[#2D6A4F] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)] flex items-center justify-center shrink-0">
                     <i className="ri-camera-fill text-base" />
                   </div>
                   <span>Take Photo</span>
@@ -467,9 +467,9 @@ export default function MessageInput({
                     setShowMenu(false);
                     galleryInputRef.current?.click();
                   }}
-                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-gray-700 hover:bg-green-50 hover:text-[#2D6A4F] transition cursor-pointer"
+                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] transition cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-emerald-100/70 text-[#2D6A4F] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)] flex items-center justify-center shrink-0">
                     <i className="ri-image-2-fill text-base" />
                   </div>
                   <span>Choose from Gallery</span>
@@ -490,7 +490,7 @@ export default function MessageInput({
                 ? "Add a caption (optional)..."
                 : "Type a message..."
             }
-            className="min-w-0 flex-1 resize-none overflow-y-auto py-3 focus:outline-none bg-transparent text-sm sm:text-base font-semibold text-gray-900 placeholder-gray-500"
+            className="min-w-0 flex-1 resize-none overflow-y-auto py-3 focus:outline-none bg-transparent text-sm sm:text-base font-semibold text-[var(--agri-text)] placeholder-[var(--agri-text-muted)]"
           />
 
           <button
@@ -507,12 +507,12 @@ export default function MessageInput({
             aria-label="Send message"
             className={`h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center transition ${
               canSend
-                ? "text-[#2D6A4F] hover:text-[#1B4332] hover:bg-[#E8F5EE] cursor-pointer hover:scale-105 active:scale-95"
-                : "text-gray-300 cursor-not-allowed"
+                ? "text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:text-[#1B4332] dark:hover:text-[var(--agri-brand-light)] hover:bg-[#2D6A4F]/10 cursor-pointer hover:scale-105 active:scale-95"
+                : "text-[var(--agri-border)] cursor-not-allowed"
             }`}
           >
             {uploadingImage ? (
-              <i className="ri-loader-4-line text-xl animate-spin text-[#2D6A4F]" />
+              <i className="ri-loader-4-line text-xl animate-spin text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
             ) : (
               <i className="ri-send-plane-fill text-xl" />
             )}

@@ -140,16 +140,16 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl border border-gray-100 max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-sm rounded-3xl bg-[var(--agri-card)] p-5 shadow-2xl border border-[var(--agri-border-subtle)] max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--agri-border-subtle)]">
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">
+            <h3 className="text-lg sm:text-xl font-bold text-[var(--agri-text)] tracking-tight">
               Consumer Profile
             </h3>
-            <p className="text-xs sm:text-sm font-medium text-gray-500">
+            <p className="text-xs sm:text-sm font-medium text-[var(--agri-text-muted)]">
               Buyer verification & account details
             </p>
           </div>
@@ -158,7 +158,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
               <button
                 type="button"
                 onClick={() => setShowReportModal(true)}
-                className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
                 title="Report this user"
                 aria-label="Report user"
               >
@@ -168,7 +168,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer"
+              className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer"
               aria-label="Close"
             >
               <i className="ri-close-line text-xl" />
@@ -193,7 +193,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
                 title="Click to view photo"
               />
             ) : (
-              <div className="flex h-18 w-18 items-center justify-center rounded-full bg-[#D8F3DC] text-xl font-black text-[#2D6A4F] ring-3 ring-[#D8F3DC]/40">
+              <div className="flex h-18 w-18 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)] text-xl font-black text-[#2D6A4F] dark:text-[var(--agri-brand)] ring-3 ring-[#D8F3DC]/40">
                 {user.fullname
                   ?.split(/\s+/)
                   .slice(0, 2)
@@ -213,11 +213,11 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
             )}
           </div>
 
-          <h4 className="text-base sm:text-lg font-bold text-gray-900">
+          <h4 className="text-base sm:text-lg font-bold text-[var(--agri-text)]">
             {user.fullname}
           </h4>
 
-          <p className="text-xs font-medium text-gray-500 mb-2">
+          <p className="text-xs font-medium text-[var(--agri-text-muted)] mb-2">
             @{user.username || "user"}
           </p>
 
@@ -229,9 +229,9 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
               <span
                 className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
                   isTrusted
-                    ? "bg-emerald-50 text-[#1B4332] border-emerald-300"
+                    ? "bg-emerald-50 text-[#1B4332] dark:text-[var(--agri-brand-light)] border-emerald-300"
                     : isActive
-                      ? "bg-green-50 text-[#2D6A4F] border-green-200"
+                      ? "bg-green-50 text-[#2D6A4F] dark:text-[var(--agri-brand)] border-green-200"
                       : "bg-amber-50 text-amber-800 border-amber-200"
                 }`}
               >
@@ -257,39 +257,39 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
         {/* Farmer Trust Summary Card */}
         <div className="my-2.5 p-3 rounded-2xl bg-[#E8F5EE]/70 border border-[#CDE5D6]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] sm:text-xs font-bold text-[#1B4332] flex items-center gap-1">
-              <i className="ri-shield-user-line text-sm text-[#2D6A4F]" />
+            <span className="text-[11px] sm:text-xs font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)] flex items-center gap-1">
+              <i className="ri-shield-user-line text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
               <span>Buyer Trust & Transaction History</span>
             </span>
 
             {isTrusted && (
-              <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-white px-1.5 py-0.5 rounded border border-emerald-200/60">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-[var(--agri-card)] px-1.5 py-0.5 rounded border border-emerald-200/60">
                 Verified
               </span>
             )}
           </div>
 
           {stats.loading ? (
-            <div className="py-2.5 text-center text-xs text-gray-500 flex items-center justify-center gap-2">
-              <i className="ri-loader-4-line animate-spin text-sm text-[#2D6A4F]" />
+            <div className="py-2.5 text-center text-xs text-[var(--agri-text-muted)] flex items-center justify-center gap-2">
+              <i className="ri-loader-4-line animate-spin text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
               <span>Checking history...</span>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 bg-white rounded-xl border border-gray-100 text-center">
-                <p className="text-lg font-black text-[#2D6A4F]">
+              <div className="p-2 bg-[var(--agri-card)] rounded-xl border border-[var(--agri-border-subtle)] text-center">
+                <p className="text-lg font-black text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                   {stats.completedDeals}
                 </p>
-                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-tight">
+                <p className="text-[10px] font-bold text-[var(--agri-text-secondary)] uppercase tracking-tight">
                   Completed Deals
                 </p>
               </div>
 
-              <div className="p-2 bg-white rounded-xl border border-gray-100 text-center">
-                <p className="text-lg font-black text-[#2D6A4F]">
+              <div className="p-2 bg-[var(--agri-card)] rounded-xl border border-[var(--agri-border-subtle)] text-center">
+                <p className="text-lg font-black text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                   {completionRate}%
                 </p>
-                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-tight">
+                <p className="text-[10px] font-bold text-[var(--agri-text-secondary)] uppercase tracking-tight">
                   Success Rate
                 </p>
               </div>
@@ -300,15 +300,15 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
         {/* Details List */}
         <div className="space-y-2 text-left">
           {fullLocation && (
-            <div className="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50/90 border border-gray-100">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-[#2D6A4F]">
+              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                 <i className="ri-map-pin-2-line text-sm" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                   Location
                 </p>
-                <p className="text-xs font-semibold text-gray-800 truncate">
+                <p className="text-xs font-semibold text-[var(--agri-text)] truncate">
                   {fullLocation}
                 </p>
               </div>
@@ -316,15 +316,15 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
           )}
 
           {(user.phone || user.contactNumber) && (
-            <div className="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50/90 border border-gray-100">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-[#2D6A4F]">
+              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                 <i className="ri-phone-line text-sm" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                   Phone
                 </p>
-                <p className="text-xs font-semibold text-gray-800 truncate">
+                <p className="text-xs font-semibold text-[var(--agri-text)] truncate">
                   {user.phone || user.contactNumber}
                 </p>
               </div>
@@ -332,15 +332,15 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
           )}
 
           {user.email && (
-            <div className="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50/90 border border-gray-100">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-[#2D6A4F]">
+              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                 <i className="ri-mail-line text-sm" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                   Email
                 </p>
-                <p className="text-xs font-semibold text-gray-800 truncate">
+                <p className="text-xs font-semibold text-[var(--agri-text)] truncate">
                   {user.email}
                 </p>
               </div>
@@ -348,15 +348,15 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
           )}
 
           {user.createdAt && (
-            <div className="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50/90 border border-gray-100">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-[#2D6A4F]">
+              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                 <i className="ri-calendar-line text-sm" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                   Member Since
                 </p>
-                <p className="text-xs font-semibold text-gray-800 truncate">
+                <p className="text-xs font-semibold text-[var(--agri-text)] truncate">
                   {formatDate(user.createdAt)}
                 </p>
               </div>

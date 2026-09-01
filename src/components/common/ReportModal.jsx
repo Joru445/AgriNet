@@ -231,11 +231,11 @@ export default function ReportModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg rounded-3xl bg-white shadow-2xl border border-gray-200/90 overflow-hidden my-auto animate-scale-in"
+        className="relative w-full max-w-lg rounded-3xl bg-[var(--agri-card)] shadow-2xl border border-[var(--agri-border-subtle)] overflow-hidden my-auto anim-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/90">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/90">
           <div className="flex items-center gap-3">
             <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-xs ${
               activeReport ? "bg-amber-100 text-amber-800 border border-amber-200" : "bg-red-100 text-red-700 border border-red-200"
@@ -243,10 +243,10 @@ export default function ReportModal({
               <i className={activeReport ? "ri-shield-check-line text-xl" : "ri-alert-line text-xl font-bold"} />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
+              <h2 className="text-base sm:text-lg font-bold text-[var(--agri-text)] leading-tight">
                 {activeReport ? "Report Under Review" : "Submit a Report"}
               </h2>
-              <p className="text-xs text-gray-500 font-medium mt-0.5">
+              <p className="text-xs text-[var(--agri-text-muted)] font-medium mt-0.5">
                 {activeReport ? "An active report is already being investigated" : "Help us keep AgriNet safe and trustworthy"}
               </p>
             </div>
@@ -255,7 +255,7 @@ export default function ReportModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-200/70 hover:text-gray-700 transition cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer"
             aria-label="Close modal"
           >
             <i className="ri-close-line text-xl" />
@@ -265,66 +265,66 @@ export default function ReportModal({
         {/* Modal Body */}
         {checkingActive ? (
           <div className="p-10 text-center flex flex-col items-center justify-center space-y-3">
-            <i className="ri-loader-4-line animate-spin text-3xl text-[#2D6A4F]" />
-            <p className="text-xs text-gray-500 font-medium">Checking report status...</p>
+            <i className="ri-loader-4-line animate-spin text-3xl text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+            <p className="text-xs text-[var(--agri-text-muted)] font-medium">Checking report status...</p>
           </div>
         ) : activeReport ? (
           /* Active Report Already Exists Screen */
           <div className="p-5 sm:p-6 space-y-4">
             {/* Target Info Summary */}
-            <div className="flex items-center justify-between rounded-2xl bg-white border border-gray-200/90 shadow-xs p-3.5">
+            <div className="flex items-center justify-between rounded-2xl bg-[var(--agri-card)] border border-[var(--agri-border-subtle)] shadow-xs p-3.5">
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                   Target: {getTargetLabel()}
                 </span>
-                <p className="text-xs sm:text-sm font-bold text-gray-900 truncate mt-0.5">
+                <p className="text-xs sm:text-sm font-bold text-[var(--agri-text)] truncate mt-0.5">
                   {displayTargetTitle}
                 </p>
               </div>
-              <span className="rounded-full bg-amber-100 border border-amber-200 text-amber-900 text-xs font-bold px-3 py-1 capitalize shrink-0 ml-2 shadow-2xs">
+              <span className="rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-bold px-3 py-1 capitalize shrink-0 ml-2 shadow-2xs">
                 {activeReport.status === "reviewing" ? "Under Investigation" : "Pending Review"}
               </span>
             </div>
 
             {/* Submitted Report Summary */}
-            <div className="rounded-2xl border border-gray-200/90 bg-white p-4 shadow-xs space-y-2.5">
+            <div className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-4 shadow-xs space-y-2.5">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                   Submitted Reason
                 </p>
-                <p className="text-sm font-bold text-gray-900 mt-0.5">
+                <p className="text-sm font-bold text-[var(--agri-text)] mt-0.5">
                   {activeReport.reason}
                 </p>
               </div>
 
               {activeReport.description && (
-                <div className="pt-2.5 border-t border-gray-100">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                <div className="pt-2.5 border-t border-[var(--agri-border-subtle)]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                     Your Explanation
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-800 mt-1 leading-relaxed font-medium">
+                  <p className="text-xs sm:text-sm text-[var(--agri-text)] mt-1 leading-relaxed font-medium">
                     {activeReport.description}
                   </p>
                 </div>
               )}
 
               {activeReport.evidenceUrl && (
-                <div className="pt-2.5 border-t border-gray-100">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">
+                <div className="pt-2.5 border-t border-[var(--agri-border-subtle)]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)] mb-1.5">
                     Attached Evidence
                   </p>
                   <img
                     src={activeReport.evidenceUrl}
                     alt="Submitted proof"
-                    className="h-24 w-auto max-w-[200px] object-cover rounded-xl border border-gray-200 shadow-xs"
+                    className="h-24 w-auto max-w-[200px] object-cover rounded-xl border border-[var(--agri-border)] shadow-xs"
                   />
                 </div>
               )}
             </div>
 
             {/* Moderator Contact Notice Banner */}
-            <div className="rounded-2xl border border-[#2D6A4F]/25 bg-[#E8F5EE] p-4 shadow-xs text-xs sm:text-sm text-[#1B4332] space-y-1.5">
-              <div className="flex items-center gap-2 font-bold text-[#2D6A4F]">
+            <div className="rounded-2xl border border-[#2D6A4F]/25 bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] p-4 shadow-xs text-xs sm:text-sm text-[#1B4332] dark:text-[var(--agri-brand-light)] space-y-1.5">
+              <div className="flex items-center gap-2 font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                 <i className="ri-information-fill text-base" />
                 <span>Notice from Moderation Team</span>
               </div>
@@ -332,7 +332,7 @@ export default function ReportModal({
                 We have received your report and our team is actively investigating the matter.
                 <strong> We will contact you via your registered email or messages if further details or action are needed.</strong>
               </p>
-              <p className="text-[11px] text-[#2D6A4F]/80 pt-1">
+              <p className="text-[11px] text-[#2D6A4F] dark:text-[var(--agri-brand)]/80 pt-1">
                 You can only submit one report at a time for this item until the current report is resolved.
               </p>
             </div>
@@ -352,17 +352,17 @@ export default function ReportModal({
           /* Normal Submission Form */
           <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4.5 max-h-[75vh] overflow-y-auto">
             {/* Target Info Summary */}
-            <div className="flex items-center justify-between rounded-2xl bg-white border border-gray-200/90 shadow-xs p-3.5">
+            <div className="flex items-center justify-between rounded-2xl bg-[var(--agri-card)] border border-[var(--agri-border-subtle)] shadow-xs p-3.5">
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                   Reporting {getTargetLabel()}
                 </span>
-                <p className="text-xs sm:text-sm font-bold text-gray-900 truncate mt-0.5">
+                <p className="text-xs sm:text-sm font-bold text-[var(--agri-text)] truncate mt-0.5">
                   {displayTargetTitle}
                 </p>
               </div>
               {reportedUser?.username && (
-                <span className="text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg shrink-0 ml-2 shadow-2xs">
+                <span className="text-xs font-semibold text-[var(--agri-text-secondary)] bg-[var(--agri-hover)] border border-[var(--agri-border)] px-2.5 py-1 rounded-lg shrink-0 ml-2 shadow-2xs">
                   @{reportedUser.username}
                 </span>
               )}
@@ -370,7 +370,7 @@ export default function ReportModal({
 
             {/* Reason Selection */}
             <div>
-              <label className="block text-xs sm:text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">
+              <label className="block text-xs sm:text-sm font-bold text-[var(--agri-text)] mb-2 uppercase tracking-wide">
                 Why are you reporting this? <span className="text-red-500">*</span>
               </label>
 
@@ -382,8 +382,8 @@ export default function ReportModal({
                       key={item.id}
                       className={`flex items-start gap-3 p-3.5 rounded-2xl border transition-all cursor-pointer select-none shadow-2xs ${
                         isSelected
-                          ? "border-[#2D6A4F] bg-[#E8F5EE]/40 ring-2 ring-[#2D6A4F]/20 shadow-xs"
-                          : "border-gray-200/90 bg-white hover:bg-gray-50 hover:border-gray-300 hover:shadow-xs"
+                          ? "border-[#2D6A4F] bg-[#E8F5EE]/40 dark:bg-[var(--agri-brand-bg-alt)]/40 ring-2 ring-[#2D6A4F]/20 shadow-xs"
+                          : "border-[var(--agri-border-subtle)] bg-[var(--agri-card)] hover:bg-[var(--agri-hover)] hover:border-[var(--agri-border)] hover:shadow-xs"
                       }`}
                     >
                       <input
@@ -395,16 +395,16 @@ export default function ReportModal({
                           setSelectedReason(item.label);
                           setError(null);
                         }}
-                        className="mt-0.5 h-4 w-4 text-[#2D6A4F] focus:ring-[#2D6A4F] cursor-pointer"
+                        className="mt-0.5 h-4 w-4 text-[#2D6A4F] dark:text-[var(--agri-brand)] focus:ring-[#2D6A4F] cursor-pointer"
                       />
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs sm:text-sm font-bold text-gray-900">
+                          <span className="text-xs sm:text-sm font-bold text-[var(--agri-text)]">
                             {item.label}
                           </span>
                         </div>
-                        <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 leading-normal">
+                        <p className="text-[11px] sm:text-xs text-[var(--agri-text-muted)] mt-0.5 leading-normal">
                           {item.description}
                         </p>
                       </div>
@@ -416,8 +416,8 @@ export default function ReportModal({
 
             {/* Additional Details */}
             <div>
-              <label htmlFor="report-description" className="block text-xs sm:text-sm font-bold text-gray-800 mb-1.5 uppercase tracking-wide">
-                Additional Details <span className="text-gray-400 font-normal lowercase">(optional)</span>
+              <label htmlFor="report-description" className="block text-xs sm:text-sm font-bold text-[var(--agri-text)] mb-1.5 uppercase tracking-wide">
+                Additional Details <span className="text-[var(--agri-text-muted)] font-normal lowercase">(optional)</span>
               </label>
               <textarea
                 id="report-description"
@@ -425,17 +425,17 @@ export default function ReportModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Please provide any extra context, messages, or details to assist our review..."
-                className="w-full rounded-2xl border border-gray-200/90 bg-gray-50/50 p-3.5 text-xs sm:text-sm text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/20 focus:outline-none shadow-2xs transition resize-none"
+                className="w-full rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 p-3.5 text-xs sm:text-sm text-[var(--agri-text)] font-medium placeholder-[var(--agri-text-muted)] focus:bg-[var(--agri-input-bg)] focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/20 focus:outline-none shadow-2xs transition resize-none"
               />
             </div>
 
             {/* Evidence / Screenshot Upload */}
             <div>
-              <label className="block text-xs sm:text-sm font-bold text-gray-800 mb-1.5 uppercase tracking-wide">
-                Attach Screenshot / Proof <span className="text-gray-400 font-normal lowercase">(optional)</span>
+              <label className="block text-xs sm:text-sm font-bold text-[var(--agri-text)] mb-1.5 uppercase tracking-wide">
+                Attach Screenshot / Proof <span className="text-[var(--agri-text-muted)] font-normal lowercase">(optional)</span>
               </label>
               {evidencePreview ? (
-                <div className="relative inline-block rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 shadow-xs">
+                <div className="relative inline-block rounded-2xl overflow-hidden border border-[var(--agri-border)] bg-[var(--agri-hover)] shadow-xs">
                   <img
                     src={evidencePreview}
                     alt="Proof preview"
@@ -455,7 +455,7 @@ export default function ReportModal({
                   </button>
                 </div>
               ) : (
-                <label className="flex items-center gap-3.5 p-3.5 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#2D6A4F] bg-gray-50/70 hover:bg-[#E8F5EE]/30 cursor-pointer shadow-2xs transition select-none">
+                <label className="flex items-center gap-3.5 p-3.5 rounded-2xl border-2 border-dashed border-[var(--agri-border)] hover:border-[#2D6A4F] bg-[var(--agri-hover)]/70 hover:bg-[#E8F5EE] dark:hover:bg-[var(--agri-brand-bg-alt)]/30 dark:bg-[var(--agri-brand-bg-alt)]/30 cursor-pointer shadow-2xs transition select-none">
                   <input
                     type="file"
                     accept="image/*"
@@ -468,12 +468,12 @@ export default function ReportModal({
                       }
                     }}
                   />
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#2D6A4F] shadow-xs border border-gray-200">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--agri-card)] text-[#2D6A4F] dark:text-[var(--agri-brand)] shadow-xs border border-[var(--agri-border)]">
                     <i className="ri-image-add-line text-xl font-bold" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs sm:text-sm font-bold text-gray-900">Upload screenshot or photo proof</span>
-                    <p className="text-[11px] text-gray-500 mt-0.5">PNG, JPG, WEBP receipt or chat evidence</p>
+                    <span className="text-xs sm:text-sm font-bold text-[var(--agri-text)]">Upload screenshot or photo proof</span>
+                    <p className="text-[11px] text-[var(--agri-text-muted)] mt-0.5">PNG, JPG, WEBP receipt or chat evidence</p>
                   </div>
                 </label>
               )}
@@ -488,12 +488,12 @@ export default function ReportModal({
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--agri-border-subtle)]">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-4 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm font-bold text-gray-700 hover:bg-gray-100 active:scale-95 transition shadow-2xs cursor-pointer disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl border border-[var(--agri-border)] text-xs sm:text-sm font-bold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] active:scale-95 transition shadow-2xs cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>

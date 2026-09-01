@@ -6,7 +6,7 @@ export default function ErrorState({
   className = "",
 }) {
   return (
-    <div className={`rounded-2xl border border-red-200 bg-red-50 p-5 ${className}`}>
+    <div className={`rounded-2xl border border-red-200 bg-red-50 p-5 anim-slide-in-up ${className}`}>
       <div className="flex items-start gap-3">
         <i className="ri-error-warning-line text-xl text-red-500 shrink-0 mt-0.5" />
 

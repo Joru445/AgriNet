@@ -19,29 +19,29 @@ export default function ConversationList({
 
   return (
     <aside
-      className={`w-full lg:w-80 md:w-64 flex flex-col border-r border-agri-border ${hasChat ? "hidden md:flex" : "flex"}`}
+      className={`w-full lg:w-80 md:w-64 flex flex-col border-r border-[var(--agri-border)] ${hasChat ? "hidden md:flex" : "flex"}`}
     >
       <div className="p-4">
-        <h2 className="text-xl font-bold text-agri-dark mb-4">Messages</h2>
+        <h2 className="text-xl font-bold text-agri-dark dark:text-[var(--agri-brand-light)] mb-4">Messages</h2>
 
-        <div className="relative flex items-center gap-2 bg-white rounded-xl px-3 py-1.5 border-2 border-[#D6E6DC] shadow-xs focus-within:border-agri-primary focus-within:shadow-md focus-within:ring-3 focus-within:ring-[#2D6A4F]/15 transition-all">
+        <div className="relative flex items-center gap-2 bg-[var(--agri-card)] rounded-xl px-3 py-1.5 border-2 border-[var(--agri-border)] shadow-xs focus-within:border-agri-primary focus-within:shadow-md focus-within:ring-3 focus-within:ring-[#2D6A4F]/15 transition-all">
           <i className="ri-search-line text-agri-primary text-lg font-bold shrink-0" />
 
           <input
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Search people..."
-            className="w-full text-sm font-semibold text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
+            className="w-full text-sm font-semibold text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] focus:outline-none bg-transparent"
           />
 
           {search && (
             <button
               type="button"
               onClick={() => onSearch("")}
-              className="p-0.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition cursor-pointer shrink-0"
+              className="p-0.5 rounded-full text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer shrink-0"
               title="Clear search"
             >
-              <i className="ri-close-circle-fill text-base text-gray-400 hover:text-gray-600" />
+              <i className="ri-close-circle-fill text-base text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)]" />
             </button>
           )}
         </div>
@@ -51,7 +51,7 @@ export default function ConversationList({
         {!searching ? (
           <>
             <div className="px-4 pt-4 pb-2">
-              <p className="text-xs uppercase tracking-wide text-gray-400 font-semibold">
+              <p className="text-xs uppercase tracking-wide text-[var(--agri-text-muted)] font-semibold">
                 Recent Chats
               </p>
             </div>
@@ -63,16 +63,16 @@ export default function ConversationList({
                     key={i}
                     className="flex gap-3 items-center px-3 py-2.5 rounded-xl"
                   >
-                    <div className="w-11 h-11 rounded-full bg-gray-200 shrink-0" />
+                    <div className="w-11 h-11 rounded-full bg-[var(--agri-hover)] shrink-0" />
                     <div className="flex-1 space-y-1.5 min-w-0">
-                      <div className="h-3.5 w-24 bg-gray-200 rounded" />
-                      <div className="h-2.5 w-36 bg-gray-100 rounded" />
+                      <div className="h-3.5 w-24 bg-[var(--agri-hover)] rounded" />
+                      <div className="h-2.5 w-36 bg-[var(--agri-hover)] rounded" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : conversations.length === 0 ? (
-              <div className="text-center text-gray-400 py-10 px-6">
+              <div className="text-center text-[var(--agri-text-muted)] py-10 px-6">
                 No conversations yet.
               </div>
             ) : (
@@ -94,7 +94,7 @@ export default function ConversationList({
             {conversations.length > 0 && (
               <>
                 <div className="px-4 pt-4 pb-2">
-                  <p className="text-xs uppercase tracking-wide text-gray-400 font-semibold">
+                  <p className="text-xs uppercase tracking-wide text-[var(--agri-text-muted)] font-semibold">
                     Recent Chats
                   </p>
                 </div>
@@ -117,7 +117,7 @@ export default function ConversationList({
             {users.length > 0 && (
               <>
                 <div className="px-4 pt-5 pb-2">
-                  <p className="text-xs uppercase tracking-wide text-gray-400 font-semibold">
+                  <p className="text-xs uppercase tracking-wide text-[var(--agri-text-muted)] font-semibold">
                     People
                   </p>
                 </div>
@@ -138,7 +138,7 @@ export default function ConversationList({
             )}
 
             {conversations.length === 0 && users.length === 0 && (
-              <div className="text-center py-10 px-6 text-gray-400">
+              <div className="text-center py-10 px-6 text-[var(--agri-text-muted)]">
                 <i className="ri-user-search-line text-4xl mb-3 block" />
 
                 <p>No people found.</p>

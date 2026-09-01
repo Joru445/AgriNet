@@ -109,7 +109,7 @@ export default function CategoryChips({ value = "All", onChange }) {
               cursor-pointer
               shadow-sm
               ${active
-                ? "ring-2 ring-[#2D6A4F] ring-offset-2 scale-[1.02]"
+                ? "ring-2 ring-[#2D6A4F] ring-offset-0 scale-[1.02]"
                 : "hover:scale-[1.02] hover:shadow-md"
               }
             `}

@@ -39,8 +39,8 @@ export default function Avatar({ src, name, size = "md", className = "" }) {
       className={`
         flex shrink-0 items-center justify-center
         rounded-full
-        bg-[#D8F3DC]
-        font-semibold text-[#2D6A4F]
+        bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)]
+        font-semibold text-[#2D6A4F] dark:text-[var(--agri-brand)]
         ${sizeClass}
         ${className}
       `}

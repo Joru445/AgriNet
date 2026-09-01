@@ -2,9 +2,9 @@ import ReviewRating from "./ReviewRating";
 
 export default function ReviewSummary({ averageRating, reviewCount }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6">
+    <div className="bg-[var(--agri-card)] rounded-2xl border border-[var(--agri-border)] p-6">
       <div className="flex flex-col items-center justify-center">
-        <h2 className="text-5xl font-bold text-[#1B4332]">
+        <h2 className="text-5xl font-bold text-[var(--agri-text)]">
           {averageRating.toFixed(1)}
         </h2>
 
@@ -12,7 +12,7 @@ export default function ReviewSummary({ averageRating, reviewCount }) {
           <ReviewRating rating={Math.round(averageRating)} size="text-xl" />
         </div>
 
-        <p className="mt-3 text-sm text-gray-500">
+        <p className="mt-3 text-sm text-[var(--agri-text-muted)]">
           Based on {reviewCount} reviews
         </p>
       </div>

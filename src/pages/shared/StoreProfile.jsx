@@ -37,7 +37,7 @@ export default function StoreProfile() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl overflow-hidden bg-white pb-16 shadow-sm md:pb-8">
+    <main className="mx-auto max-w-6xl overflow-hidden bg-[var(--agri-page)] pb-16 shadow-sm md:pb-8">
       {/* Header skeleton or actual header */}
       {loading ? (
         <StoreHeaderSkeleton />
@@ -52,8 +52,8 @@ export default function StoreProfile() {
 
       {/* Products section */}
       {loadingProducts ? (
-        <section className="px-4 sm:px-6 py-6 border-t border-gray-100">
-          <div className="h-6 w-32 bg-gray-200 rounded mb-5 animate-pulse" />
+        <section className="px-4 sm:px-6 py-6 border-t border-[var(--agri-border-subtle)]">
+          <div className="h-6 w-32 bg-[var(--agri-hover)] rounded mb-5 animate-pulse" />
           <ProductGridSkeleton count={4} />
         </section>
       ) : (
@@ -61,7 +61,7 @@ export default function StoreProfile() {
       )}
 
       {/* Reviews section */}
-      <div className="px-4 sm:px-6 py-6 border-t border-gray-100">
+      <div className="px-4 sm:px-6 py-6 border-t border-[var(--agri-border-subtle)]">
         <ReviewSection
           title="Farmer Reviews"
           reviews={reviews}

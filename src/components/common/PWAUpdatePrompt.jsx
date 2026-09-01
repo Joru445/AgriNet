@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { usePWAUpdate } from '../../hooks/usePWAUpdate'
 
 /**
@@ -9,8 +10,26 @@ import { usePWAUpdate } from '../../hooks/usePWAUpdate'
  */
 export default function PWAUpdatePrompt() {
   const { needRefresh, updateServiceWorker, dismissUpdate } = usePWAUpdate()
+  const [shouldRender, setShouldRender] = useState(false)
+  const [animating, setAnimating] = useState(false)
 
-  if (!needRefresh) return null
+  useEffect(() => {
+    if (needRefresh) {
+      setShouldRender(true)
+      setAnimating(false)
+    } else if (shouldRender) {
+      setAnimating(true)
+      const timer = setTimeout(() => {
+        setShouldRender(false)
+        setAnimating(false)
+      }, 200)
+      return () => clearTimeout(timer)
+    }
+  }, [needRefresh, shouldRender])
+
+  if (!shouldRender) return null
+
+  const isClosing = animating
 
   return (
     <div
@@ -18,7 +37,7 @@ export default function PWAUpdatePrompt() {
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-center gap-3 rounded-2xl bg-[#1B4332] px-4 py-3 text-white shadow-xl shadow-black/20 border border-white/10">
+      <div className={`flex items-center gap-3 rounded-2xl bg-[#1B4332] px-4 py-3 text-white shadow-xl shadow-black/20 border border-white/10 ${isClosing ? "anim-fade-out" : "anim-slide-in-up"}`}>
         <div className="flex-shrink-0 flex h-10 w-10 items-center justify-center rounded-full bg-white/15">
           <i className="ri-refresh-line text-lg" />
         </div>

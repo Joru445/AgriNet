@@ -26,9 +26,9 @@ export default function StoreProducts({ farmer, products = [] }) {
       {/* Products Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#1B4332]">Products</h2>
+          <h2 className="text-2xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">Products</h2>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-[var(--agri-text-muted)]">
             {filteredProducts.length} product
             {filteredProducts.length !== 1 && "s"} available
           </p>
@@ -48,12 +48,12 @@ export default function StoreProducts({ farmer, products = [] }) {
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer shadow-2xs ${
                 active
                   ? "bg-[#1B4332] text-white shadow-sm ring-2 ring-[#2D6A4F]/30 scale-[1.02]"
-                  : "bg-white border border-gray-200 text-gray-700 hover:border-[#2D6A4F] hover:text-[#2D6A4F] hover:bg-[#F4F9F5]"
+                  : "bg-[var(--agri-card)] border border-[var(--agri-border)] text-[var(--agri-text-secondary)] hover:border-[#2D6A4F] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] hover:bg-[#F4F9F5]"
               }`}
             >
               <i
                 className={`${cat.icon} text-sm ${
-                  active ? "text-emerald-300" : "text-[#2D6A4F]"
+                  active ? "text-emerald-300" : "text-[#2D6A4F] dark:text-[var(--agri-brand)]"
                 }`}
               />
               <span>{cat.label}</span>
@@ -64,16 +64,16 @@ export default function StoreProducts({ farmer, products = [] }) {
 
       {/* Products Grid */}
       {filteredProducts.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white py-14 text-center">
-          <i className="ri-shopping-basket-line text-5xl text-gray-300" />
+        <div className="rounded-2xl border border-dashed border-[var(--agri-border)] bg-[var(--agri-card)] py-14 text-center">
+          <i className="ri-shopping-basket-line text-5xl text-[var(--agri-text-muted)]" />
 
-          <h3 className="mt-3 text-lg font-semibold text-gray-800">
+          <h3 className="mt-3 text-lg font-semibold text-[var(--agri-text)]">
             {selectedCategory === "All"
               ? "No products yet"
               : `No ${selectedCategory} products`}
           </h3>
 
-          <p className="text-gray-500 mt-1 text-sm">
+          <p className="text-[var(--agri-text-muted)] mt-1 text-sm">
             {selectedCategory === "All"
               ? `${farmer?.fullname || "Farmer"} hasn't listed any products.`
               : `No items available in the ${selectedCategory} category.`}

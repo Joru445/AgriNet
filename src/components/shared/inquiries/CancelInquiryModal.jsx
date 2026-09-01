@@ -10,17 +10,17 @@ export default function CancelInquiryModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md transition-all">
-      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white p-6 shadow-2xl animate-scale-in">
+      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-[var(--agri-card)] p-6 shadow-2xl anim-scale-in">
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-100/80 text-red-600">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400">
             <i className="ri-close-circle-line text-2xl" />
           </div>
 
           <div>
-            <h3 className="text-base font-bold text-gray-900">
+            <h3 className="text-base font-bold text-[var(--agri-text)]">
               Cancel Inquiry
             </h3>
-            <p className="mt-1 text-sm text-gray-600 font-medium">
+            <p className="mt-1 text-sm text-[var(--agri-text-secondary)] font-medium">
               Are you sure you want to cancel this inquiry?
             </p>
           </div>
@@ -31,7 +31,7 @@ export default function CancelInquiryModal({
             type="button"
             onClick={onCancel}
             disabled={cancelling}
-            className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 cursor-pointer disabled:opacity-50"
+            className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer disabled:opacity-50"
           >
             No
           </button>

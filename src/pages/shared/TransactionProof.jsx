@@ -37,15 +37,15 @@ export default function TransactionProof() {
       <div className="mx-auto max-w-3xl pb-18 sm:pb-4">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="mt-4 text-2xl font-bold text-gray-900">Transaction</h1>
+          <h1 className="mt-4 text-2xl font-bold text-[var(--agri-text)]">Transaction</h1>
           {loading ? (
-            <div className="mt-1 h-4 w-64 bg-gray-200 rounded animate-pulse" />
+            <div className="mt-1 h-4 w-64 bg-[var(--agri-hover)] rounded animate-pulse" />
           ) : status !== "completed" ? (
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-[var(--agri-text-muted)]">
               Review and complete the transaction.
             </p>
           ) : (
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-[var(--agri-text-muted)]">
               This transaction is completed.
             </p>
           )}
@@ -54,7 +54,7 @@ export default function TransactionProof() {
         {loading ? (
           <TransactionProofSkeleton />
         ) : !inquiry ? (
-          <div className="rounded-2xl border border-red-100 bg-white p-6">
+          <div className="rounded-2xl border border-red-100 bg-[var(--agri-card)] p-6">
             <p className="text-sm font-medium text-red-600">
               {error || "Transaction not found."}
             </p>
@@ -69,18 +69,18 @@ export default function TransactionProof() {
 
             {/* Consumer: transaction is ongoing */}
             {isConsumer && status === "ongoing" && (
-              <section className="mt-5 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <section className="mt-5 rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-5 shadow-sm">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-[#2D6A4F]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                     <i className="ri-checkbox-circle-line text-xl" />
                   </div>
 
                   <div>
-                    <h2 className="font-semibold text-gray-900">
+                    <h2 className="font-semibold text-[var(--agri-text)]">
                       Have you received the product?
                     </h2>
 
-                    <p className="mt-1 text-sm leading-6 text-gray-500">
+                    <p className="mt-1 text-sm leading-6 text-[var(--agri-text-muted)]">
                       Confirm that you received the product. You'll then be asked to
                       upload a photo as transaction proof.
                     </p>

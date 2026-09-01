@@ -85,7 +85,7 @@ function CustomDropdown({
       ref={dropdownRef}
     >
       {label && (
-        <label className="text-sm font-semibold text-gray-800 block mb-2">
+        <label className="text-sm font-semibold text-[var(--agri-text)] block mb-2">
           {label}
         </label>
       )}
@@ -94,17 +94,17 @@ function CustomDropdown({
       <button
         type="button"
         onClick={handleToggle}
-        className={`w-full border rounded-xl px-4 py-3 text-sm flex items-center justify-between bg-white text-left transition-all cursor-pointer ${
+        className={`w-full border rounded-xl px-4 py-3 text-sm flex items-center justify-between bg-[var(--agri-card)] text-left transition-all cursor-pointer ${
           isOpen
             ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 shadow-xs"
-            : "border-gray-300 hover:border-gray-400"
+            : "border-[var(--agri-border)] hover:border-gray-400"
         }`}
       >
         <span
           className={`truncate ${
             displayLabel
-              ? "text-gray-900 font-medium"
-              : "text-gray-400 font-normal"
+              ? "text-[var(--agri-text)] font-medium"
+              : "text-[var(--agri-text-muted)] font-normal"
           }`}
         >
           {displayLabel || placeholder}
@@ -112,7 +112,7 @@ function CustomDropdown({
 
         {/* Animated Chevron: turns upwards smoothly when open */}
         <i
-          className={`ri-arrow-down-s-line text-xl text-gray-500 transition-transform duration-200 shrink-0 ml-2 ${
+          className={`ri-arrow-down-s-line text-xl text-[var(--agri-text-muted)] transition-transform duration-200 shrink-0 ml-2 ${
             isOpen ? (openUpwards ? "" : "rotate-180 text-[#2D6A4F]") : ""
           }`}
         />
@@ -121,7 +121,7 @@ function CustomDropdown({
       {/* Popup Menu with Smart Upward / Downward Drop */}
       {isOpen && (
         <div
-          className={`absolute left-0 right-0 z-50 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-56 overflow-y-auto py-1 scrollbar-thin ${
+          className={`absolute left-0 right-0 z-50 bg-[var(--agri-card)] border border-[var(--agri-border)] rounded-xl shadow-2xl max-h-56 overflow-y-auto py-1 scrollbar-thin ${
             openUpwards ? "bottom-full mb-1.5" : "top-full mt-1.5"
           }`}
         >
@@ -141,7 +141,7 @@ function CustomDropdown({
                 className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors cursor-pointer ${
                   isSelected
                     ? "bg-[#E8F5EE] text-[#2D6A4F] font-bold"
-                    : "text-gray-700 hover:bg-[#F0F5F2] hover:text-[#1B4332]"
+                    : "text-[var(--agri-text-secondary)] hover:bg-[#F0F5F2] hover:text-[#1B4332]"
                 }`}
               >
                 <span className="truncate">{optLabel}</span>
@@ -277,7 +277,7 @@ export default function ProductForm({ form, onChange }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
       {/* 1. Product Name - Full Width */}
       <div className="col-span-1 sm:col-span-2 order-1">
-        <label className="text-sm font-semibold text-gray-800 block mb-2">
+        <label className="text-sm font-semibold text-[var(--agri-text)] block mb-2">
           Product Name
         </label>
 
@@ -286,7 +286,7 @@ export default function ProductForm({ form, onChange }) {
           value={form.name}
           onChange={onChange}
           placeholder="e.g. Fresh Red Tomatoes"
-          className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
+          className="w-full border border-[var(--agri-border)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
         />
       </div>
 
@@ -331,10 +331,10 @@ export default function ProductForm({ form, onChange }) {
           - Desktop (sm:order-6): In row 3 on the left side, directly beside Stock Quantity! */}
       <div className="order-4 sm:order-6">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-semibold text-gray-800">
+          <label className="text-sm font-semibold text-[var(--agri-text)]">
             Listing Duration
           </label>
-          <span className="text-xs text-gray-400 font-medium">
+          <span className="text-xs text-[var(--agri-text-muted)] font-medium">
             Auto-disappear
           </span>
         </div>
@@ -364,7 +364,7 @@ export default function ProductForm({ form, onChange }) {
                   placeholder={customUnit === "minutes" ? "e.g. 30" : "e.g. 5"}
                   value={customValue}
                   onChange={(e) => handleCustomChange(e.target.value, customUnit)}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
+                  className="w-full border border-[var(--agri-border)] rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
                 />
               </div>
 
@@ -386,7 +386,7 @@ export default function ProductForm({ form, onChange }) {
       {/* 5. Selling / Discounted Price */}
       <div className="order-5 sm:order-4">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-semibold text-gray-800">
+          <label className="text-sm font-semibold text-[var(--agri-text)]">
             Selling Price <span className="text-red-500">*</span>
           </label>
           {hasDiscount && (
@@ -397,7 +397,7 @@ export default function ProductForm({ form, onChange }) {
         </div>
 
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold select-none text-base">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--agri-text-muted)] font-bold select-none text-base">
             ₱
           </span>
 
@@ -409,22 +409,22 @@ export default function ProductForm({ form, onChange }) {
             placeholder="0.00"
             value={form.price}
             onChange={onChange}
-            className="w-full border border-gray-300 rounded-xl pl-9 pr-4 py-3 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
+            className="w-full border border-[var(--agri-border)] rounded-xl pl-9 pr-4 py-3 text-sm font-semibold text-[var(--agri-text)] focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
           />
         </div>
       </div>
 
       {/* 6. Original Price (For Slash Discount) */}
       <div className="order-6 sm:order-5">
-        <label className="text-sm font-semibold text-gray-800 block mb-2">
+        <label className="text-sm font-semibold text-[var(--agri-text)] block mb-2">
           Original Price{" "}
-          <span className="text-xs text-gray-400 font-normal">
+          <span className="text-xs text-[var(--agri-text-muted)] font-normal">
             (Optional for discount slash)
           </span>
         </label>
 
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold select-none text-base">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--agri-text-muted)] font-bold select-none text-base">
             ₱
           </span>
 
@@ -436,7 +436,7 @@ export default function ProductForm({ form, onChange }) {
             placeholder="e.g. 60.00"
             value={form.originalPrice || ""}
             onChange={onChange}
-            className="w-full border border-gray-300 rounded-xl pl-9 pr-4 py-3 text-sm font-medium text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
+            className="w-full border border-[var(--agri-border)] rounded-xl pl-9 pr-4 py-3 text-sm font-medium text-[var(--agri-text-secondary)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
           />
         </div>
       </div>
@@ -445,7 +445,7 @@ export default function ProductForm({ form, onChange }) {
           - Desktop (sm:order-7): Beside Listing Duration on the right side!
           - Mobile (order-7): Below original price */}
       <div className="order-7 sm:order-7">
-        <label className="text-sm font-semibold text-gray-800 block mb-2">
+        <label className="text-sm font-semibold text-[var(--agri-text)] block mb-2">
           Stock Quantity
         </label>
 
@@ -456,7 +456,7 @@ export default function ProductForm({ form, onChange }) {
           value={form.stock}
           onChange={onChange}
           placeholder="e.g. 100"
-          className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
+          className="w-full border border-[var(--agri-border)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
         />
       </div>
 
@@ -477,7 +477,7 @@ export default function ProductForm({ form, onChange }) {
             }
             className="h-4 w-4 rounded accent-[#2D6A4F]"
           />
-          <span className="text-sm font-semibold text-gray-800">
+          <span className="text-sm font-semibold text-[var(--agri-text)]">
             Available for sale
           </span>
         </label>

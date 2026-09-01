@@ -110,19 +110,19 @@ export default function ReportDetailsModal({
         onClick={onClose}
       >
         <div
-          className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl bg-white shadow-2xl border border-gray-100 animate-scale-in"
+          className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl bg-[var(--agri-card)] shadow-2xl border border-[var(--agri-border-subtle)] anim-scale-in"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 bg-gray-50/80">
+          <div className="flex items-center justify-between border-b border-[var(--agri-border-subtle)] px-6 py-4 bg-[var(--agri-hover)]/80">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
                 <i className="ri-alert-line text-xl" />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
+                <h2 className="text-base sm:text-lg font-bold text-[var(--agri-text)] leading-tight">
                   Report Investigation
                 </h2>
-                <p className="text-xs text-gray-500 font-medium">
+                <p className="text-xs text-[var(--agri-text-muted)] font-medium">
                   Review case details and execute moderation actions
                 </p>
               </div>
@@ -131,7 +131,7 @@ export default function ReportDetailsModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-200/70 hover:text-gray-700 transition cursor-pointer"
+              className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)]/70 hover:text-[var(--agri-text-secondary)] transition cursor-pointer"
               aria-label="Close"
             >
               <i className="ri-close-line text-xl" />
@@ -140,13 +140,13 @@ export default function ReportDetailsModal({
 
           <div className="space-y-4 p-6">
             {/* Reason & Status Card */}
-            <div className="rounded-2xl bg-white p-4 border border-gray-200/90 shadow-xs space-y-3">
+            <div className="rounded-2xl bg-[var(--agri-card)] p-4 border border-[var(--agri-border-subtle)] shadow-xs space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                     Report Reason
                   </p>
-                  <p className="mt-0.5 text-base font-bold text-gray-900">
+                  <p className="mt-0.5 text-base font-bold text-[var(--agri-text)]">
                     {report.reason || "No reason provided"}
                   </p>
                 </div>
@@ -163,22 +163,22 @@ export default function ReportDetailsModal({
               </div>
 
               {report.targetTitle && (
-                <div className="pt-2.5 border-t border-gray-100">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                <div className="pt-2.5 border-t border-[var(--agri-border-subtle)]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                     Reported Target ({targetType})
                   </p>
-                  <p className="text-sm font-bold text-gray-900 mt-0.5">
+                  <p className="text-sm font-bold text-[var(--agri-text)] mt-0.5">
                     {report.targetTitle}
                   </p>
                 </div>
               )}
 
               {report.createdAt && (
-                <div className="pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                <div className="pt-2.5 border-t border-[var(--agri-border-subtle)] flex items-center justify-between text-xs">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                     Date & Time Submitted
                   </span>
-                  <span className="font-bold text-gray-800">
+                  <span className="font-bold text-[var(--agri-text)]">
                     {formatFullDateTime(report.createdAt)}
                   </span>
                 </div>
@@ -186,24 +186,24 @@ export default function ReportDetailsModal({
             </div>
 
             {/* Description / Explanation Card */}
-            <div className="rounded-2xl bg-white p-4 border border-gray-200/90 shadow-xs space-y-1.5">
-              <p className="text-xs font-bold text-gray-800 uppercase tracking-wide">
+            <div className="rounded-2xl bg-[var(--agri-card)] p-4 border border-[var(--agri-border-subtle)] shadow-xs space-y-1.5">
+              <p className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wide">
                 Description / User Explanation
               </p>
-              <div className="rounded-xl bg-gray-50/80 border border-gray-100 p-3.5 text-xs sm:text-sm leading-relaxed text-gray-900 font-medium whitespace-pre-wrap">
+              <div className="rounded-xl bg-[var(--agri-hover)]/80 border border-[var(--agri-border-subtle)] p-3.5 text-xs sm:text-sm leading-relaxed text-[var(--agri-text)] font-medium whitespace-pre-wrap">
                 {report.description || "No additional description provided."}
               </div>
             </div>
 
             {/* Evidence / Proof Screenshot */}
             {report.evidenceUrl && (
-              <div className="rounded-2xl bg-white p-4 border border-gray-200/90 shadow-xs space-y-2">
-                <p className="text-xs font-bold text-gray-800 uppercase tracking-wide">
+              <div className="rounded-2xl bg-[var(--agri-card)] p-4 border border-[var(--agri-border-subtle)] shadow-xs space-y-2">
+                <p className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wide">
                   Attached Evidence
                 </p>
                 <div
                   onClick={() => setShowEvidenceViewer(true)}
-                  className="relative group inline-block rounded-2xl overflow-hidden border border-gray-200 bg-black/5 shadow-xs cursor-pointer"
+                  className="relative group inline-block rounded-2xl overflow-hidden border border-[var(--agri-border)] bg-black/5 shadow-xs cursor-pointer"
                 >
                   <img
                     src={report.evidenceUrl}
@@ -246,8 +246,8 @@ export default function ReportDetailsModal({
                     {report.reportedUserName || "User"}
                   </p>
                   {report.reportedUserUsername && (
-                    <p className="text-xs text-gray-600 font-medium">
-                      @{report.reportedUserUsername}
+                  <p className="text-xs text-[var(--agri-text-secondary)] font-medium">
+                       @{report.reportedUserUsername}
                     </p>
                   )}
                 </div>
@@ -270,21 +270,21 @@ export default function ReportDetailsModal({
               </div>
 
               {/* Reporter Info & Chat Action */}
-              <div className="rounded-2xl border border-gray-200/90 bg-white p-4 shadow-xs flex flex-col justify-between space-y-3">
+              <div className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-4 shadow-xs flex flex-col justify-between space-y-3">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                     Submitted By
                   </p>
-                  <p className="text-sm font-bold text-gray-900 mt-1.5">
+                  <p className="text-sm font-bold text-[var(--agri-text)] mt-1.5">
                     {report.reporterName || "Reporter"}
                   </p>
                   {report.reporterUsername && (
-                    <p className="text-xs text-gray-600 font-medium">
-                      @{report.reporterUsername}
+                    <p className="text-xs text-[var(--agri-text-secondary)] font-medium">
+                       @{report.reporterUsername}
                     </p>
                   )}
                   {report.reporterRole && (
-                    <span className="inline-block mt-1.5 rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-700 capitalize border border-gray-200">
+                    <span className="inline-block mt-1.5 rounded-md bg-[var(--agri-hover)] px-2 py-0.5 text-[10px] font-bold text-[var(--agri-text-secondary)] capitalize border border-[var(--agri-border)]">
                       {report.reporterRole}
                     </span>
                   )}
@@ -295,7 +295,7 @@ export default function ReportDetailsModal({
                     <button
                       type="button"
                       onClick={handleChatReporter}
-                      className="w-full py-2 px-3 rounded-xl text-xs font-bold text-[#2D6A4F] bg-[#E8F5EE] hover:bg-[#D8F3DC] border border-[#2D6A4F]/20 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
+                      className="w-full py-2 px-3 rounded-xl text-xs font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)] bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] hover:bg-[#D8F3DC] dark:hover:bg-[var(--agri-brand-bg)] border border-[#2D6A4F]/20 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
                       title="Open chat with reporter"
                     >
                       <i className="ri-chat-1-line text-sm font-bold" />
@@ -323,8 +323,8 @@ export default function ReportDetailsModal({
             </div>
 
             {/* Admin Resolution Notes */}
-            <div className="rounded-2xl bg-white p-4 border border-gray-200/90 shadow-xs space-y-1.5">
-              <label htmlFor="admin-resolution-notes" className="block text-xs font-bold text-gray-800 uppercase tracking-wide">
+            <div className="rounded-2xl bg-[var(--agri-card)] p-4 border border-[var(--agri-border-subtle)] shadow-xs space-y-1.5">
+              <label htmlFor="admin-resolution-notes" className="block text-xs font-bold text-[var(--agri-text)] uppercase tracking-wide">
                 Moderator Note / Explanation for Reporter
               </label>
               <textarea
@@ -333,12 +333,12 @@ export default function ReportDetailsModal({
                 value={adminNotes}
                 onChange={(e) => setAdminNotes(e.target.value)}
                 placeholder="Optional internal note or resolution comment sent to the reporter..."
-                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 p-3 text-xs sm:text-sm text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/20 focus:outline-none transition resize-none"
+                className="w-full rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)]/50 p-3 text-xs sm:text-sm text-[var(--agri-text)] font-medium placeholder-[var(--agri-text-muted)] focus:bg-[var(--agri-card)] focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/20 focus:outline-none transition resize-none"
               />
             </div>
 
             {/* Action Buttons for Admin */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-gray-100">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[var(--agri-border-subtle)]">
               <div className="flex flex-wrap items-center gap-2">
                 {report.status === "pending" && onReview && (
                   <button
@@ -366,7 +366,7 @@ export default function ReportDetailsModal({
                   <button
                     type="button"
                     onClick={() => onDismiss(report.id, adminNotes)}
-                    className="px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-100 transition cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl border border-[var(--agri-border)] text-xs font-bold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer"
                   >
                     <i className="ri-close-circle-line mr-1.5" />
                     Dismiss
@@ -377,7 +377,7 @@ export default function ReportDetailsModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-gray-100 text-xs sm:text-sm font-bold text-gray-700 hover:bg-gray-200 transition cursor-pointer ml-auto"
+                className="px-4 py-2 rounded-xl bg-[var(--agri-hover)] text-xs sm:text-sm font-bold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer ml-auto"
               >
                 Close
               </button>

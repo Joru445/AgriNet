@@ -20,7 +20,7 @@ export default function UserTableRow({
       : user;
 
   return (
-    <tr className="border-b border-gray-100 last:border-0 hover:bg-gray-50/80 transition-colors">
+    <tr className="border-b border-[var(--agri-border-subtle)] last:border-0 hover:bg-[var(--agri-hover)]/80 transition-colors">
       {/* User */}
       <td className="px-5 py-4">
         <UserIdentity
@@ -32,7 +32,7 @@ export default function UserTableRow({
 
       {/* Email */}
       <td className="px-5 py-4">
-        <span className="text-sm font-medium text-gray-700">
+        <span className="text-sm font-medium text-[var(--agri-text-secondary)]">
           {user.email || "No email"}
         </span>
       </td>
@@ -70,8 +70,8 @@ export default function UserTableRow({
             disabled={isAdmin}
             className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border shadow-2xs transition-all ${
               isAdmin
-                ? "border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed opacity-50"
-                : "border-gray-200 bg-white text-gray-600 hover:bg-[#D8F3DC]/40 hover:text-[#2D6A4F] hover:border-[#2D6A4F]/30 cursor-pointer"
+                ? "border-[var(--agri-border)] bg-[var(--agri-hover)] text-[var(--agri-text-muted)] cursor-not-allowed opacity-50"
+                : "border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[#D8F3DC] dark:hover:bg-[var(--agri-brand-bg)]/40 dark:bg-[var(--agri-brand-bg)]/40 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] hover:border-[#2D6A4F]/30 cursor-pointer"
             }`}
             title={isAdmin ? "Admin account details disabled" : "View user details"}
           >
@@ -84,8 +84,8 @@ export default function UserTableRow({
             disabled={isAdmin}
             className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border shadow-2xs transition-all ${
               isAdmin
-                ? "border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed opacity-50"
-                : "border-gray-200 bg-white text-gray-600 hover:bg-[#D8F3DC]/40 hover:text-[#2D6A4F] hover:border-[#2D6A4F]/30 cursor-pointer"
+                ? "border-[var(--agri-border)] bg-[var(--agri-hover)] text-[var(--agri-text-muted)] cursor-not-allowed opacity-50"
+                : "border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[#D8F3DC] dark:hover:bg-[var(--agri-brand-bg)]/40 dark:bg-[var(--agri-brand-bg)]/40 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] hover:border-[#2D6A4F]/30 cursor-pointer"
             }`}
             title={isAdmin ? "Admin account editing disabled" : "Edit user"}
           >

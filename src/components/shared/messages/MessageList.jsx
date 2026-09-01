@@ -131,7 +131,7 @@ export default function MessageList({
             className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}
           >
             <div
-              className={`h-12 rounded-2xl bg-gray-200 ${
+              className={`h-12 rounded-2xl bg-[var(--agri-hover)] ${
                 i % 2 === 0 ? "w-48 sm:w-60" : "w-56 sm:w-72"
               }`}
             />
@@ -143,7 +143,7 @@ export default function MessageList({
 
   if (!messages.length) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-500">
+      <div className="flex h-full items-center justify-center text-sm text-[var(--agri-text-muted)]">
         Start your conversation 👋
       </div>
     );
@@ -219,8 +219,8 @@ export default function MessageList({
         {hasMoreOlder && (
           <div className="flex justify-center py-1.5 pb-2">
             {loadingOlder ? (
-              <div className="flex items-center gap-2 text-xs text-gray-500 font-semibold bg-white/90 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-gray-200 shadow-2xs">
-                <i className="ri-loader-4-line animate-spin text-sm text-[#2D6A4F]" />
+              <div className="flex items-center gap-2 text-xs text-[var(--agri-text-muted)] font-semibold bg-[var(--agri-card)]/90 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-[var(--agri-border)] shadow-2xs">
+                <i className="ri-loader-4-line animate-spin text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
                 <span>Loading earlier messages...</span>
               </div>
             ) : (
@@ -233,7 +233,7 @@ export default function MessageList({
                   }
                   onLoadOlder?.();
                 }}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] bg-[#E8F5EE]/80 hover:bg-[#E8F5EE] px-4 py-1.5 rounded-full border border-[#2D6A4F]/25 shadow-2xs transition cursor-pointer active:scale-95"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:text-[#1B4332] dark:hover:text-[var(--agri-brand-light)] bg-[#E8F5EE]/80 dark:bg-[var(--agri-brand-bg-alt)]/80 hover:bg-[#E8F5EE] dark:hover:bg-[var(--agri-brand-bg-alt)] px-4 py-1.5 rounded-full border border-[#2D6A4F]/25 shadow-2xs transition cursor-pointer active:scale-95"
               >
                 <i className="ri-history-line text-sm" />
                 <span>Load earlier messages</span>

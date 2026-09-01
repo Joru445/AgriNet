@@ -40,7 +40,7 @@ export default function ReviewCard({ review, type = "product" }) {
             title="Click to view photo"
           />
         ) : (
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-500">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-sm font-semibold text-[var(--agri-text-muted)]">
             {reviewerName.charAt(0).toUpperCase()}
           </div>
         )}
@@ -48,17 +48,17 @@ export default function ReviewCard({ review, type = "product" }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="text-sm font-semibold text-gray-800">
+              <p className="text-sm font-semibold text-[var(--agri-text)]">
                 {reviewerName}
               </p>
 
               {reviewer.username && reviewer.fullname && (
-                <p className="text-xs text-gray-400">@{reviewer.username}</p>
+                <p className="text-xs text-[var(--agri-text-muted)]">@{reviewer.username}</p>
               )}
             </div>
 
             {review.createdAt && (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-[var(--agri-text-muted)]">
                 {formatTimestamp(review.createdAt)}
               </span>
             )}
@@ -73,13 +73,13 @@ export default function ReviewCard({ review, type = "product" }) {
 
       {/* Comment */}
       {review.comment && (
-        <p className="mt-3 text-sm leading-6 text-gray-600">{review.comment}</p>
+        <p className="mt-3 text-sm leading-6 text-[var(--agri-text-secondary)]">{review.comment}</p>
       )}
 
       {/* Product transaction proof */}
       {proofImage && (
         <div
-          className="mt-4 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 cursor-pointer group relative"
+          className="mt-4 overflow-hidden rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)] cursor-pointer group relative"
           onClick={() => setActiveImage({ src: proofImage, title: "Transaction Proof" })}
           title="Click to view full screen"
         >
@@ -99,7 +99,7 @@ export default function ReviewCard({ review, type = "product" }) {
 
       {/* Transaction indicator */}
       {isProduct && review.inquiryId && (
-        <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-400">
+        <div className="mt-3 flex items-center gap-1.5 text-xs text-[var(--agri-text-muted)]">
           <i className="ri-checkbox-circle-line text-[#2D6A4F]" />
           Verified transaction review
         </div>

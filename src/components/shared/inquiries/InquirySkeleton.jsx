@@ -1,27 +1,27 @@
 export default function InquirySkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
+    <div className="overflow-hidden rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)]">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-50">
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">
+            <tr className="bg-[var(--agri-hover)]">
+              <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
                 Product
               </th>
 
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">
+              <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
                 Consumer
               </th>
 
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">
+              <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
                 Date
               </th>
 
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">
+              <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
                 Status
               </th>
 
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500">
+              <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
                 Action
               </th>
             </tr>
@@ -29,39 +29,39 @@ export default function InquirySkeleton() {
 
           <tbody>
             {Array.from({ length: 5 }).map((_, index) => (
-              <tr key={index} className="animate-pulse border-t border-gray-50">
+              <tr key={index} className="animate-pulse border-t border-[var(--agri-border-subtle)]">
                 {/* Product */}
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 shrink-0 rounded-lg bg-gray-200" />
+                    <div className="h-10 w-10 shrink-0 rounded-lg bg-[var(--agri-hover)]" />
 
                     <div className="space-y-2">
-                      <div className="h-3 w-32 rounded bg-gray-200" />
-                      <div className="h-2.5 w-16 rounded bg-gray-100" />
+                      <div className="h-3 w-32 rounded bg-[var(--agri-hover)]" />
+                      <div className="h-2.5 w-16 rounded bg-[var(--agri-hover)]/60" />
                     </div>
                   </div>
                 </td>
 
                 {/* Consumer */}
                 <td className="px-5 py-3">
-                  <div className="h-3 w-24 rounded bg-gray-200" />
+                  <div className="h-3 w-24 rounded bg-[var(--agri-hover)]" />
                 </td>
 
                 {/* Date */}
                 <td className="px-5 py-3">
-                  <div className="h-3 w-20 rounded bg-gray-200" />
+                  <div className="h-3 w-20 rounded bg-[var(--agri-hover)]" />
                 </td>
 
                 {/* Status */}
                 <td className="px-5 py-3">
-                  <div className="h-6 w-16 rounded-full bg-gray-200" />
+                  <div className="h-6 w-16 rounded-full bg-[var(--agri-hover)]" />
                 </td>
 
                 {/* Actions */}
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="h-3 w-8 rounded bg-gray-200" />
-                    <div className="h-4 w-4 rounded bg-gray-200" />
+                    <div className="h-3 w-8 rounded bg-[var(--agri-hover)]" />
+                    <div className="h-4 w-4 rounded bg-[var(--agri-hover)]" />
                   </div>
                 </td>
               </tr>

@@ -25,6 +25,17 @@
     <meta name="format-detection" content="telephone=no" />
     <title>AgriNet</title>
 
+    <!-- Prevent flash of wrong theme -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("agrinet_theme");
+          var d = t === "dark" || (t !== "light" && matchMedia("(prefers-color-scheme:dark)").matches);
+          document.documentElement.setAttribute("data-theme", d ? "dark" : "light");
+        } catch (e) {}
+      })();
+    </script>
+
     <script type="text/javascript">
       (function (l) {
         if (l.search[1] === "/") {

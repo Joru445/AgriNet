@@ -67,7 +67,7 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center md:p-5 z-9999">
-      <div className="bg-white w-full h-full md:max-w-3xl md:max-h-[90vh] md:rounded-2xl flex flex-col overflow-hidden shadow-2xl">
+      <div className="bg-[var(--agri-card)] w-full h-full md:max-w-3xl md:max-h-[90vh] md:rounded-2xl flex flex-col overflow-hidden shadow-2xl">
         {/* Fixed Header */}
         <div
           className="shrink-0 px-6 py-4 sm:py-5 flex justify-between items-center border-b z-10 md:rounded-t-2xl"
@@ -90,7 +90,7 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 hover:text-[#1B4332] hover:bg-green-100/60 transition-colors cursor-pointer shrink-0"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-[var(--agri-text-muted)] hover:text-[#1B4332] hover:bg-green-100/60 transition-colors cursor-pointer shrink-0"
           >
             <i className="ri-close-line text-2xl" />
           </button>
@@ -104,13 +104,13 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
 
         {/* Fixed Footer */}
         <div
-          className="shrink-0 bg-white border-t px-6 py-4 flex justify-end gap-3 z-10 md:rounded-b-2xl"
+          className="shrink-0 bg-[var(--agri-card)] border-t px-6 py-4 flex justify-end gap-3 z-10 md:rounded-b-2xl"
           style={{ borderColor: "var(--agri-border)" }}
         >
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold text-sm transition-colors cursor-pointer"
+            className="px-5 py-2.5 rounded-xl border border-[var(--agri-border)] hover:bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] font-semibold text-sm transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -121,7 +121,7 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
             onClick={handleSubmit}
             className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
               saving || !isValid
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                ? "bg-[var(--agri-hover)] text-[var(--agri-text-muted)] cursor-not-allowed"
                 : "bg-[#2D6A4F] hover:bg-[#1B4332] text-white cursor-pointer shadow-sm"
             }`}
           >

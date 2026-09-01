@@ -59,16 +59,16 @@ export default function UserEditModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-3xl bg-white p-5 sm:p-6 shadow-2xl border border-gray-200 max-h-[92vh] overflow-y-auto"
+        className="w-full max-w-md rounded-3xl bg-[var(--agri-card)] p-5 sm:p-6 shadow-2xl border border-[var(--agri-border)] max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--agri-border)]">
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">
+            <h3 className="text-lg sm:text-xl font-bold text-[var(--agri-text)] tracking-tight">
               Edit User Account
             </h3>
-            <p className="text-xs font-medium text-gray-500">
+            <p className="text-xs font-medium text-[var(--agri-text-muted)]">
               Manage account status & permissions
             </p>
           </div>
@@ -77,7 +77,7 @@ export default function UserEditModal({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Close"
           >
             <i className="ri-close-line text-xl" />
@@ -86,7 +86,7 @@ export default function UserEditModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           {/* User Quick Identity Card */}
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50/90 border border-gray-200/80">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
             {user.profilePicture ? (
               <img
                 src={user.profilePicture}
@@ -94,7 +94,7 @@ export default function UserEditModal({
                 className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-[#D8F3DC]"
               />
             ) : (
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] text-sm font-bold text-[#2D6A4F]">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)] text-sm font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                 {user.fullname
                   ?.split(/\s+/)
                   .slice(0, 2)
@@ -105,10 +105,10 @@ export default function UserEditModal({
             )}
 
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-gray-900 truncate">
+              <p className="text-sm font-bold text-[var(--agri-text)] truncate">
                 {user.fullname || "Unnamed User"}
               </p>
-              <p className="text-xs text-gray-500 font-medium truncate">
+              <p className="text-xs text-[var(--agri-text-muted)] font-medium truncate">
                 {user.email || "No email"}
               </p>
             </div>
@@ -116,13 +116,13 @@ export default function UserEditModal({
 
           {/* Role (Read-only) */}
           <div>
-            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
               User Role
             </label>
 
-            <div className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-gray-50/70 px-3.5 py-2.5">
+            <div className="flex items-center justify-between rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/70 px-3.5 py-2.5">
               <RoleBadge role={user.role || "consumer"} />
-              <span className="text-[11px] font-semibold text-gray-400">
+              <span className="text-[11px] font-semibold text-[var(--agri-text-muted)]">
                 Fixed Role
               </span>
             </div>
@@ -130,7 +130,7 @@ export default function UserEditModal({
 
           {/* Account Status */}
           <div>
-            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
               Account Status
             </label>
 
@@ -138,7 +138,7 @@ export default function UserEditModal({
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               disabled={loading}
-              className="w-full rounded-xl border border-gray-200/90 bg-gray-50/50 px-3.5 py-2.5 text-sm font-semibold text-gray-800 outline-none transition focus:border-[#2D6A4F] focus:bg-white focus:ring-2 focus:ring-[#2D6A4F]/10 cursor-pointer disabled:opacity-60"
+              className="w-full rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-3.5 py-2.5 text-sm font-semibold text-[var(--agri-text)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/10 cursor-pointer disabled:opacity-60"
             >
               <option value="active">Active</option>
               <option value="suspended">Suspended</option>
@@ -148,7 +148,7 @@ export default function UserEditModal({
           {/* Farmer Verification Toggle */}
           {isFarmer && (
             <div>
-              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
                 Farmer Verification
               </label>
 
@@ -159,19 +159,19 @@ export default function UserEditModal({
                 className={`flex w-full items-center justify-between rounded-2xl border p-3.5 text-left transition cursor-pointer ${
                   verified
                     ? "border-emerald-200 bg-emerald-50/70"
-                    : "border-gray-200/90 bg-gray-50/70 hover:bg-gray-100/70"
+                    : "border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/70 hover:bg-[var(--agri-hover)]/70"
                 } disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 <div>
                   <p
                     className={`text-xs font-bold uppercase tracking-wider ${
-                      verified ? "text-emerald-800" : "text-gray-700"
+                      verified ? "text-emerald-800" : "text-[var(--agri-text-secondary)]"
                     }`}
                   >
                     {verified ? "Verified Farmer" : "Not Verified"}
                   </p>
 
-                  <p className="mt-0.5 text-xs text-gray-500 font-medium">
+                  <p className="mt-0.5 text-xs text-[var(--agri-text-muted)] font-medium">
                     {verified
                       ? "Farmer displays verified badge"
                       : "Farmer does not display verified badge"}
@@ -180,7 +180,7 @@ export default function UserEditModal({
 
                 <div
                   className={`flex h-6 w-11 shrink-0 items-center rounded-full p-1 transition-colors ${
-                    verified ? "bg-[#2D6A4F]" : "bg-gray-300"
+                    verified ? "bg-[#2D6A4F]" : "bg-[var(--agri-hover)]"
                   }`}
                 >
                   <div
@@ -194,12 +194,12 @@ export default function UserEditModal({
           )}
 
           {/* Form Actions */}
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--agri-border-subtle)]">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="py-2.5 px-4 rounded-xl border border-gray-200 bg-white text-xs sm:text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+              className="py-2.5 px-4 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-xs sm:text-sm font-bold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancel
             </button>

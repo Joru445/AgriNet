@@ -78,12 +78,12 @@ export default function UserTable({
   }, [users, currentPage, pageSize]);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-lg shadow-black/5">
+    <div className="overflow-hidden rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-lg shadow-black/5">
       {/* Top Green Sliding/Scroll Bar for Mobile */}
       <div
         ref={topScrollRef}
         onScroll={handleTopScroll}
-        className="overflow-x-auto border-b border-gray-100 bg-gray-50/50 block md:hidden"
+        className="overflow-x-auto border-b border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 block md:hidden"
       >
         <div className="h-1.5 min-w-200" />
       </div>
@@ -95,24 +95,24 @@ export default function UserTable({
       >
         <table className="w-full min-w-200">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50/80">
-              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+            <tr className="border-b border-[var(--agri-border)] bg-[var(--agri-hover)]/80">
+              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]">
                 User
               </th>
 
-              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]">
                 Email
               </th>
 
-              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]">
                 Role
               </th>
 
-              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]">
                 Status
               </th>
 
-              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]">
                 Actions
               </th>
             </tr>
@@ -135,15 +135,15 @@ export default function UserTable({
 
       {users.length === 0 && (
         <div className="px-6 py-14 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50 border border-gray-200 text-gray-400 mb-3">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--agri-hover)] border border-[var(--agri-border)] text-[var(--agri-text-muted)] mb-3">
             <i className="ri-user-search-line text-2xl" />
           </div>
 
-          <p className="text-base font-bold text-gray-800">
+          <p className="text-base font-bold text-[var(--agri-text)]">
             No users found
           </p>
 
-          <p className="mt-1 text-xs text-gray-500 font-medium">
+          <p className="mt-1 text-xs text-[var(--agri-text-muted)] font-medium">
             Try adjusting your search query or role/status filters.
           </p>
         </div>
@@ -151,14 +151,14 @@ export default function UserTable({
 
       {/* Pagination in Bottom Left Side */}
       {users.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-5 py-3.5 bg-gray-50/70">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--agri-border)] px-5 py-3.5 bg-[var(--agri-hover)]/70">
           <div className="flex items-center gap-1.5">
             {/* Previous Page Arrow */}
             <button
               type="button"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] disabled:opacity-40 disabled:hover:bg-[var(--agri-card)] transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
               title="Previous Page"
             >
               <i className="ri-arrow-left-s-line text-base font-bold" />
@@ -173,7 +173,7 @@ export default function UserTable({
                 className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold transition cursor-pointer ${
                   currentPage === pageNum
                     ? "bg-[#2D6A4F] text-white shadow-xs"
-                    : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 shadow-2xs"
+                    : "border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] shadow-2xs"
                 }`}
               >
                 {pageNum}
@@ -185,20 +185,20 @@ export default function UserTable({
               type="button"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] disabled:opacity-40 disabled:hover:bg-[var(--agri-card)] transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
               title="Next Page"
             >
               <i className="ri-arrow-right-s-line text-base font-bold" />
             </button>
           </div>
 
-          <div className="text-xs font-semibold text-gray-600">
+          <div className="text-xs font-semibold text-[var(--agri-text-secondary)]">
             Showing{" "}
-            <span className="text-gray-900 font-bold">
+            <span className="text-[var(--agri-text)] font-bold">
               {paginatedUsers.length}
             </span>{" "}
             out of{" "}
-            <span className="text-gray-900 font-bold">{users.length}</span>{" "}
+            <span className="text-[var(--agri-text)] font-bold">{users.length}</span>{" "}
             total users
           </div>
         </div>

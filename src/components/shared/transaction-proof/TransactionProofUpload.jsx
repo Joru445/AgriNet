@@ -22,28 +22,28 @@ export default function TransactionProofUpload({
   }
 
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <section className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-5 shadow-sm">
       <div>
-        <h2 className="font-semibold text-gray-900">
+        <h2 className="font-semibold text-[var(--agri-text)]">
           Upload transaction proof
         </h2>
 
-        <p className="mt-1 text-sm leading-6 text-gray-500">
+        <p className="mt-1 text-sm leading-6 text-[var(--agri-text-muted)]">
           Upload a clear photo showing the product you received.
         </p>
       </div>
 
       {rejected && (
-        <div className="mt-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3">
+        <div className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3">
           <div className="flex gap-2">
-            <i className="ri-error-warning-line text-red-600" />
+            <i className="ri-error-warning-line text-red-600 dark:text-red-400" />
 
             <div>
-              <p className="text-sm font-semibold text-red-700">
+              <p className="text-sm font-semibold text-red-700 dark:text-red-300">
                 Previous proof was rejected.
               </p>
 
-              <p className="mt-1 text-xs text-red-600">
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
                 Please upload another photo.
               </p>
             </div>
@@ -68,27 +68,27 @@ export default function TransactionProofUpload({
             mt-5 flex min-h-56 w-full
             flex-col items-center justify-center
             rounded-xl border-2 border-dashed
-            border-gray-200 bg-gray-50
-            text-gray-500 transition
+            border-[var(--agri-border)] bg-[var(--agri-hover)]
+            text-[var(--agri-text-muted)] transition
             hover:border-[#2D6A4F]
-            hover:bg-green-50/30
+            hover:bg-emerald-500/10
             disabled:cursor-not-allowed
             disabled:opacity-50
           "
         >
           <i className="ri-image-add-line text-3xl" />
 
-          <span className="mt-3 text-sm font-semibold text-gray-700">
+          <span className="mt-3 text-sm font-semibold text-[var(--agri-text-secondary)]">
             Upload proof image
           </span>
 
-          <span className="mt-1 text-xs text-gray-400">
+          <span className="mt-1 text-xs text-[var(--agri-text-muted)]">
             JPG, PNG, or WEBP up to 10 MB
           </span>
         </button>
       ) : (
         <div className="mt-5">
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+          <div className="overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)]">
             <img
               src={previewUrl}
               alt="Transaction proof preview"
@@ -97,7 +97,7 @@ export default function TransactionProofUpload({
           </div>
 
           {selectedFile && (
-            <p className="mt-2 truncate text-xs text-gray-400">
+            <p className="mt-2 truncate text-xs text-[var(--agri-text-muted)]">
               {selectedFile.name}
             </p>
           )}

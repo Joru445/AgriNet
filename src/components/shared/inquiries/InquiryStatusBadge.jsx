@@ -1,16 +1,16 @@
 export default function InquiryStatusBadge({ status }) {
   const styles = {
-    accepted: "bg-amber-100 text-amber-700 font-semibold",
+    accepted: "bg-amber-500/10 text-amber-700 dark:text-amber-300 font-semibold",
 
-    ongoing: "bg-blue-100 text-blue-700 font-semibold",
+    ongoing: "bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold",
 
-    awaiting_proof: "bg-blue-100 text-blue-700 font-semibold",
+    awaiting_proof: "bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold",
 
-    proof_submitted: "bg-orange-100 text-orange-700 font-semibold",
+    proof_submitted: "bg-orange-500/10 text-orange-700 dark:text-orange-300 font-semibold",
 
-    completed: "bg-green-100 text-green-700 font-semibold",
+    completed: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold",
 
-    cancelled: "bg-gray-100 text-gray-600 font-semibold",
+    cancelled: "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] font-semibold",
   };
 
   const labels = {
@@ -26,7 +26,7 @@ export default function InquiryStatusBadge({ status }) {
   return (
     <span
       className={`rounded-full px-2.5 py-1 text-xs ${
-        styles[status] || "bg-gray-100 text-gray-600 font-semibold"
+        styles[status] || "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] font-semibold"
       }`}
     >
       {labels[status] || "Unknown"}
