@@ -94,6 +94,16 @@ export function getMePath(role) {
   }
 }
 
+/**
+ * Get the store profile path for a given user ID.
+ * Consumers/admins see /profile/:uid, farmers see /farmer/profile/:uid.
+ */
+export function getStoreProfilePath(uid, role) {
+  if (!uid) return "/home";
+  if (role === "farmer") return `/farmer/profile/${uid}`;
+  return `/profile/${uid}`;
+}
+
 export function getRoleHome(role) {
   switch (role) {
     case "admin":

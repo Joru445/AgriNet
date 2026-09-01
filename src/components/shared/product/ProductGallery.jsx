@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import ImageViewerModal from "../../common/ImageViewerModal";
+import { applyTransform, PRODUCT_GALLERY_TF, PRODUCT_THUMB_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
 
 export default function ProductGallery({ product }) {
   return <ProductGalleryImages key={product.id} product={product} />;
@@ -55,26 +56,34 @@ function ProductGalleryImages({ product }) {
           className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none touch-pan-x"
           style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
         >
-          {images.map((image, index) => (
-            <div
-              key={image.publicId || index}
-              className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center bg-gray-50 cursor-pointer"
-              onClick={() =>
-                setFullscreenImage({
-                  src: image.url || image,
-                  title: `${product.name} (${index + 1}/${images.length})`,
-                })
-              }
-            >
-              <img
-                src={image.url || image}
-                alt={`${product.name} ${index + 1}`}
-                loading="lazy"
-                className="w-full h-full object-cover select-none"
-                draggable={false}
-              />
-            </div>
-          ))}
+          {images.map((image, index) => {
+            const rawSrc = image.url || image;
+            const imgSrc = isCloudinaryUrl(rawSrc)
+              ? applyTransform(rawSrc, PRODUCT_GALLERY_TF)
+              : rawSrc;
+            return (
+              <div
+                key={image.publicId || index}
+                className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center bg-gray-50 cursor-pointer"
+                onClick={() =>
+                  setFullscreenImage({
+                    src: imgSrc,
+                    title: `${product.name} (${index + 1}/${images.length})`,
+                  })
+                }
+              >
+                <img
+                  src={imgSrc}
+                  alt={`${product.name} ${index + 1}`}
+                  width={600}
+                  height={600}
+                  loading="lazy"
+                  className="w-full h-full object-cover select-none"
+                  draggable={false}
+                />
+              </div>
+            );
+          })}
         </div>
 
         {/* Hover zoom hint badge */}
@@ -103,25 +112,33 @@ function ProductGalleryImages({ product }) {
       {/* Thumbnail selector on both mobile and desktop */}
       {images.length > 1 && (
         <div className="flex gap-2 sm:gap-3 overflow-x-auto px-2 py-1 scrollbar-none md:grid md:grid-cols-5 md:overflow-visible">
-          {images.map((image, index) => (
-            <button
-              key={image.publicId || index}
-              type="button"
-              onClick={() => handleThumbnailClick(index)}
-              className={`shrink-0 w-20 h-20 md:w-auto md:h-auto overflow-hidden rounded sm:rounded-xl transition-all duration-200 aspect-square cursor-pointer ${
-                selected === index
-                  ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 scale-[1.02] opacity-100"
-                  : "border-gray-200 opacity-80 hover:opacity-100 hover:border-gray-300"
-              }`}
-            >
-              <img
-                src={image.url || image}
-                alt=""
-                loading="lazy"
-                className="aspect-square w-full h-full object-cover"
-              />
-            </button>
-          ))}
+          {images.map((image, index) => {
+            const rawSrc = image.url || image;
+            const thumbSrc = isCloudinaryUrl(rawSrc)
+              ? applyTransform(rawSrc, PRODUCT_THUMB_TF)
+              : rawSrc;
+            return (
+              <button
+                key={image.publicId || index}
+                type="button"
+                onClick={() => handleThumbnailClick(index)}
+                className={`shrink-0 w-20 h-20 md:w-auto md:h-auto overflow-hidden rounded sm:rounded-xl transition-all duration-200 aspect-square cursor-pointer ${
+                  selected === index
+                    ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 scale-[1.02] opacity-100"
+                    : "border-gray-200 opacity-80 hover:opacity-100 hover:border-gray-300"
+                }`}
+              >
+                <img
+                  src={thumbSrc}
+                  alt=""
+                  width={80}
+                  height={80}
+                  loading="lazy"
+                  className="aspect-square w-full h-full object-cover"
+                />
+              </button>
+            );
+          })}
         </div>
       )}
 

@@ -8,6 +8,7 @@ import { showToast } from "../utils/toast";
 import logo from "../assets/favicon.ico";
 import UserIdentity from "./common/UserIdentity";
 import LogoutConfirmModal from "./common/LogoutConfirmModal";
+import Badge, { PulsingDot } from "./ui/Badge";
 
 import { useUnreadMessages } from "../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../context/UnreadInquiriesContext";
@@ -98,19 +99,13 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 <div className="relative flex items-center justify-center">
                   <i className={`${item.icon} text-base`} />
                   {isMessages && unreadCount > 0 && (
-                    <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-[#1B4332] shadow-xs leading-none">
-                      {unreadCount > 99 ? "99+" : unreadCount}
-                    </span>
+                    <Badge count={unreadCount} className="ring-2 ring-[#1B4332]" />
                   )}
                   {isInquiries && inquiryActionCount > 0 && (
-                    <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-[#1B4332] shadow-xs leading-none">
-                      {inquiryActionCount > 99 ? "99+" : inquiryActionCount}
-                    </span>
+                    <Badge count={inquiryActionCount} className="ring-2 ring-[#1B4332]" />
                   )}
                   {isReports && pendingReportsCount > 0 && (
-                    <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-[#1B4332] shadow-xs leading-none">
-                      {pendingReportsCount > 99 ? "99+" : pendingReportsCount}
-                    </span>
+                    <Badge count={pendingReportsCount} className="ring-2 ring-[#1B4332]" />
                   )}
                 </div>
 
@@ -123,10 +118,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#1B4332] shadow-2xl shadow-black/20 border border-gray-100 ring-1 ring-black/5">
                     <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rotate-45 border-l border-b border-gray-100" />
                     <span className="relative z-10 flex items-center gap-2">
-                      <span className="flex h-2.5 w-2.5 relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
-                      </span>
+                      <PulsingDot />
                       <span>New messages</span>
                     </span>
                   </div>
@@ -139,10 +131,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#1B4332] shadow-2xl shadow-black/20 border border-gray-100 ring-1 ring-black/5">
                     <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rotate-45 border-l border-b border-gray-100" />
                     <span className="relative z-10 flex items-center gap-2">
-                      <span className="flex h-2.5 w-2.5 relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
-                      </span>
+                      <PulsingDot />
                       <span>{inquiryPopupMessage}</span>
                     </span>
                   </div>
@@ -155,10 +144,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   <div className="relative flex items-center gap-2.5 whitespace-nowrap rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#1B4332] shadow-2xl shadow-black/20 border border-gray-100 ring-1 ring-black/5">
                     <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rotate-45 border-l border-b border-gray-100" />
                     <span className="relative z-10 flex items-center gap-2">
-                      <span className="flex h-2.5 w-2.5 relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
-                      </span>
+                      <PulsingDot />
                       <span>{reportPopupMessage || "New report needs review!"}</span>
                     </span>
                   </div>

@@ -50,12 +50,22 @@ async function uploadImage(file, uploadPreset) {
   };
 }
 
-export function uploadProfilePicture(file) {
-  return uploadImage(file, PROFILE_PRESET);
+export async function uploadProfilePicture(file) {
+  const compressed = await compressImage(file, {
+    maxWidth: 1024,
+    maxHeight: 1024,
+    quality: 0.85,
+  });
+  return uploadImage(compressed, PROFILE_PRESET);
 }
 
-export function uploadProductImage(file) {
-  return uploadImage(file, PRODUCT_PRESET);
+export async function uploadProductImage(file) {
+  const compressed = await compressImage(file, {
+    maxWidth: 1600,
+    maxHeight: 1600,
+    quality: 0.82,
+  });
+  return uploadImage(compressed, PRODUCT_PRESET);
 }
 
 export function uploadTransactionProof(file) {

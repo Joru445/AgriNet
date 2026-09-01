@@ -14,16 +14,8 @@ import { useLiveRemainingTime } from "../../utils/productExpiration";
 import productPlaceholder from "../../assets/img/productPlaceholder.png";
 import { formatTimestamp } from "../../utils/date";
 
-const CATEGORY_ICONS = {
-  Vegetables: "ri-plant-line",
-  Fruits: "ri-seedling-line",
-  Grains: "ri-leaf-line",
-  Livestock: "ri-heart-line",
-  Herbs: "ri-medicine-bottle-line",
-  "Root Crops": "ri-earth-line",
-  Seafood: "ri-water-flash-line",
-  Others: "ri-shopping-basket-2-line",
-};
+import { CATEGORY_ICONS } from "../../utils/categoryIcons";
+import { applyTransform, PRODUCT_THUMB_TF, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
 
 export default function ProductCard({
   product,
@@ -33,7 +25,11 @@ export default function ProductCard({
   const { profile } = useAuth();
   const [imgError, setImgError] = useState(false);
   const rawImage = product.images?.[0]?.url ?? product.images?.[0];
-  const image = imgError || !rawImage ? productPlaceholder : rawImage;
+  const image = imgError || !rawImage
+    ? productPlaceholder
+    : isCloudinaryUrl(rawImage)
+      ? applyTransform(rawImage, PRODUCT_THUMB_TF)
+      : rawImage;
 
   const { remainingTime, isExpired } = useLiveRemainingTime(product);
   const stockNum = Number(product.stock ?? 0);
@@ -70,6 +66,8 @@ export default function ProductCard({
         <img
           src={image}
           alt={product.name}
+          width={400}
+          height={400}
           onError={() => setImgError(true)}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"

@@ -5,6 +5,7 @@ import landscape from "../../../assets/img/landscapeCover.jpg";
 import { getInitials } from "../../../utils/getInitials";
 import Button from "../../ui/Button";
 import ImageViewerModal from "../../common/ImageViewerModal";
+import { applyTransform, COVER_TF, PROFILE_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
 
 export default function ProfileHeader({
   profile,
@@ -36,9 +37,15 @@ export default function ProfileHeader({
           title="Click to view cover photo"
         >
           <img
-            src={profile.coverPhoto || landscape}
+            src={
+              isCloudinaryUrl(profile.coverPhoto)
+                ? applyTransform(profile.coverPhoto, COVER_TF)
+                : profile.coverPhoto || landscape
+            }
             alt="Cover"
             loading="lazy"
+            width={1600}
+            height={380}
             className="h-full w-full object-cover"
           />
 
@@ -66,8 +73,14 @@ export default function ProfileHeader({
             <div className="relative -mt-8 shrink-0 sm:-mt-20">
               {profile.profilePicture ? (
                 <img
-                  src={profile.profilePicture}
+                  src={
+                    isCloudinaryUrl(profile.profilePicture)
+                      ? applyTransform(profile.profilePicture, PROFILE_TF)
+                      : profile.profilePicture
+                  }
                   alt={profile.username}
+                  width={160}
+                  height={160}
                   onClick={() =>
                     setFullscreenImage({
                       src: profile.profilePicture,

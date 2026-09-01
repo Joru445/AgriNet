@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import Avatar from "../../common/Avatar";
 import ImageViewerModal from "../../common/ImageViewerModal";
+import { applyTransform, MESSAGE_IMG_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
 
 export default function MessageBubble({
   user,
@@ -58,7 +59,7 @@ export default function MessageBubble({
           {isImage && message.imageUrl && (
             <div className={`rounded-xl overflow-hidden mb-0 group relative ${mine ? "justify-self-end" : "justify-self-start"}`}>
               <img
-                src={message.imageUrl}
+                src={isCloudinaryUrl(message.imageUrl) ? applyTransform(message.imageUrl, MESSAGE_IMG_TF) : message.imageUrl}
                 alt="Photo attachment"
                 onClick={() => setShowLightbox(true)}
                 className="max-h-72 w-auto max-w-full rounded-xl object-cover cursor-pointer transition hover:opacity-95"

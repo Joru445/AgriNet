@@ -2,6 +2,7 @@ import StatCard from "../../components/common/StatCard";
 import RecentActivity from "../../components/admin/RecentActivity";
 import RecentProducts from "../../components/admin/RecentProducts";
 import RecentUsers from "../../components/admin/RecentUsers";
+import ErrorState from "../../components/ui/ErrorState";
 
 import useAdminDashboard from "../../hooks/useAdminDashboard";
 
@@ -43,29 +44,11 @@ export default function Dashboard() {
         </div>
 
         {error && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5">
-            <div className="flex items-start gap-3">
-              <i className="ri-error-warning-line text-xl text-red-500 shrink-0 mt-0.5" />
-
-              <div className="flex-1">
-                <h2 className="font-semibold text-red-800">
-                  Failed to load dashboard data
-                </h2>
-
-                <p className="mt-1 text-sm text-red-600">
-                  Something went wrong while loading the latest metrics.
-                </p>
-
-                <button
-                  type="button"
-                  onClick={refresh}
-                  className="mt-3 rounded-lg bg-red-600 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700 cursor-pointer"
-                >
-                  Try Again
-                </button>
-              </div>
-            </div>
-          </div>
+          <ErrorState
+            title="Failed to load dashboard data"
+            message="Something went wrong while loading the latest metrics."
+            onRetry={refresh}
+          />
         )}
 
         {/* Statistics */}

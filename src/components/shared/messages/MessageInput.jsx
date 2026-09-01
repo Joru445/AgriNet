@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { compressImage } from "../../../utils/imageCompression";
 
 export default function MessageInput({
@@ -69,11 +69,14 @@ export default function MessageInput({
       e.preventDefault();
       if (!uploadingImage && (value.trim() || selectedImage)) {
         onSend();
+        requestAnimationFrame(() => {
+          textareaRef.current?.focus();
+        });
       }
     }
   }
 
-  async function processAndSelectImage(file) {
+  const processAndSelectImage = useCallback(async (file) => {
     if (!file) return;
 
     setShowMenu(false);
@@ -89,7 +92,7 @@ export default function MessageInput({
       file: compressed,
       previewUrl,
     });
-  }
+  }, [selectedImage, onSelectImage]);
 
   function handleFileSelected(e) {
     const file = e.target.files?.[0];
@@ -130,7 +133,7 @@ export default function MessageInput({
     function handleGlobalPaste(e) {
       const target = e.target;
       if (target && target.tagName === "INPUT") return;
-      if (target && target.tagName === "TEXTAREA" && target !== textareaRef.current) return;
+      if (target && target.tagName === "TEXTAREA") return;
 
       const clipboardData = e.clipboardData;
       if (!clipboardData) return;
@@ -153,7 +156,7 @@ export default function MessageInput({
 
     window.addEventListener("paste", handleGlobalPaste);
     return () => window.removeEventListener("paste", handleGlobalPaste);
-  }, [selectedImage, onSelectImage]);
+  }, [processAndSelectImage]);
 
   function decreaseQuantity() {
     setQuantity((current) => Math.max(1, current - 1));
@@ -495,6 +498,9 @@ export default function MessageInput({
             onClick={() => {
               if (canSend) {
                 onSend();
+                requestAnimationFrame(() => {
+                  textareaRef.current?.focus();
+                });
               }
             }}
             disabled={!canSend}

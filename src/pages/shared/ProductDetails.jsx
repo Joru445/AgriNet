@@ -14,6 +14,7 @@ import ProductDetailsSkeleton from "../../components/shared/product/ProductDetai
 
 import ReviewSection from "../../components/common/ReviewSection";
 import ReportModal from "../../components/common/ReportModal";
+import EmptyState from "../../components/ui/EmptyState";
 
 export default function ProductDetails() {
   const { profile } = useAuth();
@@ -28,13 +29,11 @@ export default function ProductDetails() {
   if (!loading && (!product || (isProductExpired(product) && !isOwner))) {
     return (
       <main className="mx-auto max-w-7xl px-2 py-8 pb-18 md:pb-4">
-        <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center">
-          <i className="ri-error-warning-line text-5xl text-gray-300 mb-3" />
-          <h2 className="text-lg font-bold text-gray-800">Product Unavailable</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            This listing has ended and is no longer available.
-          </p>
-        </div>
+        <EmptyState
+          icon="ri-error-warning-line"
+          title="Product Unavailable"
+          description="This listing has ended and is no longer available."
+        />
       </main>
     );
   }

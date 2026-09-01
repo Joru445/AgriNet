@@ -4,6 +4,9 @@ import TransactionProduct from "../../components/shared/transaction-proof/Transa
 import TransactionProofReview from "../../components/shared/transaction-proof/TransactionProofReview";
 import TransactionProofStatus from "../../components/shared/transaction-proof/TransactionProofStatus";
 import TransactionProofUpload from "../../components/shared/transaction-proof/TransactionProofUpload";
+import TransactionProofSkeleton from "../../components/shared/transaction-proof/TransactionProofSkeleton";
+import PageWrapper from "../../components/ui/PageWrapper";
+import { InlineError } from "../../components/ui/ErrorState";
 
 export default function TransactionProof() {
   const {
@@ -30,7 +33,7 @@ export default function TransactionProof() {
   } = useTransactionProof();
 
   return (
-    <Page>
+    <PageWrapper>
       <div className="mx-auto max-w-3xl pb-18 sm:pb-4">
         {/* Header */}
         <div className="mb-6">
@@ -62,15 +65,7 @@ export default function TransactionProof() {
             <TransactionProduct inquiry={inquiry} />
 
             {/* Error */}
-            {error && (
-              <div className="mt-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3">
-                <div className="flex gap-2">
-                  <i className="ri-error-warning-line text-red-600" />
-
-                  <p className="text-sm text-red-600">{error}</p>
-                </div>
-              </div>
-            )}
+            {error && <InlineError message={error} className="mt-5" />}
 
             {/* Consumer: transaction is ongoing */}
             {isConsumer && status === "ongoing" && (
@@ -163,34 +158,6 @@ export default function TransactionProof() {
           </>
         )}
       </div>
-    </Page>
-  );
-}
-
-function TransactionProofSkeleton() {
-  return (
-    <div className="animate-pulse space-y-5">
-      <div className="rounded-2xl border border-gray-100 bg-white p-5">
-        <div className="flex gap-4">
-          <div className="h-20 w-20 rounded-xl bg-gray-200" />
-          <div className="flex-1 space-y-2">
-            <div className="h-5 w-48 bg-gray-200 rounded" />
-            <div className="h-4 w-32 bg-gray-100 rounded" />
-            <div className="h-4 w-24 bg-gray-100 rounded" />
-          </div>
-        </div>
-      </div>
-      <div className="rounded-2xl border border-gray-100 bg-white p-5">
-        <div className="h-10 w-full bg-gray-100 rounded-xl" />
-      </div>
-    </div>
-  );
-}
-
-function Page({ children }) {
-  return (
-    <main className="min-h-full bg-gray-50 px-4 py-6 sm:px-6 lg:px-8">
-      {children}
-    </main>
+    </PageWrapper>
   );
 }

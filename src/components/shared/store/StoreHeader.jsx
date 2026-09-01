@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import landscape from "../../../assets/img/landscapeCover.jpg";
 
 import { getInitials } from "../../../utils/getInitials";
 import { useAuth } from "../../../context/AuthContext";
+import { getStoreProfilePath } from "../../../utils/routes";
 import ReportModal from "../../common/ReportModal";
+import { applyTransform, COVER_TF, PROFILE_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
 
 export default function StoreHeader({
   farmer,
@@ -37,8 +40,15 @@ export default function StoreHeader({
           "
         >
           <img
-            src={farmer.coverPhoto || landscape}
+            src={
+              isCloudinaryUrl(farmer.coverPhoto)
+                ? applyTransform(farmer.coverPhoto, COVER_TF)
+                : farmer.coverPhoto || landscape
+            }
             alt="Cover"
+            width={1600}
+            height={380}
+            loading="lazy"
             className="h-full w-full object-cover"
           />
 
@@ -64,40 +74,58 @@ export default function StoreHeader({
             <div className="flex items-end gap-4">
               {/* Avatar */}
               <div className="relative -mt-14 shrink-0 sm:-mt-20">
-                {farmer.profilePicture ? (
-                  <img
-                    src={farmer.profilePicture}
-                    alt={farmer.username}
-                    className="
-                      h-28 w-28
-                      rounded-full
-                      border-4 border-white
-                      bg-white
-                      object-cover
-                      shadow-sm
-                      sm:h-40 sm:w-40
-                    "
-                  />
-                ) : (
-                  <div
-                    className="
-                      flex
-                      h-28 w-28
-                      items-center justify-center
-                      rounded-full
-                      border-4 border-white
-                      bg-[#D8F3DC]
-                      text-5xl
-                      font-semibold
-                      text-[#2D6A4F]
-                      shadow-sm
-                      sm:h-40 sm:w-40
-                      sm:text-6xl
-                    "
-                  >
-                    {getInitials(farmer.fullname)}
-                  </div>
-                )}
+                <Link
+                  to={getStoreProfilePath(farmer.uid || farmer.id, profile?.role)}
+                  className="block"
+                  title={`View ${farmer.fullname}'s store`}
+                >
+                  {farmer.profilePicture ? (
+                    <img
+                      src={
+                        isCloudinaryUrl(farmer.profilePicture)
+                          ? applyTransform(farmer.profilePicture, PROFILE_TF)
+                          : farmer.profilePicture
+                      }
+                      alt={farmer.username}
+                      width={160}
+                      height={160}
+                      className="
+                        h-28 w-28
+                        rounded-full
+                        border-4 border-white
+                        bg-white
+                        object-cover
+                        shadow-sm
+                        sm:h-40 sm:w-40
+                        hover:opacity-90
+                        transition
+                        cursor-pointer
+                      "
+                    />
+                  ) : (
+                    <div
+                      className="
+                        flex
+                        h-28 w-28
+                        items-center justify-center
+                        rounded-full
+                        border-4 border-white
+                        bg-[#D8F3DC]
+                        text-5xl
+                        font-semibold
+                        text-[#2D6A4F]
+                        shadow-sm
+                        sm:h-40 sm:w-40
+                        sm:text-6xl
+                        hover:opacity-90
+                        transition
+                        cursor-pointer
+                      "
+                    >
+                      {getInitials(farmer.fullname)}
+                    </div>
+                  )}
+                </Link>
               </div>
 
               {/* Profile Details */}

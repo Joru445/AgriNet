@@ -1,4 +1,33 @@
+import { useState } from "react";
 import { getInitials } from "../../utils/getInitials";
+import { applyTransform, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
+
+const SIZE_CONFIG = {
+  sm: {
+    image: "h-8 w-8",
+    name: "text-sm",
+    username: "text-xs",
+    badge: "text-sm",
+    px: 32,
+    tf: "w_64,h_64,c_fill,f_auto,q_auto",
+  },
+  md: {
+    image: "h-10 w-10",
+    name: "text-sm",
+    username: "text-xs",
+    badge: "text-base",
+    px: 40,
+    tf: "w_80,h_80,c_fill,f_auto,q_auto",
+  },
+  lg: {
+    image: "h-12 w-12",
+    name: "text-base",
+    username: "text-sm",
+    badge: "text-lg",
+    px: 48,
+    tf: "w_96,h_96,c_fill,f_auto,q_auto",
+  },
+};
 
 export default function UserIdentity({
   user,
@@ -11,44 +40,30 @@ export default function UserIdentity({
   colorWhite = false,
   className = "",
 }) {
+  const [imgError, setImgError] = useState(false);
+
   if (!user) return null;
 
   const isCurrentUser = currentUserId && user.uid === currentUserId;
+  const isVerified = showVerified && user.verified === true;
+  const currentSize = SIZE_CONFIG[size] || SIZE_CONFIG.md;
 
-  const isVerified =
-    showVerified && user.verified === true;
-
-  const sizes = {
-    sm: {
-      image: "h-8 w-8",
-      name: "text-sm",
-      username: "text-xs",
-      badge: "text-sm",
-    },
-
-    md: {
-      image: "h-10 w-10",
-      name: "text-sm",
-      username: "text-xs",
-      badge: "text-base",
-    },
-
-    lg: {
-      image: "h-12 w-12",
-      name: "text-base",
-      username: "text-sm",
-      badge: "text-lg",
-    },
-  };
-
-  const currentSize = sizes[size] || sizes.md;
+  const showImage = user.profilePicture && !imgError;
+  const imageSrc = showImage && isCloudinaryUrl(user.profilePicture)
+    ? applyTransform(user.profilePicture, currentSize.tf)
+    : user.profilePicture;
 
   return (
     <div className={`flex min-w-0 items-center gap-3 ${className}`}>
-      {user.profilePicture ? (
+      {showImage ? (
         <img
-          src={user.profilePicture}
+          src={imageSrc}
           alt={user.fullname}
+          width={currentSize.px}
+          height={currentSize.px}
+          loading="lazy"
+          decoding="async"
+          onError={() => setImgError(true)}
           className={`${currentSize.image} shrink-0 rounded-full object-cover`}
         />
       ) : (

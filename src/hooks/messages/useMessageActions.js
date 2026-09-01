@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { sendMessage as sendMessageService } from "../../services/message.service";
 import { createConversation } from "../../services/conversation.service";
 import { uploadMessageImage } from "../../services/cloudinary.service";
-import { compressImage } from "../../utils/imageCompression";
 import { buildFailedMessage } from "../../utils/messaging/buildFailedMessage";
 import { buildOptimisticConversation } from "../../utils/messaging/buildOptimisticConversation";
 import { showToast } from "../../utils/toast";
@@ -68,8 +67,7 @@ export default function useMessageActions({
 
         if (activeImg?.file) {
           stage = "upload-image";
-          const fileToUpload = await compressImage(activeImg.file);
-          const uploaded = await uploadMessageImage(fileToUpload);
+          const uploaded = await uploadMessageImage(activeImg.file);
           imageUrl = uploaded?.url || null;
           imageId = uploaded?.publicId || null;
         }

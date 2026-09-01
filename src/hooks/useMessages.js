@@ -68,8 +68,6 @@ export default function useMessages() {
     setActiveUser,
     setSearchParams,
     message,
-    selectedImage: null,
-    setSelectedImage: () => {},
     clearCurrentDraft,
   });
 

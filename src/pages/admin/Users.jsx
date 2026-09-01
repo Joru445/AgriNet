@@ -6,8 +6,10 @@ import UserManagementHeader from "../../components/admin/users/UserManagementHea
 import StatCard from "../../components/common/StatCard";
 import UserFilters from "../../components/admin/users/UserFilters";
 import UserTable from "../../components/admin/users/UserTable";
+import UserTableSkeleton from "../../components/admin/users/UserTableSkeleton";
 import UserDetailsModal from "../../components/admin/users/UserDetailsModal";
 import UserEditModal from "../../components/admin/users/UserEditModal";
+import { InlineError } from "../../components/ui/ErrorState";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -198,21 +200,9 @@ export default function Users() {
           onSortByChange={setSortBy}
         />
 
-        {error && (
-          <div className="mb-5 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            <i className="ri-error-warning-line text-lg" />
+        {error && <InlineError message={error} />}
 
-            <span>{error}</span>
-          </div>
-        )}
-
-        {actionError && (
-          <div className="mb-5 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            <i className="ri-error-warning-line text-lg" />
-
-            <span>{actionError}</span>
-          </div>
-        )}
+        {actionError && <InlineError message={actionError} />}
 
         {loading ? (
           <UserTableSkeleton />
@@ -242,37 +232,6 @@ export default function Users() {
         }}
         onSave={handleSaveUser}
       />
-    </div>
-  );
-}
-
-function UserTableSkeleton() {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-      <div className="animate-pulse">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-6 border-b border-gray-100 px-5 py-5"
-          >
-            <div className="h-10 w-10 rounded-full bg-gray-200" />
-
-            <div className="flex-1 space-y-2">
-              <div className="h-3 w-32 rounded bg-gray-200" />
-
-              <div className="h-2 w-20 rounded bg-gray-100" />
-            </div>
-
-            <div className="h-3 w-32 rounded bg-gray-200" />
-
-            <div className="h-6 w-20 rounded-full bg-gray-200" />
-
-            <div className="h-6 w-16 rounded-full bg-gray-200" />
-
-            <div className="h-8 w-20 rounded bg-gray-200" />
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

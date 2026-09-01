@@ -29,7 +29,7 @@ export default function useDrafts(currentTargetKey) {
     } else {
       setMessageState("");
     }
-  }, [currentTargetKey]);
+  }, [currentTargetKey, drafts]);
 
   const setMessage = useCallback(
     (value) => {
@@ -50,6 +50,8 @@ export default function useDrafts(currentTargetKey) {
   );
 
   const clearCurrentDraft = useCallback(() => {
+    setMessageState("");
+
     if (!currentTargetKey) return;
 
     setDrafts((previous) => {

@@ -1,21 +1,20 @@
+import { useState } from "react";
 import productPlaceholder from "../../../assets/img/productPlaceholder.png";
 
 import { getFormatPrice, getDiscount, hasProductDiscount } from "../../../utils/price";
 import { useLiveRemainingTime } from "../../../utils/productExpiration";
 
-const CATEGORY_ICONS = {
-  Vegetables: "ri-plant-line",
-  Fruits: "ri-seedling-line",
-  Grains: "ri-leaf-line",
-  Livestock: "ri-heart-line",
-  Herbs: "ri-medicine-bottle-line",
-  "Root Crops": "ri-earth-line",
-  Seafood: "ri-water-flash-line",
-  Others: "ri-shopping-basket-2-line",
-};
+import { CATEGORY_ICONS } from "../../../utils/categoryIcons";
+import { applyTransform, PRODUCT_THUMB_TF, THUMB_SM_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
 
 export default function ProductCard({ product, view, onEdit, onDelete }) {
-  const image = product.images?.[0]?.url || productPlaceholder;
+  const [imgError, setImgError] = useState(false);
+  const rawImage = product.images?.[0]?.url || productPlaceholder;
+  const image = imgError
+    ? productPlaceholder
+    : isCloudinaryUrl(rawImage)
+      ? applyTransform(rawImage, PRODUCT_THUMB_TF)
+      : rawImage;
 
   const { remainingTime, isExpired } = useLiveRemainingTime(product);
   const stockNum = Number(product.stock ?? 0);
@@ -43,6 +42,9 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
           <img
             src={image}
             alt={product.name}
+            width={80}
+            height={80}
+            onError={() => setImgError(true)}
             className="w-full h-full object-cover"
           />
         </div>
@@ -144,6 +146,9 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
         <img
           src={image}
           alt={product.name}
+          width={400}
+          height={400}
+          onError={() => setImgError(true)}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />

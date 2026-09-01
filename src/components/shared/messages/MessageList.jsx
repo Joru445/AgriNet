@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 
 import { useAuth } from "../../../context/AuthContext";
 import MessageBubble from "./MessageBubble";
@@ -6,6 +6,8 @@ import ProductInquiryMessage from "./ProductInquiryMessage";
 import MessageSeparator from "./MessageSeparator";
 
 import { shouldShowSeparator } from "../../../utils/chat";
+
+const SCROLL_THRESHOLD = 120;
 
 export default function MessageList({
   conversation,
@@ -28,32 +30,38 @@ export default function MessageList({
   const prevConvIdRef = useRef(null);
   const prevScrollHeightRef = useRef(0);
   const loadingOlderRef = useRef(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [newMessageCount, setNewMessageCount] = useState(0);
 
   useEffect(() => {
     loadingOlderRef.current = loadingOlder;
   }, [loadingOlder]);
 
-  const scrollToBottom = (behavior = "smooth") => {
+  const scrollToBottom = useCallback((behavior = "smooth") => {
     if (!containerRef.current) return;
     containerRef.current.scrollTo({
       top: containerRef.current.scrollHeight,
       behavior,
     });
-  };
+  }, []);
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-    // Considered near bottom if within 140px of bottom
     const distanceToBottom = scrollHeight - (scrollTop + clientHeight);
-    isNearBottomRef.current = distanceToBottom < 140;
+    const nearBottom = distanceToBottom < SCROLL_THRESHOLD;
+    isNearBottomRef.current = nearBottom;
+    setIsAtBottom(nearBottom);
 
-    // Trigger load older messages when user scrolls near top
+    if (nearBottom) {
+      setNewMessageCount(0);
+    }
+
     if (scrollTop < 80 && hasMoreOlder && !loadingOlderRef.current && onLoadOlder) {
       prevScrollHeightRef.current = scrollHeight;
       onLoadOlder();
     }
-  };
+  }, [hasMoreOlder, onLoadOlder]);
 
   // Preserve scroll offset when older messages are prepended
   useLayoutEffect(() => {
@@ -72,35 +80,47 @@ export default function MessageList({
     if (conversation?.id !== prevConvIdRef.current) {
       prevConvIdRef.current = conversation?.id;
       isNearBottomRef.current = true;
+      setIsAtBottom(true);
+      setNewMessageCount(0);
+      prevMessagesLengthRef.current = 0;
       requestAnimationFrame(() => {
         scrollToBottom("auto");
       });
     }
-  }, [conversation?.id]);
+  }, [conversation?.id, scrollToBottom]);
 
-  // When messages array changes: only auto-scroll if new message was appended and user was already at bottom or sent it
+  // When messages array changes: auto-scroll only when appropriate
   useEffect(() => {
     if (!messages.length) {
       prevMessagesLengthRef.current = 0;
       return;
     }
 
-    const isNewMessage = messages.length > prevMessagesLengthRef.current;
+    const prevLen = prevMessagesLengthRef.current;
+    const isNewMessage = messages.length > prevLen;
     const lastMsg = messages[messages.length - 1];
     const isMyMessage = lastMsg?.senderId === profile?.uid;
 
-    if (prevMessagesLengthRef.current === 0) {
+    if (prevLen === 0) {
+      // First load: jump to bottom
       requestAnimationFrame(() => {
         scrollToBottom("auto");
       });
-    } else if (isNewMessage && (isMyMessage || isNearBottomRef.current)) {
-      requestAnimationFrame(() => {
-        scrollToBottom("smooth");
-      });
+    } else if (isNewMessage) {
+      if (isMyMessage || isNearBottomRef.current) {
+        // User sent a message or is near bottom: auto-scroll
+        requestAnimationFrame(() => {
+          scrollToBottom("smooth");
+        });
+        setNewMessageCount(0);
+      } else {
+        // New message from other user while backreading: show indicator
+        setNewMessageCount((c) => c + 1);
+      }
     }
 
     prevMessagesLengthRef.current = messages.length;
-  }, [messages, profile?.uid]);
+  }, [messages, profile?.uid, scrollToBottom]);
 
   if (loading && !messages.length) {
     return (
@@ -137,7 +157,6 @@ export default function MessageList({
       ? conversation?.unreadCount?.[otherUid]
       : undefined);
 
-  // Check if any message from other user exists in the conversation
   const hasReplyFromOther = Boolean(
     otherUid && messages.some((m) => m.senderId === otherUid),
   );
@@ -146,7 +165,6 @@ export default function MessageList({
     if (message.read === true) return true;
     if (message.status === "failed") return false;
 
-    // 1. If the other user sent a message after this one, this message was seen
     if (hasReplyFromOther && typeof messageIndex === "number") {
       const hasLaterReply = messages
         .slice(messageIndex + 1)
@@ -154,12 +172,10 @@ export default function MessageList({
       if (hasLaterReply) return true;
     }
 
-    // 2. If the other user's unread count is 0 in this conversation
     if (otherUserUnreadCount === 0) {
       return true;
     }
 
-    // 3. Check if other user's lastRead timestamp is >= message timestamp
     if (otherUserLastRead) {
       const readSeconds =
         otherUserLastRead.seconds ||
@@ -193,73 +209,96 @@ export default function MessageList({
   }
 
   return (
-    <div
-      ref={containerRef}
-      onScroll={handleScroll}
-      className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y p-3 sm:p-4 space-y-3 scrollbar-none [overflow-anchor:auto]"
-    >
-      {/* Top Pagination Loader / Action */}
-      {hasMoreOlder && (
-        <div className="flex justify-center py-1.5 pb-2">
-          {loadingOlder ? (
-            <div className="flex items-center gap-2 text-xs text-gray-500 font-semibold bg-white/90 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-gray-200 shadow-2xs">
-              <i className="ri-loader-4-line animate-spin text-sm text-[#2D6A4F]" />
-              <span>Loading earlier messages...</span>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                if (containerRef.current) {
-                  prevScrollHeightRef.current =
-                    containerRef.current.scrollHeight;
-                }
-                onLoadOlder?.();
-              }}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] bg-[#E8F5EE]/80 hover:bg-[#E8F5EE] px-4 py-1.5 rounded-full border border-[#2D6A4F]/25 shadow-2xs transition cursor-pointer active:scale-95"
-            >
-              <i className="ri-history-line text-sm" />
-              <span>Load earlier messages</span>
-            </button>
-          )}
-        </div>
-      )}
-
-      {messages.map((message, index) => {
-        const previous = messages[index - 1];
-        const isLastMine = index === lastMineIndex;
-        const isSeen = checkIfSeen(message, index);
-
-        return (
-          <div key={message.id}>
-            {shouldShowSeparator(message, previous) && (
-              <MessageSeparator timestamp={message.createdAt} />
-            )}
-
-            {message.type === "product_inquiry" ? (
-              <ProductInquiryMessage
-                user={user}
-                message={message}
-                product={inquiryProducts?.[message.productId]}
-                onAccept={onAcceptInquiry}
-                isLastMine={isLastMine}
-                isSeen={isSeen}
-              />
+    <div className="flex-1 min-w-0 flex flex-col relative overflow-hidden">
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y p-3 sm:p-4 space-y-3 scrollbar-none [overflow-anchor:auto]"
+      >
+        {/* Top Pagination Loader / Action */}
+        {hasMoreOlder && (
+          <div className="flex justify-center py-1.5 pb-2">
+            {loadingOlder ? (
+              <div className="flex items-center gap-2 text-xs text-gray-500 font-semibold bg-white/90 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-gray-200 shadow-2xs">
+                <i className="ri-loader-4-line animate-spin text-sm text-[#2D6A4F]" />
+                <span>Loading earlier messages...</span>
+              </div>
             ) : (
-              <MessageBubble
-                user={user}
-                message={message}
-                isLastMine={isLastMine}
-                isSeen={isSeen}
-                onRetry={onRetry}
-                onDeleteFailed={onDeleteFailed}
-              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (containerRef.current) {
+                    prevScrollHeightRef.current =
+                      containerRef.current.scrollHeight;
+                  }
+                  onLoadOlder?.();
+                }}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] bg-[#E8F5EE]/80 hover:bg-[#E8F5EE] px-4 py-1.5 rounded-full border border-[#2D6A4F]/25 shadow-2xs transition cursor-pointer active:scale-95"
+              >
+                <i className="ri-history-line text-sm" />
+                <span>Load earlier messages</span>
+              </button>
             )}
           </div>
-        );
-      })}
+        )}
 
-      <div ref={bottomRef} className="h-0.5" />
+        {messages.map((message, index) => {
+          const previous = messages[index - 1];
+          const isLastMine = index === lastMineIndex;
+          const isSeen = checkIfSeen(message, index);
+
+          return (
+            <div key={message.id}>
+              {shouldShowSeparator(message, previous) && (
+                <MessageSeparator timestamp={message.createdAt} />
+              )}
+
+              {message.type === "product_inquiry" ? (
+                <ProductInquiryMessage
+                  user={user}
+                  message={message}
+                  product={inquiryProducts?.[message.productId]}
+                  onAccept={onAcceptInquiry}
+                  isLastMine={isLastMine}
+                  isSeen={isSeen}
+                />
+              ) : (
+                <MessageBubble
+                  user={user}
+                  message={message}
+                  isLastMine={isLastMine}
+                  isSeen={isSeen}
+                  onRetry={onRetry}
+                  onDeleteFailed={onDeleteFailed}
+                />
+              )}
+            </div>
+          );
+        })}
+
+        <div ref={bottomRef} className="h-0.5" />
+      </div>
+
+      {/* New messages indicator */}
+      {!isAtBottom && newMessageCount > 0 && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <button
+            type="button"
+            onClick={() => {
+              setNewMessageCount(0);
+              scrollToBottom("smooth");
+            }}
+            className="flex items-center gap-2 bg-[#2D6A4F] text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg hover:bg-[#1B4332] transition cursor-pointer active:scale-95"
+          >
+            <i className="ri-arrow-down-line text-sm" />
+            <span>
+              {newMessageCount === 1
+                ? "1 new message"
+                : `${newMessageCount} new messages`}
+            </span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
