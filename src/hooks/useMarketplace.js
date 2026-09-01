@@ -65,6 +65,8 @@ export default function useMarketplace() {
 
   const page = Number(searchParams.get("page") ?? 1);
 
+  const loadingMoreRef = useRef(false);
+
   const loadProducts = useCallback(async ({ reset = false, useCache = true } = {}) => {
     try {
       if (reset) {
@@ -77,18 +79,29 @@ export default function useMarketplace() {
         setLoading(true);
         cursorRef.current = null;
       } else {
+        // Guard: don't fetch if already loading more
+        if (loadingMoreRef.current) return;
         setLoadingMore(true);
+        loadingMoreRef.current = true;
       }
 
       const result = await getMarketplaceProductsPage({
         cursor: reset ? null : cursorRef.current,
       });
 
-      setProducts((current) =>
-        reset ? result.products : [...current, ...result.products],
-      );
+      if (reset) {
+        setProducts(result.products);
+      } else if (result.products.length > 0) {
+        // Deduplicate by product ID before appending
+        setProducts((current) => {
+          const existingIds = new Set(current.map((p) => p.id));
+          const newProducts = result.products.filter((p) => !existingIds.has(p.id));
+          return newProducts.length > 0 ? [...current, ...newProducts] : current;
+        });
+      }
+
       cursorRef.current = result.cursor;
-      setHasMore(result.hasMore);
+      setHasMore(result.hasMore && result.products.length > 0);
 
       if (reset) {
         pageCache.set(CACHE_KEY, result.products, CACHE_TTL);
@@ -99,6 +112,7 @@ export default function useMarketplace() {
     } finally {
       setLoading(false);
       setLoadingMore(false);
+      loadingMoreRef.current = false;
     }
   }, []);
 

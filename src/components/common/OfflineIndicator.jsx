@@ -39,7 +39,7 @@ export default function OfflineIndicator() {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-[99999] flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white shadow-md"
+      className="shrink-0 z-[9996] flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white"
       role="alert"
       aria-live="assertive"
       style={{

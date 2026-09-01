@@ -3,9 +3,12 @@ import { usePWAUpdate } from '../../hooks/usePWAUpdate'
 /**
  * Non-intrusive prompt displayed when a new version of AgriNet is available.
  * The user can dismiss it or tap "Update" to apply the update and reload.
+ *
+ * Dismissal is tracked in sessionStorage so the prompt does not reappear
+ * during the same session unless a genuinely new update is detected.
  */
 export default function PWAUpdatePrompt() {
-  const { needRefresh, updateServiceWorker } = usePWAUpdate()
+  const { needRefresh, updateServiceWorker, dismissUpdate } = usePWAUpdate()
 
   if (!needRefresh) return null
 
@@ -30,7 +33,7 @@ export default function PWAUpdatePrompt() {
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             type="button"
-            onClick={() => updateServiceWorker(false)}
+            onClick={dismissUpdate}
             className="rounded-xl bg-white/15 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition-colors cursor-pointer"
           >
             Later
