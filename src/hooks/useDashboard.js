@@ -7,6 +7,9 @@ import { getRecentFarmerReviews } from "../services/farmer-review.service";
 import { subscribeUserConversations } from "../services/conversation.service";
 
 import { showToast } from "../utils/toast";
+import * as pageCache from "../utils/pageCache";
+
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
 export default function useDashboard() {
   const { profile } = useAuth();
@@ -27,6 +30,17 @@ export default function useDashboard() {
 
   const loadDashboard = useCallback(async () => {
     if (!profile?.uid) return;
+
+    // Check cache first
+    const cacheKey = `farmerDashboard:${profile.uid}`;
+    const cached = pageCache.get(cacheKey);
+    if (cached) {
+      setStats(cached.stats);
+      setRecentProducts(cached.recentProducts);
+      setRecentReviews(cached.recentReviews);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -60,6 +74,17 @@ export default function useDashboard() {
         reviewCount,
         averageRating,
       }));
+
+      // Cache the data
+      pageCache.set(cacheKey, {
+        stats: {
+          totalProducts: products.length,
+          reviewCount,
+          averageRating,
+        },
+        recentProducts: products.slice(0, 4),
+        recentReviews: reviews,
+      }, CACHE_TTL);
     } catch (error) {
       console.error(error);
       showToast.error("Failed to load dashboard.");
@@ -105,6 +130,11 @@ export default function useDashboard() {
     recentReviews,
     recentConversations,
 
-    reloadDashboard: loadDashboard,
+    reloadDashboard: () => {
+      if (profile?.uid) {
+        pageCache.invalidate(`farmerDashboard:${profile.uid}`);
+      }
+      loadDashboard();
+    },
   };
 }

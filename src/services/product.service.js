@@ -17,6 +17,7 @@ import {
 
 import { db } from "../firebase/firestore";
 import { getProductReviewSummaries } from "./product-review.service";
+import * as pageCache from "../utils/pageCache";
 
 const productsRef = collection(db, "products");
 
@@ -104,6 +105,12 @@ export async function createProduct(data) {
     createdAt: serverTimestamp(),
   });
 
+  // Invalidate related caches
+  pageCache.invalidate("homeProducts");
+  pageCache.invalidate("marketplaceProducts");
+  pageCache.invalidatePrefix(`storeProfile:${data.farmerId}`);
+  pageCache.invalidatePrefix(`farmerDashboard:${data.farmerId}`);
+
   return docRef.id;
 }
 
@@ -125,10 +132,35 @@ export async function updateProduct(id, data) {
   }
 
   await updateDoc(doc(db, "products", id), updatePayload);
+
+  // Invalidate related caches
+  pageCache.invalidate("homeProducts");
+  pageCache.invalidate("marketplaceProducts");
+  pageCache.invalidate(`product:${id}`);
+
+  // Invalidate store profile and farmer dashboard if farmerId is available
+  if (data.farmerId) {
+    pageCache.invalidatePrefix(`storeProfile:${data.farmerId}`);
+    pageCache.invalidatePrefix(`farmerDashboard:${data.farmerId}`);
+  }
 }
 
 export async function deleteProduct(id) {
+  // Get the product first to find the farmerId for cache invalidation
+  const productDoc = await getDoc(doc(db, "products", id));
+  const farmerId = productDoc.exists() ? productDoc.data().farmerId : null;
+
   await deleteDoc(doc(db, "products", id));
+
+  // Invalidate related caches
+  pageCache.invalidate("homeProducts");
+  pageCache.invalidate("marketplaceProducts");
+  pageCache.invalidate(`product:${id}`);
+
+  if (farmerId) {
+    pageCache.invalidatePrefix(`storeProfile:${farmerId}`);
+    pageCache.invalidatePrefix(`farmerDashboard:${farmerId}`);
+  }
 }
 
 export async function getMarketplaceProductsPage({ pageSize = 24, cursor } = {}) {

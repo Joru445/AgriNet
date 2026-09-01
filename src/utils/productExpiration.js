@@ -59,6 +59,7 @@ export function getRemainingTime(product) {
 
 /**
  * React Hook for real-time live countdown timer (ticks automatically without page refresh).
+ * Uses a single interval and ref to avoid unnecessary re-renders when time hasn't changed significantly.
  */
 export function useLiveRemainingTime(product) {
   const [remainingTime, setRemainingTime] = useState(() =>
@@ -76,12 +77,13 @@ export function useLiveRemainingTime(product) {
     const update = () => {
       const time = getRemainingTime(product);
       const expired = isProductExpired(product);
-      setRemainingTime(time);
+      // Only update state if the time string actually changed (avoid re-renders for same display)
+      setRemainingTime((prev) => prev === time ? prev : time);
       setIsExpired(expired);
     };
 
     update();
-    const interval = setInterval(update, 1000);
+    const interval = setInterval(update, 60000); // Update every minute instead of every second
     return () => clearInterval(interval);
   }, [
     product?.expiresAt,

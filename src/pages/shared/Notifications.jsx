@@ -1,18 +1,10 @@
-import { useState } from "react";
+import { useNotificationsContext } from "../../context/NotificationsContext";
 
 import NotificationList from "../../components/shared/notifications/NotificationList";
 
 export default function Notifications() {
-  // Temporary state only.
-  // Later:
-  // const { notifications, loading, markAllAsRead } = useNotifications();
-
-  const [notifications] = useState([]);
-  const [loading] = useState(false);
-
-  const unreadCount = notifications.filter(
-    (notification) => !notification.read
-  ).length;
+  const { notifications, loading, unreadCount, markAllAsRead } =
+    useNotificationsContext();
 
   return (
     <div className="mx-auto w-full max-w-3xl p-4 md:p-6 pb-18 md:pb-4">
@@ -30,6 +22,7 @@ export default function Notifications() {
         {unreadCount > 0 && (
           <button
             type="button"
+            onClick={markAllAsRead}
             className="text-sm font-medium text-[#2D6A4F] transition hover:text-[#1F5139]"
           >
             Mark all as read

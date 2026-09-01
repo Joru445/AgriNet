@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 
 import { getProductById } from "../services/product.service";
 import { getFarmerById } from "../services/farmer.service";
+import * as pageCache from "../utils/pageCache";
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export default function useProductDetails() {
   const { id } = useParams();
@@ -26,6 +29,26 @@ export default function useProductDetails() {
     try {
       setLoadingProduct(true);
 
+      // Check cache first
+      const cacheKey = `product:${id}`;
+      const cached = pageCache.get(cacheKey);
+      if (cached) {
+        setProduct(cached.product);
+        setReviewCount(cached.reviewCount);
+        setAverageRating(cached.averageRating);
+
+        if (cached.product.farmerId) {
+          setLoadingFarmer(true);
+          getFarmerById(cached.product.farmerId)
+            .then(setFarmer)
+            .catch(() => setFarmer(null))
+            .finally(() => setLoadingFarmer(false));
+        }
+
+        setLoadingProduct(false);
+        return;
+      }
+
       const productData = await getProductById(id);
 
       if (!productData) {
@@ -43,6 +66,9 @@ export default function useProductDetails() {
       setProduct(productData);
       setReviewCount(reviewCount);
       setAverageRating(averageRating);
+
+      // Cache the product data
+      pageCache.set(cacheKey, { product: productData, reviewCount, averageRating }, CACHE_TTL);
 
       if (productData.farmerId) {
         setLoadingFarmer(true);
@@ -76,6 +102,9 @@ export default function useProductDetails() {
     primaryImage,
     isAvailable,
 
-    refresh: loadProduct,
+    refresh: () => {
+      pageCache.invalidate(`product:${id}`);
+      loadProduct();
+    },
   };
 }

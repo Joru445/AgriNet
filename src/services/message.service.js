@@ -17,6 +17,10 @@ import {
 
 import { db } from "../firebase/firestore";
 import { auth } from "../firebase/auth";
+import {
+  createNotificationIdempotent,
+  getMessageNotificationId,
+} from "./notification.service";
 
 const messagesRef = collection(db, "messages");
 const conversationsRef = collection(db, "conversations");
@@ -110,6 +114,28 @@ export async function sendMessage({
   });
 
   await batch.commit();
+
+  // Create notification for the receiver
+  if (receiverId && receiverId !== actualSenderId) {
+    await createNotificationIdempotent({
+      notificationId: getMessageNotificationId(messageRef.id, receiverId),
+      data: {
+        recipientId: receiverId,
+        type: "message",
+        title: "New Message",
+        body: "You received a new message.",
+        actorId: actualSenderId,
+        entityType: "message",
+        entityId: messageRef.id,
+        data: {
+          messageId: messageRef.id,
+          conversationId,
+        },
+      },
+    }).catch((err) => {
+      console.warn("Failed to create message notification:", err);
+    });
+  }
 
   return messageRef.id;
 }

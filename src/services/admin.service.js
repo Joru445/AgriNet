@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
+import * as pageCache from "../utils/pageCache";
 
 const usersRef = collection(db, "users");
 const productsRef = collection(db, "products");
@@ -42,6 +43,9 @@ export async function setUserSuspension(uid, status) {
   await updateDoc(userRef, {
     status,
   });
+
+  // Invalidate admin dashboard cache
+  pageCache.invalidate("adminDashboard");
 }
 
 /**
@@ -69,6 +73,9 @@ export async function setUserRole(uid, role) {
     role,
     updatedAt: serverTimestamp(),
   });
+
+  // Invalidate admin dashboard cache
+  pageCache.invalidate("adminDashboard");
 
   return {
     uid,

@@ -51,39 +51,7 @@ export default function MarketplaceSkeleton() {
             </div>
           </div>
 
-          {/* Product Grid */}
-          <div
-            className="
-              grid
-              grid-cols-2
-              sm:grid-cols-3
-              xl:grid-cols-4
-              gap-3
-              sm:gap-4
-            "
-          >
-            {Array.from({ length: 12 }).map((_, index) => (
-              <div
-                key={index}
-                className="overflow-hidden rounded-2xl border border-gray-200 bg-white"
-              >
-                {/* Image */}
-                <div className="aspect-square bg-gray-200" />
-
-                {/* Content */}
-                <div className="p-3 space-y-3">
-                  <div className="h-4 w-3/4 rounded bg-gray-200" />
-
-                  <div className="h-3 w-1/2 rounded bg-gray-200" />
-
-                  <div className="flex items-center justify-between">
-                    <div className="h-5 w-20 rounded bg-gray-200" />
-                    <div className="h-4 w-12 rounded bg-gray-200" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ProductGridSkeleton />
 
           {/* Pagination */}
           <div className="flex justify-center gap-2 pt-4">
@@ -94,6 +62,43 @@ export default function MarketplaceSkeleton() {
           </div>
         </section>
       </div>
+    </div>
+  );
+}
+
+export function ProductGridSkeleton({ count = 12 }) {
+  return (
+    <div
+      className="
+        grid
+        grid-cols-2
+        sm:grid-cols-3
+        xl:grid-cols-4
+        gap-3
+        sm:gap-4
+      "
+    >
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className="overflow-hidden rounded-2xl border border-gray-200 bg-white"
+        >
+          {/* Image */}
+          <div className="aspect-square bg-gray-200" />
+
+          {/* Content */}
+          <div className="p-3 space-y-3">
+            <div className="h-4 w-3/4 rounded bg-gray-200" />
+
+            <div className="h-3 w-1/2 rounded bg-gray-200" />
+
+            <div className="flex items-center justify-between">
+              <div className="h-5 w-20 rounded bg-gray-200" />
+              <div className="h-4 w-12 rounded bg-gray-200" />
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

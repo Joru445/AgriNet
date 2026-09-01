@@ -1,4 +1,25 @@
 import { Link } from "react-router-dom";
+import { useNotificationsContext } from "../../../context/NotificationsContext";
+import { getNotificationTarget } from "../../../utils/getNotificationTarget";
+
+function formatNotificationTime(createdAt) {
+  if (!createdAt) return "";
+
+  const date = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+
+  if (diffSec < 60) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffDay < 7) return `${diffDay}d ago`;
+
+  return date.toLocaleDateString();
+}
 
 const notificationIcons = {
   inquiry: "ri-question-answer-line",
@@ -11,10 +32,20 @@ const notificationIcons = {
 
 export default function NotificationItem({ notification }) {
   const icon = notificationIcons[notification.type] || "ri-notification-3-line";
+  const { markAsRead } = useNotificationsContext();
+
+  const target = getNotificationTarget(notification);
+
+  function handleClick() {
+    if (!notification.read) {
+      markAsRead(notification);
+    }
+  }
 
   return (
     <Link
-      to={notification.to || "/notifications"}
+      to={target}
+      onClick={handleClick}
       className={`flex gap-4 rounded-2xl border p-4 transition ${
         !notification.read
           ? "border-[#2D6A4F]/20 bg-[#F3FAF6] hover:bg-[#EAF6EE]"
@@ -41,10 +72,12 @@ export default function NotificationItem({ notification }) {
         </div>
 
         <p className="mt-1 text-sm leading-relaxed text-gray-500">
-          {notification.message}
+          {notification.body}
         </p>
 
-        <p className="mt-2 text-xs text-gray-400">{notification.time}</p>
+        <p className="mt-2 text-xs text-gray-400">
+          {formatNotificationTime(notification.createdAt)}
+        </p>
       </div>
     </Link>
   );

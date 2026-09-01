@@ -14,6 +14,7 @@ import {
 
 import { db } from "../firebase/firestore";
 import { getUserProfile } from "./user.service";
+import * as pageCache from "../utils/pageCache";
 
 const reviewsRef = collection(db, "reviews");
 const inquiriesRef = collection(db, "inquiries");
@@ -214,6 +215,10 @@ export async function createReview(data) {
   } catch (err) {
     console.warn("Could not update farmer aggregate rating:", err);
   }
+
+  // Invalidate related caches
+  pageCache.invalidatePrefix(`storeProfile:${farmerId}`);
+  pageCache.invalidatePrefix(`farmerDashboard:${farmerId}`);
 
   return reviewRef.id;
 }

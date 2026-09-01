@@ -54,7 +54,7 @@ export default function Home() {
           <RelevantProductsSkeleton />
         </div>
       ) : (
-        <div className="px-2 space-y-8">
+        <div className="px-2 sm:px-4 space-y-8">
           <NearYouSection
             products={nearbyProducts}
             userLocation={userLocation}

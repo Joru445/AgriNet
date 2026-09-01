@@ -5,6 +5,9 @@ import { getFarmerById } from "../services/farmer.service";
 import { getFarmerProducts } from "../services/product.service";
 import { getFarmerReviews } from "../services/farmer-review.service";
 import { getProductReviewSummaries } from "../services/product-review.service";
+import * as pageCache from "../utils/pageCache";
+
+const CACHE_TTL = 3 * 60 * 1000; // 3 minutes
 
 export default function useStoreProfile() {
   const { uid } = useParams();
@@ -100,10 +103,41 @@ export default function useStoreProfile() {
   }, [uid]);
 
   useEffect(() => {
+    if (!uid) return;
+
+    // Check cache first
+    const cacheKey = `storeProfile:${uid}`;
+    const cached = pageCache.get(cacheKey);
+    if (cached) {
+      setFarmer(cached.farmer);
+      setProducts(cached.products);
+      setReviews(cached.reviews);
+      setReviewCount(cached.reviewCount);
+      setAverageRating(cached.averageRating);
+      setLoadingFarmer(false);
+      setLoadingProducts(false);
+      setLoadingReviews(false);
+      return;
+    }
+
     loadFarmer();
     loadProducts();
     loadReviews();
-  }, [loadFarmer, loadProducts, loadReviews]);
+  }, [uid, loadFarmer, loadProducts, loadReviews]);
+
+  // Cache data when all loads complete
+  useEffect(() => {
+    if (!uid || loadingFarmer || loadingProducts || loadingReviews) return;
+
+    const cacheKey = `storeProfile:${uid}`;
+    pageCache.set(cacheKey, {
+      farmer,
+      products,
+      reviews,
+      reviewCount,
+      averageRating,
+    }, CACHE_TTL);
+  }, [uid, farmer, products, reviews, reviewCount, averageRating, loadingFarmer, loadingProducts, loadingReviews]);
 
   const loading = loadingFarmer;
 
@@ -123,6 +157,7 @@ export default function useStoreProfile() {
     reviewCount,
 
     refresh: () => {
+      pageCache.invalidate(`storeProfile:${uid}`);
       loadFarmer();
       loadProducts();
       loadReviews();

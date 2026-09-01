@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
+import * as pageCache from "../utils/pageCache";
 
 const productReviewsRef = collection(db, "product-reviews");
 const productsRef = collection(db, "products");
@@ -189,6 +190,11 @@ export async function createProductReview(data) {
   } catch (err) {
     console.warn("Could not update product ratingSummary:", err);
   }
+
+  // Invalidate related caches
+  pageCache.invalidate(`product:${productId}`);
+  pageCache.invalidate("homeProducts");
+  pageCache.invalidate("marketplaceProducts");
 
   return reviewRef.id;
 }

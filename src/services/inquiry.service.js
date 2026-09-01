@@ -12,6 +12,10 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
+import {
+  createNotificationIdempotent,
+  getInquiryNotificationId,
+} from "./notification.service";
 
 const inquiriesRef = collection(db, "inquiries");
 
@@ -108,7 +112,7 @@ export async function acceptProductInquiry({ inquiryMessage, farmer }) {
     inquiryMessage.conversationId,
   );
 
-  return runTransaction(db, async (transaction) => {
+  const result = await runTransaction(db, async (transaction) => {
     const [message, product, consumer, farmerProfile, conversation] =
       await Promise.all([
         transaction.get(messageRef),
@@ -262,8 +266,50 @@ export async function acceptProductInquiry({ inquiryMessage, farmer }) {
       acceptedAt: serverTimestamp(),
     });
 
-    return inquiryRef.id;
+    return {
+      inquiryId: inquiryRef.id,
+      consumerId: messageData.senderId,
+      productId: product.id,
+      productName: productData.name,
+      farmerName: farmerData.fullname || farmerData.storeName || "Farmer",
+    };
   });
+
+  // Send notification to consumer that farmer accepted the inquiry
+  if (result) {
+    const recipientId = result.consumerId;
+
+    if (recipientId) {
+      const notificationId = getInquiryNotificationId(
+        inquiryMessage.id,
+        "accepted",
+        recipientId
+      );
+
+      await createNotificationIdempotent({
+        notificationId,
+        data: {
+          recipientId,
+          type: "inquiry",
+          title: "Inquiry Accepted",
+          body: "Farmer accepted your inquiry. You can now message them to proceed.",
+          actorId: farmer.uid || null,
+          entityType: "inquiry",
+          entityId: inquiryMessage.id,
+          data: {
+            inquiryId: inquiryMessage.id,
+            eventType: "accepted",
+            productId: result.productId,
+            productName: result.productName,
+          },
+        },
+      }).catch((err) => {
+        console.warn(`Could not dispatch inquiry accepted notification:`, err);
+      });
+    }
+  }
+
+  return result?.inquiryId;
 }
 
 /**
@@ -291,6 +337,14 @@ export async function updateInquiryStatus({ inquiryId, status, actor }) {
 
   const inquiryRef = doc(db, "inquiries", inquiryId);
 
+  // Fetch current status before update
+  const currentSnap = await getDoc(inquiryRef);
+  if (!currentSnap.exists()) {
+    throw new Error("Inquiry not found.");
+  }
+  const currentInquiry = currentSnap.data();
+  const currentStatus = normalizeStatus(currentInquiry.status);
+
   await runTransaction(db, async (transaction) => {
     const snapshot = await transaction.get(inquiryRef);
 
@@ -299,8 +353,6 @@ export async function updateInquiryStatus({ inquiryId, status, actor }) {
     }
 
     const inquiry = snapshot.data();
-
-    const currentStatus = normalizeStatus(inquiry.status);
 
     assertTransition({
       inquiry,
@@ -318,13 +370,6 @@ export async function updateInquiryStatus({ inquiryId, status, actor }) {
       update.ongoingAt = serverTimestamp();
     }
 
-    /*
-     * Consumer requesting completion
-     * does NOT mean the transaction is
-     * completed.
-     *
-     * It means proof is now required.
-     */
     if (status === "awaiting_proof") {
       update.completionRequestedAt = serverTimestamp();
       update.completionRequestedBy = actor.uid;
@@ -332,18 +377,9 @@ export async function updateInquiryStatus({ inquiryId, status, actor }) {
 
     if (status === "cancelled") {
       update.cancelledAt = serverTimestamp();
-
       update.cancelledBy = actor.uid;
     }
 
-    /*
-     * `completed` should normally only be
-     * reached through confirmTransactionProof().
-     *
-     * This guard prevents somebody from
-     * directly calling updateInquiryStatus()
-     * with completed.
-     */
     if (status === "completed") {
       throw new Error(
         "A transaction can only be completed after the farmer confirms the proof.",
@@ -351,6 +387,92 @@ export async function updateInquiryStatus({ inquiryId, status, actor }) {
     }
 
     transaction.update(inquiryRef, update);
+  });
+
+  // Send notification after transaction commits
+  const updatedSnap = await getDoc(inquiryRef);
+  if (updatedSnap.exists()) {
+    const updatedInquiry = updatedSnap.data();
+    const isFarmer = actor.role === "farmer";
+    const recipientId = isFarmer ? updatedInquiry.consumerId : updatedInquiry.farmerId;
+    const actorName = isFarmer
+      ? updatedInquiry.farmerSnapshot?.fullname || "Farmer"
+      : updatedInquiry.consumerSnapshot?.fullname || "Consumer";
+
+    const productName = updatedInquiry.productSnapshot?.name || "the product";
+
+    let eventType;
+    let title;
+    let body;
+
+    switch (status) {
+      case "ongoing":
+        eventType = "ongoing";
+        title = "Transaction Started";
+        body = `${actorName} started the transaction for "${productName}". Please coordinate delivery.`;
+        break;
+      case "awaiting_proof":
+        eventType = "awaiting_proof";
+        title = "Proof Required";
+        body = `${actorName} requested completion for "${productName}". Please upload transaction proof.`;
+        break;
+      case "cancelled":
+        eventType = "cancelled";
+        title = "Transaction Cancelled";
+        body = `${actorName} cancelled the transaction for "${productName}".`;
+        break;
+      default:
+        return;
+    }
+
+    await sendInquiryNotification({
+      inquiryId,
+      inquiry: updatedInquiry,
+      eventType,
+      actor,
+      recipientId,
+      title,
+      body,
+    });
+  }
+}
+
+/**
+ * Create idempotent notification for inquiry lifecycle events.
+ * Must be called AFTER the transaction commits, with the inquiry data.
+ */
+async function sendInquiryNotification({
+  inquiryId,
+  inquiry,
+  eventType,
+  actor,
+  recipientId,
+  title,
+  body,
+}) {
+  if (!recipientId) return;
+
+  const notificationId = getInquiryNotificationId(inquiryId, eventType, recipientId);
+
+  await createNotificationIdempotent({
+    notificationId,
+    data: {
+      recipientId,
+      type: "inquiry",
+      title,
+      body,
+      actorId: actor?.uid || null,
+      entityType: "inquiry",
+      entityId: inquiryId,
+      data: {
+        inquiryId,
+        eventType,
+        productId: inquiry.productId,
+        productName: inquiry.productSnapshot?.name,
+      },
+    },
+  }).catch((err) => {
+    console.warn(`Could not dispatch inquiry ${eventType} notification:`, err);
   });
 }
 
@@ -432,6 +554,24 @@ export async function submitTransactionProof({ inquiryId, consumerId, proof }) {
       statusUpdatedAt: serverTimestamp(),
     });
   });
+
+  // Send notification to farmer that proof was submitted
+  const updatedSnap = await getDoc(inquiryRef);
+  if (updatedSnap.exists()) {
+    const updatedInquiry = updatedSnap.data();
+    const consumerName = updatedInquiry.consumerSnapshot?.fullname || "Consumer";
+    const productName = updatedInquiry.productSnapshot?.name || "the product";
+
+    await sendInquiryNotification({
+      inquiryId,
+      inquiry: updatedInquiry,
+      eventType: "proof_submitted",
+      actor: { uid: consumerId, role: "consumer" },
+      recipientId: updatedInquiry.farmerId,
+      title: "Proof Submitted",
+      body: `${consumerName} submitted transaction proof for "${productName}". Please review and confirm.`,
+    });
+  }
 }
 
 /**
@@ -480,6 +620,24 @@ export async function confirmTransactionProof({ inquiryId, farmerId }) {
       statusUpdatedAt: serverTimestamp(),
     });
   });
+
+  // Send notification to consumer that transaction was completed
+  const updatedSnap = await getDoc(inquiryRef);
+  if (updatedSnap.exists()) {
+    const updatedInquiry = updatedSnap.data();
+    const farmerName = updatedInquiry.farmerSnapshot?.fullname || "Farmer";
+    const productName = updatedInquiry.productSnapshot?.name || "the product";
+
+    await sendInquiryNotification({
+      inquiryId,
+      inquiry: updatedInquiry,
+      eventType: "completed",
+      actor: { uid: farmerId, role: "farmer" },
+      recipientId: updatedInquiry.consumerId,
+      title: "Transaction Completed",
+      body: `${farmerName} confirmed the transaction for "${productName}". You can now leave a review.`,
+    });
+  }
 }
 
 /**
@@ -523,6 +681,24 @@ export async function rejectTransactionProof({ inquiryId, farmerId }) {
       statusUpdatedAt: serverTimestamp(),
     });
   });
+
+  // Send notification to consumer that proof was rejected
+  const updatedSnap = await getDoc(inquiryRef);
+  if (updatedSnap.exists()) {
+    const updatedInquiry = updatedSnap.data();
+    const farmerName = updatedInquiry.farmerSnapshot?.fullname || "Farmer";
+    const productName = updatedInquiry.productSnapshot?.name || "the product";
+
+    await sendInquiryNotification({
+      inquiryId,
+      inquiry: updatedInquiry,
+      eventType: "proof_rejected",
+      actor: { uid: farmerId, role: "farmer" },
+      recipientId: updatedInquiry.consumerId,
+      title: "Proof Rejected",
+      body: `${farmerName} rejected the transaction proof for "${productName}". Please upload a new proof.`,
+    });
+  }
 }
 
 /**

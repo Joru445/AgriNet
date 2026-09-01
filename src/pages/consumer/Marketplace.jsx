@@ -6,13 +6,12 @@ import MobileFiltersDrawer from "../../components/consumer/marketplace/MobileFil
 import ProductsToolbar from "../../components/consumer/marketplace/ProductsToolbar";
 import ProductsContainer from "../../components/consumer/marketplace/ProductsContainer";
 
-import ProductGridSkeleton from "../../components/consumer/marketplace/MarketplaceSkeleton";
+import { ProductGridSkeleton } from "../../components/consumer/marketplace/MarketplaceSkeleton";
 import MarketplaceSubHeader from "../../components/consumer/layout/MarketplaceSubHeader";
 
 export default function Marketplace() {
   const {
     loading,
-    products,
     filteredProducts,
     totalProducts,
 
@@ -46,14 +45,14 @@ export default function Marketplace() {
           onChange={(value) => updateFilter("category", value)}
         />
 
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-6 px-2 sm:px-4">
           <FiltersSidebar
             filters={filters}
             onChange={updateFilter}
             onReset={resetFilters}
           />
 
-          <section className="min-w-0 flex-1 space-y-4 px-2">
+          <section className="min-w-0 flex-1 space-y-4">
             <ProductsToolbar
               total={totalProducts}
               loading={loading}
@@ -67,8 +66,7 @@ export default function Marketplace() {
               <ProductGridSkeleton />
             ) : (
               <ProductsContainer
-                products={products}
-                filteredProducts={filteredProducts}
+                products={filteredProducts}
                 hasActiveFilter={hasActiveFilters}
                 page={page}
                 totalPages={totalPages}

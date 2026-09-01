@@ -1,20 +1,24 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { getMarketplaceProductsPage } from "../services/product.service";
 import useUserLocation from "./useUserLocation";
 import { getDistanceKm } from "../utils/distance";
 import { isProductExpired } from "../utils/productExpiration";
 import { showToast } from "../utils/toast";
+import * as pageCache from "../utils/pageCache";
 
 const HOME_PRODUCT_LIMIT = 12;
 const NEARBY_RADIUS_KM = 5;
+const CACHE_KEY = "homeProducts";
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
 export default function useHomeProducts() {
   const { location: userLocation } = useUserLocation();
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(() => pageCache.get(CACHE_KEY) ?? []);
+  const [loading, setLoading] = useState(!pageCache.get(CACHE_KEY));
   const [, setTick] = useState(0);
+  const loadedRef = useRef(!!pageCache.get(CACHE_KEY));
 
   // Auto-tick every second so expired listings disappear immediately without refresh
   useEffect(() => {
@@ -24,8 +28,15 @@ export default function useHomeProducts() {
     return () => clearInterval(timer);
   }, []);
 
-  const loadProducts = useCallback(async () => {
+  const loadProducts = useCallback(async ({ useCache = true } = {}) => {
     try {
+      const cached = useCache ? pageCache.get(CACHE_KEY) : null;
+      if (cached) {
+        setProducts(cached);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
 
       const result = await getMarketplaceProductsPage({
@@ -33,7 +44,10 @@ export default function useHomeProducts() {
         limit: HOME_PRODUCT_LIMIT,
       });
 
-      setProducts(result.products ?? []);
+      const data = result.products ?? [];
+      setProducts(data);
+      pageCache.set(CACHE_KEY, data, CACHE_TTL);
+      loadedRef.current = true;
     } catch (error) {
       console.error(error);
       showToast.error("Failed to load products.");
@@ -169,6 +183,6 @@ export default function useHomeProducts() {
 
     userLocation,
 
-    reloadProducts: loadProducts,
+    reloadProducts: () => loadProducts({ useCache: false }),
   };
 }

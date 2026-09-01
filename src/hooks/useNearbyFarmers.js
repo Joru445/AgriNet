@@ -5,6 +5,10 @@ import { useAuth } from "../context/AuthContext";
 
 import { getFarmers } from "../services/farmer.service";
 import { getDistanceKm } from "../utils/distance";
+import * as pageCache from "../utils/pageCache";
+
+const CACHE_KEY = "nearbyFarmers";
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export default function useNearbyFarmers() {
   const { profile } = useAuth();
@@ -38,8 +42,8 @@ export default function useNearbyFarmers() {
     return { lat: 13.9411, lng: 121.6243 };
   }, [gpsLocation, profile]);
 
-  const [loading, setLoading] = useState(true);
-  const [farmers, setFarmers] = useState([]);
+  const [loading, setLoading] = useState(!pageCache.get(CACHE_KEY));
+  const [farmers, setFarmers] = useState(() => pageCache.get(CACHE_KEY) ?? []);
 
   const [maxDistance, setMaxDistanceState] = useState(() => {
     const stored = localStorage.getItem("agri_nearby_distance");
@@ -60,6 +64,11 @@ export default function useNearbyFarmers() {
   }, []);
 
   useEffect(() => {
+    const cached = pageCache.get(CACHE_KEY);
+    if (cached) {
+      setLoading(false);
+      return;
+    }
     loadFarmers();
   }, []);
 
@@ -67,9 +76,17 @@ export default function useNearbyFarmers() {
     try {
       setLoading(true);
 
+      const cached = pageCache.get(CACHE_KEY);
+      if (cached) {
+        setFarmers(cached);
+        setLoading(false);
+        return;
+      }
+
       const data = await getFarmers();
 
       setFarmers(data);
+      pageCache.set(CACHE_KEY, data, CACHE_TTL);
     } catch (error) {
       console.error(error);
     } finally {
@@ -141,6 +158,9 @@ export default function useNearbyFarmers() {
     setMaxDistance,
 
     refreshLocation,
-    reloadFarmers: loadFarmers,
+    reloadFarmers: () => {
+      pageCache.invalidate(CACHE_KEY);
+      loadFarmers();
+    },
   };
 }

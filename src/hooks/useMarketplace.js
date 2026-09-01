@@ -6,8 +6,11 @@ import useUserLocation from "./useUserLocation";
 import { getDistanceKm } from "../utils/distance";
 import { isProductExpired } from "../utils/productExpiration";
 import { showToast } from "../utils/toast";
+import * as pageCache from "../utils/pageCache";
 
 const PRODUCTS_PER_PAGE = 12;
+const CACHE_KEY = "marketplaceProducts";
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 const DEFAULT_FILTERS = {
   search: "",
   category: "All",
@@ -24,7 +27,7 @@ export default function useMarketplace() {
   const { location: userLocation } = useUserLocation();
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(() => pageCache.get(CACHE_KEY) ?? []);
   const [hasMore, setHasMore] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const cursorRef = useRef(null);
@@ -62,9 +65,15 @@ export default function useMarketplace() {
 
   const page = Number(searchParams.get("page") ?? 1);
 
-  const loadProducts = useCallback(async ({ reset = false } = {}) => {
+  const loadProducts = useCallback(async ({ reset = false, useCache = true } = {}) => {
     try {
       if (reset) {
+        const cached = useCache ? pageCache.get(CACHE_KEY) : null;
+        if (cached) {
+          setProducts(cached);
+          setLoading(false);
+          return;
+        }
         setLoading(true);
         cursorRef.current = null;
       } else {
@@ -80,6 +89,10 @@ export default function useMarketplace() {
       );
       cursorRef.current = result.cursor;
       setHasMore(result.hasMore);
+
+      if (reset) {
+        pageCache.set(CACHE_KEY, result.products, CACHE_TTL);
+      }
     } catch (error) {
       console.error(error);
       showToast.error("Failed to load marketplace.");
@@ -252,6 +265,6 @@ export default function useMarketplace() {
     setShowFilters,
     hasMore,
     loadMore: () => loadProducts(),
-    reloadProducts: () => loadProducts({ reset: true }),
+    reloadProducts: () => loadProducts({ reset: true, useCache: false }),
   };
 }
