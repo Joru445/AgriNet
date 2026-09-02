@@ -19,7 +19,7 @@ export default function PasswordInput({ label, name, value, onChange, error }) {
           placeholder="••••••••"
           className={`
             w-full rounded-xl border px-4 py-3 pr-12 pl-11
-            focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]
+            focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] text-gray-950
             ${error ? "border-red-500" : "border-gray-300"}
           `}
         />

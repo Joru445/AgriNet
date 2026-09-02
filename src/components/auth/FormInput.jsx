@@ -30,7 +30,7 @@ export default function FormInput({
           required
           className={`
             w-full rounded-xl border py-3 ${icon ? "pl-11 pr-4" : "px-4"}
-            focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]
+            focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] text-gray-950
             ${error ? "border-red-500" : "border-gray-300"}
           `}
         />

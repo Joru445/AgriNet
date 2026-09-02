@@ -1,5 +1,7 @@
 import React from "react";
 
+import { t } from "../../i18n";
+
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -33,11 +35,11 @@ export default class ErrorBoundary extends React.Component {
             </div>
 
             <h1 className="text-xl sm:text-2xl font-bold text-[var(--agri-text)]">
-              Something went wrong
+              {t("errorBoundary.title")}
             </h1>
 
             <p className="mt-2 text-sm text-[var(--agri-text-secondary)]">
-              An unexpected error occurred. You can reload the application or return to the main page.
+              {t("errorBoundary.description")}
             </p>
 
             {this.state.error?.message && (
@@ -53,7 +55,7 @@ export default class ErrorBoundary extends React.Component {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#1B4332] transition-colors cursor-pointer"
               >
                 <i className="ri-refresh-line" />
-                Reload App
+                {t("errorBoundary.reloadApp")}
               </button>
 
               <button
@@ -62,7 +64,7 @@ export default class ErrorBoundary extends React.Component {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-5 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition-colors cursor-pointer"
               >
                 <i className="ri-home-4-line" />
-                Go to Home
+                {t("errorBoundary.goToHome")}
               </button>
             </div>
           </div>

@@ -1,10 +1,13 @@
 import RatingStars from "./RatingStars";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function TransactionReviewView({
   farmerReview,
   productReview,
   productProof,
 }) {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-5">
       {/* Review Summary Card */}
@@ -16,24 +19,24 @@ export default function TransactionReviewView({
 
           <div>
             <h2 className="text-base font-bold text-[var(--agri-text)]">
-              Transaction Review Ratings
+              {t("transactionReview.ratingsTitle")}
             </h2>
 
             <p className="mt-0.5 text-xs font-semibold text-[var(--agri-text-secondary)]">
-              Feedback and ratings for this completed transaction
+              {t("transactionReview.ratingsSubtitle")}
             </p>
           </div>
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <RatingSummary
-            label="Farmer Rating"
+            label={t("transactionReview.farmerRating")}
             icon="ri-user-star-line"
             review={farmerReview}
           />
 
           <RatingSummary
-            label="Product Rating"
+            label={t("transactionReview.productRating")}
             icon="ri-shopping-bag-3-line"
             review={productReview}
           />
@@ -42,11 +45,11 @@ export default function TransactionReviewView({
 
       {/* Farmer Review Card */}
       <ReviewCard
-        title="Farmer Review"
+        title={t("transactionReview.farmerReview")}
         icon="ri-user-star-line"
-        subtitle="Feedback about the farmer"
+        subtitle={t("transactionReview.farmerFeedback")}
         review={farmerReview}
-        emptyMessage="No farmer review was submitted."
+        emptyMessage={t("transactionReview.noFarmerReview")}
       />
 
       {/* Product Review Card */}
@@ -58,11 +61,11 @@ export default function TransactionReviewView({
 
           <div>
             <h2 className="text-base font-bold text-[var(--agri-text)]">
-              Product Review
+              {t("transactionReview.productReview")}
             </h2>
 
             <p className="text-xs font-semibold text-[var(--agri-text-secondary)]">
-              Experience with the purchased product
+              {t("transactionReview.productFeedback")}
             </p>
           </div>
         </div>
@@ -78,7 +81,7 @@ export default function TransactionReviewView({
                   {productReview.rating}.0
                 </span>
 
-                <span className="text-xs font-semibold text-[var(--agri-text-muted)]">out of 5 stars</span>
+                <span className="text-xs font-semibold text-[var(--agri-text-muted)]">{t("transactionReview.outOfStars")}</span>
               </div>
 
               {productReview.comment ? (
@@ -89,13 +92,13 @@ export default function TransactionReviewView({
                 </div>
               ) : (
                 <p className="mt-3 text-xs font-medium text-[var(--agri-text-muted)] italic">
-                  No written comment was provided.
+                  {t("transactionReview.noComment")}
                 </p>
               )}
             </div>
           </div>
         ) : (
-          <EmptyReview message="No product review was submitted." />
+          <EmptyReview message={t("transactionReview.noProductReview")} />
         )}
 
         {/* Transaction Proof */}
@@ -104,17 +107,17 @@ export default function TransactionReviewView({
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]">
-                  Transaction Proof
+                  {t("transactionReview.transactionProof")}
                 </p>
 
                 <p className="text-xs font-medium text-[var(--agri-text-muted)]">
-                  Photo submitted by consumer as proof of receipt
+                  {t("transactionReview.proofPhotoDesc")}
                 </p>
               </div>
 
               <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
                 <i className="ri-checkbox-circle-fill text-emerald-600" />
-                Verified
+                {t("transactionReview.verified")}
               </span>
             </div>
 
@@ -133,6 +136,8 @@ export default function TransactionReviewView({
 }
 
 function RatingSummary({ label, icon, review }) {
+  const { t } = useLanguage();
+
   return (
     <div className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/90 p-4 shadow-2xs">
       <div className="flex items-center gap-2">
@@ -150,13 +155,15 @@ function RatingSummary({ label, icon, review }) {
           </span>
         </div>
       ) : (
-        <p className="mt-3 text-xs font-semibold text-[var(--agri-text-muted)]">Not reviewed</p>
+        <p className="mt-3 text-xs font-semibold text-[var(--agri-text-muted)]">{t("transactionReview.notReviewed")}</p>
       )}
     </div>
   );
 }
 
 function ReviewCard({ title, icon, subtitle, review, emptyMessage }) {
+  const { t } = useLanguage();
+
   return (
     <div className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-5 sm:p-6 shadow-md">
       <div className="flex items-center gap-3">
@@ -180,7 +187,7 @@ function ReviewCard({ title, icon, subtitle, review, emptyMessage }) {
               {review.rating}.0
             </span>
 
-            <span className="text-xs font-semibold text-[var(--agri-text-muted)]">out of 5 stars</span>
+            <span className="text-xs font-semibold text-[var(--agri-text-muted)]">{t("transactionReview.outOfStars")}</span>
           </div>
 
           {review.comment ? (
@@ -191,7 +198,7 @@ function ReviewCard({ title, icon, subtitle, review, emptyMessage }) {
             </div>
           ) : (
             <p className="mt-3 text-xs font-medium text-[var(--agri-text-muted)] italic">
-              No written comment was provided.
+              {t("transactionReview.noComment")}
             </p>
           )}
         </div>

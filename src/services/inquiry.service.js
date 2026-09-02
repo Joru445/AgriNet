@@ -610,6 +610,51 @@ export async function confirmTransactionProof({ inquiryId, farmerId }) {
       throw new Error("Transaction proof is missing.");
     }
 
+    /*
+     * Stock deduction: read the product and deduct
+     * the purchased quantity atomically.
+     */
+    const productId = inquiry.productId;
+
+    if (!productId) {
+      throw new Error("Transaction is missing a product reference.");
+    }
+
+    const quantity = normalizeQuantity(inquiry.quantity);
+
+    if (quantity <= 0) {
+      throw new Error(
+        "Transaction quantity is missing or invalid. Cannot complete without a valid quantity."
+      );
+    }
+
+    const productRef = doc(db, "products", productId);
+    const productSnap = await transaction.get(productRef);
+
+    if (!productSnap.exists()) {
+      throw new Error(
+        "The product associated with this transaction no longer exists."
+      );
+    }
+
+    const productData = productSnap.data();
+
+    if (
+      !Number.isInteger(productData.stock) ||
+      productData.stock < quantity
+    ) {
+      throw new Error(
+        `Insufficient stock. Only ${productData.stock ?? 0} units remaining.`
+      );
+    }
+
+    const newStock = productData.stock - quantity;
+
+    transaction.update(productRef, {
+      stock: newStock,
+      available: newStock > 0,
+    });
+
     transaction.update(inquiryRef, {
       status: "completed",
 

@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 import UserTableRow from "./UserTableRow";
 
@@ -9,6 +10,7 @@ export default function UserTable({
   onView,
   onEdit,
 }) {
+  const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
@@ -97,23 +99,23 @@ export default function UserTable({
           <thead>
             <tr className="border-b border-[var(--agri-border)] bg-[var(--agri-hover)]/80">
               <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]">
-                User
+                {t("adminUser.user")}
               </th>
 
               <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]">
-                Email
+                {t("adminUser.email")}
               </th>
 
               <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]">
-                Role
+                {t("adminUser.role")}
               </th>
 
               <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]">
-                Status
+                {t("adminUser.status")}
               </th>
 
               <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]">
-                Actions
+                {t("adminUser.actions")}
               </th>
             </tr>
           </thead>
@@ -140,11 +142,11 @@ export default function UserTable({
           </div>
 
           <p className="text-base font-bold text-[var(--agri-text)]">
-            No users found
+            {t("adminUser.noUsersFound")}
           </p>
 
           <p className="mt-1 text-xs text-[var(--agri-text-muted)] font-medium">
-            Try adjusting your search query or role/status filters.
+            {t("adminUser.noUsersHint")}
           </p>
         </div>
       )}
@@ -159,7 +161,7 @@ export default function UserTable({
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
               className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] disabled:opacity-40 disabled:hover:bg-[var(--agri-card)] transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
-              title="Previous Page"
+              title={t("adminUser.previousPage")}
             >
               <i className="ri-arrow-left-s-line text-base font-bold" />
             </button>
@@ -186,20 +188,14 @@ export default function UserTable({
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
               className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] disabled:opacity-40 disabled:hover:bg-[var(--agri-card)] transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
-              title="Next Page"
+              title={t("adminUser.nextPage")}
             >
               <i className="ri-arrow-right-s-line text-base font-bold" />
             </button>
           </div>
 
           <div className="text-xs font-semibold text-[var(--agri-text-secondary)]">
-            Showing{" "}
-            <span className="text-[var(--agri-text)] font-bold">
-              {paginatedUsers.length}
-            </span>{" "}
-            out of{" "}
-            <span className="text-[var(--agri-text)] font-bold">{users.length}</span>{" "}
-            total users
+            {t("adminUser.showingCount", { count: paginatedUsers.length, total: users.length })}
           </div>
         </div>
       )}

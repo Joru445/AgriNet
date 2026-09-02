@@ -10,23 +10,23 @@ export default function InquirySkeleton() {
           <thead>
             <tr className="bg-[var(--agri-hover)]">
               <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
-                {t("inquiries.table.product")}
+                {t("transactions.table.product")}
               </th>
 
               <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
-                {t("inquiries.table.consumer")}
+                {t("transactions.table.consumer")}
               </th>
 
               <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
-                {t("inquiries.table.date")}
+                {t("transactions.table.date")}
               </th>
 
               <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
-                {t("inquiries.table.status")}
+                {t("transactions.table.status")}
               </th>
 
               <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
-                {t("inquiries.table.action")}
+                {t("transactions.table.action")}
               </th>
             </tr>
           </thead>

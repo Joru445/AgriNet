@@ -1,5 +1,6 @@
 import RoleBadge from "../../common/RoleBadge";
 import UserIdentity from "../../common/UserIdentity";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function UserTableRow({
   user,
@@ -8,6 +9,7 @@ export default function UserTableRow({
   onView,
   onEdit,
 }) {
+  const { t } = useLanguage();
   const isSuspended = user.status === "suspended";
   const isAdmin = user.role === "admin";
 
@@ -33,7 +35,7 @@ export default function UserTableRow({
       {/* Email */}
       <td className="px-5 py-4">
         <span className="text-sm font-medium text-[var(--agri-text-secondary)]">
-          {user.email || "No email"}
+          {user.email || t("adminUser.noEmail")}
         </span>
       </td>
 
@@ -57,7 +59,7 @@ export default function UserTableRow({
             }`}
           />
 
-          {isSuspended ? "Suspended" : "Active"}
+          {isSuspended ? t("adminUser.suspended") : t("adminUser.active")}
         </span>
       </td>
 
@@ -73,7 +75,7 @@ export default function UserTableRow({
                 ? "border-[var(--agri-border)] bg-[var(--agri-hover)] text-[var(--agri-text-muted)] cursor-not-allowed opacity-50"
                 : "border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[#D8F3DC] dark:hover:bg-[var(--agri-brand-bg)]/40 dark:bg-[var(--agri-brand-bg)]/40 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] hover:border-[#2D6A4F]/30 cursor-pointer"
             }`}
-            title={isAdmin ? "Admin account details disabled" : "View user details"}
+            title={isAdmin ? t("adminUser.adminDetailsDisabled") : t("adminUser.viewDetails")}
           >
             <i className="ri-eye-line text-sm font-semibold" />
           </button>
@@ -87,7 +89,7 @@ export default function UserTableRow({
                 ? "border-[var(--agri-border)] bg-[var(--agri-hover)] text-[var(--agri-text-muted)] cursor-not-allowed opacity-50"
                 : "border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[#D8F3DC] dark:hover:bg-[var(--agri-brand-bg)]/40 dark:bg-[var(--agri-brand-bg)]/40 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] hover:border-[#2D6A4F]/30 cursor-pointer"
             }`}
-            title={isAdmin ? "Admin account editing disabled" : "Edit user"}
+            title={isAdmin ? t("adminUser.adminEditDisabled") : t("adminUser.editUser")}
           >
             <i className="ri-edit-line text-sm font-semibold" />
           </button>

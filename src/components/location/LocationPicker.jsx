@@ -1,8 +1,11 @@
+import { useLanguage } from "../../context/LanguageContext";
+
 import LocationMap from "./LocationMap";
 
 import useUserLocation from "../../hooks/useUserLocation";
 
 export default function LocationPicker({ editing, value, onProfile = false, onChange }) {
+  const { t } = useLanguage();
   const { loadingLocation, refreshLocation } = useUserLocation(false);
 
   async function handleUseCurrentLocation() {
@@ -16,7 +19,7 @@ export default function LocationPicker({ editing, value, onProfile = false, onCh
   return (
     <div className="space-y-5">
       <label className="block text-xs font-semibold text-gray-600 mb-1">
-        Farm Location
+        {t("location.farmLocation")}
       </label>
       <div className="flex gap-3 relative">
         {editing && (
@@ -32,7 +35,7 @@ export default function LocationPicker({ editing, value, onProfile = false, onCh
               type="button"
               onClick={handleUseCurrentLocation}
               disabled={loadingLocation}
-              aria-label="Press to get location"
+              aria-label={t("location.useMyLocationAria")}
               className="px-4 rounded-xl bg-[#2D6A4F] text-white hover:bg-[#24563f] disabled:opacity-50"
             >
               {loadingLocation ? (
@@ -50,7 +53,7 @@ export default function LocationPicker({ editing, value, onProfile = false, onCh
       {value?.address && (
         <div className="rounded-xl border border-green-200 bg-green-50 p-3">
           <div className="mb-1 text-xs font-medium text-gray-500">
-            Selected Address
+            {t("location.selectedAddress")}
           </div>
 
           <div className="text-sm text-[#2D6A4F]">
@@ -62,7 +65,7 @@ export default function LocationPicker({ editing, value, onProfile = false, onCh
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-xs text-gray-500">Latitude</label>
+          <label className="text-xs text-gray-500">{t("location.latitude")}</label>
 
           <input
             readOnly
@@ -72,7 +75,7 @@ export default function LocationPicker({ editing, value, onProfile = false, onCh
         </div>
 
         <div>
-          <label className="text-xs text-gray-500">Longitude</label>
+          <label className="text-xs text-gray-500">{t("location.longitude")}</label>
 
           <input
             readOnly

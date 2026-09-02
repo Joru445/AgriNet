@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import RoleBadge from "../../common/RoleBadge";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function UserEditModal({
   user,
@@ -8,6 +9,7 @@ export default function UserEditModal({
   onClose,
   onSave,
 }) {
+  const { t } = useLanguage();
   const [status, setStatus] = useState("active");
   const [verified, setVerified] = useState(false);
 
@@ -66,10 +68,10 @@ export default function UserEditModal({
         <div className="flex items-center justify-between pb-3 border-b border-[var(--agri-border)]">
           <div>
             <h3 className="text-lg sm:text-xl font-bold text-[var(--agri-text)] tracking-tight">
-              Edit User Account
+              {t("adminUser.editTitle")}
             </h3>
             <p className="text-xs font-medium text-[var(--agri-text-muted)]">
-              Manage account status & permissions
+              {t("adminUser.editSubtitle")}
             </p>
           </div>
 
@@ -78,7 +80,7 @@ export default function UserEditModal({
             onClick={onClose}
             disabled={loading}
             className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Close"
+            aria-label={t("adminUser.close")}
           >
             <i className="ri-close-line text-xl" />
           </button>
@@ -106,10 +108,10 @@ export default function UserEditModal({
 
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-[var(--agri-text)] truncate">
-                {user.fullname || "Unnamed User"}
+                {user.fullname || t("adminUser.unnamedUser")}
               </p>
               <p className="text-xs text-[var(--agri-text-muted)] font-medium truncate">
-                {user.email || "No email"}
+                {user.email || t("adminUser.noEmail")}
               </p>
             </div>
           </div>
@@ -117,13 +119,13 @@ export default function UserEditModal({
           {/* Role (Read-only) */}
           <div>
             <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-              User Role
+              {t("adminUser.userRole")}
             </label>
 
             <div className="flex items-center justify-between rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/70 px-3.5 py-2.5">
               <RoleBadge role={user.role || "consumer"} />
               <span className="text-[11px] font-semibold text-[var(--agri-text-muted)]">
-                Fixed Role
+                {t("adminUser.fixedRole")}
               </span>
             </div>
           </div>
@@ -131,7 +133,7 @@ export default function UserEditModal({
           {/* Account Status */}
           <div>
             <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-              Account Status
+              {t("adminUser.accountStatus")}
             </label>
 
             <select
@@ -140,8 +142,8 @@ export default function UserEditModal({
               disabled={loading}
               className="w-full rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-3.5 py-2.5 text-sm font-semibold text-[var(--agri-text)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/10 cursor-pointer disabled:opacity-60"
             >
-              <option value="active">Active</option>
-              <option value="suspended">Suspended</option>
+              <option value="active">{t("adminUser.active")}</option>
+              <option value="suspended">{t("adminUser.suspended")}</option>
             </select>
           </div>
 
@@ -149,7 +151,7 @@ export default function UserEditModal({
           {isFarmer && (
             <div>
               <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                Farmer Verification
+                {t("adminUser.farmerVerification")}
               </label>
 
               <button
@@ -168,13 +170,13 @@ export default function UserEditModal({
                       verified ? "text-emerald-800" : "text-[var(--agri-text-secondary)]"
                     }`}
                   >
-                    {verified ? "Verified Farmer" : "Not Verified"}
+                    {verified ? t("adminUser.verifiedFarmer") : t("adminUser.notVerified")}
                   </p>
 
                   <p className="mt-0.5 text-xs text-[var(--agri-text-muted)] font-medium">
                     {verified
-                      ? "Farmer displays verified badge"
-                      : "Farmer does not display verified badge"}
+                      ? t("adminUser.verifiedBadgeDesc")
+                      : t("adminUser.notVerifiedBadgeDesc")}
                   </p>
                 </div>
 
@@ -201,7 +203,7 @@ export default function UserEditModal({
               disabled={loading}
               className="py-2.5 px-4 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-xs sm:text-sm font-bold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
 
             <button
@@ -212,10 +214,10 @@ export default function UserEditModal({
               {loading ? (
                 <>
                   <i className="ri-loader-4-line animate-spin text-sm" />
-                  <span>Saving...</span>
+                   <span>{t("adminUser.saving")}</span>
                 </>
               ) : (
-                <span>Save Changes</span>
+                <span>{t("adminUser.saveChanges")}</span>
               )}
             </button>
           </div>

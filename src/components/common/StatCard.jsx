@@ -1,7 +1,10 @@
 import { useNavigate } from "react-router-dom";
 
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function StatCard({ title, value, description, to }) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleClick = () => {
     if (to) {
@@ -48,7 +51,7 @@ export default function StatCard({ title, value, description, to }) {
       {to && (
         <p className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[#2D6A4F] dark:text-[var(--agri-brand)]/70 sm:hidden">
           <i className="ri-tap-line text-xs" />
-          Tap to view
+          {t("common.tapToView")}
         </p>
       )}
     </div>

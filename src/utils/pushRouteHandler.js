@@ -36,8 +36,8 @@ export function resolveNotificationRoute(data) {
   }
 
   if (entityType === "inquiry" && entityId) {
-    // Default to consumer inquiries page — the app will handle role routing
-    return `/inquiries`;
+    // Default to consumer transactions page — the app will handle role routing
+    return `/transactions`;
   }
 
   if (entityType === "product" && entityId) {

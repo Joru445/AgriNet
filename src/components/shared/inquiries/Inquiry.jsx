@@ -19,7 +19,7 @@ export default function Inquiry({ productData, counterparty }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="truncate text-base font-bold text-(--agri-text) sm:text-lg">
-            {productData?.name || t("inquiries.productUnavailable")}
+            {productData?.name || t("transactions.productUnavailable")}
           </h3>
 
           {productData?.quantity != null && productData?.unit && (
@@ -31,7 +31,7 @@ export default function Inquiry({ productData, counterparty }) {
 
         {productData?.unit && (
           <p className="mt-0.5 text-xs text-(--agri-text-muted) font-medium">
-            {t("inquiries.perUnit", { price: price.toLocaleString(), unit: productData.unit })}
+            {t("transactions.perUnit", { price: price.toLocaleString(), unit: productData.unit })}
           </p>
         )}
 
@@ -39,7 +39,7 @@ export default function Inquiry({ productData, counterparty }) {
           <span className="text-lg font-extrabold text-(--agri-text) dark:text-(--agri-text) sm:text-xl">
             ₱{total.toLocaleString()}
           </span>
-          <span className="text-xs text-(--agri-text-muted) font-medium">{t("inquiries.total")}</span>
+          <span className="text-xs text-(--agri-text-muted) font-medium">{t("transactions.total")}</span>
         </div>
 
         <div className="mt-2.5 flex items-center gap-1.5 text-xs text-[var(--agri-text-secondary)] min-w-0">

@@ -1,4 +1,8 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function EmptyConversation() {
+  const { t } = useLanguage();
+
   return (
     <section className="hidden flex-1 md:flex items-center justify-center bg-[var(--agri-hover)]">
       <div className="text-center">
@@ -7,11 +11,11 @@ export default function EmptyConversation() {
         </div>
 
         <h2 className="text-xl font-semibold text-[var(--agri-text)]">
-          Select a conversation
+          {t("messages.selectConversation")}
         </h2>
 
         <p className="text-[var(--agri-text-muted)] mt-2">
-          Choose a conversation to start messaging.
+          {t("messages.selectConversationSubtitle")}
         </p>
       </div>
     </section>

@@ -23,7 +23,7 @@ const NAV = {
   nearby: '[data-onboarding="nav-nearby"]',
   products: '[data-onboarding="nav-products"]',
   messages: '[data-onboarding="nav-messages"]',
-  inquiries: '[data-onboarding="nav-inquiries"]',
+  transactions: '[data-onboarding="nav-transactions"]',
   reports: '[data-onboarding="nav-reports"]',
 };
 
@@ -88,8 +88,8 @@ const farmerSteps = [
     path: "/farmer",
   },
   {
-    id: "farmer-inquiries",
-            target: NAV.inquiries,
+    id: "farmer-transactions",
+            target: NAV.transactions,
     path: "/farmer",
   },
   {
@@ -156,13 +156,13 @@ const NAV_KEYS_BY_PATH = {
   "/home": "nav-home",
   "/nearby": "nav-nearby",
   "/messages": "nav-messages",
-  "/inquiries": "nav-inquiries",
+  "/transactions": "nav-transactions",
   "/settings": "nav-settings",
 
   "/farmer": "nav-dashboard",
   "/farmer/products": "nav-products",
   "/farmer/messages": "nav-messages",
-  "/farmer/inquiries": "nav-inquiries",
+  "/farmer/transactions": "nav-transactions",
   "/farmer/settings": "nav-settings",
 
   "/admin": "nav-dashboard",

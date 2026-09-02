@@ -32,7 +32,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
       </div>
 
       {user.status === "suspended" && (
-        <span className="text-red-500">{t("header.suspended")}</span>
+        <span className="text-red-500 text-sm truncate">{t("header.suspended")}</span>
       )}
 
       <div className="flex items-center gap-2 min-w-0">
@@ -50,7 +50,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
         <Link
           to={mePath}
           data-onboarding="header-profile"
-          className="flex items-center gap-2 border-l border-[var(--agri-border)] pl-2 min-w-0 max-w-[130px] sm:max-w-[200px] md:max-w-[280px]"
+          className="flex items-center gap-2 border-l border-[var(--agri-border)] pl-2 min-w-0 max-w-[140px] sm:max-w-[200px] md:max-w-[300px]"
         >
           <UserIdentity user={user} showUsername={false} showRole={true} />
         </Link>

@@ -2,7 +2,7 @@ import { useLanguage } from "../../../context/LanguageContext";
 
 export default function DashboardHero({ profile, stats = {}, loading = false }) {
   const { t } = useLanguage();
-  const displayName = profile?.fullname || profile?.username || "Farmer";
+  const displayName = profile?.fullname || profile?.username || t("farmer.farmerFallback");
 
   return (
     <div className="rounded-2xl border border-(--agri-border) bg-(--agri-card) p-5 shadow-sm">

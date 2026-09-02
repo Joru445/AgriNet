@@ -34,8 +34,8 @@ export default function ProductSeller({ farmer, isOwner }) {
               </h3>
               {farmer.verified && (
                 <span
-                  title="Verified Farmer"
-                  aria-label="Verified Farmer"
+                  title={t("productSeller.verifiedFarmer")}
+                  aria-label={t("productSeller.verifiedFarmer")}
                   className="inline-flex shrink-0 items-center text-[#2D6A4F] text-base"
                 >
                   <i className="ri-verified-badge-fill" />
@@ -62,7 +62,7 @@ export default function ProductSeller({ farmer, isOwner }) {
                       onClick={() => setExpandedAddress((prev) => !prev)}
                       className="mt-0.5 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] hover:underline cursor-pointer inline-flex items-center gap-0.5 transition-colors"
                     >
-                      {expandedAddress ? "See less" : "See more"}
+                      {expandedAddress ? t("productSeller.seeLess") : t("productSeller.seeMore")}
                       <i
                         className={`text-xs ${
                           expandedAddress
@@ -81,7 +81,7 @@ export default function ProductSeller({ farmer, isOwner }) {
             to={`/profile/${farmerId}`}
             className="shrink-0 rounded-xl border border-[var(--agri-border)] bg-transparent px-3.5 py-2 text-xs sm:text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text)] transition-colors cursor-pointer"
           >
-            Visit Store
+            {t("productSeller.visitStore")}
           </Link>
         </div>
       </section>

@@ -1,15 +1,20 @@
 import { useState } from "react";
+
+import { useLanguage } from "../../context/LanguageContext";
+
 import ReviewCard from "./ReviewCard";
 import ReviewEmpty from "./ReviewEmpty";
 
 export default function ReviewSection({
-  title = "Reviews",
+  title,
   reviews = [],
   loading = false,
   type = "product",
 }) {
+  const { t } = useLanguage();
   const isProduct = type === "product";
   const [showAll, setShowAll] = useState(false);
+  const sectionTitle = title || t("reviews.title");
 
   if (loading) {
     return (
@@ -44,10 +49,10 @@ export default function ReviewSection({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[var(--agri-border-subtle)] px-4 py-4 sm:px-5">
         <div>
-          <h2 className="text-base font-semibold text-[var(--agri-text)]">{title}</h2>
+          <h2 className="text-base font-semibold text-[var(--agri-text)]">{sectionTitle}</h2>
 
           <p className="mt-0.5 text-xs text-[var(--agri-text-muted)]">
-            {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+            {reviews.length} {reviews.length === 1 ? t("reviews.reviewSingular") : t("reviews.reviewPlural")}
           </p>
         </div>
 
@@ -57,7 +62,7 @@ export default function ReviewSection({
             onClick={() => setShowAll((prev) => !prev)}
             className="text-xs font-semibold text-[#2D6A4F] hover:text-[#1B4332] hover:underline flex items-center gap-1 transition-colors"
           >
-            {showAll ? "Show Less" : "View All"}
+            {showAll ? t("reviews.showLess") : t("reviews.viewAll")}
             <i
               className={
                 showAll
@@ -89,8 +94,8 @@ export default function ReviewSection({
               >
                 <span>
                   {showAll
-                    ? "Show Less Reviews"
-                    : `View All Reviews (${reviews.length})`}
+                    ? t("reviews.showLessReviews")
+                    : t("reviews.viewAllReviews", { count: reviews.length })}
                 </span>
                 <i
                   className={

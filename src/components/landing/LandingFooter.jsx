@@ -1,18 +1,6 @@
+import { useLanguage } from "../../context/LanguageContext";
+
 import logo from "../../assets/favicon.svg";
-
-const quickLinks = [
-  { href: "#about", label: "About Us" },
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "/consumer/dashboard", label: "Browse Products" },
-  { href: "/farmers/nearby", label: "Find Farmers" },
-  { href: "#", label: "Contact Us" },
-];
-
-const userLinks = [
-  { href: "/register", label: "Registration" },
-  { href: "/login", label: "Dashboard" },
-  { href: "/", label: "Platform Guidelines" },
-];
 
 const socialLinks = [
   { icon: "ri-facebook-fill", href: "#" },
@@ -21,6 +9,22 @@ const socialLinks = [
 ];
 
 export default function LandingFooter() {
+  const { t } = useLanguage();
+
+  const quickLinks = [
+    { href: "#about", label: t("landing.footer.aboutUs") },
+    { href: "#how-it-works", label: t("landing.nav.howItWorks") },
+    { href: "/consumer/dashboard", label: t("landing.footer.browseProducts") },
+    { href: "/farmers/nearby", label: t("landing.footer.findFarmers") },
+    { href: "#", label: t("landing.footer.contactUs") },
+  ];
+
+  const userLinks = [
+    { href: "/register", label: t("landing.footer.registration") },
+    { href: "/login", label: t("landing.footer.dashboard") },
+    { href: "/", label: t("landing.footer.platformGuidelines") },
+  ];
+
   return (
     <footer
       className="border-t text-gray-800"
@@ -37,8 +41,7 @@ export default function LandingFooter() {
               </span>
             </div>
             <p className="text-gray-600 text-sm leading-relaxed mb-5">
-              Connecting farmers and consumers in Lucena City for a fairer,
-              fresher, and more sustainable agricultural trade.
+              {t("landing.footer.description")}
             </p>
             <div className="flex gap-3">
               {socialLinks.map((social) => (
@@ -56,7 +59,7 @@ export default function LandingFooter() {
           {/* Quick Links */}
           <div className="text-left flex-1 min-w-[180px] max-w-[240px]">
             <h4 className="font-bold text-sm uppercase tracking-widest text-[#1B4332] mb-4">
-              Quick Links
+              {t("landing.footer.quickLinks")}
             </h4>
             <ul className="space-y-2">
               {quickLinks.map((link) => (
@@ -75,7 +78,7 @@ export default function LandingFooter() {
           {/* For Users */}
           <div className="text-left flex-1 min-w-[180px] max-w-[240px]">
             <h4 className="font-bold text-sm uppercase tracking-widest text-[#1B4332] mb-4">
-              For Users
+              {t("landing.footer.forUsers")}
             </h4>
             <ul className="space-y-2">
               {userLinks.map((link) => (
@@ -100,7 +103,7 @@ export default function LandingFooter() {
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex items-center justify-center text-center">
           <p className="text-gray-500 text-xs text-center">
-            &copy; 2026 AgriNet Lucena. All rights reserved.
+            &copy; 2026 AgriNet Lucena. {t("landing.footer.copyright")}
           </p>
         </div>
       </div>

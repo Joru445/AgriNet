@@ -1,4 +1,7 @@
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function ReviewEmpty({ type = "product" }) {
+  const { t } = useLanguage();
   const isProduct = type === "product";
 
   return (
@@ -14,13 +17,13 @@ export default function ReviewEmpty({ type = "product" }) {
       </div>
 
       <h3 className="mt-3 text-sm font-semibold text-[var(--agri-text-secondary)]">
-        No reviews yet
+        {t("reviews.noReviewsYet")}
       </h3>
 
       <p className="mt-1 max-w-sm text-xs leading-5 text-[var(--agri-text-muted)]">
         {isProduct
-          ? "This product has not received any reviews yet."
-          : "This farmer has not received any reviews yet."}
+          ? t("reviews.noProductReviews")
+          : t("reviews.noFarmerReviews")}
       </p>
     </div>
   );

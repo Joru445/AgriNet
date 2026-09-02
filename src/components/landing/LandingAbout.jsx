@@ -1,11 +1,15 @@
-const features = [
-  { icon: "ri-shield-check-line", label: "Verified Farmers" },
-  { icon: "ri-map-pin-line", label: "Location-Based Discovery" },
-  { icon: "ri-message-3-line", label: "Direct Communication" },
-  { icon: "ri-star-line", label: "Trusted Reviews" },
-];
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function LandingAbout() {
+  const { t } = useLanguage();
+
+  const features = [
+    { icon: "ri-shield-check-line", label: t("landing.about.verifiedFarmers") },
+    { icon: "ri-map-pin-line", label: t("landing.about.locationDiscovery") },
+    { icon: "ri-message-3-line", label: t("landing.about.directCommunication") },
+    { icon: "ri-star-line", label: t("landing.about.trustedReviews") },
+  ];
+
   return (
     <section id="about" className="py-20 md:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
@@ -22,22 +26,16 @@ export default function LandingAbout() {
 
           <div>
             <span className="inline-block text-[#2D6A4F] font-semibold text-sm uppercase tracking-widest mb-3">
-              About the Platform
+              {t("landing.about.badge")}
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-[#1B4332] mb-5 leading-tight">
-              Empowering Lucena City's Agricultural Community
+              {t("landing.about.title")}
             </h2>
             <p className="text-gray-600 leading-relaxed mb-5">
-              AgriNet Lucena is a web-based platform designed to bridge the
-              gap between local farmers and consumers in Lucena City, Quezon
-              Province. Our mission is to create a fair, transparent, and
-              efficient agricultural trading ecosystem.
+              {t("landing.about.paragraph1")}
             </p>
             <p className="text-gray-600 leading-relaxed mb-8">
-              By removing middlemen from the equation, farmers earn more from
-              their hard work while consumers enjoy fresher produce at better
-              prices. We believe in supporting local agriculture and building
-              stronger community ties through technology.
+              {t("landing.about.paragraph2")}
             </p>
 
             <div className="grid grid-cols-2 gap-4">

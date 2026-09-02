@@ -1,8 +1,12 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function ProfileForm({ form, editing, onChange }) {
+  const { t } = useLanguage();
+
   return (
     <div className="border-t border-[var(--agri-border-subtle)] px-4 sm:px-6 lg:px-8 py-6">
       <h2 className="text-sm font-bold text-[var(--agri-text)] mb-4">
-        Personal Information
+        {t("profile.personalInfo")}
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -12,7 +16,7 @@ export default function ProfileForm({ form, editing, onChange }) {
             htmlFor="profile-fullname"
             className="block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5"
           >
-            Full Name
+            {t("profile.formLabels.fullName")}
           </label>
 
           <input
@@ -32,7 +36,7 @@ export default function ProfileForm({ form, editing, onChange }) {
             htmlFor="profile-username"
             className="block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5"
           >
-            Username
+            {t("profile.formLabels.username")}
           </label>
 
           <input
@@ -54,7 +58,7 @@ export default function ProfileForm({ form, editing, onChange }) {
             htmlFor="profile-email"
             className="block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5"
           >
-            Email Address
+            {t("profile.formLabels.email")}
           </label>
 
           <input
@@ -72,7 +76,7 @@ export default function ProfileForm({ form, editing, onChange }) {
             htmlFor="profile-phone"
             className="block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5"
           >
-            Contact Number
+            {t("profile.formLabels.contactNumber")}
           </label>
 
           <input
@@ -93,7 +97,7 @@ export default function ProfileForm({ form, editing, onChange }) {
           htmlFor="profile-bio"
           className="block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5"
         >
-          Bio
+          {t("profile.formLabels.bio")}
         </label>
 
         <textarea
@@ -103,7 +107,7 @@ export default function ProfileForm({ form, editing, onChange }) {
           value={form.bio}
           onChange={onChange}
           disabled={!editing}
-          placeholder="Tell people a little about yourself..."
+          placeholder={t("profile.formLabels.bioPlaceholder")}
           className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)] text-sm text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent transition-colors"
         />
       </div>

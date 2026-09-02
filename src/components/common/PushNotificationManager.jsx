@@ -1,4 +1,7 @@
 import { useState } from "react";
+
+import { useLanguage } from "../../context/LanguageContext";
+
 import usePushNotifications from "../../hooks/usePushNotifications";
 
 /**
@@ -22,6 +25,7 @@ export default function PushNotificationManager() {
     unsubscribe,
   } = usePushNotifications();
 
+  const { t } = useLanguage();
   const [requesting, setRequesting] = useState(false);
 
   if (loading) return null;
@@ -34,12 +38,12 @@ export default function PushNotificationManager() {
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
             <i className="ri-notification-off-line text-lg" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
-              Push Notifications
+              {t("settings.notifications")}
             </p>
             <p className="text-xs text-[var(--agri-text-muted)]">
-              Not supported in this browser
+              {t("pushNotifications.notSupported")}
             </p>
           </div>
         </div>
@@ -55,13 +59,12 @@ export default function PushNotificationManager() {
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-500">
             <i className="ri-notification-off-line text-lg" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
-              Push Notifications
+              {t("settings.notifications")}
             </p>
             <p className="text-xs text-[var(--agri-text-muted)]">
-              Blocked by browser settings. Enable in your browser's site
-              settings.
+              {t("pushNotifications.blocked")}
             </p>
           </div>
         </div>
@@ -74,25 +77,25 @@ export default function PushNotificationManager() {
     return (
       <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)] text-[#2D6A4F] dark:text-[var(--agri-brand)]">
               <i className="ri-notification-3-line text-lg" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
-                Push Notifications
+                {t("settings.notifications")}
               </p>
               <p className="text-xs text-[#2D6A4F] dark:text-[var(--agri-brand)] font-medium">
-                Enabled
+                {t("pushNotifications.enabled")}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={unsubscribe}
-            className="rounded-lg border border-[var(--agri-border)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition-colors cursor-pointer"
+            className="shrink-0 rounded-lg border border-[var(--agri-border)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition-colors cursor-pointer"
           >
-            Disable
+            {t("pushNotifications.disable")}
           </button>
         </div>
       </div>
@@ -103,16 +106,16 @@ export default function PushNotificationManager() {
   return (
     <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
             <i className="ri-notification-off-line text-lg" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
-              Push Notifications
+              {t("settings.notifications")}
             </p>
             <p className="text-xs text-[var(--agri-text-muted)]">
-              Get notified about new messages and inquiries
+              {t("pushNotifications.description")}
             </p>
           </div>
         </div>
@@ -127,9 +130,9 @@ export default function PushNotificationManager() {
               setRequesting(false);
             }
           }}
-          className="rounded-lg bg-[#2D6A4F] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1B4332] transition-colors cursor-pointer disabled:opacity-50"
+          className="shrink-0 rounded-lg bg-[#2D6A4F] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1B4332] transition-colors cursor-pointer disabled:opacity-50"
         >
-          {requesting ? "Enabling..." : "Enable"}
+          {requesting ? t("pushNotifications.enabling") : t("pushNotifications.enable")}
         </button>
       </div>
     </div>

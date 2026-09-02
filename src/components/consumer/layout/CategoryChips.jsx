@@ -80,7 +80,7 @@ export default function CategoryChips({ value = "All", onChange }) {
   }
 
   return (
-    <div className="w-full flex items-center justify-start lg:justify-center gap-3 overflow-x-auto px-4 py-2 scrollbar-none">
+    <div className="w-full flex items-center justify-start gap-3 overflow-x-auto px-4 py-2 scrollbar-none">
       {categories.map((cat) => {
         const active = value === cat.id;
 

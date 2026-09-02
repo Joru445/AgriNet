@@ -39,7 +39,7 @@ export default function DeleteProductModal({
             disabled={deleting}
             className="px-5 py-2.5 rounded-xl border border-[var(--agri-border)] hover:bg-gray-100 cursor-pointer"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
 
           <button
@@ -47,7 +47,7 @@ export default function DeleteProductModal({
             disabled={deleting}
             className="px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white cursor-pointer disabled:opacity-50"
           >
-            {deleting ? "Deleting..." : "Delete"}
+            {deleting ? t("deleteProduct.deleting") : t("deleteProduct.delete")}
           </button>
         </div>
       </div>

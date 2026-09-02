@@ -5,23 +5,23 @@ export default function InquiryTabs({ activeTab, onChange }) {
   const tabs = [
     {
       id: "all",
-      label: t("inquiries.status.all"),
+      label: t("transactions.status.all"),
     },
     {
       id: "accepted",
-      label: t("inquiries.status.accepted"),
+      label: t("transactions.status.accepted"),
     },
     {
       id: "ongoing",
-      label: t("inquiries.status.ongoing"),
+      label: t("transactions.status.ongoing"),
     },
     {
       id: "completed",
-      label: t("inquiries.status.completed"),
+      label: t("transactions.status.completed"),
     },
     {
       id: "cancelled",
-      label: t("inquiries.status.cancelled"),
+      label: t("transactions.status.cancelled"),
     },
   ];
 

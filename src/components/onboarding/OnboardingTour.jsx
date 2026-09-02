@@ -8,8 +8,8 @@ import useMediaQuery from "../../hooks/useMediaQuery";
 
 const POLL_INTERVAL = 250;
 const TARGET_TIMEOUT = 4000;
-const TIP_WIDTH = 320;
-const TIP_HEIGHT = 220;
+const TIP_MAX_WIDTH = 384;
+const TIP_HEIGHT_ESTIMATE = 260;
 
 function prefersReducedMotion() {
   return (
@@ -27,7 +27,7 @@ function choosePlacement(rect, isMobile) {
   if (rect.top > 300) return "top";
 
   if (isMobile) return "center";
-  if (rect.left > TIP_WIDTH + 32) return "left";
+  if (rect.left > TIP_MAX_WIDTH + 32) return "left";
   return "right";
 }
 
@@ -36,7 +36,7 @@ function computeTooltipStyle(rect, placement) {
 
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const w = Math.min(TIP_WIDTH, vw - 24);
+  const w = Math.min(TIP_MAX_WIDTH, vw - 24);
   const horizontal = () =>
     Math.max(12, Math.min(rect.left + rect.width / 2 - w / 2, vw - w - 12));
 
@@ -46,13 +46,13 @@ function computeTooltipStyle(rect, placement) {
 
     case "left":
       return {
-        top: Math.max(12, Math.min(rect.top + rect.height / 2 - TIP_HEIGHT / 2, vh - TIP_HEIGHT - 12)),
+        top: Math.max(12, Math.min(rect.top + rect.height / 2 - TIP_HEIGHT_ESTIMATE / 2, vh - TIP_HEIGHT_ESTIMATE - 12)),
         left: Math.max(12, rect.left - w - 14),
       };
 
     case "right":
       return {
-        top: Math.max(12, Math.min(rect.top + rect.height / 2 - TIP_HEIGHT / 2, vh - TIP_HEIGHT - 12)),
+        top: Math.max(12, Math.min(rect.top + rect.height / 2 - TIP_HEIGHT_ESTIMATE / 2, vh - TIP_HEIGHT_ESTIMATE - 12)),
         left: rect.right + 14,
       };
 
@@ -257,11 +257,11 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
             {t(`${stepCopyKey(step)}.body`)}
           </p>
 
-          <div className="mt-4 flex items-center justify-between gap-3">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
             <button
               type="button"
               onClick={() => onSkipRef.current?.()}
-              className="text-sm font-medium text-(--agri-text-muted) transition hover:text-(--agri-text) cursor-pointer"
+              className="text-sm font-medium text-(--agri-text-muted) transition hover:text-(--agri-text) cursor-pointer min-w-0"
             >
               {t("onboarding.skip")}
             </button>
@@ -282,12 +282,12 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
               ))}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
               {stepIndex > 0 && (
                 <button
                   type="button"
                   onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
-                  className="rounded-xl border border-(--agri-border) px-3 py-2 text-sm font-semibold text-(--agri-text-secondary) transition hover:bg-(--agri-hover) cursor-pointer"
+                  className="shrink-0 rounded-xl border border-(--agri-border) px-3 py-2 text-sm font-semibold text-(--agri-text-secondary) transition hover:bg-(--agri-hover) cursor-pointer"
                 >
                   {t("common.back")}
                 </button>
@@ -297,7 +297,7 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
                 <button
                   type="button"
                   onClick={onFinish}
-                  className="rounded-xl bg-[#2D6A4F] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#1B4332] cursor-pointer"
+                  className="shrink-0 rounded-xl bg-[#2D6A4F] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#1B4332] cursor-pointer"
                 >
                   {t("onboarding.finish")}
                 </button>
@@ -305,7 +305,7 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
                 <button
                   type="button"
                   onClick={() => setStepIndex((i) => Math.min(steps.length - 1, i + 1))}
-                  className="rounded-xl bg-[#2D6A4F] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#1B4332] cursor-pointer"
+                  className="shrink-0 rounded-xl bg-[#2D6A4F] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#1B4332] cursor-pointer"
                 >
                   {t("onboarding.next")}
                 </button>

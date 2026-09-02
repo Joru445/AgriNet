@@ -4,6 +4,7 @@ import { getUserProfile } from "../../../services/user.service";
 import { getProductById } from "../../../services/product.service";
 import { formatFullDateTime } from "../../../utils/date";
 import useStartConversation from "../../../hooks/useStartConversation";
+import { useLanguage } from "../../../context/LanguageContext";
 
 function getStatusClasses(status) {
   switch (status) {
@@ -29,6 +30,7 @@ export default function ReportDetailsModal({
   onToggleUserSuspension,
   onToggleProductAvailability,
 }) {
+  const { t } = useLanguage();
   const startConversation = useStartConversation();
   const [showEvidenceViewer, setShowEvidenceViewer] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
@@ -97,7 +99,7 @@ export default function ReportDetailsModal({
     onClose?.();
     startConversation({
       uid: report.reporterId,
-      fullname: report.reporterName || "Reporter",
+      fullname: report.reporterName || t("adminReport.reporterFallback"),
       username: report.reporterUsername || "",
       role: report.reporterRole || "consumer",
     });
@@ -120,10 +122,10 @@ export default function ReportDetailsModal({
               </div>
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-[var(--agri-text)] leading-tight">
-                  Report Investigation
+                  {t("adminReport.investigationTitle")}
                 </h2>
                 <p className="text-xs text-[var(--agri-text-muted)] font-medium">
-                  Review case details and execute moderation actions
+                  {t("adminReport.investigationSubtitle")}
                 </p>
               </div>
             </div>
@@ -132,7 +134,7 @@ export default function ReportDetailsModal({
               type="button"
               onClick={onClose}
               className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)]/70 hover:text-[var(--agri-text-secondary)] transition cursor-pointer"
-              aria-label="Close"
+              aria-label={t("adminReport.close")}
             >
               <i className="ri-close-line text-xl" />
             </button>
@@ -144,10 +146,10 @@ export default function ReportDetailsModal({
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                    Report Reason
+                    {t("adminReport.reportReason")}
                   </p>
                   <p className="mt-0.5 text-base font-bold text-[var(--agri-text)]">
-                    {report.reason || "No reason provided"}
+                    {report.reason || t("adminReport.noReasonProvided")}
                   </p>
                 </div>
 
@@ -165,7 +167,7 @@ export default function ReportDetailsModal({
               {report.targetTitle && (
                 <div className="pt-2.5 border-t border-[var(--agri-border-subtle)]">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                    Reported Target ({targetType})
+                    {t("adminReport.reportedTarget", { type: targetType })}
                   </p>
                   <p className="text-sm font-bold text-[var(--agri-text)] mt-0.5">
                     {report.targetTitle}
@@ -176,7 +178,7 @@ export default function ReportDetailsModal({
               {report.createdAt && (
                 <div className="pt-2.5 border-t border-[var(--agri-border-subtle)] flex items-center justify-between text-xs">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                    Date & Time Submitted
+                    {t("adminReport.dateTimeSubmitted")}
                   </span>
                   <span className="font-bold text-[var(--agri-text)]">
                     {formatFullDateTime(report.createdAt)}
@@ -188,10 +190,10 @@ export default function ReportDetailsModal({
             {/* Description / Explanation Card */}
             <div className="rounded-2xl bg-[var(--agri-card)] p-4 border border-[var(--agri-border-subtle)] shadow-xs space-y-1.5">
               <p className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wide">
-                Description / User Explanation
+                {t("adminReport.descriptionTitle")}
               </p>
               <div className="rounded-xl bg-[var(--agri-hover)]/80 border border-[var(--agri-border-subtle)] p-3.5 text-xs sm:text-sm leading-relaxed text-[var(--agri-text)] font-medium whitespace-pre-wrap">
-                {report.description || "No additional description provided."}
+                {report.description || t("adminReport.noDescriptionProvided")}
               </div>
             </div>
 
@@ -199,7 +201,7 @@ export default function ReportDetailsModal({
             {report.evidenceUrl && (
               <div className="rounded-2xl bg-[var(--agri-card)] p-4 border border-[var(--agri-border-subtle)] shadow-xs space-y-2">
                 <p className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wide">
-                  Attached Evidence
+                  {t("adminReport.attachedEvidence")}
                 </p>
                 <div
                   onClick={() => setShowEvidenceViewer(true)}
@@ -207,7 +209,7 @@ export default function ReportDetailsModal({
                 >
                   <img
                     src={report.evidenceUrl}
-                    alt="Report evidence"
+                    alt={t("adminReport.reportEvidenceAlt")}
                     className="h-36 w-auto max-w-[280px] object-cover transition duration-200 group-hover:scale-105"
                   />
                   <button
@@ -219,7 +221,7 @@ export default function ReportDetailsModal({
                     className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 group-hover:opacity-100 transition font-bold text-xs gap-1.5 cursor-pointer"
                   >
                     <i className="ri-zoom-in-line text-base" />
-                    View Fullscreen & Zoom
+                    {t("adminReport.viewFullscreen")}
                   </button>
                 </div>
               </div>
@@ -232,7 +234,7 @@ export default function ReportDetailsModal({
                 <div>
                   <div className="flex items-center justify-between">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-red-700">
-                      Reported User
+                      {t("adminReport.reportedUser")}
                     </p>
                     {reportedUserProfile && (
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize shadow-2xs ${
@@ -264,7 +266,7 @@ export default function ReportDetailsModal({
                     }`}
                   >
                     <i className={isUserSuspended ? "ri-user-follow-line" : "ri-user-unfollow-line"} />
-                    {isUserSuspended ? "Reactivate User" : "Suspend User"}
+                    {isUserSuspended ? t("adminReport.reactivateUser") : t("adminReport.suspendUser")}
                   </button>
                 )}
               </div>
@@ -273,10 +275,10 @@ export default function ReportDetailsModal({
               <div className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-4 shadow-xs flex flex-col justify-between space-y-3">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                    Submitted By
+                    {t("adminReport.submittedBy")}
                   </p>
                   <p className="text-sm font-bold text-[var(--agri-text)] mt-1.5">
-                    {report.reporterName || "Reporter"}
+                    {report.reporterName || t("adminReport.reporterFallback")}
                   </p>
                   {report.reporterUsername && (
                     <p className="text-xs text-[var(--agri-text-secondary)] font-medium">
@@ -296,10 +298,10 @@ export default function ReportDetailsModal({
                       type="button"
                       onClick={handleChatReporter}
                       className="w-full py-2 px-3 rounded-xl text-xs font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)] bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] hover:bg-[#D8F3DC] dark:hover:bg-[var(--agri-brand-bg)] border border-[#2D6A4F]/20 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
-                      title="Open chat with reporter"
+                      title={t("adminReport.openChat")}
                     >
                       <i className="ri-chat-1-line text-sm font-bold" />
-                      Chat Reporter
+                      {t("adminReport.chatReporter")}
                     </button>
                   )}
 
@@ -315,7 +317,7 @@ export default function ReportDetailsModal({
                       }`}
                     >
                       <i className={isProductAvailable ? "ri-eye-off-line" : "ri-eye-line"} />
-                      {isProductAvailable ? "Unpublish Listing" : "Republish Listing"}
+                      {isProductAvailable ? t("adminReport.unpublishListing") : t("adminReport.republishListing")}
                     </button>
                   )}
                 </div>
@@ -325,14 +327,14 @@ export default function ReportDetailsModal({
             {/* Admin Resolution Notes */}
             <div className="rounded-2xl bg-[var(--agri-card)] p-4 border border-[var(--agri-border-subtle)] shadow-xs space-y-1.5">
               <label htmlFor="admin-resolution-notes" className="block text-xs font-bold text-[var(--agri-text)] uppercase tracking-wide">
-                Moderator Note / Explanation for Reporter
+                {t("adminReport.moderatorNoteLabel")}
               </label>
               <textarea
                 id="admin-resolution-notes"
                 rows={2}
                 value={adminNotes}
                 onChange={(e) => setAdminNotes(e.target.value)}
-                placeholder="Optional internal note or resolution comment sent to the reporter..."
+                placeholder={t("adminReport.moderatorNotePlaceholder")}
                 className="w-full rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)]/50 p-3 text-xs sm:text-sm text-[var(--agri-text)] font-medium placeholder-[var(--agri-text-muted)] focus:bg-[var(--agri-card)] focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/20 focus:outline-none transition resize-none"
               />
             </div>
@@ -347,7 +349,7 @@ export default function ReportDetailsModal({
                     className="px-3.5 py-2 rounded-xl bg-blue-50 text-xs font-bold text-blue-700 hover:bg-blue-100 transition cursor-pointer"
                   >
                     <i className="ri-search-eye-line mr-1.5" />
-                    Reviewing
+                    {t("adminReport.markReviewing")}
                   </button>
                 )}
 
@@ -358,7 +360,7 @@ export default function ReportDetailsModal({
                     className="px-3.5 py-2 rounded-xl bg-[#2D6A4F] text-xs font-bold text-white hover:bg-[#1B4332] transition cursor-pointer"
                   >
                     <i className="ri-check-line mr-1.5" />
-                    Resolve Case
+                    {t("adminReport.resolveCase")}
                   </button>
                 )}
 
@@ -369,7 +371,7 @@ export default function ReportDetailsModal({
                     className="px-3.5 py-2 rounded-xl border border-[var(--agri-border)] text-xs font-bold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer"
                   >
                     <i className="ri-close-circle-line mr-1.5" />
-                    Dismiss
+                    {t("adminReport.dismiss")}
                   </button>
                 )}
               </div>
@@ -379,7 +381,7 @@ export default function ReportDetailsModal({
                 onClick={onClose}
                 className="px-4 py-2 rounded-xl bg-[var(--agri-hover)] text-xs sm:text-sm font-bold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer ml-auto"
               >
-                Close
+                {t("adminReport.close")}
               </button>
             </div>
           </div>
@@ -393,7 +395,7 @@ export default function ReportDetailsModal({
           onClose={() => setShowEvidenceViewer(false)}
           src={report.evidenceUrl}
           imageUrl={report.evidenceUrl}
-          title="Report Evidence Photo"
+          title={t("adminReport.evidencePhotoTitle")}
         />
       )}
     </>

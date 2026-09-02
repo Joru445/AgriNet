@@ -12,9 +12,9 @@ export const farmerNavigation = [
     bottom: true,
   },
   {
-    to: "/farmer/inquiries",
+    to: "/farmer/transactions",
     icon: "ri-file-list-3-line",
-    labelKey: "nav.inquiries",
+    labelKey: "nav.transactions",
     bottom: true,
   },
   {
@@ -51,9 +51,9 @@ export const consumerNavigation = [
     bottom: true,
   },
   {
-    to: "/inquiries",
+    to: "/transactions",
     icon: "ri-file-list-3-line",
-    labelKey: "nav.inquiries",
+    labelKey: "nav.transactions",
     bottom: true,
   },
   {

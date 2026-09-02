@@ -99,15 +99,15 @@ export default function Dashboard() {
               <StatCard
                 title={t("admin.ongoing")}
                 value={stats?.inquiries?.ongoing ?? 0}
-                description={t("admin.ongoingInquiries")}
-                to="/admin/inquiries"
+                description={t("admin.ongoingTransactions")}
+                to="/admin/transactions"
               />
 
               <StatCard
                 title={t("admin.completed")}
                 value={stats?.inquiries?.completed ?? 0}
-                description={t("admin.completedInquiries")}
-                to="/admin/inquiries"
+                description={t("admin.completedTransactions")}
+                to="/admin/transactions"
               />
             </>
           )}

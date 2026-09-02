@@ -1,5 +1,6 @@
 import RatingStars from "./RatingStars";
 import ReviewTextarea from "./ReviewTextarea";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ProductReviewForm({
   rating,
@@ -8,15 +9,17 @@ export default function ProductReviewForm({
   onCommentChange,
   disabled = false,
 }) {
+  const { t } = useLanguage();
+
   return (
     <section className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-5 sm:p-6 shadow-md">
       <div className="mb-4">
         <h2 className="text-base font-bold text-[var(--agri-text)]">
-          Rate the Product
+          {t("transactionReview.rateProduct")}
         </h2>
 
         <p className="mt-1 text-sm font-medium text-[var(--agri-text-secondary)]">
-          How satisfied are you with the product you received?
+          {t("transactionReview.rateProductDesc")}
         </p>
       </div>
 
@@ -27,7 +30,7 @@ export default function ProductReviewForm({
       />
 
       <p className="mt-2 text-xs text-[var(--agri-text-muted)]">
-        {rating > 0 ? `${rating} out of 5 stars` : "Select a rating"}
+        {rating > 0 ? t("transactionReview.outOfStars") : t("transactionReview.selectRating")}
       </p>
 
       <div className="mt-4">
@@ -35,14 +38,14 @@ export default function ProductReviewForm({
           htmlFor="product-review"
           className="mb-2 block text-sm font-medium text-[var(--agri-text-secondary)]"
         >
-          Comment
+          {t("transactionReview.commentLabel")}
         </label>
 
         <ReviewTextarea
           value={comment}
           onChange={onCommentChange}
           disabled={disabled}
-          placeholder="Tell other consumers about the quality of this product..."
+          placeholder={t("transactionReview.productCommentPlaceholder")}
         />
       </div>
     </section>

@@ -30,10 +30,10 @@ export default function Inquiries() {
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">{t("inquiries.title")}</h2>
+          <h2 className="text-xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">{t("transactions.title")}</h2>
 
           <p className="text-sm text-[var(--agri-text-muted)]">
-            {t("inquiries.subtitle")}
+            {t("transactions.subtitle")}
           </p>
         </div>
 
@@ -47,10 +47,10 @@ export default function Inquiries() {
                 ? "bg-[var(--agri-card)] shadow-xs text-[#2D6A4F] dark:text-[var(--agri-brand)] font-bold ring-1 ring-black/5"
                 : "text-[var(--agri-text-secondary)] hover:text-[var(--agri-text)] hover:bg-[var(--agri-card)]/50 font-semibold"
             }`}
-            title={t("inquiries.gridView")}
+            title={t("transactions.gridView")}
           >
             <i className="ri-grid-line text-lg" />
-            <span>{t("inquiries.grid")}</span>
+            <span>{t("transactions.grid")}</span>
           </button>
 
           <button
@@ -61,10 +61,10 @@ export default function Inquiries() {
                 ? "bg-[var(--agri-card)] shadow-xs text-[#2D6A4F] dark:text-[var(--agri-brand)] font-bold ring-1 ring-black/5"
                 : "text-[var(--agri-text-secondary)] hover:text-[var(--agri-text)] hover:bg-[var(--agri-card)]/50 font-semibold"
             }`}
-            title={t("inquiries.verticalView")}
+            title={t("transactions.verticalView")}
           >
             <i className="ri-list-check text-lg" />
-            <span>{t("inquiries.list")}</span>
+            <span>{t("transactions.list")}</span>
           </button>
         </div>
       </div>

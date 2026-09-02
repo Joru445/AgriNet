@@ -21,7 +21,6 @@ export default function LoginFormPanel({
   return (
     <div
       className="flex-1 relative flex items-center justify-center p-3 sm:p-6 md:p-12 min-h-screen overflow-y-auto"
-      style={{ backgroundColor: 'var(--agri-bg-surface)' }}
     >
       {/* Mobile-only agricultural landscape background */}
       <div className="absolute inset-0 lg:hidden pointer-events-none overflow-hidden">

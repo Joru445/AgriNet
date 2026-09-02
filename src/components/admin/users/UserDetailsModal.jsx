@@ -1,35 +1,37 @@
 import { useState } from "react";
 import RoleBadge from "../../common/RoleBadge";
 import ImageViewerModal from "../../common/ImageViewerModal";
-
-function formatFullDateTime(timestamp) {
-  if (!timestamp) return "Not available";
-
-  let date = null;
-  if (typeof timestamp.toDate === "function") {
-    date = timestamp.toDate();
-  } else if (timestamp.seconds) {
-    date = new Date(timestamp.seconds * 1000);
-  } else if (typeof timestamp === "string" || typeof timestamp === "number") {
-    date = new Date(timestamp);
-  }
-
-  if (!date || isNaN(date.getTime())) {
-    return "Not available";
-  }
-
-  return date.toLocaleString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-}
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function UserDetailsModal({ user, onClose }) {
+  const { t } = useLanguage();
   const [fullscreenImage, setFullscreenImage] = useState(null);
+
+  function formatFullDateTime(timestamp) {
+    if (!timestamp) return t("adminUser.naLabel");
+
+    let date = null;
+    if (typeof timestamp.toDate === "function") {
+      date = timestamp.toDate();
+    } else if (timestamp.seconds) {
+      date = new Date(timestamp.seconds * 1000);
+    } else if (typeof timestamp === "string" || typeof timestamp === "number") {
+      date = new Date(timestamp);
+    }
+
+    if (!date || isNaN(date.getTime())) {
+      return t("adminUser.naLabel");
+    }
+
+    return date.toLocaleString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
 
   if (!user) return null;
 
@@ -62,17 +64,17 @@ export default function UserDetailsModal({ user, onClose }) {
         <div className="flex items-center justify-between pb-2.5 border-b border-[var(--agri-border)]">
           <div>
             <h3 className="text-lg sm:text-xl font-bold text-[var(--agri-text)] tracking-tight">
-              User Details
+              {t("adminUser.detailsTitle")}
             </h3>
             <p className="text-xs font-medium text-[var(--agri-text-muted)]">
-              Complete account and system information
+              {t("adminUser.detailsSubtitle")}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer"
-            aria-label="Close"
+            aria-label={t("adminUser.close")}
           >
             <i className="ri-close-line text-xl" />
           </button>
@@ -92,7 +94,7 @@ export default function UserDetailsModal({ user, onClose }) {
                   })
                 }
                 className="h-16 w-16 rounded-full object-cover ring-3 ring-[#D8F3DC] cursor-pointer hover:opacity-90 transition"
-                title="Click to view photo"
+                title={t("adminUser.clickToViewPhoto")}
               />
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)] text-xl font-black text-[#2D6A4F] dark:text-[var(--agri-brand)] ring-3 ring-[#D8F3DC]/40">
@@ -108,7 +110,7 @@ export default function UserDetailsModal({ user, onClose }) {
             {user.verified && (
               <span
                 className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[#2D6A4F] text-white ring-2 ring-white"
-                title="Verified Account"
+                title={t("adminUser.verifiedAccount")}
               >
                 <i className="ri-check-line text-[10px] font-bold" />
               </span>
@@ -116,7 +118,7 @@ export default function UserDetailsModal({ user, onClose }) {
           </div>
 
           <h4 className="text-base font-bold text-[var(--agri-text)]">
-            {user.fullname || "Unnamed User"}
+            {user.fullname || t("adminUser.unnamedUser")}
           </h4>
 
           <p className="text-xs font-medium text-[var(--agri-text-muted)] mb-1.5">
@@ -138,7 +140,7 @@ export default function UserDetailsModal({ user, onClose }) {
                   isSuspended ? "bg-red-500" : "bg-emerald-500"
                 }`}
               />
-              {isSuspended ? "Suspended Account" : "Active Account"}
+              {isSuspended ? t("adminUser.suspendedAccount") : t("adminUser.activeAccount")}
             </span>
           </div>
         </div>
@@ -151,10 +153,10 @@ export default function UserDetailsModal({ user, onClose }) {
               <i className="ri-user-3-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                  Full Name
+                  {t("adminUser.fullName")}
                 </p>
                 <p className="text-xs font-semibold text-[var(--agri-text)] truncate mt-0.5">
-                  {user.fullname || "N/A"}
+                  {user.fullname || t("adminUser.naLabel")}
                 </p>
               </div>
             </div>
@@ -163,7 +165,7 @@ export default function UserDetailsModal({ user, onClose }) {
               <i className="ri-at-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                  Username
+                  {t("adminUser.username")}
                 </p>
                 <p className="text-xs font-semibold text-[var(--agri-text)] truncate mt-0.5">
                   @{user.username || "user"}
@@ -177,10 +179,10 @@ export default function UserDetailsModal({ user, onClose }) {
             <i className="ri-mail-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                Email Address
+                {t("adminUser.emailAddress")}
               </p>
               <p className="text-xs font-semibold text-[var(--agri-text)] break-all mt-0.5">
-                {user.email || "No email provided"}
+                {user.email || t("adminUser.noEmailProvided")}
               </p>
             </div>
           </div>
@@ -190,10 +192,10 @@ export default function UserDetailsModal({ user, onClose }) {
             <i className="ri-phone-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                Phone Number
+                {t("adminUser.phoneNumber")}
               </p>
               <p className="text-xs font-semibold text-[var(--agri-text)] mt-0.5">
-                {user.phone || user.contactNumber || "No phone provided"}
+                {user.phone || user.contactNumber || t("adminUser.noPhoneProvided")}
               </p>
             </div>
           </div>
@@ -203,7 +205,7 @@ export default function UserDetailsModal({ user, onClose }) {
             <i className="ri-map-pin-2-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                Full Location / Address
+                {t("adminUser.fullLocation")}
               </p>
               <p className="text-xs font-semibold text-[var(--agri-text)] whitespace-normal break-words leading-snug mt-0.5">
                 {fullLocation}
@@ -222,7 +224,7 @@ export default function UserDetailsModal({ user, onClose }) {
               <i className="ri-calendar-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                  Created
+                  {t("adminUser.created")}
                 </p>
                 <p className="text-xs font-semibold text-[var(--agri-text)] mt-0.5">
                   {formatFullDateTime(user.createdAt)}
@@ -234,7 +236,7 @@ export default function UserDetailsModal({ user, onClose }) {
               <i className="ri-time-line text-base text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                  Updated
+                  {t("adminUser.updated")}
                 </p>
                 <p className="text-xs font-semibold text-[var(--agri-text)] mt-0.5">
                   {formatFullDateTime(user.updatedAt || user.createdAt)}
@@ -247,7 +249,7 @@ export default function UserDetailsModal({ user, onClose }) {
           {user.bio && (
             <div className="p-2.5 rounded-xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
               <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)] mb-0.5">
-                Bio / About
+                {t("adminUser.bioAbout")}
               </p>
               <p className="text-xs text-[var(--agri-text)] font-medium whitespace-pre-wrap leading-relaxed">
                 {user.bio}
@@ -263,7 +265,7 @@ export default function UserDetailsModal({ user, onClose }) {
             onClick={onClose}
             className="w-full py-2.5 px-4 rounded-xl bg-[#2D6A4F] text-white text-xs sm:text-sm font-bold hover:bg-[#1B4332] active:scale-[0.99] transition cursor-pointer shadow-xs"
           >
-            Close Details
+            {t("adminUser.closeDetails")}
           </button>
         </div>
       </div>

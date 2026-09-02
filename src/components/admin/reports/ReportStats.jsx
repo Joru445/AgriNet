@@ -1,21 +1,25 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 import StatCard from "../../common/StatCard"
 
 export default function ReportStats({ stats }) {
+  const { t } = useLanguage();
+
   const cards = [
     {
-      label: "Total Reports",
+      label: t("adminReport.totalReports"),
       value: stats.total,
     },
     {
-      label: "Pending",
+      label: t("adminReport.pending"),
       value: stats.pending,
     },
     {
-      label: "Reviewing",
+      label: t("adminReport.reviewing"),
       value: stats.reviewing,
     },
     {
-      label: "Resolved",
+      label: t("adminReport.resolved"),
       value: stats.resolved,
     },
   ];
@@ -23,7 +27,7 @@ export default function ReportStats({ stats }) {
   return (
     <div className="mb-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
       {cards.map((card) => (
-        <StatCard title={card.label} value={card.value}/>
+        <StatCard key={card.label} title={card.label} value={card.value}/>
       ))}
     </div>
   );

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { useUnreadMessages } from "../../context/UnreadMessagesContext";
 import { getRoleHome } from "../../utils/routes";
 import Avatar from "./Avatar";
 
 export default function NewMessagePopup({ collapsed = true }) {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const { latestPopup, dismissPopup } = useUnreadMessages();
   const [isShowing, setIsShowing] = useState(false);
 
@@ -75,7 +77,7 @@ export default function NewMessagePopup({ collapsed = true }) {
             </h4>
             <span className="text-[10px] font-semibold text-red-500 bg-red-50 px-1.5 py-0.2 rounded-full flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
-              New Message
+              {t("messages.newMessage")}
             </span>
           </div>
 
@@ -92,7 +94,7 @@ export default function NewMessagePopup({ collapsed = true }) {
             setTimeout(dismissPopup, 300);
           }}
           className="h-6 w-6 shrink-0 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
-          title="Dismiss"
+          title={t("common.close")}
         >
           <i className="ri-close-line text-sm" />
         </button>

@@ -1,20 +1,24 @@
 import { useState, useMemo } from "react";
+
+import { useLanguage } from "../../../context/LanguageContext";
+
 import ProductCard from "../../common/ProductCard";
 
-const CATEGORIES = [
-  { id: "All", label: "All", icon: "ri-apps-2-line" },
-  { id: "Vegetables", label: "Vegetables", icon: "ri-plant-line" },
-  { id: "Fruits", label: "Fruits", icon: "ri-seedling-line" },
-  { id: "Grains", label: "Grains", icon: "ri-leaf-line" },
-  { id: "Livestock", label: "Livestock", icon: "ri-heart-pulse-line" },
-  { id: "Herbs", label: "Herbs", icon: "ri-medicine-bottle-line" },
-  { id: "Root Crops", label: "Root Crops", icon: "ri-earth-line" },
-  { id: "Seafood", label: "Seafood", icon: "ri-water-flash-line" },
-  { id: "Others", label: "Others", icon: "ri-shopping-basket-2-line" },
-];
-
 export default function StoreProducts({ farmer, products = [] }) {
+  const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const CATEGORIES = [
+    { id: "All", label: t("storeProfile.all"), icon: "ri-apps-2-line" },
+    { id: "Vegetables", label: t("storeProfile.vegetables"), icon: "ri-plant-line" },
+    { id: "Fruits", label: t("storeProfile.fruits"), icon: "ri-seedling-line" },
+    { id: "Grains", label: t("storeProfile.grains"), icon: "ri-leaf-line" },
+    { id: "Livestock", label: t("storeProfile.livestock"), icon: "ri-heart-pulse-line" },
+    { id: "Herbs", label: t("storeProfile.herbs"), icon: "ri-medicine-bottle-line" },
+    { id: "Root Crops", label: t("storeProfile.rootCrops"), icon: "ri-earth-line" },
+    { id: "Seafood", label: t("storeProfile.seafood"), icon: "ri-water-flash-line" },
+    { id: "Others", label: t("storeProfile.others"), icon: "ri-shopping-basket-2-line" },
+  ];
 
   const filteredProducts = useMemo(() => {
     if (selectedCategory === "All") return products;
@@ -26,11 +30,12 @@ export default function StoreProducts({ farmer, products = [] }) {
       {/* Products Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">Products</h2>
+          <h2 className="text-2xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">{t("storeProfile.products")}</h2>
 
           <p className="text-sm text-[var(--agri-text-muted)]">
-            {filteredProducts.length} product
-            {filteredProducts.length !== 1 && "s"} available
+            {filteredProducts.length === 1
+              ? t("storeProfile.productAvailableSingular", { count: filteredProducts.length })
+              : t("storeProfile.productsAvailable", { count: filteredProducts.length })}
           </p>
         </div>
       </div>
@@ -69,14 +74,14 @@ export default function StoreProducts({ farmer, products = [] }) {
 
           <h3 className="mt-3 text-lg font-semibold text-[var(--agri-text)]">
             {selectedCategory === "All"
-              ? "No products yet"
-              : `No ${selectedCategory} products`}
+              ? t("storeProfile.noProductsYet")
+              : t("storeProfile.noProductsCategory", { category: selectedCategory })}
           </h3>
 
           <p className="text-[var(--agri-text-muted)] mt-1 text-sm">
             {selectedCategory === "All"
-              ? `${farmer?.fullname || "Farmer"} hasn't listed any products.`
-              : `No items available in the ${selectedCategory} category.`}
+              ? t("storeProfile.noProductsListed", { farmer: farmer?.fullname || t("farmer.farmerFallback") })
+              : t("storeProfile.noItemsCategory", { category: selectedCategory })}
           </p>
         </div>
       ) : (

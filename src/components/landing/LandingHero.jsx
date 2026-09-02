@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
 
+import { useLanguage } from "../../context/LanguageContext";
+
 import landscape from "../../assets/img/landscape.jpg";
 
 export default function LandingHero() {
+  const { t } = useLanguage();
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       <div className="absolute inset-0">
@@ -18,19 +22,19 @@ export default function LandingHero() {
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-medium px-4 py-2 rounded-full mb-6">
             <i className="ri-leaf-line text-green-300" />
-            <span>Direct Farm-to-Table Trading in Lucena City</span>
+            <span>{t("landing.hero.badge")}</span>
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight mb-6">
-            Connect
-            <span className="text-green-300"> Directly </span> with
+            {t("landing.hero.titleLine1")}
+            <span className="text-green-300">{t("landing.hero.titleHighlight")}</span>
+            {t("landing.hero.titleLine2")}
             <br className="hidden md:block" />
-            Local Farmers
+            {t("landing.hero.titleLine3")}
           </h1>
 
           <p className="text-lg md:text-xl text-white/85 leading-relaxed mb-10 max-w-xl">
-            AgriNet Lucena eliminates middlemen, giving farmers fair prices
-            and consumers access to the freshest local agricultural products.
+            {t("landing.hero.subtitle")}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
@@ -39,28 +43,28 @@ export default function LandingHero() {
               to="/register"
             >
               <i className="ri-user-add-line" />
-              Get Started
+              {t("landing.hero.getStarted")}
             </Link>
             <Link
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/15 hover:bg-white/25 backdrop-blur-sm border-2 border-white/60 text-white font-semibold rounded-full transition-all duration-200 whitespace-nowrap text-base"
               to="/login"
             >
               <i className="ri-store-2-line" />
-              Browse Products
+              {t("landing.hero.browseProducts")}
             </Link>
             <Link
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent hover:bg-white/10 border-2 border-white/40 text-white font-semibold rounded-full transition-all duration-200 whitespace-nowrap text-base"
               to="/login"
             >
               <i className="ri-map-pin-line" />
-              Find Nearby Farmers
+              {t("landing.hero.findNearby")}
             </Link>
           </div>
         </div>
       </div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/60 animate-bounce">
-        <span className="text-xs">Scroll down</span>
+        <span className="text-xs">{t("landing.hero.scrollDown")}</span>
         <i className="ri-arrow-down-line" />
       </div>
     </section>

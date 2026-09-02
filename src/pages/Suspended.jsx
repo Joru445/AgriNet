@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 
 import logo from "../assets/favicon.ico";
 
 export default function Suspended() {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { t } = useLanguage();
 
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -36,7 +38,7 @@ export default function Suspended() {
         <div>
           <h1 className="text-xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">AgriNet</h1>
 
-          <p className="text-sm text-[var(--agri-text-muted)]">Connect. Grow. Thrive.</p>
+          <p className="text-sm text-[var(--agri-text-muted)]">{t("suspended.tagline")}</p>
         </div>
       </div>
 
@@ -56,14 +58,13 @@ export default function Suspended() {
 
           <div className="text-center">
             <h2 className="text-2xl font-bold text-[var(--agri-text)] sm:text-3xl">
-              Account Suspended
+              {t("suspended.title")}
             </h2>
 
             <div className="mx-auto mt-5 h-1 w-20 rounded-full bg-red-500" />
 
             <p className="mx-auto mt-8 max-w-lg text-base leading-7 text-[var(--agri-text-secondary)] sm:text-lg">
-              Your account has been suspended and you no longer have access to
-              AgriNet.
+              {t("suspended.description")}
             </p>
           </div>
 
@@ -75,8 +76,7 @@ export default function Suspended() {
             </div>
 
             <p className="leading-6 text-[var(--agri-text-secondary)]">
-              If you believe this suspension was made in error or you need more
-              information, please contact the AgriNet support team.
+              {t("suspended.infoText")}
             </p>
           </div>
 
@@ -90,16 +90,15 @@ export default function Suspended() {
 
               <div>
                 <h3 className="text-lg font-semibold text-[var(--agri-text)]">
-                  Need help?
+                  {t("suspended.needHelp")}
                 </h3>
 
                 <p className="mt-1 text-[var(--agri-text-secondary)]">
-                  Contact our support team and we'll assist you with your
-                  account.
+                  {t("suspended.supportText")}
                 </p>
 
                 <span className="mt-3 inline-block font-medium text-[#2D6A4F] dark:text-[var(--agri-brand)]">
-                  Contact AgriNet Support
+                  {t("suspended.contactSupport")}
                 </span>
               </div>
             </div>
@@ -116,7 +115,7 @@ export default function Suspended() {
             >
               <i className="ri-home-4-line text-xl" />
 
-              {loggingOut ? "Logging out..." : "Go to Landing Page"}
+              {loggingOut ? t("suspended.loggingOut") : t("suspended.goToLanding")}
             </button>
           </div>
         </div>
@@ -125,7 +124,7 @@ export default function Suspended() {
       {/* Footer */}
 
       <footer className="mx-auto mt-10 text-center text-sm text-[var(--agri-text-muted)]">
-        <p>© {new Date().getFullYear()} AgriNet. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} AgriNet. {t("suspended.copyright")}</p>
       </footer>
     </main>
   );

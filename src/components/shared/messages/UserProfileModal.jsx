@@ -7,27 +7,10 @@ import RoleBadge from "../../common/RoleBadge";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import ReportModal from "../../common/ReportModal";
 import { useAuth } from "../../../context/AuthContext";
-
-function formatDate(timestamp) {
-  if (!timestamp) return "Not available";
-  if (typeof timestamp.toDate === "function") {
-    return timestamp.toDate().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  }
-  if (timestamp.seconds) {
-    return new Date(timestamp.seconds * 1000).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  }
-  return "Not available";
-}
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function UserProfileModal({ user: initialUser, onClose }) {
+  const { t } = useLanguage();
   const { profile } = useAuth();
   const [profileData, setProfileData] = useState(initialUser);
   const [stats, setStats] = useState({
@@ -39,6 +22,25 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
   const [showReportModal, setShowReportModal] = useState(false);
 
   const targetUid = initialUser?.uid || initialUser?.id;
+
+  function formatDate(timestamp) {
+    if (!timestamp) return t("userProfileModal.notAvailable");
+    if (typeof timestamp.toDate === "function") {
+      return timestamp.toDate().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    }
+    if (timestamp.seconds) {
+      return new Date(timestamp.seconds * 1000).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    }
+    return t("userProfileModal.notAvailable");
+  }
 
   useEffect(() => {
     if (!targetUid) {
@@ -147,10 +149,10 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
         <div className="flex items-center justify-between pb-3 border-b border-[var(--agri-border-subtle)]">
           <div>
             <h3 className="text-lg sm:text-xl font-bold text-[var(--agri-text)] tracking-tight">
-              Consumer Profile
+              {t("userProfileModal.consumerProfile")}
             </h3>
             <p className="text-xs sm:text-sm font-medium text-[var(--agri-text-muted)]">
-              Buyer verification & account details
+              {t("userProfileModal.buyerSubtitle")}
             </p>
           </div>
           <div className="flex items-center gap-1.5">
@@ -159,7 +161,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
                 type="button"
                 onClick={() => setShowReportModal(true)}
                 className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
-                title="Report this user"
+                title={t("userProfileModal.reportUser")}
                 aria-label="Report user"
               >
                 <i className="ri-alert-line text-lg" />
@@ -169,7 +171,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
               type="button"
               onClick={onClose}
               className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer"
-              aria-label="Close"
+              aria-label={t("userProfileModal.closeAria")}
             >
               <i className="ri-close-line text-xl" />
             </button>
@@ -190,7 +192,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
                   })
                 }
                 className="h-18 w-18 rounded-full object-cover ring-3 ring-[#D8F3DC] cursor-pointer hover:opacity-90 transition"
-                title="Click to view photo"
+                title={t("userProfileModal.clickToView")}
               />
             ) : (
               <div className="flex h-18 w-18 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)] text-xl font-black text-[#2D6A4F] dark:text-[var(--agri-brand)] ring-3 ring-[#D8F3DC]/40">
@@ -206,7 +208,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
             {user.verified && (
               <span
                 className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[#2D6A4F] text-white ring-2 ring-white"
-                title="Verified Account"
+                title={t("userProfileModal.verifiedAccount")}
               >
                 <i className="ri-check-line text-[10px] font-bold" />
               </span>
@@ -245,10 +247,10 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
                   }`}
                 />
                 {isTrusted
-                  ? "Trusted Buyer"
+                  ? t("userProfileModal.trustedBuyer")
                   : isActive
-                    ? "Active Buyer"
-                    : "New Consumer"}
+                    ? t("userProfileModal.activeBuyer")
+                    : t("userProfileModal.newConsumer")}
               </span>
             )}
           </div>
@@ -259,12 +261,12 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] sm:text-xs font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)] flex items-center gap-1">
               <i className="ri-shield-user-line text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-              <span>Buyer Trust & Transaction History</span>
+              <span>{t("userProfileModal.buyerTrustTitle")}</span>
             </span>
 
             {isTrusted && (
               <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-[var(--agri-card)] px-1.5 py-0.5 rounded border border-emerald-200/60">
-                Verified
+                {t("userProfileModal.verified")}
               </span>
             )}
           </div>
@@ -272,7 +274,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
           {stats.loading ? (
             <div className="py-2.5 text-center text-xs text-[var(--agri-text-muted)] flex items-center justify-center gap-2">
               <i className="ri-loader-4-line animate-spin text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-              <span>Checking history...</span>
+              <span>{t("userProfileModal.checkingHistory")}</span>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2">
@@ -281,7 +283,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
                   {stats.completedDeals}
                 </p>
                 <p className="text-[10px] font-bold text-[var(--agri-text-secondary)] uppercase tracking-tight">
-                  Completed Deals
+                  {t("userProfileModal.completedDeals")}
                 </p>
               </div>
 
@@ -290,7 +292,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
                   {completionRate}%
                 </p>
                 <p className="text-[10px] font-bold text-[var(--agri-text-secondary)] uppercase tracking-tight">
-                  Success Rate
+                  {t("userProfileModal.successRate")}
                 </p>
               </div>
             </div>
@@ -306,7 +308,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                  Location
+                  {t("userProfileModal.location")}
                 </p>
                 <p className="text-xs font-semibold text-[var(--agri-text)] truncate">
                   {fullLocation}
@@ -322,7 +324,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                  Phone
+                  {t("userProfileModal.phone")}
                 </p>
                 <p className="text-xs font-semibold text-[var(--agri-text)] truncate">
                   {user.phone || user.contactNumber}
@@ -338,7 +340,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                  Email
+                  {t("userProfileModal.email")}
                 </p>
                 <p className="text-xs font-semibold text-[var(--agri-text)] truncate">
                   {user.email}
@@ -354,7 +356,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                  Member Since
+                  {t("userProfileModal.memberSince")}
                 </p>
                 <p className="text-xs font-semibold text-[var(--agri-text)] truncate">
                   {formatDate(user.createdAt)}
@@ -371,7 +373,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
             onClick={onClose}
             className="w-full py-2.5 px-4 rounded-xl bg-[#2D6A4F] text-white text-xs sm:text-sm font-bold hover:bg-[#1B4332] active:scale-[0.99] transition cursor-pointer"
           >
-            Close
+            {t("userProfileModal.close")}
           </button>
         </div>
       </div>
@@ -390,7 +392,7 @@ export default function UserProfileModal({ user: initialUser, onClose }) {
         onClose={() => setShowReportModal(false)}
         targetType="profile"
         targetId={targetUid}
-        targetTitle={`User Profile of ${user.fullname || user.username}`}
+        targetTitle={t("userProfileModal.profileOf", { name: user.fullname || user.username })}
         reportedUser={user}
       />
     </div>

@@ -3,12 +3,12 @@ export const tabRoutes = [
   "/nearby",
   "/products",
   "/messages",
-  "/inquiries",
+  "/transactions",
   "/settings",
 
   "/farmer",
   "/farmer/products",
-  "/farmer/inquiries",
+  "/farmer/transactions",
   "/farmer/messages",
   "/farmer/settings",
 

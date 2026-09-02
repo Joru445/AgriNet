@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { useLanguage } from "../../context/LanguageContext";
+
 /**
  * Displays a persistent banner when the device loses internet connectivity.
  * Automatically hides when connection is restored.
@@ -8,6 +10,7 @@ import { useEffect, useState } from "react";
  * giving Firestore time to sync pending writes.
  */
 export default function OfflineIndicator() {
+  const { t } = useLanguage();
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [isReconnecting, setIsReconnecting] = useState(false);
 
@@ -49,12 +52,12 @@ export default function OfflineIndicator() {
       {isOffline ? (
         <>
           <i className="ri-wifi-off-line text-sm" />
-          <span>You are offline. Some features may be unavailable.</span>
+          <span>{t("offline.message")}</span>
         </>
       ) : (
         <>
           <i className="ri-refresh-line text-sm animate-spin" />
-          <span>Reconnecting... Syncing your data.</span>
+          <span>{t("offline.reconnecting")}</span>
         </>
       )}
     </div>

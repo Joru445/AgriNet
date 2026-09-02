@@ -129,7 +129,7 @@ export default function TransactionProofUpload({
           disabled:opacity-50
         "
       >
-        {processing ? "Uploading..." : "Submit Proof"}
+        {processing ? t("transaction.uploading") : t("transaction.submitProof")}
       </button>
     </section>
   );

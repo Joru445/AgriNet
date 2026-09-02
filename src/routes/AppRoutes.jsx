@@ -89,15 +89,15 @@ export default function AppRoutes() {
 
               <Route path="/profile/:uid" element={<StoreProfile />} />
 
-              <Route path="/inquiries" element={<Inquiries />} />
+              <Route path="/transactions" element={<Inquiries />} />
 
               <Route
-                path="/inquiries/:inquiryId/proof"
+                path="/transactions/:inquiryId/proof"
                 element={<TransactionProof />}
               />
 
               <Route
-                path="/inquiries/:inquiryId/review"
+                path="/transactions/:inquiryId/review"
                 element={<TransactionReview />}
               />
 
@@ -123,15 +123,15 @@ export default function AppRoutes() {
 
               <Route path="/farmer/profile/:uid" element={<StoreProfile />} />
 
-              <Route path="/farmer/inquiries" element={<Inquiries />} />
+              <Route path="/farmer/transactions" element={<Inquiries />} />
 
               <Route
-                path="/farmer/inquiries/:inquiryId/proof"
+                path="/farmer/transactions/:inquiryId/proof"
                 element={<TransactionProof />}
               />
 
               <Route
-                path="/farmer/inquiries/:inquiryId/review"
+                path="/farmer/transactions/:inquiryId/review"
                 element={<TransactionReview />}
               />
 
@@ -157,13 +157,15 @@ export default function AppRoutes() {
 
               <Route path="/admin/reports" element={<Reports />} />
 
+              <Route path="/admin/transactions" element={<Inquiries />} />
+
               <Route
-                path="/admin/inquiries/:inquiryId/proof"
+                path="/admin/transactions/:inquiryId/proof"
                 element={<TransactionProof />}
               />
 
               <Route
-                path="/admin/inquiries/:inquiryId/review"
+                path="/admin/transactions/:inquiryId/review"
                 element={<TransactionReview />}
               />
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { usePWAUpdate } from '../../hooks/usePWAUpdate'
+import { useLanguage } from "../../context/LanguageContext";
 
 /**
  * Non-intrusive prompt displayed when a new version of AgriNet is available.
@@ -10,6 +11,7 @@ import { usePWAUpdate } from '../../hooks/usePWAUpdate'
  */
 export default function PWAUpdatePrompt() {
   const { needRefresh, updateServiceWorker, dismissUpdate } = usePWAUpdate()
+  const { t } = useLanguage();
   const [shouldRender, setShouldRender] = useState(false)
   const [animating, setAnimating] = useState(false)
 
@@ -43,9 +45,9 @@ export default function PWAUpdatePrompt() {
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold">Update available</p>
+          <p className="text-sm font-semibold">{t("pwaUpdate.title")}</p>
           <p className="text-xs text-white/70 mt-0.5">
-            A new version of AgriNet is ready.
+            {t("pwaUpdate.description")}
           </p>
         </div>
 
@@ -55,14 +57,14 @@ export default function PWAUpdatePrompt() {
             onClick={dismissUpdate}
             className="rounded-xl bg-white/15 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition-colors cursor-pointer"
           >
-            Later
+            {t("pwaUpdate.later")}
           </button>
           <button
             type="button"
             onClick={() => updateServiceWorker(true)}
             className="rounded-xl bg-[#52B788] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#40916C] transition-colors cursor-pointer"
           >
-            Update
+            {t("pwaUpdate.update")}
           </button>
         </div>
       </div>

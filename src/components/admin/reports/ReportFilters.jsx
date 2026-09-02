@@ -1,9 +1,13 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function ReportFilters({
   search,
   onSearchChange,
   status,
   onStatusChange,
 }) {
+  const { t } = useLanguage();
+
   return (
     <div className="mb-6 rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-4.5 shadow-md shadow-black/5">
       <div className="flex flex-col gap-3 md:flex-row md:items-center">
@@ -15,7 +19,7 @@ export default function ReportFilters({
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search reports by reason, user, target, or explanation..."
+            placeholder={t("adminReport.searchPlaceholder")}
             className="w-full rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 py-2.5 pl-10 pr-10 text-sm font-semibold text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/15"
           />
 
@@ -24,8 +28,8 @@ export default function ReportFilters({
               type="button"
               onClick={() => onSearchChange("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]/60 transition cursor-pointer"
-              title="Clear search"
-              aria-label="Clear search"
+              title={t("search.clear")}
+              aria-label={t("search.clear")}
             >
               <i className="ri-close-circle-fill text-base text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)]" />
             </button>
@@ -38,11 +42,11 @@ export default function ReportFilters({
           onChange={(e) => onStatusChange(e.target.value)}
           className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
         >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="reviewing">Reviewing</option>
-          <option value="resolved">Resolved</option>
-          <option value="dismissed">Dismissed</option>
+          <option value="all">{t("adminReport.allStatus")}</option>
+          <option value="pending">{t("adminReport.pending")}</option>
+          <option value="reviewing">{t("adminReport.reviewing")}</option>
+          <option value="resolved">{t("adminReport.resolved")}</option>
+          <option value="dismissed">{t("adminReport.dismissed")}</option>
         </select>
       </div>
     </div>

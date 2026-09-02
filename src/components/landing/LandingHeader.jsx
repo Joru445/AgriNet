@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { useLanguage } from "../../context/LanguageContext";
+
 import logo from "../../assets/favicon.svg";
 
 export default function LandingHeader() {
+  const { t } = useLanguage();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -15,17 +18,17 @@ export default function LandingHeader() {
   }, []);
 
   const navLinks = [
-    { href: "#about", label: "About" },
-    { href: "#how-it-works", label: "How It Works" },
-    { href: "#for-farmers", label: "For Farmers" },
-    { href: "#for-consumers", label: "For Consumers" },
+    { href: "#about", label: t("landing.nav.about") },
+    { href: "#how-it-works", label: t("landing.nav.howItWorks") },
+    { href: "#for-farmers", label: t("landing.nav.forFarmers") },
+    { href: "#for-consumers", label: t("landing.nav.forConsumers") },
   ];
 
   const drawerLinks = [
-    { href: "#about", label: "About", icon: "ri-information-line" },
-    { href: "#how-it-works", label: "How It Works", icon: "ri-settings-4-line" },
-    { href: "#for-farmers", label: "For Farmers", icon: "ri-plant-line" },
-    { href: "#for-consumers", label: "For Consumers", icon: "ri-shopping-basket-line" },
+    { href: "#about", label: t("landing.nav.about"), icon: "ri-information-line" },
+    { href: "#how-it-works", label: t("landing.nav.howItWorks"), icon: "ri-settings-4-line" },
+    { href: "#for-farmers", label: t("landing.nav.forFarmers"), icon: "ri-plant-line" },
+    { href: "#for-consumers", label: t("landing.nav.forConsumers"), icon: "ri-shopping-basket-line" },
   ];
 
   return (
@@ -72,13 +75,13 @@ export default function LandingHeader() {
               }`}
               to="/login"
             >
-              Login
+              {t("landing.nav.login")}
             </Link>
             <Link
               className="px-5 py-2 rounded-full text-sm font-semibold bg-[#2D6A4F] text-white hover:bg-[#1B4332] transition-all duration-200 whitespace-nowrap"
               to="/register"
             >
-              Register
+              {t("landing.nav.register")}
             </Link>
           </div>
 
@@ -86,7 +89,7 @@ export default function LandingHeader() {
             className={`md:hidden w-10 h-10 flex items-center justify-center focus:outline-none cursor-pointer transition-colors duration-200 ${
               isScrolled ? "text-gray-800 hover:text-[#2D6A4F]" : "text-white hover:text-green-200"
             }`}
-            aria-label="Open menu"
+            aria-label={t("landing.nav.openMenu")}
             onClick={() => setIsDrawerOpen(true)}
           >
             <i className="text-2xl ri-menu-line" />
@@ -113,7 +116,7 @@ export default function LandingHeader() {
             <button
               onClick={() => setIsDrawerOpen(false)}
               className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white focus:outline-none cursor-pointer rounded-lg hover:bg-white/10 transition-colors"
-              aria-label="Close menu"
+              aria-label={t("landing.nav.closeMenu")}
             >
               <i className="ri-close-line text-2xl" />
             </button>
@@ -139,14 +142,14 @@ export default function LandingHeader() {
             to="/login"
             onClick={() => setIsDrawerOpen(false)}
           >
-            Login
+            {t("landing.nav.login")}
           </Link>
           <Link
             className="w-full text-center px-4 py-2.5 rounded-full text-xs font-semibold bg-[#2D6A4F] text-white hover:bg-[#1B4332] transition-all duration-200 whitespace-nowrap shadow-sm"
             to="/register"
             onClick={() => setIsDrawerOpen(false)}
           >
-            Register
+            {t("landing.nav.register")}
           </Link>
         </div>
       </div>

@@ -98,7 +98,7 @@ export default function InquiryRow({
             <i className="ri-shopping-bag-3-line text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
 
             <span className="text-xs font-bold text-[var(--agri-text)]">
-              {userRole === "farmer" ? t("inquiries.purchaseInquiry") : t("inquiries.myInquiry")}
+              {userRole === "farmer" ? t("transactions.purchaseInquiry") : t("transactions.myInquiry")}
             </span>
           </div>
 
@@ -113,8 +113,8 @@ export default function InquiryRow({
               type="button"
               onClick={() => setShowReportModal(true)}
               className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--agri-text-muted)] hover:text-red-600 hover:bg-red-500/10 transition cursor-pointer"
-              title={t("inquiries.reportTitle")}
-              aria-label={t("inquiries.reportAria")}
+              title={t("transactions.reportTitle")}
+              aria-label={t("transactions.reportAria")}
             >
               <i className="ri-alert-line text-sm" />
             </button>
@@ -147,7 +147,7 @@ export default function InquiryRow({
         {/* View conversation */}
         <Action
           updating={false}
-          label={t("inquiries.viewConversation")}
+          label={t("transactions.viewConversation")}
           icon="ri-message-3-line"
           showDot={dots.viewConversation}
           className="border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]"
@@ -159,7 +159,7 @@ export default function InquiryRow({
         {userRole === "farmer" && status === "accepted" && (
           <Action
             updating={updating}
-            label={t("inquiries.startTransaction")}
+            label={t("transactions.startTransaction")}
             icon="ri-play-circle-line"
             showDot={dots.startTransaction}
             className="bg-[#2D6A4F] text-white hover:bg-[#24583F]"
@@ -174,7 +174,7 @@ export default function InquiryRow({
         {userRole === "consumer" && status === "ongoing" && (
           <Action
             updating={updating}
-            label={t("inquiries.markComplete")}
+            label={t("transactions.markComplete")}
             icon="ri-checkbox-circle-line"
             showDot={dots.markComplete}
             className="bg-[#2D6A4F] text-white hover:bg-[#24583F]"
@@ -186,7 +186,7 @@ export default function InquiryRow({
         {userRole === "consumer" && status === "awaiting_proof" && (
           <Action
             updating={updating}
-            label={t("inquiries.uploadProof")}
+            label={t("transactions.uploadProof")}
             icon="ri-upload-cloud-2-line"
             showDot={dots.uploadProof}
             className="bg-[#2D6A4F] text-white hover:bg-[#24583F]"
@@ -198,7 +198,7 @@ export default function InquiryRow({
         {userRole === "farmer" && status === "proof_submitted" && (
           <Action
             updating={updating}
-            label={t("inquiries.reviewProof")}
+            label={t("transactions.reviewProof")}
             icon="ri-file-search-line"
             showDot={dots.reviewProof}
             className="bg-orange-500 text-white hover:bg-orange-600"
@@ -210,7 +210,7 @@ export default function InquiryRow({
         {["accepted", "ongoing"].includes(status) && (
           <Action
             updating={updating}
-            label={t("inquiries.cancel")}
+            label={t("transactions.cancel")}
             icon="ri-close-circle-line"
             showDot={false}
             className="border border-red-500/20 bg-[var(--agri-card)] text-red-600 hover:bg-red-500/10"
@@ -222,7 +222,7 @@ export default function InquiryRow({
         {status === "completed" && (
           <Action
             updating={false}
-            label={t("inquiries.viewTransaction")}
+            label={t("transactions.viewTransaction")}
             icon="ri-file-text-line"
             showDot={false}
             className="border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text)] hover:bg-[var(--agri-hover)] font-semibold"
@@ -234,7 +234,7 @@ export default function InquiryRow({
         {userRole === "consumer" && status === "completed" && !isReviewed && (
           <Action
             updating={updating}
-            label={t("inquiries.rateTransaction")}
+            label={t("transactions.rateTransaction")}
             icon="ri-star-line"
             showDot={dots.rate}
             className="bg-[#2D6A4F] text-white hover:bg-[#24583F] font-bold shadow-xs"
@@ -246,7 +246,7 @@ export default function InquiryRow({
         {status === "completed" && isReviewed && (
           <Action
             updating={false}
-            label={t("inquiries.viewReview")}
+            label={t("transactions.viewReview")}
             icon="ri-star-fill"
             showDot={false}
             className="border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 font-semibold"
@@ -265,7 +265,7 @@ export default function InquiryRow({
               "
           >
             <i className="ri-time-line text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-            {t("inquiries.waitingFarmer")}
+            {t("transactions.waitingFarmer")}
           </span>
         )}
       </div>
@@ -282,10 +282,10 @@ export default function InquiryRow({
         onClose={() => setShowReportModal(false)}
         targetType="inquiry"
         targetId={inquiry.id}
-        targetTitle={t("inquiries.targetTitle", { name: productData.name || "Product" })}
+        targetTitle={t("transactions.targetTitle", { name: productData.name || "Product" })}
         reportedUser={counterparty?.uid ? counterparty : {
           uid: userRole === "farmer" ? inquiry.consumerId : inquiry.farmerId,
-          fullname: counterparty?.fullname || counterparty?.username || t("inquiries.unknownUser"),
+          fullname: counterparty?.fullname || counterparty?.username || t("transactions.unknownUser"),
           username: counterparty?.username || "",
           role: userRole === "farmer" ? "consumer" : "farmer",
         }}
@@ -320,7 +320,7 @@ function Action({ updating, label, icon, showDot, className, onClick, disabled =
         </span>
       )}
       {icon && <i className={`${icon} text-sm`} />}
-      {updating ? t("inquiries.updating") : label}
+      {updating ? t("transactions.updating") : label}
     </button>
   );
 }
@@ -332,49 +332,49 @@ function getBanner(status, userRole, t) {
   if (userRole === "consumer") {
     if (status === "pending") {
       return {
-        message: t("inquiries.banner.consumerPending"),
+        message: t("transactions.banner.consumerPending"),
         icon: "ri-time-line",
         className: "bg-[var(--agri-hover)] text-[var(--agri-text-muted)] border border-[var(--agri-border)]",
       };
     }
     if (status === "accepted") {
       return {
-        message: t("inquiries.banner.consumerAccepted"),
+        message: t("transactions.banner.consumerAccepted"),
         icon: "ri-checkbox-circle-fill",
         className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20",
       };
     }
     if (status === "ongoing") {
       return {
-        message: t("inquiries.banner.consumerOngoing"),
+        message: t("transactions.banner.consumerOngoing"),
         icon: "ri-exchange-line",
         className: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20",
       };
     }
     if (status === "awaiting_proof") {
       return {
-        message: t("inquiries.banner.consumerAwaitingProof"),
+        message: t("transactions.banner.consumerAwaitingProof"),
         icon: "ri-upload-cloud-2-line",
         className: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20",
       };
     }
     if (status === "proof_submitted") {
       return {
-        message: t("inquiries.banner.consumerProofSubmitted"),
+        message: t("transactions.banner.consumerProofSubmitted"),
         icon: "ri-time-line",
         className: "bg-[var(--agri-hover)] text-[var(--agri-text-muted)] border border-[var(--agri-border)]",
       };
     }
     if (status === "completed") {
       return {
-        message: t("inquiries.banner.consumerCompleted"),
+        message: t("transactions.banner.consumerCompleted"),
         icon: "ri-checkbox-circle-fill",
         className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20",
       };
     }
     if (status === "cancelled") {
       return {
-        message: t("inquiries.banner.consumerCancelled"),
+        message: t("transactions.banner.consumerCancelled"),
         icon: "ri-close-circle-fill",
         className: "bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20",
       };
@@ -384,35 +384,35 @@ function getBanner(status, userRole, t) {
   if (userRole === "farmer") {
     if (status === "accepted") {
       return {
-        message: t("inquiries.banner.farmerAccepted"),
+        message: t("transactions.banner.farmerAccepted"),
         icon: "ri-play-circle-fill",
         className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 font-medium",
       };
     }
     if (status === "ongoing") {
       return {
-        message: t("inquiries.banner.farmerOngoing"),
+        message: t("transactions.banner.farmerOngoing"),
         icon: "ri-exchange-line",
         className: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 font-medium",
       };
     }
     if (status === "proof_submitted") {
       return {
-        message: t("inquiries.banner.farmerProofSubmitted"),
+        message: t("transactions.banner.farmerProofSubmitted"),
         icon: "ri-file-search-line",
         className: "bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-500/20 font-medium",
       };
     }
     if (status === "completed") {
       return {
-        message: t("inquiries.banner.farmerCompleted"),
+        message: t("transactions.banner.farmerCompleted"),
         icon: "ri-checkbox-circle-fill",
         className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20",
       };
     }
     if (status === "cancelled") {
       return {
-        message: t("inquiries.banner.farmerCancelled"),
+        message: t("transactions.banner.farmerCancelled"),
         icon: "ri-close-circle-fill",
         className: "bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20",
       };

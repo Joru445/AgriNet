@@ -80,7 +80,7 @@ export default function FarmerSection({ form, stats, editing, onChange }) {
             {stats.inquiries ?? 0}
           </p>
 
-          <p className="text-sm text-[var(--agri-text-muted)] mt-2">{t("profile.stats.inquiries")}</p>
+          <p className="text-sm text-[var(--agri-text-muted)] mt-2">{t("profile.stats.transactions")}</p>
         </div>
 
         <div className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-elevated)] p-5 text-center">

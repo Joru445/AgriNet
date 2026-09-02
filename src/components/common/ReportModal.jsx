@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { createReport, getActiveReportForTarget } from "../../services/report.service";
 import { uploadReportProof } from "../../services/cloudinary.service";
 import { showToast } from "../../utils/toast";
@@ -7,50 +8,50 @@ import { showToast } from "../../utils/toast";
 const REPORT_REASONS = [
   {
     id: "scam_fraud",
-    label: "Scam or Fraud",
-    description: "Dishonest transactions, payment fraud, fake receipts, or non-delivery",
+    labelKey: "reportModal.reasons.scam_fraud",
+    descKey: "reportModal.reasons.scam_fraud_desc",
     icon: "ri-alarm-warning-line",
     color: "text-red-600 bg-red-50",
   },
   {
     id: "bullying_harassment",
-    label: "Bullying or Harassment",
-    description: "Abusive language, threats, intimidation, hate speech, or stalking",
+    labelKey: "reportModal.reasons.bullying_harassment",
+    descKey: "reportModal.reasons.bullying_harassment_desc",
     icon: "ri-user-unfollow-line",
     color: "text-orange-600 bg-orange-50",
   },
   {
     id: "human_trafficking",
-    label: "Human Trafficking or Exploitation",
-    description: "Forced labor, modern slavery, severe exploitation, or abuse",
+    labelKey: "reportModal.reasons.human_trafficking",
+    descKey: "reportModal.reasons.human_trafficking_desc",
     icon: "ri-hand-sanitizer-line",
     color: "text-purple-600 bg-purple-50",
   },
   {
     id: "prohibited_goods",
-    label: "Fake or Prohibited Products",
-    description: "Deceptive descriptions, counterfeit goods, illegal or unsafe items",
+    labelKey: "reportModal.reasons.prohibited_goods",
+    descKey: "reportModal.reasons.prohibited_goods_desc",
     icon: "ri-prohibited-line",
     color: "text-amber-600 bg-amber-50",
   },
   {
     id: "inappropriate_content",
-    label: "Inappropriate Content",
-    description: "Explicit images, violence, vulgarity, or offensive material",
+    labelKey: "reportModal.reasons.inappropriate_content",
+    descKey: "reportModal.reasons.inappropriate_content_desc",
     icon: "ri-eye-off-line",
     color: "text-rose-600 bg-rose-50",
   },
   {
     id: "spam_impersonation",
-    label: "Spam or Impersonation",
-    description: "Unsolicited ads, bot messages, fake accounts, or identity theft",
+    labelKey: "reportModal.reasons.spam_impersonation",
+    descKey: "reportModal.reasons.spam_impersonation_desc",
     icon: "ri-spam-line",
     color: "text-blue-600 bg-blue-50",
   },
   {
     id: "other",
-    label: "Other Issue",
-    description: "Any other violation or safety concern not listed above",
+    labelKey: "reportModal.reasons.other",
+    descKey: "reportModal.reasons.other_desc",
     icon: "ri-more-line",
     color: "text-gray-600 bg-gray-50",
   },
@@ -70,6 +71,7 @@ export default function ReportModal({
   reportedUser = null,
 }) {
   const { profile } = useAuth();
+  const { t } = useLanguage();
 
   const [selectedReason, setSelectedReason] = useState("");
   const [description, setDescription] = useState("");
@@ -82,9 +84,25 @@ export default function ReportModal({
   const [checkingActive, setCheckingActive] = useState(true);
 
   const reportedUid = reportedUser?.uid || reportedUser?.id;
+
+  function getTargetLabel() {
+    switch (targetType) {
+      case "message":
+        return t("reportModal.conversationMessage");
+      case "inquiry":
+        return t("reportModal.purchaseInquiry");
+      case "product":
+        return t("reportModal.productListing");
+      case "profile":
+      case "user":
+      default:
+        return t("reportModal.userAccount");
+    }
+  }
+
   const displayTargetTitle = formatCleanTitle(
     targetTitle,
-    reportedUser?.fullname || (reportedUser?.username ? `@${reportedUser.username}` : "Reported Target"),
+    reportedUser?.fullname || (reportedUser?.username ? `@${reportedUser.username}` : t("reportModal.reportedTarget")),
   );
 
   // Check if an unresolved report already exists for this target
@@ -145,17 +163,17 @@ export default function ReportModal({
     e.preventDefault();
 
     if (!selectedReason) {
-      setError("Please select a reason for your report.");
+      setError(t("reportModal.errorSelectReason"));
       return;
     }
 
     if (!profile?.uid) {
-      setError("You must be logged in to submit a report.");
+      setError(t("reportModal.errorLoginRequired"));
       return;
     }
 
     if (!reportedUid) {
-      setError("Target user could not be identified.");
+      setError(t("reportModal.errorTargetNotFound"));
       return;
     }
 
@@ -173,7 +191,7 @@ export default function ReportModal({
           evidencePublicId = uploadRes.publicId;
         } catch (uploadErr) {
           console.warn("Evidence proof upload failed:", uploadErr);
-          showToast.warning("Could not upload screenshot proof, submitting report without attachment.");
+          showToast.warning(t("reportModal.toastUploadFailed"));
         }
       }
 
@@ -200,28 +218,13 @@ export default function ReportModal({
         evidencePublicId,
       });
 
-      showToast.success("Report submitted! Our moderation team will investigate and contact you if needed.");
+      showToast.success(t("reportModal.toastSuccess"));
       onClose?.();
     } catch (err) {
       console.error("Failed to submit report:", err);
-      setError(err?.message || "Failed to submit report. Please try again.");
+      setError(err?.message || t("reportModal.errorSubmitFailed"));
     } finally {
       setSubmitting(false);
-    }
-  }
-
-  function getTargetLabel() {
-    switch (targetType) {
-      case "message":
-        return "Conversation / Message";
-      case "inquiry":
-        return "Purchase Inquiry";
-      case "product":
-        return "Product Listing";
-      case "profile":
-      case "user":
-      default:
-        return "User Account";
     }
   }
 
@@ -244,10 +247,10 @@ export default function ReportModal({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-[var(--agri-text)] leading-tight">
-                {activeReport ? "Report Under Review" : "Submit a Report"}
+                {activeReport ? t("reportModal.titleUnderReview") : t("reportModal.title")}
               </h2>
               <p className="text-xs text-[var(--agri-text-muted)] font-medium mt-0.5">
-                {activeReport ? "An active report is already being investigated" : "Help us keep AgriNet safe and trustworthy"}
+                {activeReport ? t("reportModal.subtitleActive") : t("reportModal.subtitle")}
               </p>
             </div>
           </div>
@@ -256,7 +259,7 @@ export default function ReportModal({
             type="button"
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer"
-            aria-label="Close modal"
+            aria-label={t("reportModal.closeAria")}
           >
             <i className="ri-close-line text-xl" />
           </button>
@@ -266,7 +269,7 @@ export default function ReportModal({
         {checkingActive ? (
           <div className="p-10 text-center flex flex-col items-center justify-center space-y-3">
             <i className="ri-loader-4-line animate-spin text-3xl text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-            <p className="text-xs text-[var(--agri-text-muted)] font-medium">Checking report status...</p>
+            <p className="text-xs text-[var(--agri-text-muted)] font-medium">{t("reportModal.checkingStatus")}</p>
           </div>
         ) : activeReport ? (
           /* Active Report Already Exists Screen */
@@ -275,14 +278,14 @@ export default function ReportModal({
             <div className="flex items-center justify-between rounded-2xl bg-[var(--agri-card)] border border-[var(--agri-border-subtle)] shadow-xs p-3.5">
               <div className="min-w-0 flex-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F] dark:text-[var(--agri-brand)]">
-                  Target: {getTargetLabel()}
+                  {t("reportModal.targetLabel", { type: getTargetLabel() })}
                 </span>
                 <p className="text-xs sm:text-sm font-bold text-[var(--agri-text)] truncate mt-0.5">
                   {displayTargetTitle}
                 </p>
               </div>
               <span className="rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-bold px-3 py-1 capitalize shrink-0 ml-2 shadow-2xs">
-                {activeReport.status === "reviewing" ? "Under Investigation" : "Pending Review"}
+                {activeReport.status === "reviewing" ? t("reportModal.underInvestigation") : t("reportModal.pendingReview")}
               </span>
             </div>
 
@@ -290,7 +293,7 @@ export default function ReportModal({
             <div className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-4 shadow-xs space-y-2.5">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                  Submitted Reason
+                  {t("reportModal.submittedReason")}
                 </p>
                 <p className="text-sm font-bold text-[var(--agri-text)] mt-0.5">
                   {activeReport.reason}
@@ -300,7 +303,7 @@ export default function ReportModal({
               {activeReport.description && (
                 <div className="pt-2.5 border-t border-[var(--agri-border-subtle)]">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
-                    Your Explanation
+                    {t("reportModal.yourExplanation")}
                   </p>
                   <p className="text-xs sm:text-sm text-[var(--agri-text)] mt-1 leading-relaxed font-medium">
                     {activeReport.description}
@@ -311,11 +314,11 @@ export default function ReportModal({
               {activeReport.evidenceUrl && (
                 <div className="pt-2.5 border-t border-[var(--agri-border-subtle)]">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)] mb-1.5">
-                    Attached Evidence
+                    {t("reportModal.attachedEvidence")}
                   </p>
                   <img
                     src={activeReport.evidenceUrl}
-                    alt="Submitted proof"
+                    alt={t("reportModal.submittedProof")}
                     className="h-24 w-auto max-w-[200px] object-cover rounded-xl border border-[var(--agri-border)] shadow-xs"
                   />
                 </div>
@@ -326,14 +329,14 @@ export default function ReportModal({
             <div className="rounded-2xl border border-[#2D6A4F]/25 bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] p-4 shadow-xs text-xs sm:text-sm text-[#1B4332] dark:text-[var(--agri-brand-light)] space-y-1.5">
               <div className="flex items-center gap-2 font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                 <i className="ri-information-fill text-base" />
-                <span>Notice from Moderation Team</span>
+                <span>{t("reportModal.noticeTitle")}</span>
               </div>
               <p className="leading-relaxed font-medium">
-                We have received your report and our team is actively investigating the matter.
-                <strong> We will contact you via your registered email or messages if further details or action are needed.</strong>
+                {t("reportModal.noticeBody")}
+                <strong> {t("reportModal.noticeStrong")}</strong>
               </p>
               <p className="text-[11px] text-[#2D6A4F] dark:text-[var(--agri-brand)]/80 pt-1">
-                You can only submit one report at a time for this item until the current report is resolved.
+                {t("reportModal.noticeLimit")}
               </p>
             </div>
 
@@ -344,7 +347,7 @@ export default function ReportModal({
                 onClick={onClose}
                 className="w-full rounded-xl bg-[#2D6A4F] py-3 text-xs sm:text-sm font-bold text-white hover:bg-[#1B4332] active:scale-95 transition shadow-md hover:shadow-lg cursor-pointer"
               >
-                Got It
+                {t("reportModal.gotIt")}
               </button>
             </div>
           </div>
@@ -355,7 +358,7 @@ export default function ReportModal({
             <div className="flex items-center justify-between rounded-2xl bg-[var(--agri-card)] border border-[var(--agri-border-subtle)] shadow-xs p-3.5">
               <div className="min-w-0 flex-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F] dark:text-[var(--agri-brand)]">
-                  Reporting {getTargetLabel()}
+                  {t("reportModal.reporting", { type: getTargetLabel() })}
                 </span>
                 <p className="text-xs sm:text-sm font-bold text-[var(--agri-text)] truncate mt-0.5">
                   {displayTargetTitle}
@@ -371,12 +374,12 @@ export default function ReportModal({
             {/* Reason Selection */}
             <div>
               <label className="block text-xs sm:text-sm font-bold text-[var(--agri-text)] mb-2 uppercase tracking-wide">
-                Why are you reporting this? <span className="text-red-500">*</span>
+                {t("reportModal.whyReporting")} <span className="text-red-500">*</span>
               </label>
 
               <div className="space-y-2">
                 {REPORT_REASONS.map((item) => {
-                  const isSelected = selectedReason === item.label;
+                  const isSelected = selectedReason === item.id;
                   return (
                     <label
                       key={item.id}
@@ -389,10 +392,10 @@ export default function ReportModal({
                       <input
                         type="radio"
                         name="reportReason"
-                        value={item.label}
+                        value={item.id}
                         checked={isSelected}
                         onChange={() => {
-                          setSelectedReason(item.label);
+                          setSelectedReason(item.id);
                           setError(null);
                         }}
                         className="mt-0.5 h-4 w-4 text-[#2D6A4F] dark:text-[var(--agri-brand)] focus:ring-[#2D6A4F] cursor-pointer"
@@ -401,11 +404,11 @@ export default function ReportModal({
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs sm:text-sm font-bold text-[var(--agri-text)]">
-                            {item.label}
+                            {t(item.labelKey)}
                           </span>
                         </div>
                         <p className="text-[11px] sm:text-xs text-[var(--agri-text-muted)] mt-0.5 leading-normal">
-                          {item.description}
+                          {t(item.descKey)}
                         </p>
                       </div>
                     </label>
@@ -417,14 +420,14 @@ export default function ReportModal({
             {/* Additional Details */}
             <div>
               <label htmlFor="report-description" className="block text-xs sm:text-sm font-bold text-[var(--agri-text)] mb-1.5 uppercase tracking-wide">
-                Additional Details <span className="text-[var(--agri-text-muted)] font-normal lowercase">(optional)</span>
+                {t("reportModal.additionalDetails")} <span className="text-[var(--agri-text-muted)] font-normal lowercase">{t("reportModal.optional")}</span>
               </label>
               <textarea
                 id="report-description"
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Please provide any extra context, messages, or details to assist our review..."
+                placeholder={t("reportModal.detailsPlaceholder")}
                 className="w-full rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 p-3.5 text-xs sm:text-sm text-[var(--agri-text)] font-medium placeholder-[var(--agri-text-muted)] focus:bg-[var(--agri-input-bg)] focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/20 focus:outline-none shadow-2xs transition resize-none"
               />
             </div>
@@ -432,13 +435,13 @@ export default function ReportModal({
             {/* Evidence / Screenshot Upload */}
             <div>
               <label className="block text-xs sm:text-sm font-bold text-[var(--agri-text)] mb-1.5 uppercase tracking-wide">
-                Attach Screenshot / Proof <span className="text-[var(--agri-text-muted)] font-normal lowercase">(optional)</span>
+                {t("reportModal.attachScreenshot")} <span className="text-[var(--agri-text-muted)] font-normal lowercase">{t("reportModal.optional")}</span>
               </label>
               {evidencePreview ? (
                 <div className="relative inline-block rounded-2xl overflow-hidden border border-[var(--agri-border)] bg-[var(--agri-hover)] shadow-xs">
                   <img
                     src={evidencePreview}
-                    alt="Proof preview"
+                    alt={t("reportModal.proofPreview")}
                     className="h-28 w-auto max-w-[240px] object-cover rounded-2xl"
                   />
                   <button
@@ -448,8 +451,8 @@ export default function ReportModal({
                       setEvidencePreview(null);
                     }}
                     className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black transition shadow-sm cursor-pointer"
-                    title="Remove image"
-                    aria-label="Remove image"
+                    title={t("reportModal.removeImage")}
+                    aria-label={t("reportModal.removeImage")}
                   >
                     <i className="ri-close-line text-base" />
                   </button>
@@ -472,8 +475,8 @@ export default function ReportModal({
                     <i className="ri-image-add-line text-xl font-bold" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs sm:text-sm font-bold text-[var(--agri-text)]">Upload screenshot or photo proof</span>
-                    <p className="text-[11px] text-[var(--agri-text-muted)] mt-0.5">PNG, JPG, WEBP receipt or chat evidence</p>
+                    <span className="text-xs sm:text-sm font-bold text-[var(--agri-text)]">{t("reportModal.uploadProof")}</span>
+                    <p className="text-[11px] text-[var(--agri-text-muted)] mt-0.5">{t("reportModal.proofFormats")}</p>
                   </div>
                 </label>
               )}
@@ -495,7 +498,7 @@ export default function ReportModal({
                 disabled={submitting}
                 className="px-4 py-2.5 rounded-xl border border-[var(--agri-border)] text-xs sm:text-sm font-bold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] active:scale-95 transition shadow-2xs cursor-pointer disabled:opacity-50"
               >
-                Cancel
+                {t("reportModal.cancel")}
               </button>
 
               <button
@@ -506,12 +509,12 @@ export default function ReportModal({
                 {submitting ? (
                   <>
                     <i className="ri-loader-4-line animate-spin text-base" />
-                    Submitting...
+                    {t("reportModal.submitting")}
                   </>
                 ) : (
                   <>
                     <i className="ri-alert-fill text-base" />
-                    Submit Report
+                    {t("reportModal.submitReport")}
                   </>
                 )}
               </button>

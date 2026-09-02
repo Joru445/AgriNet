@@ -36,7 +36,7 @@ export default function AccountStep({
             placeholder="Juan dela Cruz"
             onChange={(e) => updateField("fullname", e.target.value)}
             onBlur={() => setFieldTouched?.("fullname")}
-            className={`w-full pl-8 pr-10 py-2.5 border-2 rounded-lg text-sm focus:outline-none transition-colors ${
+            className={`w-full pl-8 pr-10 py-2.5 border-2 rounded-lg text-sm focus:outline-none transition-colors text-gray-950 ${
               fullnameError
                 ? "border-red-500 focus:border-red-500 bg-red-50/20"
                 : "border-gray-200 focus:border-[#2D6A4F]"
@@ -67,7 +67,7 @@ export default function AccountStep({
             placeholder="juan123"
             onChange={(e) => updateField("username", e.target.value)}
             onBlur={() => setFieldTouched?.("username")}
-            className={`w-full pl-8 pr-10 py-2.5 border-2 rounded-lg text-sm focus:outline-none transition-colors ${
+            className={`w-full pl-8 pr-10 py-2.5 border-2 rounded-lg text-sm focus:outline-none transition-colors text-gray-950 ${
               usernameError
                 ? "border-red-500 focus:border-red-500 bg-red-50/20"
                 : "border-gray-200 focus:border-[#2D6A4F]"
@@ -97,7 +97,7 @@ export default function AccountStep({
             placeholder="juan@gmail.com"
             onChange={(e) => updateField("email", e.target.value)}
             onBlur={() => setFieldTouched?.("email")}
-            className={`w-full pl-8 pr-10 py-2.5 border-2 rounded-lg text-sm focus:outline-none transition-colors ${
+            className={`w-full pl-8 pr-10 py-2.5 border-2 rounded-lg text-sm focus:outline-none transition-colors text-gray-950 ${
               emailError
                 ? "border-red-500 focus:border-red-500 bg-red-50/20"
                 : "border-gray-200 focus:border-[#2D6A4F]"

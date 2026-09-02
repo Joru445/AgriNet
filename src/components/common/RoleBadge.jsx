@@ -1,16 +1,18 @@
+import { t } from "../../i18n";
+
 function getRoleLabel(role) {
   switch (role) {
     case "admin":
-      return "Admin";
+      return t("roles.admin");
 
     case "farmer":
-      return "Farmer";
+      return t("roles.farmer");
 
     case "consumer":
-      return "Consumer";
+      return t("roles.consumer");
 
     default:
-      return role || "Unknown";
+      return role || t("common.unknownUser");
   }
 }
 

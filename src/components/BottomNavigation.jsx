@@ -28,7 +28,7 @@ export default function BottomNavigation({ items }) {
       <div className="flex h-16">
         {items.map((item) => {
           const isMessages = item.to.includes("messages");
-          const isInquiries = item.to.includes("inquiries");
+          const isInquiries = item.to.includes("transactions");
           const isReports = item.to.includes("reports");
 
           return (
@@ -55,27 +55,27 @@ export default function BottomNavigation({ items }) {
                     <Badge count={pendingReportsCount} className="!-top-1 !-right-2 min-w-[0.875rem] h-3.5 px-0.5 text-[9px] ring-2 ring-[var(--agri-surface)]" />
                   )}
                 </div>
-                <span className="text-[10px]">{t(item.labelKey)}</span>
+                <span className="text-[10px] leading-tight truncate max-w-full">{t(item.labelKey)}</span>
               </NavLink>
 
               {/* Mobile speech bubble — messages */}
               {isMessages && showPopup && (
                 <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-bottom-2">
-                  <div className="relative flex items-center gap-2 whitespace-nowrap rounded-xl bg-[var(--agri-card)] px-3.5 py-2 text-xs font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-xl border border-[var(--agri-border)] ring-1 ring-black/5">
+                  <div className="relative flex items-center gap-2 rounded-xl bg-[var(--agri-card)] px-3.5 py-2 text-xs font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-xl border border-[var(--agri-border)] ring-1 ring-black/5 max-w-[200px]">
                     <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[var(--agri-card)] rotate-45 border-r border-b border-[var(--agri-border)]" />
-                    <PulsingDot className="!h-2 !w-2" />
-                    {t("sidebar.newMessages")}
+                    <PulsingDot className="!h-2 !w-2 shrink-0" />
+                    <span className="truncate">{t("sidebar.newMessages")}</span>
                   </div>
                 </div>
               )}
 
-              {/* Mobile speech bubble — inquiries */}
+              {/* Mobile speech bubble — transactions */}
               {isInquiries && showInquiryPopup && (
                 <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-bottom-2">
-                  <div className="relative flex items-center gap-2 whitespace-nowrap rounded-xl bg-[var(--agri-card)] px-3.5 py-2 text-xs font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-xl border border-[var(--agri-border)] ring-1 ring-black/5">
+                  <div className="relative flex items-center gap-2 rounded-xl bg-[var(--agri-card)] px-3.5 py-2 text-xs font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-xl border border-[var(--agri-border)] ring-1 ring-black/5 max-w-[200px]">
                     <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[var(--agri-card)] rotate-45 border-r border-b border-[var(--agri-border)]" />
-                    <PulsingDot className="!h-2 !w-2" />
-                    {inquiryPopupMessage}
+                    <PulsingDot className="!h-2 !w-2 shrink-0" />
+                    <span className="truncate">{inquiryPopupMessage}</span>
                   </div>
                 </div>
               )}
@@ -83,10 +83,10 @@ export default function BottomNavigation({ items }) {
               {/* Mobile speech bubble — reports */}
               {isReports && showReportPopup && (
                 <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-bottom-2">
-                  <div className="relative flex items-center gap-2 whitespace-nowrap rounded-xl bg-[var(--agri-card)] px-3.5 py-2 text-xs font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-xl border border-[var(--agri-border)] ring-1 ring-black/5">
+                  <div className="relative flex items-center gap-2 rounded-xl bg-[var(--agri-card)] px-3.5 py-2 text-xs font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-xl border border-[var(--agri-border)] ring-1 ring-black/5 max-w-[200px]">
                     <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[var(--agri-card)] rotate-45 border-r border-b border-[var(--agri-border)]" />
-                    <PulsingDot className="!h-2 !w-2" />
-                    {reportPopupMessage || t("sidebar.newReport")}
+                    <PulsingDot className="!h-2 !w-2 shrink-0" />
+                    <span className="truncate">{reportPopupMessage || t("sidebar.newReport")}</span>
                   </div>
                 </div>
               )}

@@ -17,13 +17,13 @@ export default function InquiryStatusBadge({ status }) {
   };
 
   const labels = {
-    accepted: t("inquiries.status.accepted"),
-    ongoing: t("inquiries.status.ongoing"),
-    awaiting_proof: t("inquiries.status.awaitingProof"),
-    proof_submitted: t("inquiries.status.proofSubmitted"),
-    completed: t("inquiries.status.completed"),
+    accepted: t("transactions.status.accepted"),
+    ongoing: t("transactions.status.ongoing"),
+    awaiting_proof: t("transactions.status.awaitingProof"),
+    proof_submitted: t("transactions.status.proofSubmitted"),
+    completed: t("transactions.status.completed"),
 
-    cancelled: t("inquiries.status.cancelled"),
+    cancelled: t("transactions.status.cancelled"),
   };
 
   return (
@@ -32,7 +32,7 @@ export default function InquiryStatusBadge({ status }) {
         styles[status] || "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] font-semibold"
       }`}
     >
-      {labels[status] || t("inquiries.status.unknown")}
+      {labels[status] || t("transactions.status.unknown")}
     </span>
   );
 }

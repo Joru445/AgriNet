@@ -1,14 +1,18 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function RatingStars({
   value = 0,
   onChange,
   disabled = false,
   size = "text-xl",
 }) {
+  const { t } = useLanguage();
+
   return (
     <div
       className="flex items-center gap-1"
       role={onChange ? "radiogroup" : undefined}
-      aria-label="Rating"
+      aria-label={t("transactionReview.ratingAria")}
     >
       {[1, 2, 3, 4, 5].map((star) => {
         const active = star <= value;
@@ -39,7 +43,7 @@ export default function RatingStars({
               disabled:cursor-not-allowed
               disabled:opacity-50
             "
-            aria-label={`${star} star${star > 1 ? "s" : ""}`}
+            aria-label={star > 1 ? t("transactionReview.starAriaPlural", { count: star }) : t("transactionReview.starAria", { count: star })}
             aria-pressed={active}
           >
             <i

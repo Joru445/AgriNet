@@ -282,7 +282,7 @@ export default function MessageInput({
 
               {isAvailable && hasStock && (
                 <p className="mt-0.5 text-xs text-[var(--agri-text-muted)]">
-                  {stock} {inquiryProduct.unit || "available"} available
+                   {t("messageInput.available", { count: stock, unit: inquiryProduct.unit || "units" })}
                 </p>
               )}
             </div>
@@ -292,7 +292,7 @@ export default function MessageInput({
           <div className="mt-3 flex items-center justify-between gap-3">
             <div>
               <p className="mb-1.5 text-xs font-medium text-[var(--agri-text-secondary)]">
-                Quantity
+                 {t("messageInput.quantity")}
               </p>
 
               <div className="flex h-10 items-center rounded-xl border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)]">
@@ -309,7 +309,7 @@ export default function MessageInput({
                     disabled:cursor-not-allowed
                     disabled:opacity-30
                   "
-                  aria-label="Decrease quantity"
+                  aria-label={t("messageInput.decreaseQuantity")}
                 >
                   <i className="ri-subtract-line" />
                 </button>
@@ -328,7 +328,7 @@ export default function MessageInput({
                     font-semibold text-[var(--agri-text)]
                     outline-none
                   "
-                  aria-label="Inquiry quantity"
+                  aria-label={t("messageInput.inquiryQuantity")}
                 />
 
                 <button
@@ -344,7 +344,7 @@ export default function MessageInput({
                     disabled:cursor-not-allowed
                     disabled:opacity-30
                   "
-                  aria-label="Increase quantity"
+                  aria-label={t("messageInput.increaseQuantity")}
                 >
                   <i className="ri-add-line" />
                 </button>
@@ -371,7 +371,7 @@ export default function MessageInput({
                 disabled:opacity-50
               "
             >
-              {!isAvailable ? "Unavailable" : "Send Inquiry"}
+              {!isAvailable ? t("messageInput.unavailable") : t("messageInput.sendInquiry")}
             </button>
           </div>
         </div>
@@ -385,7 +385,7 @@ export default function MessageInput({
             <div className="relative inline-block">
               <img
                 src={selectedImage.previewUrl}
-                alt="Selected preview"
+                 alt={t("messageInput.selectedPreview")}
                 className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-xl border-2 border-[#2D6A4F] shadow-sm"
               />
               {uploadingImage ? (
@@ -411,7 +411,7 @@ export default function MessageInput({
                     onRemoveImage?.();
                   }}
                   className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md transition cursor-pointer"
-                  title="Remove image"
+                  title={t("messageInput.removeImage")}
                 >
                   <i className="ri-close-line text-xs font-bold" />
                 </button>
@@ -420,12 +420,12 @@ export default function MessageInput({
 
             <div className="text-xs text-[var(--agri-text-secondary)]">
               <p className="font-semibold text-[var(--agri-text)] flex items-center gap-1">
-                <i className="ri-image-fill text-[#2D6A4F] dark:text-[var(--agri-brand)]" /> Photo selected
+                 <i className="ri-image-fill text-[#2D6A4F] dark:text-[var(--agri-brand)]" /> {t("messageInput.photoSelected")}
               </p>
               <p className="text-[var(--agri-text-muted)] mt-0.5">
                 {uploadingImage
-                  ? "Uploading photo..."
-                  : "Type an optional caption or press send"}
+                   ? t("messageInput.uploadingPhoto")
+                   : t("messageInput.typeCaption")}
               </p>
             </div>
           </div>
@@ -437,8 +437,8 @@ export default function MessageInput({
             <button
               type="button"
               onClick={() => setShowMenu((prev) => !prev)}
-              aria-label="Add attachment"
-              title="Add photo or media"
+              aria-label={t("messageInput.addAttachment")}
+              title={t("messageInput.addPhotoMedia")}
               className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-[#2D6A4F] dark:text-[var(--agri-brand)] transition hover:text-[#1B4332] dark:hover:text-[var(--agri-brand-light)] hover:bg-black/5 cursor-pointer ${
                 showMenu ? "rotate-45" : "rotate-0"
               }`}
@@ -460,7 +460,7 @@ export default function MessageInput({
                   <div className="w-8 h-8 rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)] flex items-center justify-center shrink-0">
                     <i className="ri-camera-fill text-base" />
                   </div>
-                  <span>Take Photo</span>
+                   <span>{t("messageInput.takePhoto")}</span>
                 </button>
 
                 <button
@@ -474,7 +474,7 @@ export default function MessageInput({
                   <div className="w-8 h-8 rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)] flex items-center justify-center shrink-0">
                     <i className="ri-image-2-fill text-base" />
                   </div>
-                  <span>Choose from Gallery</span>
+                   <span>{t("messageInput.chooseFromGallery")}</span>
                 </button>
               </div>
             )}
@@ -488,9 +488,9 @@ export default function MessageInput({
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             placeholder={
-              selectedImage
-                ? "Add a caption (optional)..."
-                : "Type a message..."
+               selectedImage
+                ? t("messageInput.captionPlaceholder")
+                : t("messageInput.messagePlaceholder")
             }
             className="min-w-0 flex-1 resize-none overflow-y-auto py-3 focus:outline-none bg-transparent text-sm sm:text-base font-semibold text-[var(--agri-text)] placeholder-[var(--agri-text-muted)]"
           />
@@ -506,7 +506,7 @@ export default function MessageInput({
               }
             }}
             disabled={!canSend}
-            aria-label="Send message"
+            aria-label={t("messageInput.sendMessage")}
             className={`h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center transition ${
               canSend
                 ? "text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:text-[#1B4332] dark:hover:text-[var(--agri-brand-light)] hover:bg-[#2D6A4F]/10 cursor-pointer hover:scale-105 active:scale-95"

@@ -17,10 +17,10 @@ export default function InquiryTable({
         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
           <i className="ri-inbox-line text-2xl" />
         </div>
-        <p className="text-base font-bold text-[var(--agri-text-secondary)]">{t("inquiries.emptyTitle")}</p>
+        <p className="text-base font-bold text-[var(--agri-text-secondary)]">{t("transactions.emptyTitle")}</p>
 
         <p className="mt-1 text-xs text-[var(--agri-text-muted)]">
-          {t("inquiries.emptySubtitle")}
+          {t("transactions.emptySubtitle")}
         </p>
       </div>
     );

@@ -10,7 +10,7 @@ export function getNotificationTarget(notification) {
       return `/messages?conversation=${notification.entityId}`;
 
     case "inquiry":
-      return `/inquiries`;
+      return `/transactions`;
 
     case "product":
       return `/products/${notification.entityId}`;

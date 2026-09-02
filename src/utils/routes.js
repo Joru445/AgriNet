@@ -1,17 +1,21 @@
-export function getInquiriesPath(role) {
+export function getTransactionsPath(role) {
   switch (role) {
     case "admin":
-      return "/admin/inquiries";
+      return "/admin/transactions";
 
     case "farmer":
-      return "/farmer/inquiries";
+      return "/farmer/transactions";
 
     case "consumer":
-      return "/inquiries";
+      return "/transactions";
 
     default:
-      return "/inquiries";
+      return "/transactions";
   }
+}
+
+export function getInquiriesPath(role) {
+  return getTransactionsPath(role);
 }
 
 export function getMessagesPath(role) {

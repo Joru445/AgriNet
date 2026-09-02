@@ -1,45 +1,45 @@
-const steps = [
-  {
-    num: "01",
-    icon: "ri-user-add-line",
-    title: "Create Your Account",
-    description:
-      "Register as a Farmer or Consumer. Farmers set up their farm profile; consumers set up their location.",
-  },
-  {
-    num: "02",
-    icon: "ri-store-2-line",
-    title: "Post or Browse Products",
-    description:
-      "Farmers list their fresh products with prices. Consumers browse and filter by category or location.",
-  },
-  {
-    num: "03",
-    icon: "ri-message-3-line",
-    title: "Connect & Inquire",
-    description:
-      "Consumers send inquiries directly to farmers. Chat in real time to discuss details and availability.",
-  },
-  {
-    num: "04",
-    icon: "ri-shake-hands-line",
-    title: "Trade Directly",
-    description:
-      "Agree on terms and complete the transaction directly — no middlemen, no hidden fees.",
-  },
-];
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function LandingHowItWorks() {
+  const { t } = useLanguage();
+
+  const steps = [
+    {
+      num: "01",
+      icon: "ri-user-add-line",
+      title: t("landing.howItWorks.step1.title"),
+      description: t("landing.howItWorks.step1.description"),
+    },
+    {
+      num: "02",
+      icon: "ri-store-2-line",
+      title: t("landing.howItWorks.step2.title"),
+      description: t("landing.howItWorks.step2.description"),
+    },
+    {
+      num: "03",
+      icon: "ri-message-3-line",
+      title: t("landing.howItWorks.step3.title"),
+      description: t("landing.howItWorks.step3.description"),
+    },
+    {
+      num: "04",
+      icon: "ri-shake-hands-line",
+      title: t("landing.howItWorks.step4.title"),
+      description: t("landing.howItWorks.step4.description"),
+    },
+  ];
+
   return (
     <section id="how-it-works" className="py-20 md:py-28 bg-[#1B4332]">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="text-center mb-16">
           <span className="inline-block text-green-300 font-semibold text-sm uppercase tracking-widest mb-3">
-            Simple Process
+            {t("landing.howItWorks.badge")}
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white">How It Works</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-white">{t("landing.howItWorks.title")}</h2>
           <p className="text-green-200/80 mt-3 max-w-xl mx-auto">
-            Getting started with AgriNet Lucena is quick and easy. Follow these four simple steps.
+            {t("landing.howItWorks.subtitle")}
           </p>
         </div>
 

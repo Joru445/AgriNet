@@ -94,7 +94,7 @@ export default function InquiryCard({
         <div className="absolute top-3 left-3">
           <span className="inline-flex items-center gap-1 rounded-lg bg-black/40 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-md">
             <i className="ri-shopping-bag-3-line" />
-            {userRole === "farmer" ? t("inquiries.purchaseInquiry") : t("inquiries.myInquiry")}
+            {userRole === "farmer" ? t("transactions.purchaseInquiry") : t("transactions.myInquiry")}
           </span>
         </div>
 
@@ -110,7 +110,7 @@ export default function InquiryCard({
         <div>
           <div className="flex items-start justify-between gap-2">
             <h3 className="truncate text-base font-bold text-[var(--agri-text)]" title={productData?.name}>
-              {productData?.name || t("inquiries.productUnavailable")}
+              {productData?.name || t("transactions.productUnavailable")}
             </h3>
             {productData?.quantity != null && productData?.unit && (
               <span className="shrink-0 inline-flex items-center rounded-md bg-[var(--agri-hover)] px-2 py-0.5 text-xs font-semibold text-[var(--agri-text-secondary)]">
@@ -121,7 +121,7 @@ export default function InquiryCard({
 
           {productData?.unit && (
             <p className="mt-0.5 text-xs font-medium text-[var(--agri-text-muted)]">
-              {t("inquiries.perUnit", { price: price.toLocaleString(), unit: productData.unit })}
+              {t("transactions.perUnit", { price: price.toLocaleString(), unit: productData.unit })}
             </p>
           )}
         </div>
@@ -130,7 +130,7 @@ export default function InquiryCard({
         <div className="rounded-xl bg-[#2D6A4F]/5 border border-[#2D6A4F]/10 p-2.5">
           <div className="flex items-baseline justify-between">
             <span className="text-xs font-bold text-[var(--agri-text-secondary)] uppercase tracking-wider">
-              {t("inquiries.totalAmount")}
+              {t("transactions.totalAmount")}
             </span>
             <span className="text-lg font-black text-[#1B4332] dark:text-[var(--agri-brand-light)]">
               ₱{total.toLocaleString()}
@@ -148,7 +148,7 @@ export default function InquiryCard({
             />
             <span className="truncate font-bold text-[var(--agri-text)]">
               {counterparty?.fullname ||
-                (counterparty?.username ? `@${counterparty.username}` : t("inquiries.unknownUser"))}
+                (counterparty?.username ? `@${counterparty.username}` : t("transactions.unknownUser"))}
             </span>
             {counterparty?.verified && (
               <span
@@ -175,7 +175,7 @@ export default function InquiryCard({
           disabled={!inquiry.conversationId}
           onClick={openConversation}
           className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text)] disabled:opacity-40"
-          title={t("inquiries.viewConversation")}
+          title={t("transactions.viewConversation")}
         >
           <i className="ri-message-3-line text-base" />
           {userRole === "consumer" && status === "accepted" && (
@@ -197,7 +197,7 @@ export default function InquiryCard({
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 ring-1 ring-white" />
               </span>
             )}
-            {updating ? t("inquiries.updating") : primaryLabel}
+            {updating ? t("transactions.updating") : primaryLabel}
           </button>
         )}
       </div>
@@ -207,19 +207,19 @@ export default function InquiryCard({
 
 function getPrimaryLabel(status, userRole, isReviewed, t) {
   if (userRole === "consumer") {
-    if (status === "accepted") return t("inquiries.viewConversation");
-    if (status === "ongoing") return t("inquiries.markComplete");
-    if (status === "awaiting_proof") return t("inquiries.uploadProof");
+    if (status === "accepted") return t("transactions.viewConversation");
+    if (status === "ongoing") return t("transactions.markComplete");
+    if (status === "awaiting_proof") return t("transactions.uploadProof");
     if (status === "proof_submitted") return null;
-    if (status === "completed" && !isReviewed) return t("inquiries.rate");
-    if (status === "completed" && isReviewed) return t("inquiries.viewReview");
+    if (status === "completed" && !isReviewed) return t("transactions.rate");
+    if (status === "completed" && isReviewed) return t("transactions.viewReview");
   }
   if (userRole === "farmer") {
-    if (status === "accepted") return t("inquiries.startTransaction");
-    if (status === "proof_submitted") return t("inquiries.reviewProof");
-    if (status === "completed") return t("inquiries.viewTransaction");
+    if (status === "accepted") return t("transactions.startTransaction");
+    if (status === "proof_submitted") return t("transactions.reviewProof");
+    if (status === "completed") return t("transactions.viewTransaction");
   }
-  return t("inquiries.view");
+  return t("transactions.view");
 }
 
 function normalizeStatus(status) {

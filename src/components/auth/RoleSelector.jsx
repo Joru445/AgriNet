@@ -31,7 +31,7 @@ export default function RoleSelector({ value, onChange }) {
             ></i>
           </div>
 
-          <div className="mt-2 font-semibold">{t("auth.register.roleConsumer")}</div>
+          <div className="mt-2 font-semibold text-gray-700">{t("auth.register.roleConsumer")}</div>
 
           <div className="text-sm text-gray-500">{t("auth.register.roleConsumerDescription")}</div>
         </button>
@@ -57,7 +57,7 @@ export default function RoleSelector({ value, onChange }) {
             ></i>
           </div>
 
-          <div className="mt-2 font-semibold">{t("auth.register.roleFarmer")}</div>
+          <div className="mt-2 font-semibold text-gray-700">{t("auth.register.roleFarmer")}</div>
 
           <div className="text-sm text-gray-500">{t("auth.register.roleFarmerDescription")}</div>
         </button>

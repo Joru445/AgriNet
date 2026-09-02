@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 
 /**
  * Reusable full-screen zoomable Image Viewer Modal (Lightbox).
@@ -16,10 +17,11 @@ export default function ImageViewerModal({
   isOpen,
   src,
   imageUrl,
-  alt = "Image preview",
+  alt,
   title,
   onClose,
 }) {
+  const { t } = useLanguage();
   const imageSrc = src || imageUrl;
 
   const [scale, setScale] = useState(1);
@@ -246,7 +248,7 @@ export default function ImageViewerModal({
             onClick={zoomOut}
             disabled={scale <= 1}
             className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg hover:bg-white/20 active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-            title="Zoom out (-)"
+            title={t("imageViewer.zoomOut")}
           >
             <i className="ri-zoom-out-line text-base font-semibold" />
           </button>
@@ -257,7 +259,7 @@ export default function ImageViewerModal({
             onClick={zoomIn}
             disabled={scale >= 5}
             className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg hover:bg-white/20 active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-            title="Zoom in (+)"
+            title={t("imageViewer.zoomIn")}
           >
             <i className="ri-zoom-in-line text-base font-semibold" />
           </button>
@@ -268,7 +270,7 @@ export default function ImageViewerModal({
               type="button"
               onClick={resetZoom}
               className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg hover:bg-white/20 active:scale-95 transition cursor-pointer"
-              title="Reset Zoom (0)"
+              title={t("imageViewer.resetZoom")}
             >
               <i className="ri-restart-line text-base font-semibold" />
             </button>
@@ -279,7 +281,7 @@ export default function ImageViewerModal({
             type="button"
             onClick={onClose}
             className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 text-white border border-white/20 hover:bg-white/30 active:scale-95 transition cursor-pointer shadow-lg ml-1"
-            title="Close (Esc)"
+            title={t("imageViewer.close")}
           >
             <i className="ri-close-line text-xl font-bold" />
           </button>
@@ -298,7 +300,7 @@ export default function ImageViewerModal({
         <img
           ref={imageRef}
           src={imageSrc}
-          alt={alt}
+          alt={alt || t("imageViewer.imagePreviewAlt")}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -326,7 +328,7 @@ export default function ImageViewerModal({
       {scale === 1 && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none opacity-70 hover:opacity-100 transition">
           <span className="rounded-full bg-black/60 backdrop-blur-md px-3.5 py-1 text-[11px] font-medium text-white/80 shadow-md border border-white/10">
-            Double-click or pinch to zoom
+            {t("imageViewer.doubleClickHint")}
           </span>
         </div>
       )}

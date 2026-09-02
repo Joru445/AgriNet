@@ -1,48 +1,4 @@
-const farmerBenefits = [
-  {
-    icon: "ri-money-dollar-circle-line",
-    title: "Fair Pricing",
-    description: "Set your own prices and earn more without middlemen taking a cut.",
-  },
-  {
-    icon: "ri-store-2-line",
-    title: "Wider Market Reach",
-    description: "Reach consumers across Lucena City directly through our platform.",
-  },
-  {
-    icon: "ri-bar-chart-line",
-    title: "Manage Listings Easily",
-    description: "Add, update, and manage your product listings with a simple dashboard.",
-  },
-  {
-    icon: "ri-message-3-line",
-    title: "Direct Communication",
-    description: "Chat directly with consumers and respond to inquiries in real time.",
-  },
-];
-
-const consumerBenefits = [
-  {
-    icon: "ri-leaf-line",
-    title: "Fresh Local Produce",
-    description: "Buy directly from farmers and get the freshest products available.",
-  },
-  {
-    icon: "ri-price-tag-3-line",
-    title: "Better Prices",
-    description: "No middlemen means lower prices for consumers on quality produce.",
-  },
-  {
-    icon: "ri-map-pin-line",
-    title: "Find Nearby Farmers",
-    description: "Discover farmers closest to your location for convenient sourcing.",
-  },
-  {
-    icon: "ri-star-line",
-    title: "Trusted Reviews",
-    description: "Read verified reviews from other consumers before making inquiries.",
-  },
-];
+import { useLanguage } from "../../context/LanguageContext";
 
 function BenefitItem({ icon, title, description, dark }) {
   return (
@@ -71,15 +27,63 @@ function BenefitItem({ icon, title, description, dark }) {
 }
 
 export default function LandingBenefits() {
+  const { t } = useLanguage();
+
+  const farmerBenefits = [
+    {
+      icon: "ri-money-dollar-circle-line",
+      title: t("landing.benefits.farmer.fairPricing"),
+      description: t("landing.benefits.farmer.fairPricingDesc"),
+    },
+    {
+      icon: "ri-store-2-line",
+      title: t("landing.benefits.farmer.widerReach"),
+      description: t("landing.benefits.farmer.widerReachDesc"),
+    },
+    {
+      icon: "ri-bar-chart-line",
+      title: t("landing.benefits.farmer.easyListings"),
+      description: t("landing.benefits.farmer.easyListingsDesc"),
+    },
+    {
+      icon: "ri-message-3-line",
+      title: t("landing.benefits.farmer.directChat"),
+      description: t("landing.benefits.farmer.directChatDesc"),
+    },
+  ];
+
+  const consumerBenefits = [
+    {
+      icon: "ri-leaf-line",
+      title: t("landing.benefits.consumer.freshProduce"),
+      description: t("landing.benefits.consumer.freshProduceDesc"),
+    },
+    {
+      icon: "ri-price-tag-3-line",
+      title: t("landing.benefits.consumer.betterPrices"),
+      description: t("landing.benefits.consumer.betterPricesDesc"),
+    },
+    {
+      icon: "ri-map-pin-line",
+      title: t("landing.benefits.consumer.nearbyFarmers"),
+      description: t("landing.benefits.consumer.nearbyFarmersDesc"),
+    },
+    {
+      icon: "ri-star-line",
+      title: t("landing.benefits.consumer.trustedReviews"),
+      description: t("landing.benefits.consumer.trustedReviewsDesc"),
+    },
+  ];
+
   return (
     <section id="for-farmers" className="py-20 md:py-28 bg-[#F8FAF9] border-y border-gray-200">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="text-center mb-16">
           <span className="inline-block text-[#2D6A4F] font-semibold text-sm uppercase tracking-widest mb-3">
-            Why Choose AgriNet
+            {t("landing.benefits.badge")}
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-[#1B4332]">
-            Benefits for Everyone
+            {t("landing.benefits.title")}
           </h2>
         </div>
 
@@ -91,8 +95,8 @@ export default function LandingBenefits() {
                 <i className="ri-plant-line text-white text-xl" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-[#1B4332]">For Farmers</h3>
-                <p className="text-sm text-gray-500">Grow your business directly</p>
+                <h3 className="text-xl font-bold text-[#1B4332]">{t("landing.benefits.forFarmers")}</h3>
+                <p className="text-sm text-gray-500">{t("landing.benefits.forFarmersDesc")}</p>
               </div>
             </div>
             <div className="space-y-4">
@@ -109,8 +113,8 @@ export default function LandingBenefits() {
                 <i className="ri-shopping-basket-line text-white text-xl" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">For Consumers</h3>
-                <p className="text-sm text-green-300">Fresh produce at your fingertips</p>
+                <h3 className="text-xl font-bold text-white">{t("landing.benefits.forConsumers")}</h3>
+                <p className="text-sm text-green-300">{t("landing.benefits.forConsumersDesc")}</p>
               </div>
             </div>
             <div className="space-y-4">
