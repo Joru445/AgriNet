@@ -1,4 +1,5 @@
 import RoleSelector from "./RoleSelector";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function AccountStep({
   form,
@@ -9,6 +10,8 @@ export default function AccountStep({
   setFieldTouched,
   onContinue,
 }) {
+  const { t } = useLanguage();
+
   const fullnameError = touched.fullname ? errors.fullname : null;
   const usernameError = touched.username ? errors.username : null;
   const emailError = touched.email ? errors.email : null;
@@ -23,7 +26,7 @@ export default function AccountStep({
       {/* Full Name */}
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">
-          Full Name <span className="text-red-500">*</span>
+          {t("auth.register.fullName")} <span className="text-red-500">*</span>
         </label>
 
         <div className="relative">
@@ -52,7 +55,7 @@ export default function AccountStep({
       {/* Username */}
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">
-          Username <span className="text-red-500">*</span>
+          {t("auth.register.username")} <span className="text-red-500">*</span>
         </label>
 
         <div className="relative">
@@ -83,7 +86,7 @@ export default function AccountStep({
       {/* Email */}
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">
-          Email Address <span className="text-red-500">*</span>
+          {t("auth.emailLabel")} <span className="text-red-500">*</span>
         </label>
 
         <div className="relative">
@@ -119,10 +122,10 @@ export default function AccountStep({
         {isCheckingEmail ? (
           <>
             <i className="ri-loader-4-line animate-spin text-base" />
-            <span>Checking email...</span>
+            <span>{t("auth.register.checkingEmail")}</span>
           </>
         ) : (
-          <span>Continue</span>
+          <span>{t("auth.continue")}</span>
         )}
       </button>
     </div>

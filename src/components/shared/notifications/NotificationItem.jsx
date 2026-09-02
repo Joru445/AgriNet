@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { useNotificationsContext } from "../../../context/NotificationsContext";
+import { useLanguage } from "../../../context/LanguageContext";
 import { getNotificationTarget } from "../../../utils/getNotificationTarget";
 
-function formatNotificationTime(createdAt) {
+function formatNotificationTime(createdAt, t) {
   if (!createdAt) return "";
 
   const date = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
@@ -13,10 +14,10 @@ function formatNotificationTime(createdAt) {
   const diffHr = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHr / 24);
 
-  if (diffSec < 60) return "Just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHr < 24) return `${diffHr}h ago`;
-  if (diffDay < 7) return `${diffDay}d ago`;
+  if (diffSec < 60) return t("time.justNow");
+  if (diffMin < 60) return t("time.minAgo", { count: diffMin });
+  if (diffHr < 24) return t("time.hrAgo", { count: diffHr });
+  if (diffDay < 7) return t("time.dayAgo", { count: diffDay });
 
   return date.toLocaleDateString();
 }
@@ -33,6 +34,7 @@ const notificationIcons = {
 export default function NotificationItem({ notification }) {
   const icon = notificationIcons[notification.type] || "ri-notification-3-line";
   const { markAsRead } = useNotificationsContext();
+  const { t } = useLanguage();
 
   const target = getNotificationTarget(notification);
 
@@ -76,7 +78,7 @@ export default function NotificationItem({ notification }) {
         </p>
 
         <p className="mt-2 text-xs text-[var(--agri-text-muted)]">
-          {formatNotificationTime(notification.createdAt)}
+          {formatNotificationTime(notification.createdAt, t)}
         </p>
       </div>
     </Link>

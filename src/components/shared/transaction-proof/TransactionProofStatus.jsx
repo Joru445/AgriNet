@@ -1,31 +1,31 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function TransactionProofStatus({ type, inquiry }) {
+  const { t } = useLanguage();
+
   const config = {
     waiting: {
       icon: "ri-time-line",
-      title: "Waiting for farmer confirmation",
-      description:
-        "Your proof has been submitted. The farmer will review the image and confirm the transaction.",
+      title: t("transaction.waitingTitle"),
+      description: t("transaction.waitingBody"),
     },
 
     completed: {
       icon: "ri-checkbox-circle-fill",
-      title: "Transaction completed",
-      description:
-        "This transaction has been successfully confirmed by the farmer.",
+      title: t("transaction.completedTitle"),
+      description: t("transaction.completedBody"),
     },
 
     rejected: {
       icon: "ri-error-warning-line",
-      title: "Proof needs to be resubmitted",
-      description:
-        "The farmer rejected your previous proof. Please upload another image.",
+      title: t("transaction.resubmitTitle"),
+      description: t("transaction.resubmitBody"),
     },
 
     viewOnly: {
       icon: "ri-eye-line",
-      title: "Transaction details",
-      description:
-        "You can view this transaction, but you cannot submit or approve transaction proof.",
+      title: t("transaction.viewOnlyTitle"),
+      description: t("transaction.viewOnlyBody"),
     },
   };
 
@@ -51,7 +51,7 @@ export default function TransactionProofStatus({ type, inquiry }) {
         <div className="mt-5 overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)]">
           <img
             src={inquiry.proof.url}
-            alt="Transaction proof"
+            alt={t("transaction.proofAlt")}
             className="max-h-[600px] w-full object-contain"
           />
         </div>

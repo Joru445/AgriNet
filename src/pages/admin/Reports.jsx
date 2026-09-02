@@ -13,9 +13,11 @@ import ReportTableSkeleton from "../../components/admin/reports/ReportTableSkele
 import ReportDetailsModal from "../../components/admin/reports/ReportDetailsModal";
 import { InlineError } from "../../components/ui/ErrorState";
 import { showToast } from "../../utils/toast";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function Reports() {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const {
     reports,
     loading,
@@ -58,36 +60,36 @@ export default function Reports() {
   const handleReview = async (reportId) => {
     try {
       await reviewReport(reportId);
-      showToast.success("Report marked as reviewing.");
+      showToast.success(t("adminReport.toastReviewing"));
     } catch (err) {
-      showToast.error(err?.message || "Failed to update report.");
+      showToast.error(err?.message || t("adminReport.toastFailedUpdate"));
     }
   };
 
   const handleResolve = async (reportId, adminNotes = "") => {
     try {
       await markResolved(reportId, profile?.uid || "admin", adminNotes);
-      showToast.success("Report resolved and reporter notified.");
+      showToast.success(t("adminReport.toastResolved"));
     } catch (err) {
-      showToast.error(err?.message || "Failed to resolve report.");
+      showToast.error(err?.message || t("adminReport.toastFailedResolve"));
     }
   };
 
   const handleDismiss = async (reportId, adminNotes = "") => {
     try {
       await markDismissed(reportId, profile?.uid || "admin", adminNotes);
-      showToast.success("Report dismissed and reporter notified.");
+      showToast.success(t("adminReport.toastDismissed"));
     } catch (err) {
-      showToast.error(err?.message || "Failed to dismiss report.");
+      showToast.error(err?.message || t("adminReport.toastFailedDismiss"));
     }
   };
 
   const handleToggleUserSuspension = async (uid, nextStatus) => {
     try {
       await setUserSuspension(uid, nextStatus);
-      showToast.success(nextStatus === "suspended" ? "User account suspended." : "User account reactivated.");
+      showToast.success(nextStatus === "suspended" ? t("adminReport.toastUserSuspended") : t("adminReport.toastUserReactivated"));
     } catch (err) {
-      showToast.error(err?.message || "Failed to update user account status.");
+      showToast.error(err?.message || t("adminReport.toastFailedUserStatus"));
       throw err;
     }
   };
@@ -95,9 +97,9 @@ export default function Reports() {
   const handleToggleProductAvailability = async (productId, nextAvailable) => {
     try {
       await updateProduct(productId, { available: nextAvailable });
-      showToast.success(nextAvailable ? "Product listing reactivated." : "Product listing unpublished.");
+      showToast.success(nextAvailable ? t("adminReport.toastProductReactivated") : t("adminReport.toastProductUnpublished"));
     } catch (err) {
-      showToast.error(err?.message || "Failed to update product listing.");
+      showToast.error(err?.message || t("adminReport.toastFailedProduct"));
       throw err;
     }
   };

@@ -1,13 +1,15 @@
 import { useTheme } from "../../context/ThemeContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 const OPTIONS = [
-  { value: "system", label: "System", icon: "ri-computer-line" },
-  { value: "light", label: "Light", icon: "ri-sun-line" },
-  { value: "dark", label: "Dark", icon: "ri-moon-line" },
+  { value: "system", labelKey: "settings.theme.system", icon: "ri-computer-line" },
+  { value: "light", labelKey: "settings.theme.light", icon: "ri-sun-line" },
+  { value: "dark", labelKey: "settings.theme.dark", icon: "ri-moon-line" },
 ];
 
 export default function ThemeToggle() {
   const { preference, setTheme } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
@@ -17,10 +19,10 @@ export default function ThemeToggle() {
         </div>
         <div>
           <p className="text-sm font-semibold text-[var(--agri-text)]">
-            Appearance
+            {t("settings.appearance")}
           </p>
           <p className="text-xs text-[var(--agri-text-muted)]">
-            Choose your preferred theme
+            {t("settings.appearanceDesc")}
           </p>
         </div>
       </div>
@@ -40,7 +42,7 @@ export default function ThemeToggle() {
               }`}
             >
               <i className={`${opt.icon} text-lg`} />
-              <span>{opt.label}</span>
+              <span>{t(opt.labelKey)}</span>
             </button>
           );
         })}

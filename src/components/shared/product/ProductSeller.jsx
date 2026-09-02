@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Avatar from "../../common/Avatar";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ProductSeller({ farmer, isOwner }) {
+  const { t } = useLanguage();
   const [expandedAddress, setExpandedAddress] = useState(false);
 
   if (!farmer) return null;
 
   const farmerName =
-    farmer.fullname || farmer.storeName || farmer.username || "Farmer";
+    farmer.fullname || farmer.storeName || farmer.username || t("productDetails.farmerFallback");
   const farmerAvatar = farmer.profilePicture || "";
   const farmerId = farmer.uid || farmer.id;
   const address = farmer.location?.address || farmer.address || "Lucena City";

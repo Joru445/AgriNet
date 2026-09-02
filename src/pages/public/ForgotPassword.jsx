@@ -4,11 +4,14 @@ import { Link } from "react-router-dom";
 import { forgotPassword } from "../../services/forgot-password.service";
 
 import { showToast } from "../../utils/toast";
+import { useLanguage } from "../../context/LanguageContext";
 import logo from "../../assets/favicon.ico";
 import landscapeBg from "../../assets/img/landscape.jpg";
 import SidePanel from "../../components/auth/SidePanel";
 
 export default function ForgotPassword() {
+  const { t } = useLanguage();
+
   const [form, setForm] = useState({
     email: "",
   });
@@ -56,14 +59,14 @@ export default function ForgotPassword() {
 
       setIsSent(true);
       setCooldown(60);
-      showToast.success("Password reset link sent! Please check your inbox and spam folder.");
+      showToast.success(t("auth.forgot.toastSent"));
     } catch (error) {
       console.error("Failed to send reset email:", error);
       if (error?.code === "auth/too-many-requests") {
         setCooldown(60);
-        showToast.error("Too many requests. Please wait a minute before requesting another reset email.");
+        showToast.error(t("auth.forgot.toastTooMany"));
       } else {
-        showToast.error(error?.message || "Unable to send reset email. Please try again.");
+        showToast.error(error?.message || t("auth.forgot.toastFailed"));
       }
     } finally {
       setLoading(false);
@@ -108,17 +111,17 @@ export default function ForgotPassword() {
             <>
               <div className="mb-4 sm:mb-5">
                 <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332]">
-                  Reset your password
+                  {t("auth.forgot.title")}
                 </h1>
                 <p className="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1">
-                  We will send a reset link to your email address.
+                  {t("auth.forgot.subtitle")}
                 </p>
               </div>
 
               <form onSubmit={handleResetPassword} className="space-y-3 sm:space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1">
-                    Email Address
+                    {t("auth.emailLabel")}
                   </label>
 
                   <div className="relative">
@@ -149,7 +152,7 @@ export default function ForgotPassword() {
                   className="w-full py-2.5 sm:py-3 bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold rounded-xl transition-all duration-200 text-xs sm:text-sm flex items-center justify-center gap-2 whitespace-nowrap shadow-sm disabled:opacity-70 cursor-pointer"
                 >
                   <i className={`ri-${loading ? "loader-4-line animate-spin" : "send-plane-line"} text-sm sm:text-base`} />
-                  {loading ? "Sending..." : "Send Reset Link"}
+                  {loading ? t("auth.sending") : t("auth.forgot.sendResetLink")}
                 </button>
               </form>
 
@@ -159,7 +162,7 @@ export default function ForgotPassword() {
                   className="hover:text-[#2D6A4F] inline-flex items-center justify-center gap-1 font-semibold transition-colors"
                 >
                   <i className="ri-arrow-left-line" />
-                  Back to Sign in
+                  {t("auth.forgot.backToSignIn")}
                 </Link>
               </p>
             </>
@@ -174,17 +177,17 @@ export default function ForgotPassword() {
               {/* Heading */}
               <div className="text-center mb-4 sm:mb-5">
                 <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332]">
-                  Password Reset Link Sent
+                  {t("auth.forgot.sentTitle")}
                 </h1>
                 <p className="text-gray-600 text-xs sm:text-sm mt-0.5 sm:mt-1">
-                  We sent a reset link to:
+                  {t("auth.forgot.sentTo")}
                 </p>
                 <div className="mt-1.5 sm:mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-800 font-semibold text-xs sm:text-sm border border-gray-200 break-all">
                   <i className="ri-mail-line text-gray-500 shrink-0 text-sm" />
                   <span>{form.email}</span>
                 </div>
                 <p className="text-gray-500 text-xs sm:text-sm mt-2 sm:mt-2.5 leading-relaxed">
-                  Please click the link in your email to reset your password and secure your AgriNet account.
+                  {t("auth.forgot.sentBody")}
                 </p>
               </div>
 
@@ -192,9 +195,9 @@ export default function ForgotPassword() {
               <div className="mb-4 sm:mb-5 rounded-xl border border-amber-200 bg-amber-50/90 p-3 text-xs text-amber-900 flex items-start gap-2.5 shadow-xs">
                 <i className="ri-information-line text-base text-amber-700 shrink-0 mt-0.5" />
                 <div className="leading-relaxed text-left">
-                  <p className="font-bold text-amber-900">Can't find the email?</p>
+                  <p className="font-bold text-amber-900">{t("auth.forgot.cantFind")}</p>
                   <p className="text-amber-800 mt-0.5">
-                    Please check your <strong>Spam</strong>, <strong>Junk</strong>, or <strong>Promotions</strong> folder if the password reset email doesn't appear in your primary inbox.
+                    {t("auth.forgot.checkSpam")}
                   </p>
                 </div>
               </div>
@@ -209,10 +212,10 @@ export default function ForgotPassword() {
                 >
                   <i className={`ri-${loading ? "loader-4-line animate-spin" : "refresh-line"} text-sm sm:text-base`} />
                   {loading
-                    ? "Sending Email..."
+                    ? t("auth.forgot.sendingEmail")
                     : cooldown > 0
-                      ? `Resend Email in ${cooldown}s`
-                      : "Resend Reset Link"}
+                      ? t("auth.forgot.resendEmailIn", { count: cooldown })
+                      : t("auth.forgot.resendLink")}
                 </button>
 
                 <Link
@@ -220,14 +223,14 @@ export default function ForgotPassword() {
                   className="w-full py-2.5 sm:py-3 bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold rounded-xl transition-all duration-200 text-xs sm:text-sm flex items-center justify-center gap-2 whitespace-nowrap shadow-sm cursor-pointer no-underline"
                 >
                   <i className="ri-arrow-left-line text-sm sm:text-base" />
-                  Back to Sign in
+                  {t("auth.forgot.backToSignIn")}
                 </Link>
               </div>
 
               {/* Re-enter Email Option */}
               <div className="mt-4 pt-3 sm:mt-5 sm:pt-4 border-t border-gray-100 text-center">
                 <p className="text-[11px] sm:text-xs text-gray-500 mb-1.5 sm:mb-2">
-                  Entered the wrong email address?
+                  {t("auth.forgot.wrongEmail")}
                 </p>
                 <button
                   type="button"
@@ -235,7 +238,7 @@ export default function ForgotPassword() {
                   className="text-[11px] sm:text-xs font-semibold text-gray-600 hover:text-[#2D6A4F] inline-flex items-center gap-1 transition-colors cursor-pointer"
                 >
                   <i className="ri-edit-line" />
-                  Try another email
+                  {t("auth.forgot.tryAnother")}
                 </button>
               </div>
             </>

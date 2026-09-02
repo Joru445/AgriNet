@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
+import { useLanguage } from "../../../context/LanguageContext";
 import Avatar from "../../common/Avatar";
 
 export default function FarmerPopup({ farmer, onMessage }) {
+  const { t } = useLanguage();
   return (
     <div className="w-56 p-0.5 select-none text-left">
       {/* Header */}
@@ -15,8 +17,8 @@ export default function FarmerPopup({ farmer, onMessage }) {
           />
           {farmer.verified && (
             <span
-              title="Verified Farmer"
-              aria-label="Verified Farmer"
+              title={t("common.verifiedFarmer")}
+              aria-label={t("common.verifiedFarmer")}
               className="absolute -bottom-0.5 -right-0.5 inline-flex items-center justify-center rounded-full bg-[var(--agri-card)] text-[#2D6A4F] dark:text-[var(--agri-brand)] text-[11px] shadow-xs"
             >
               <i className="ri-verified-badge-fill" />
@@ -58,7 +60,7 @@ export default function FarmerPopup({ farmer, onMessage }) {
             )}
           </span>
         ) : (
-          <span className="text-xs text-[var(--agri-text-muted)] font-medium">No reviews</span>
+          <span className="text-xs text-[var(--agri-text-muted)] font-medium">{t("nearby.noReviews")}</span>
         )}
       </div>
 
@@ -75,7 +77,7 @@ export default function FarmerPopup({ farmer, onMessage }) {
           to={`/profile/${farmer.uid}`}
           className="flex-1 rounded-xl border border-[#2D6A4F] py-2 text-center text-xs font-semibold !text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:!bg-[#2D6A4F] hover:!text-white transition shadow-xs"
         >
-          Profile
+          {t("nearby.profile")}
         </Link>
 
         <button
@@ -84,7 +86,7 @@ export default function FarmerPopup({ farmer, onMessage }) {
           className="flex-1 rounded-xl bg-[#2D6A4F] py-2 text-xs font-semibold text-white hover:bg-[#1B4332] transition shadow-xs flex items-center justify-center gap-1 cursor-pointer"
         >
           <i className="ri-chat-3-line text-xs" />
-          <span>Message</span>
+          <span>{t("nearby.message")}</span>
         </button>
       </div>
     </div>

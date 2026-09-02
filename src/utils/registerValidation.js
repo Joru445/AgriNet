@@ -2,6 +2,8 @@
  * Validation utilities for AgriNet Multi-Step Registration Form
  */
 
+import { t } from "../i18n";
+
 // Email RFC 5322 standard regex pattern
 export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -25,31 +27,31 @@ export function validateStep1(form) {
   // 1. Full Name
   const trimmedFullname = form.fullname ? form.fullname.trim() : "";
   if (!trimmedFullname) {
-    errors.fullname = "Full name is required.";
+    errors.fullname = t("validation.fullNameRequired");
   } else if (trimmedFullname.length < 2) {
-    errors.fullname = "Full name must be at least 2 characters.";
+    errors.fullname = t("validation.fullNameMin");
   } else if (!FULLNAME_REGEX.test(trimmedFullname)) {
-    errors.fullname = "Full name can only contain letters, spaces, and hyphens.";
+    errors.fullname = t("validation.fullNameInvalid");
   }
 
   // 2. Username
   const trimmedUsername = form.username ? form.username.trim() : "";
   if (!trimmedUsername) {
-    errors.username = "Username is required.";
+    errors.username = t("validation.usernameRequired");
   } else if (trimmedUsername.length < 3) {
-    errors.username = "Username must be at least 3 characters.";
+    errors.username = t("validation.usernameMin");
   } else if (trimmedUsername.length > 25) {
-    errors.username = "Username cannot exceed 25 characters.";
+    errors.username = t("validation.usernameMax");
   } else if (!USERNAME_REGEX.test(trimmedUsername)) {
-    errors.username = "Username can only contain letters, numbers, dots, and underscores.";
+    errors.username = t("validation.usernameInvalid");
   }
 
   // 3. Email
   const trimmedEmail = form.email ? form.email.trim() : "";
   if (!trimmedEmail) {
-    errors.email = "Email address is required.";
+    errors.email = t("validation.emailRequired2");
   } else if (!EMAIL_REGEX.test(trimmedEmail)) {
-    errors.email = "Please enter a valid email address (e.g. name@example.com).";
+    errors.email = t("validation.emailInvalid2");
   }
 
   return errors;
@@ -66,23 +68,23 @@ export function validateStep2(form) {
   const confirmPassword = form.confirmPassword || "";
 
   if (!password) {
-    errors.password = "Password is required.";
+    errors.password = t("validation.passwordRequired");
   } else if (password.length < 8) {
-    errors.password = "Password must be at least 8 characters.";
+    errors.password = t("validation.passwordMin8");
   } else if (!/[A-Z]/.test(password)) {
-    errors.password = "Password must contain at least one uppercase letter.";
+    errors.password = t("validation.passwordUpper");
   } else if (!/[a-z]/.test(password)) {
-    errors.password = "Password must contain at least one lowercase letter.";
+    errors.password = t("validation.passwordLower");
   } else if (!/\d/.test(password)) {
-    errors.password = "Password must contain at least one number.";
+    errors.password = t("validation.passwordNumber");
   } else if (!/[^A-Za-z0-9]/.test(password)) {
-    errors.password = "Password must contain at least one special character.";
+    errors.password = t("validation.passwordSpecial");
   }
 
   if (!confirmPassword) {
-    errors.confirmPassword = "Please confirm your password.";
+    errors.confirmPassword = t("validation.confirmRequired");
   } else if (password !== confirmPassword) {
-    errors.confirmPassword = "Passwords do not match.";
+    errors.confirmPassword = t("validation.passwordMatch");
   }
 
   return errors;
@@ -99,15 +101,15 @@ export function validateStep3(form) {
   // 1. Contact Number
   const trimmedPhone = form.contactNumber ? form.contactNumber.trim() : "";
   if (!trimmedPhone) {
-    errors.contactNumber = "Contact number is required.";
+    errors.contactNumber = t("validation.contactRequired");
   } else if (!PH_PHONE_REGEX.test(trimmedPhone)) {
-    errors.contactNumber = "Please enter a valid Philippine mobile number (09XXXXXXXXX).";
+    errors.contactNumber = t("validation.contactInvalid");
   }
 
   // 2. Farmer Location Requirement
   if (form.role === "farmer") {
     if (!form.location || !form.location.lat || !form.location.lng) {
-      errors.location = "Please pin your farm location on the map.";
+      errors.location = t("validation.locationRequired");
     }
   }
 

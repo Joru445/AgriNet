@@ -2,7 +2,9 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import { navigationByRole } from "../constants/navigation";
+import { getOnboardingNavKey } from "../constants/onboardingSteps";
 import { showToast } from "../utils/toast";
 
 import logo from "../assets/favicon.ico";
@@ -16,6 +18,7 @@ import { useUnreadReports } from "../context/UnreadReportsContext";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
   const { profile, logout } = useAuth();
+  const { t } = useLanguage();
   const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
   const { pendingReportsCount, showReportPopup, reportPopupMessage } = useUnreadReports();
@@ -29,7 +32,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       setLoggingOut(true);
       await logout();
 
-      showToast.success("Logged out.");
+      showToast.success(t("common.loggedOut"));
       setShowLogoutModal(false);
       navigate("/login");
     } catch (error) {
@@ -44,17 +47,17 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside
-      className={`hidden lg:flex fixed top-0 left-0 h-full bg-agri-dark dark:bg-(--agri-brand-bg) flex-col z-9996 transition-all duration-300 ease-in-out ${
+      className={`hidden lg:flex h-full dark:h-[calc(100vh-1rem)] shrink-0 fixed top-0 left-0 dark:my-2 dark:mx-1 bg-agri-dark dark:bg-(--agri-brand-bg) flex-col z-9996 pt-1 dark:rounded-2xl transition-all duration-300 ease-in-out ${
         collapsed ? "w-20" : "w-64"
       }`}
     >
       {/* Logo */}
 
-      <div className="flex h-16 shrink-0 items-center gap-3 px-4 border-b border-white/10">
+      <div className={`flex h-16 shrink-0 items-center gap-3 px-4 border-b border-white/10 ${collapsed ? "justify-center" : ""}`}>
         <img
           src={logo}
           alt="Logo"
-          className="h-8 w-8 object-contain flex-shrink-0"
+          className="h-10 w-10 object-contain shrink-0"
         />
 
         <span
@@ -85,7 +88,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               <NavLink
                 to={item.to}
                 end
-                title={collapsed ? item.label : undefined}
+                data-onboarding={getOnboardingNavKey(item.to)}
+                title={collapsed ? t(item.labelKey) : undefined}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3 mx-2 rounded-xl mb-1 transition-all ${
                     collapsed ? "justify-center" : "justify-start"
@@ -109,7 +113,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   )}
                 </div>
 
-                <span className={collapsed ? "hidden" : "block"}>{item.label}</span>
+                <span className={collapsed ? "hidden" : "block"}>{t(item.labelKey)}</span>
               </NavLink>
 
               {/* Speech bubble — messages */}
@@ -119,7 +123,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                     <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-[var(--agri-card)] rotate-45 border-l border-b border-[var(--agri-border-subtle)]" />
                     <span className="relative z-10 flex items-center gap-2">
                       <PulsingDot />
-                      <span>New messages</span>
+                      <span>{t("sidebar.newMessages")}</span>
                     </span>
                   </div>
                 </div>
@@ -145,7 +149,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                     <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-[var(--agri-card)] rotate-45 border-l border-b border-[var(--agri-border-subtle)]" />
                     <span className="relative z-10 flex items-center gap-2">
                       <PulsingDot />
-                      <span>{reportPopupMessage || "New report needs review!"}</span>
+                      <span>{reportPopupMessage || t("sidebar.newReportNeedsReview")}</span>
                     </span>
                   </div>
                 </div>
@@ -161,7 +165,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="w-full flex items-center justify-start gap-3 px-4 py-2 rounded-lg text-green-200/60 hover:text-white hover:bg-white/10 text-sm transition-colors duration-200 cursor-pointer"
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={
+            collapsed ? t("sidebar.expandSidebar") : t("sidebar.collapseSidebar")
+          }
         >
           <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
             <i
@@ -172,7 +178,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           </div>
 
           <span className={collapsed ? "hidden" : "block"}>
-            {collapsed ? "Expand" : "Collapse"}
+            {collapsed ? t("sidebar.expand") : t("sidebar.collapse")}
           </span>
         </button>
 
@@ -189,7 +195,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               collapsed ? "hidden" : "block"
             }`}
           >
-            Logout
+            {t("common.logout")}
           </span>
         </button>
       </div>

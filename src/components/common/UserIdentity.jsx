@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { getInitials } from "../../utils/getInitials";
 import { applyTransform, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
+import { useLanguage } from "../../context/LanguageContext";
 
 const SIZE_CONFIG = {
   sm: {
@@ -40,6 +41,7 @@ export default function UserIdentity({
   colorWhite = false,
   className = "",
 }) {
+  const { t } = useLanguage();
   const [imgError, setImgError] = useState(false);
 
   if (!user) return null;
@@ -47,6 +49,8 @@ export default function UserIdentity({
   const isCurrentUser = currentUserId && user.uid === currentUserId;
   const isVerified = showVerified && user.verified === true;
   const currentSize = SIZE_CONFIG[size] || SIZE_CONFIG.md;
+
+  const roleLabel = user.role ? t(`roles.${user.role}`) : "";
 
   const showImage = user.profilePicture && !imgError;
   const imageSrc = showImage && isCloudinaryUrl(user.profilePicture)
@@ -78,13 +82,13 @@ export default function UserIdentity({
               className={`truncate font-semibold ${currentSize.name} ${colorWhite ? "text-white" : "text-[var(--agri-text)]"}`}
               title={user.fullname}
             >
-              {user.fullname || "Unknown User"}
+              {user.fullname || t("common.unknownUser")}
             </p>
 
             {isVerified && (
               <span
-                title="Verified Farmer"
-                aria-label="Verified Farmer"
+                title={t("common.verifiedFarmer")}
+                aria-label={t("common.verifiedFarmer")}
                 className={`inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-[var(--agri-brand)] ${currentSize.badge}`}
               >
                 <i className="ri-verified-badge-fill" />
@@ -93,7 +97,7 @@ export default function UserIdentity({
 
             {isCurrentUser && (
               <span className="shrink-0 rounded-full bg-[var(--agri-hover)] px-2 py-0.5 text-[10px] font-medium text-[var(--agri-text-muted)]">
-                You
+                {t("common.you")}
               </span>
             )}
           </div>
@@ -106,7 +110,7 @@ export default function UserIdentity({
 
           {showRole && user.role && (
             <p className={`truncate ${currentSize.username} ${colorWhite ? "text-white/60" : "text-[var(--agri-text-muted)]"}`}>
-              {user.role}
+              {roleLabel}
             </p>
           )}
         </div>)}

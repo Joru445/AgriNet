@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
 
-import { getFarmerReviews } from "../services/farmer-review.service";
+import { getFarmerReviews, enrichFarmerReviews } from "../services/farmer-review.service";
 
 import { showToast } from "../utils/toast";
 
@@ -21,7 +21,14 @@ export default function useReviews() {
 
       const data = await getFarmerReviews(profile.uid);
 
+      // Paint base reviews immediately; profiles fill in in the background.
       setReviews(data);
+
+      enrichFarmerReviews(data)
+        .then((enriched) => setReviews(enriched))
+        .catch(() => {
+          /* noop */
+        });
     } catch (error) {
       console.error(error);
 

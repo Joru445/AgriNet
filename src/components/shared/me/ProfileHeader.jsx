@@ -5,6 +5,7 @@ import landscape from "../../../assets/img/landscapeCover.jpg";
 import Avatar from "../../common/Avatar";
 import Button from "../../ui/Button";
 import ImageViewerModal from "../../common/ImageViewerModal";
+import { useLanguage } from "../../../context/LanguageContext";
 import { applyTransform, COVER_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
 
 export default function ProfileHeader({
@@ -22,6 +23,7 @@ export default function ProfileHeader({
 }) {
   const fileInput = useRef(null);
   const [fullscreenImage, setFullscreenImage] = useState(null);
+  const { t } = useLanguage();
 
   const coverSrc = isCloudinaryUrl(profile.coverPhoto)
     ? applyTransform(profile.coverPhoto, COVER_TF)
@@ -36,10 +38,10 @@ export default function ProfileHeader({
           onClick={() =>
             setFullscreenImage({
               src: coverSrc,
-              title: "Cover Photo",
+              title: t("profile.coverOf", { name: profile.fullname || profile.username }),
             })
           }
-          title="Click to view cover photo"
+          title={t("profile.viewCover")}
         >
           <img
             src={coverSrc}
@@ -77,12 +79,12 @@ export default function ProfileHeader({
                 onClick={() =>
                   setFullscreenImage({
                     src: profile.profilePicture,
-                    title: `${profile.fullname || profile.username}'s Profile Picture`,
+                    title: t("profile.picOf", { name: profile.fullname || profile.username }),
                   })
                 }
                 className="block rounded-full border-4 border-[var(--agri-card)] shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:ring-offset-2"
-                title="Click to view full photo"
-                aria-label="View profile picture"
+                title={t("profile.viewFullPhoto")}
+                aria-label={t("profile.viewProfilePic")}
               >
                 <Avatar
                   src={profile.profilePicture}
@@ -117,8 +119,8 @@ export default function ProfileHeader({
                   disabled:opacity-60
                   focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:ring-offset-2
                 "
-                title="Change profile picture"
-                aria-label="Change profile picture"
+                title={t("profile.changePic")}
+                aria-label={t("profile.changePic")}
               >
                 {uploadingAvatar ? (
                   <i className="ri-loader-4-line animate-spin text-lg" />
@@ -141,7 +143,7 @@ export default function ProfileHeader({
             {/* Profile Text Info */}
             <div className="min-w-0 flex-1 pt-3 sm:pt-0 sm:pb-3">
               <h1 className="text-xl sm:text-2xl font-bold text-[var(--agri-text)] truncate">
-                {profile.fullname || "Unnamed User"}
+                {profile.fullname || t("profile.unnamedUser")}
               </h1>
               <p className="text-sm text-[var(--agri-text-muted)] font-medium truncate">
                 @{profile.username || "user"}
@@ -163,10 +165,10 @@ export default function ProfileHeader({
                   variant="logout"
                   icon="ri-logout-box-line"
                 >
-                  Logout
+                  {t("common.logout")}
                 </Button>
                 <Button onClick={onEdit} icon="ri-edit-line">
-                  Edit
+                  {t("common.edit")}
                 </Button>
               </>
             ) : (
@@ -176,7 +178,7 @@ export default function ProfileHeader({
                   variant="cancel"
                   disabled={saving}
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
 
                 <Button
@@ -185,7 +187,7 @@ export default function ProfileHeader({
                   disabled={saving || uploadingAvatar}
                   icon={saving ? "ri-loader-4-line" : undefined}
                 >
-                  {saving ? "Saving..." : "Save Changes"}
+                  {saving ? t("profile.saving") : t("profile.saveChanges")}
                 </Button>
               </>
             )}

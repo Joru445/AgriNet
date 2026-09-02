@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../../context/AuthContext";
+import { useLanguage } from "../../../context/LanguageContext";
 
 import Avatar from "../../common/Avatar";
 import BackButton from "../../common/BackButton";
@@ -12,6 +13,7 @@ import { getProfilePath } from "../../../utils/routes";
 
 export default function ChatHeader({ user }) {
   const { profile } = useAuth();
+  const { t } = useLanguage();
 
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -78,8 +80,8 @@ export default function ChatHeader({ user }) {
               </h3>
               {user.verified && (
                 <span
-                  title="Verified Farmer"
-                  aria-label="Verified Farmer"
+                  title={t("common.verifiedFarmer")}
+                  aria-label={t("common.verifiedFarmer")}
                   className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-[var(--agri-brand)] text-base"
                 >
                   <i className="ri-verified-badge-fill" />
@@ -87,11 +89,11 @@ export default function ChatHeader({ user }) {
               )}
               {isAdmin && (
                 <span
-                  title="Official Admin"
-                  aria-label="Official Admin"
+                  title={t("messages.officialAdmin")}
+                  aria-label={t("messages.officialAdmin")}
                   className="inline-flex shrink-0 items-center rounded-md bg-purple-500/10 px-2 py-0.5 text-[10px] font-bold text-purple-700 dark:text-purple-300 border border-purple-500/20 shadow-2xs"
                 >
-                  Admin
+                  {t("roles.admin")}
                 </span>
               )}
             </div>
@@ -109,7 +111,7 @@ export default function ChatHeader({ user }) {
               onClick={() => setMenuOpen((prev) => !prev)}
               className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition cursor-pointer ${menuOpen ? "bg-[var(--agri-hover)] text-[var(--agri-text)]" : "hover:bg-[var(--agri-hover)] text-[var(--agri-text-secondary)]"
                 }`}
-              title="More options"
+              title={t("messages.moreOptions")}
               aria-expanded={menuOpen}
             >
               <i className="ri-more-2-fill text-lg" />
@@ -126,7 +128,7 @@ export default function ChatHeader({ user }) {
                   <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
                     <i className={isFarmer ? "ri-store-2-line text-sm" : "ri-user-3-line text-sm"} />
                   </div>
-                  <span className="truncate">{isFarmer ? "Visit Store" : "View Profile"}</span>
+                  <span className="truncate">{isFarmer ? t("messages.visitStore") : t("messages.viewProfile")}</span>
                 </button>
 
                 <div className="my-1 border-t border-[var(--agri-border-subtle)]" />
@@ -139,7 +141,7 @@ export default function ChatHeader({ user }) {
                   <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-red-500/10 text-red-600">
                     <i className="ri-alert-line text-sm" />
                   </div>
-                  <span className="truncate">Report User</span>
+                  <span className="truncate">{t("messages.reportUser")}</span>
                 </button>
               </div>
             )}
@@ -161,7 +163,7 @@ export default function ChatHeader({ user }) {
         onClose={() => setShowReportModal(false)}
         targetType="message"
         targetId={targetUid}
-        targetTitle={`Conversation with ${user.fullname || user.username}`}
+        targetTitle={t("messages.conversationWith", { name: user.fullname || user.username })}
         reportedUser={user}
       />
     </>

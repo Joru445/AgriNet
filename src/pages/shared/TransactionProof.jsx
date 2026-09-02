@@ -1,4 +1,5 @@
 import useTransactionProof from "../../hooks/useTransactionProof";
+import { useLanguage } from "../../context/LanguageContext";
 
 import TransactionProduct from "../../components/shared/transaction-proof/TransactionProduct";
 import TransactionProofReview from "../../components/shared/transaction-proof/TransactionProofReview";
@@ -9,6 +10,7 @@ import PageWrapper from "../../components/ui/PageWrapper";
 import { InlineError } from "../../components/ui/ErrorState";
 
 export default function TransactionProof() {
+  const { t } = useLanguage();
   const {
     inquiry,
     status,
@@ -37,16 +39,16 @@ export default function TransactionProof() {
       <div className="mx-auto max-w-3xl pb-18 sm:pb-4">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="mt-4 text-2xl font-bold text-[var(--agri-text)]">Transaction</h1>
+          <h1 className="mt-4 text-2xl font-bold text-[var(--agri-text)]">{t("transaction.title")}</h1>
           {loading ? (
             <div className="mt-1 h-4 w-64 bg-[var(--agri-hover)] rounded animate-pulse" />
           ) : status !== "completed" ? (
             <p className="mt-1 text-sm text-[var(--agri-text-muted)]">
-              Review and complete the transaction.
+              {t("transaction.heading.reviewComplete")}
             </p>
           ) : (
             <p className="mt-1 text-sm text-[var(--agri-text-muted)]">
-              This transaction is completed.
+              {t("transaction.heading.completed")}
             </p>
           )}
         </div>
@@ -56,7 +58,7 @@ export default function TransactionProof() {
         ) : !inquiry ? (
           <div className="rounded-2xl border border-red-100 bg-[var(--agri-card)] p-6">
             <p className="text-sm font-medium text-red-600">
-              {error || "Transaction not found."}
+              {error || t("transaction.notFound")}
             </p>
           </div>
         ) : (
@@ -77,12 +79,11 @@ export default function TransactionProof() {
 
                   <div>
                     <h2 className="font-semibold text-[var(--agri-text)]">
-                      Have you received the product?
+                      {t("transaction.receivedQuestion")}
                     </h2>
 
                     <p className="mt-1 text-sm leading-6 text-[var(--agri-text-muted)]">
-                      Confirm that you received the product. You'll then be asked to
-                      upload a photo as transaction proof.
+                      {t("transaction.receivedBody")}
                     </p>
                   </div>
                 </div>
@@ -101,7 +102,9 @@ export default function TransactionProof() {
                     disabled:opacity-50
                   "
                 >
-                  {processing ? "Processing..." : "Yes, I received the product"}
+                  {processing
+                    ? t("transaction.processing")
+                    : t("transaction.yesReceived")}
                 </button>
               </section>
             )}

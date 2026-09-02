@@ -17,13 +17,13 @@ export default function useHomeProducts() {
 
   const [products, setProducts] = useState(() => pageCache.get(CACHE_KEY) ?? []);
   const [loading, setLoading] = useState(!pageCache.get(CACHE_KEY));
-  const [, setTick] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   const loadedRef = useRef(!!pageCache.get(CACHE_KEY));
 
   // Auto-tick every second so expired listings disappear immediately without refresh
   useEffect(() => {
     const timer = setInterval(() => {
-      setTick((t) => (t + 1) % 1000000);
+      setNow(Date.now());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
@@ -93,7 +93,7 @@ export default function useHomeProducts() {
         product.available !== false && stock > 0 && !isProductExpired(product)
       );
     });
-  }, [marketplaceProducts, products]);
+  }, [marketplaceProducts]);
 
   /*
    * Nearby products
@@ -130,8 +130,6 @@ export default function useHomeProducts() {
    * - newer products
    */
   const relevantProducts = useMemo(() => {
-    const now = Date.now();
-
     return [...availableProducts]
       .map((product) => {
         const rating = Number(product.productRating ?? 0);
@@ -170,7 +168,7 @@ export default function useHomeProducts() {
       })
       .sort((a, b) => b.relevanceScore - a.relevanceScore)
       .slice(0, 6);
-  }, [availableProducts]);
+  }, [availableProducts, now]);
 
   return {
     loading,

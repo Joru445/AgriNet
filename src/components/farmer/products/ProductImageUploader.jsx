@@ -1,8 +1,11 @@
 import { useRef } from "react";
 
+import { useLanguage } from "../../../context/LanguageContext";
+
 const MAX_IMAGES = 5;
 
 export default function ProductImageUploader({ images, onChange }) {
+  const { t } = useLanguage();
   const inputRef = useRef(null);
 
   function handleFiles(e) {
@@ -29,7 +32,7 @@ export default function ProductImageUploader({ images, onChange }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">
-          Product Images <span className="text-red-500">*</span>
+          {t("products.productImages")} <span className="text-red-500">*</span>
         </h3>
 
         <span className="text-xs text-gray-500">
@@ -75,7 +78,7 @@ export default function ProductImageUploader({ images, onChange }) {
           >
             <i className="ri-image-add-line text-3xl text-[#2D6A4F]" />
 
-            <span className="text-xs mt-2">Add Image</span>
+            <span className="text-xs mt-2">{t("products.addImage")}</span>
           </button>
         )}
       </div>

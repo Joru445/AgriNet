@@ -5,8 +5,10 @@ import RecentUsers from "../../components/admin/RecentUsers";
 import ErrorState from "../../components/ui/ErrorState";
 
 import useAdminDashboard from "../../hooks/useAdminDashboard";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const {
     stats,
     recentUsers,
@@ -24,11 +26,11 @@ export default function Dashboard() {
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-[var(--agri-text)] md:text-3xl">
-              Dashboard
+              {t("admin.dashboard")}
             </h1>
 
             <p className="mt-1 text-sm text-[var(--agri-text-muted)]">
-              Overview of what's happening on AgriNet.
+              {t("admin.dashboardSubtitle")}
             </p>
           </div>
 
@@ -39,20 +41,20 @@ export default function Dashboard() {
             className="inline-flex items-center gap-2 self-start rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-2 text-sm font-semibold text-[var(--agri-text-secondary)] shadow-2xs hover:bg-[var(--agri-hover)] disabled:opacity-50 transition cursor-pointer"
           >
             <i className={`ri-refresh-line text-base ${loading ? "animate-spin" : ""}`} />
-            <span>Refresh</span>
+            <span>{t("admin.refresh")}</span>
           </button>
         </div>
 
         {error && (
           <ErrorState
-            title="Failed to load dashboard data"
-            message="Something went wrong while loading the latest metrics."
+            title={t("admin.failedToLoad")}
+            message={t("admin.failedToLoadMessage")}
             onRetry={refresh}
           />
         )}
 
         {/* Statistics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div data-onboarding="admin-stats" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           {loading ? (
             Array.from({ length: 6 }).map((_, index) => (
               <div
@@ -67,44 +69,44 @@ export default function Dashboard() {
           ) : (
             <>
               <StatCard
-                title="Total Users"
+                title={t("admin.totalUsers")}
                 value={stats?.users?.total ?? 0}
-                description="Registered users"
+                description={t("admin.registeredUsers")}
                 to="/admin/users"
               />
 
               <StatCard
-                title="Farmers"
+                title={t("admin.farmers")}
                 value={stats?.users?.farmers ?? 0}
-                description="Registered farmers"
+                description={t("admin.registeredFarmers")}
                 to="/admin/users"
               />
 
               <StatCard
-                title="Consumers"
+                title={t("admin.consumers")}
                 value={stats?.users?.consumers ?? 0}
-                description="Registered consumers"
+                description={t("admin.registeredConsumers")}
                 to="/admin/users"
               />
 
               <StatCard
-                title="Products"
+                title={t("admin.products")}
                 value={stats?.products?.total ?? 0}
-                description={`${stats?.products?.available ?? 0} available`}
+                description={t("admin.availableCount", { count: stats?.products?.available ?? 0 })}
                 to="/admin/products"
               />
 
               <StatCard
-                title="Ongoing"
+                title={t("admin.ongoing")}
                 value={stats?.inquiries?.ongoing ?? 0}
-                description="Ongoing inquiries"
+                description={t("admin.ongoingInquiries")}
                 to="/admin/inquiries"
               />
 
               <StatCard
-                title="Completed"
+                title={t("admin.completed")}
                 value={stats?.inquiries?.completed ?? 0}
-                description="Completed inquiries"
+                description={t("admin.completedInquiries")}
                 to="/admin/inquiries"
               />
             </>

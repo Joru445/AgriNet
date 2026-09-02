@@ -174,6 +174,7 @@ export function UnreadInquiriesProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useUnreadInquiries() {
   return useContext(UnreadInquiriesContext);
 }

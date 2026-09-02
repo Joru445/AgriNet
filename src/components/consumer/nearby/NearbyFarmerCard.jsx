@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
+import { useLanguage } from "../../../context/LanguageContext";
 import Avatar from "../../common/Avatar";
 
 export default function NearbyFarmerCard({ farmer }) {
+  const { t } = useLanguage();
   return (
     <div className="group flex flex-col justify-between h-full rounded-2xl border border-[var(--agri-border)]/90 bg-[var(--agri-card)] p-3.5 sm:p-4 shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5">
       <div>
@@ -16,8 +18,8 @@ export default function NearbyFarmerCard({ farmer }) {
             />
             {farmer.verified && (
               <span
-                title="Verified Farmer"
-                aria-label="Verified Farmer"
+                title={t("common.verifiedFarmer")}
+                aria-label={t("common.verifiedFarmer")}
                 className="absolute -bottom-0.5 -right-0.5 inline-flex items-center justify-center rounded-full bg-[var(--agri-card)] text-[#2D6A4F] dark:text-[var(--agri-brand)] text-[11px] shadow-xs"
               >
                 <i className="ri-verified-badge-fill" />
@@ -48,7 +50,7 @@ export default function NearbyFarmerCard({ farmer }) {
           <div className="flex items-center justify-between gap-1 text-[11px] sm:text-xs">
             <span className="text-[var(--agri-text-muted)] flex items-center gap-1 shrink-0">
               <i className="ri-map-pin-range-line text-[var(--agri-text-muted)] text-xs" />
-              <span>Distance</span>
+              <span>{t("nearby.distance")}</span>
             </span>
 
             <span className="font-semibold text-[#2D6A4F] dark:text-[var(--agri-brand)] bg-[#D8F3DC]/40 dark:bg-[var(--agri-brand-bg)]/40 px-1.5 py-0.5 rounded text-[11px] shrink-0">
@@ -59,7 +61,7 @@ export default function NearbyFarmerCard({ farmer }) {
           <div className="flex items-center justify-between gap-1 text-[11px] sm:text-xs">
             <span className="text-[var(--agri-text-muted)] flex items-center gap-1 shrink-0">
               <i className="ri-star-line text-[var(--agri-text-muted)] text-xs" />
-              <span>Rating</span>
+              <span>{t("nearby.rating")}</span>
             </span>
 
             {farmer.rating != null && Number(farmer.rating) > 0 ? (
@@ -76,7 +78,7 @@ export default function NearbyFarmerCard({ farmer }) {
               </div>
             ) : (
               <span className="text-[var(--agri-text-muted)] font-medium text-[11px] shrink-0">
-                No reviews
+                {t("nearby.noReviews")}
               </span>
             )}
           </div>
@@ -88,7 +90,7 @@ export default function NearbyFarmerCard({ farmer }) {
           to={`/profile/${farmer.uid}`}
           className="block w-full rounded-xl border border-[#2D6A4F] bg-[var(--agri-card)] py-1.5 sm:py-2 text-center text-xs font-semibold text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:bg-[#2D6A4F] hover:text-white active:scale-98 shadow-xs hover:shadow-md transition-all duration-150"
         >
-          View Profile
+          {t("nearby.viewProfile")}
         </Link>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { useLanguage } from "../../../context/LanguageContext";
 import ImageViewerModal from "../../common/ImageViewerModal";
 
 export default function TransactionProofReview({
@@ -8,6 +9,7 @@ export default function TransactionProofReview({
   onConfirm,
   onReject,
 }) {
+  const { t } = useLanguage();
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -28,12 +30,11 @@ export default function TransactionProofReview({
     <section className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-5 shadow-sm">
       <div>
         <h2 className="font-semibold text-[var(--agri-text)]">
-          Review transaction proof
+          {t("transaction.reviewTitle")}
         </h2>
 
         <p className="mt-1 text-sm leading-6 text-[var(--agri-text-muted)]">
-          Review the image submitted by the consumer before confirming the
-          transaction.
+          {t("transaction.reviewBody")}
         </p>
       </div>
 
@@ -41,16 +42,16 @@ export default function TransactionProofReview({
         <div
           className="mt-5 overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)] cursor-pointer group relative"
           onClick={() => setShowFullscreen(true)}
-          title="Click to view full screen & zoom"
+          title={t("transaction.viewFullscreen")}
         >
           <img
             src={proofUrl}
-            alt="Transaction proof submitted by consumer"
+            alt={t("transaction.proofOfReceipt")}
             className="max-h-[600px] w-full object-contain group-hover:scale-[1.01] transition-transform duration-200"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
             <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-md backdrop-blur-xs flex items-center gap-1">
-              <i className="ri-zoom-in-line" /> View Photo
+              <i className="ri-zoom-in-line" /> {t("transaction.viewPhoto")}
             </span>
           </div>
         </div>
@@ -59,7 +60,7 @@ export default function TransactionProofReview({
           <i className="ri-image-line text-3xl text-[var(--agri-text-muted)]" />
 
           <p className="mt-2 text-sm text-[var(--agri-text-muted)]">
-            No proof image was submitted.
+            {t("transaction.noProofImage")}
           </p>
         </div>
       )}
@@ -80,7 +81,7 @@ export default function TransactionProofReview({
             disabled:opacity-50
           "
         >
-          {processing ? "Processing..." : "Reject Proof"}
+          {processing ? t("transaction.processing") : t("transaction.rejectProof")}
         </button>
 
         <button
@@ -98,7 +99,7 @@ export default function TransactionProofReview({
             disabled:opacity-50
           "
         >
-          {processing ? "Processing..." : "Confirm & Complete"}
+          {processing ? t("transaction.processing") : t("transaction.confirmComplete")}
         </button>
       </div>
 
@@ -114,10 +115,10 @@ export default function TransactionProofReview({
 
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base font-bold text-[var(--agri-text)]">
-                    Confirm & Complete Transaction
+                    {t("transaction.confirmModalTitle")}
                   </h3>
                   <p className="mt-1 text-sm text-[var(--agri-text-secondary)] font-medium leading-relaxed">
-                    Confirm that this transaction is complete?
+                    {t("transaction.confirmModalBody")}
                   </p>
                 </div>
               </div>
@@ -129,7 +130,7 @@ export default function TransactionProofReview({
                   disabled={processing}
                   className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer disabled:opacity-50"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
 
                 <button
@@ -141,12 +142,12 @@ export default function TransactionProofReview({
                   {processing ? (
                     <>
                       <i className="ri-loader-4-line animate-spin" />
-                      <span>Processing...</span>
+                      <span>{t("transaction.processing")}</span>
                     </>
                   ) : (
                     <>
                       <i className="ri-check-line" />
-                      <span>Confirm & Complete</span>
+                      <span>{t("transaction.confirmComplete")}</span>
                     </>
                   )}
                 </button>
@@ -168,10 +169,10 @@ export default function TransactionProofReview({
 
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base font-bold text-[var(--agri-text)]">
-                    Reject Transaction Proof
+                    {t("transaction.rejectModalTitle")}
                   </h3>
                   <p className="mt-1 text-sm text-[var(--agri-text-secondary)] font-medium leading-relaxed">
-                    Reject this proof and ask the consumer to upload another?
+                    {t("transaction.rejectModalBody")}
                   </p>
                 </div>
               </div>
@@ -183,7 +184,7 @@ export default function TransactionProofReview({
                   disabled={processing}
                   className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer disabled:opacity-50"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
 
                 <button
@@ -195,12 +196,12 @@ export default function TransactionProofReview({
                   {processing ? (
                     <>
                       <i className="ri-loader-4-line animate-spin" />
-                      <span>Processing...</span>
+                      <span>{t("transaction.processing")}</span>
                     </>
                   ) : (
                     <>
                       <i className="ri-close-line" />
-                      <span>Reject Proof</span>
+                      <span>{t("transaction.rejectProof")}</span>
                     </>
                   )}
                 </button>
@@ -214,7 +215,7 @@ export default function TransactionProofReview({
       <ImageViewerModal
         isOpen={showFullscreen && Boolean(proofUrl)}
         src={proofUrl}
-        title="Transaction Proof"
+        title={t("reviews.transactionProof")}
         onClose={() => setShowFullscreen(false)}
       />
     </section>

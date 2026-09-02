@@ -103,7 +103,9 @@ export async function getUserProfile(uid) {
         setCachedUserProfile(uid, res);
         return res;
       }
-    } catch (_) {}
+    } catch {
+      /* noop */
+    }
     return null;
   }
 
@@ -127,7 +129,9 @@ export async function getUserProfile(uid) {
           profilePictureId = farmerData.profilePictureId;
         }
       }
-    } catch (_) {}
+    } catch {
+      /* noop */
+    }
   }
 
   const userResult = {
@@ -384,7 +388,9 @@ export async function searchUsers(search, currentUserId) {
               profilePictureId = farmerData.profilePictureId;
             }
           }
-        } catch (_) {}
+        } catch {
+          /* noop */
+        }
       }
 
       return {

@@ -4,17 +4,17 @@ export const tabRoutes = [
   "/products",
   "/messages",
   "/inquiries",
-  "/me",
+  "/settings",
 
   "/farmer",
   "/farmer/products",
   "/farmer/inquiries",
   "/farmer/messages",
-  "/farmer/me",
+  "/farmer/settings",
 
   "/admin",
   "/admin/users",
   "/admin/reports",
   "/admin/messages",
-  "/admin/me",
+  "/admin/settings",
 ];

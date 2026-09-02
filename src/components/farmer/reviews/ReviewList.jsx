@@ -1,10 +1,13 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import ReviewCard from "../../common/ReviewCard";
 
 export default function ReviewList({ reviews }) {
+  const { t } = useLanguage();
+
   if (!reviews.length) {
     return (
       <div className="bg-[var(--agri-card)] rounded-2xl border border-[var(--agri-border)] p-12 text-center text-[var(--agri-text-muted)]">
-        No reviews yet.
+        {t("farmer.noReviewsYet")}
       </div>
     );
   }

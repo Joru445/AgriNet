@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -30,8 +31,13 @@ export function UnreadMessagesProvider({ children }) {
   const activeUserId = searchParams.get("user");
   const isMessagesRoute = location.pathname.includes("messages");
 
-  function recalculateUnreads(conversations) {
-    if (!profile?.uid || !conversations) return;
+  const recalculateUnreads = useCallback(() => {
+    const conversations = rawConversationsRef.current;
+    if (!profile?.uid || !conversations) {
+      setUnreadCount(0);
+      setShowPopup(false);
+      return;
+    }
 
     let totalUnread = 0;
     const unreads = [];
@@ -85,7 +91,7 @@ export function UnreadMessagesProvider({ children }) {
         setShowPopup(false);
       }, 5000);
     }
-  }
+  }, [profile?.uid, isMessagesRoute, activeConvId, activeUserId]);
 
   useEffect(() => {
     if (!profile?.uid) {
@@ -100,7 +106,7 @@ export function UnreadMessagesProvider({ children }) {
       profile.uid,
       (conversations) => {
         rawConversationsRef.current = conversations;
-        recalculateUnreads(conversations);
+        recalculateUnreads();
       },
     );
 
@@ -110,12 +116,12 @@ export function UnreadMessagesProvider({ children }) {
         clearTimeout(popupTimerRef.current);
       }
     };
-  }, [profile?.uid, isMessagesRoute, activeConvId, activeUserId]);
+  }, [profile?.uid, recalculateUnreads]);
 
   // Recalculate when user switches conversations or navigates
   useEffect(() => {
-    recalculateUnreads(rawConversationsRef.current);
-  }, [isMessagesRoute, activeConvId, activeUserId]);
+    recalculateUnreads();
+  }, [recalculateUnreads]);
 
   return (
     <UnreadMessagesContext.Provider
@@ -129,6 +135,7 @@ export function UnreadMessagesProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useUnreadMessages() {
   return useContext(UnreadMessagesContext);
 }

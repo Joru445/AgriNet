@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 import useInquiries from "../../hooks/useInquiries";
 
@@ -9,6 +10,7 @@ import InquiryTable from "../../components/shared/inquiries/InquiryTable";
 
 export default function Inquiries() {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const [view, setView] = useState("grid");
 
   const {
@@ -28,10 +30,10 @@ export default function Inquiries() {
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">Inquiry Records</h2>
+          <h2 className="text-xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">{t("inquiries.title")}</h2>
 
           <p className="text-sm text-[var(--agri-text-muted)]">
-            Manage and track your product inquiries
+            {t("inquiries.subtitle")}
           </p>
         </div>
 
@@ -45,10 +47,10 @@ export default function Inquiries() {
                 ? "bg-[var(--agri-card)] shadow-xs text-[#2D6A4F] dark:text-[var(--agri-brand)] font-bold ring-1 ring-black/5"
                 : "text-[var(--agri-text-secondary)] hover:text-[var(--agri-text)] hover:bg-[var(--agri-card)]/50 font-semibold"
             }`}
-            title="Grid view"
+            title={t("inquiries.gridView")}
           >
             <i className="ri-grid-line text-lg" />
-            <span>Grid</span>
+            <span>{t("inquiries.grid")}</span>
           </button>
 
           <button
@@ -59,10 +61,10 @@ export default function Inquiries() {
                 ? "bg-[var(--agri-card)] shadow-xs text-[#2D6A4F] dark:text-[var(--agri-brand)] font-bold ring-1 ring-black/5"
                 : "text-[var(--agri-text-secondary)] hover:text-[var(--agri-text)] hover:bg-[var(--agri-card)]/50 font-semibold"
             }`}
-            title="Vertical list view"
+            title={t("inquiries.verticalView")}
           >
             <i className="ri-list-check text-lg" />
-            <span>List</span>
+            <span>{t("inquiries.list")}</span>
           </button>
         </div>
       </div>

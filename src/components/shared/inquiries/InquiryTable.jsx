@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import InquiryRow from "./InquiryRow";
 
 export default function InquiryTable({
@@ -8,16 +9,18 @@ export default function InquiryTable({
   onStatusChange,
   view = "grid",
 }) {
+  const { t } = useLanguage();
+
   if (!inquiries.length) {
     return (
       <div className="rounded-2xl border border-dashed border-[var(--agri-border)] bg-[var(--agri-card)] px-5 py-14 text-center shadow-xs">
         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
           <i className="ri-inbox-line text-2xl" />
         </div>
-        <p className="text-base font-bold text-[var(--agri-text-secondary)]">No inquiries found</p>
+        <p className="text-base font-bold text-[var(--agri-text-secondary)]">{t("inquiries.emptyTitle")}</p>
 
         <p className="mt-1 text-xs text-[var(--agri-text-muted)]">
-          There are no inquiries in this category.
+          {t("inquiries.emptySubtitle")}
         </p>
       </div>
     );

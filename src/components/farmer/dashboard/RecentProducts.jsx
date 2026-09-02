@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
+import { useLanguage } from "../../../context/LanguageContext";
 import ProductCard from "../../common/ProductCard";
 
 // Show max 4 products (2 columns × 2 rows)
 const MAX_DISPLAY = 4;
 
 export default function RecentProducts({ products = [], loading = false }) {
+  const { t } = useLanguage();
   const displayedProducts = products.slice(0, MAX_DISPLAY);
 
   return (
@@ -12,11 +14,11 @@ export default function RecentProducts({ products = [], loading = false }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-[var(--agri-text)]">Recent Products</h2>
+          <h2 className="text-xl font-bold text-[var(--agri-text)]">{t("farmer.recentProducts")}</h2>
           <p className="text-xs font-medium text-[var(--agri-text-muted)] mt-0.5">
             {loading
-              ? "Loading recent products..."
-              : `Showing ${displayedProducts.length} of ${products.length} products`}
+              ? t("farmer.loadingRecentProducts")
+              : t("farmer.showingProducts", { displayed: displayedProducts.length, total: products.length })}
           </p>
         </div>
 
@@ -24,7 +26,7 @@ export default function RecentProducts({ products = [], loading = false }) {
           to="/farmer/products"
           className="flex items-center gap-1 text-sm font-bold text-[#2D6A4F] hover:text-[#1B4332] transition hover:underline"
         >
-          View all
+          {t("farmer.viewAll")}
           <i className="ri-arrow-right-line text-sm" />
         </Link>
       </div>
@@ -45,8 +47,8 @@ export default function RecentProducts({ products = [], loading = false }) {
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[var(--agri-border)] bg-[var(--agri-card)] p-10 text-center text-[var(--agri-text-muted)]">
-          No products yet.
+          <div className="rounded-2xl border border-dashed border-[var(--agri-border)] bg-[var(--agri-card)] p-10 text-center text-[var(--agri-text-muted)]">
+          {t("farmer.noProductsYet")}
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">

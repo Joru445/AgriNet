@@ -1,12 +1,14 @@
 import { useRef, useState } from "react";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import { applyTransform, PRODUCT_GALLERY_TF, PRODUCT_THUMB_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ProductGallery({ product }) {
   return <ProductGalleryImages key={product.id} product={product} />;
 }
 
 function ProductGalleryImages({ product }) {
+  const { t } = useLanguage();
   const images = product.images ?? [];
   const [selected, setSelected] = useState(0);
   const [fullscreenImage, setFullscreenImage] = useState(null);
@@ -15,7 +17,7 @@ function ProductGalleryImages({ product }) {
   if (!images.length) {
     return (
       <div className="aspect-square rounded-2xl md:rounded-3xl border border-[var(--agri-border)] bg-[var(--agri-card)] flex items-center justify-center text-[var(--agri-text-muted)] text-sm">
-        No images available
+        {t("productDetails.noImages")}
       </div>
     );
   }
@@ -96,7 +98,7 @@ function ProductGalleryImages({ product }) {
             })
           }
           className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-xs text-white shadow-md hover:bg-black/80 cursor-pointer"
-          title="Click to view full screen & zoom"
+          title={t("productDetails.viewFullscreen")}
         >
           <i className="ri-zoom-in-line text-base" />
         </button>

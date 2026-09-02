@@ -1,4 +1,5 @@
 import LocationPicker from "../location/LocationPicker";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ProfileStep({
   form,
@@ -11,6 +12,8 @@ export default function ProfileStep({
   onBack,
   onSubmit,
 }) {
+  const { t } = useLanguage();
+
   const phoneError = touched.contactNumber ? errors.contactNumber : null;
   const locationError = touched.location ? errors.location : null;
 
@@ -19,7 +22,7 @@ export default function ProfileStep({
       {/* Contact Number Field */}
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">
-          Contact Number <span className="text-red-500">*</span>
+          {t("auth.register.contactNumber")} <span className="text-red-500">*</span>
         </label>
 
         <div className="relative">
@@ -55,7 +58,7 @@ export default function ProfileStep({
       {form.role === "farmer" && (
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">
-            Farm Location <span className="text-red-500">*</span>
+            {t("auth.register.farmLocation")} <span className="text-red-500">*</span>
           </label>
 
           <LocationPicker
@@ -81,7 +84,7 @@ export default function ProfileStep({
           disabled={loading}
           className="flex-1 border-2 border-gray-300 hover:border-gray-400 py-3 text-gray-700 font-bold rounded-full transition-all duration-200 text-sm flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer disabled:opacity-50"
         >
-          Back
+          {t("common.back")}
         </button>
 
         <button
@@ -93,10 +96,10 @@ export default function ProfileStep({
           {loading ? (
             <>
               <i className="ri-loader-4-line animate-spin text-base" />
-              <span>Creating...</span>
+              <span>{t("auth.register.creating")}</span>
             </>
           ) : (
-            <span>Create Account</span>
+            <span>{t("auth.register.createAccount")}</span>
           )}
         </button>
       </div>

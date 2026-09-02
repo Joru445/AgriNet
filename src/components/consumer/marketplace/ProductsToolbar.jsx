@@ -1,3 +1,5 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function ProductsToolbar({
   total = 0,
   loading = false,
@@ -5,6 +7,7 @@ export default function ProductsToolbar({
   onSort,
   onOpenFilters,
 }) {
+  const { t } = useLanguage();
   return (
     <div className="flex items-center justify-betweenaw">
       {/* Product Count */}
@@ -12,7 +15,7 @@ export default function ProductsToolbar({
         <span className="inline-block h-5 w-24 bg-[var(--agri-hover)] rounded-md animate-pulse" />
       ) : (
         <span className="text-sm font-semibold text-[var(--agri-text-secondary)]">
-          {total} product{total !== 1 ? "s" : ""}
+          {t("consumer.pagination.showing", { count: total, total })}
         </span>
       )}
 
@@ -24,7 +27,7 @@ export default function ProductsToolbar({
           className="lg:hidden flex items-center gap-2 px-3 py-2 bg-[var(--agri-card)] border border-[var(--agri-border)] text-xs sm:text-sm rounded-xl font-semibold cursor-pointer"
         >
           <i className="ri-filter-3-line text-[#2D6A4F]" />
-          <span>Filters</span>
+          <span>{t("nearby.filters")}</span>
         </button>
 
         {/* Sort */}
@@ -33,11 +36,11 @@ export default function ProductsToolbar({
           onChange={(e) => onSort(e.target.value)}
           className="bg-[var(--agri-card)] px-3 py-2 border border-[var(--agri-border)] rounded-xl font-semibold outline-none text-xs sm:text-sm cursor-pointer"
         >
-          <option value="relevant">Relevant</option>
-          <option value="newest">Newest</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="rating">Highest Rated</option>
+          <option value="relevant">{t("consumer.sort.relevant")}</option>
+          <option value="newest">{t("consumer.sort.newest")}</option>
+          <option value="price-low">{t("consumer.sort.priceLow")}</option>
+          <option value="price-high">{t("consumer.sort.priceHigh")}</option>
+          <option value="rating">{t("consumer.sort.highestRated")}</option>
         </select>
       </div>
     </div>

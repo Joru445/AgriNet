@@ -67,6 +67,13 @@ export function useLiveRemainingTime(product) {
   );
   const [isExpired, setIsExpired] = useState(() => isProductExpired(product));
 
+  const expiresAtMillis =
+    typeof product?.expiresAt?.toMillis === "function"
+      ? product.expiresAt.toMillis()
+      : typeof product?.expiresAt?.seconds === "number"
+        ? product.expiresAt.seconds * 1000
+        : product?.expiresAt;
+
   useEffect(() => {
     if (!product?.expiresAt) {
       setRemainingTime(null);
@@ -85,14 +92,7 @@ export function useLiveRemainingTime(product) {
     update();
     const interval = setInterval(update, 60000); // Update every minute instead of every second
     return () => clearInterval(interval);
-  }, [
-    product?.expiresAt,
-    typeof product?.expiresAt?.toMillis === "function"
-      ? product?.expiresAt?.toMillis()
-      : typeof product?.expiresAt?.seconds === "number"
-        ? product?.expiresAt?.seconds
-        : product?.expiresAt,
-  ]);
+  }, [product, expiresAtMillis]);
 
   return { remainingTime, isExpired };
 }

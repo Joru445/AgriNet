@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 
+import { useLanguage } from "../../../context/LanguageContext";
 import ProductCard from "../../common/ProductCard";
 
 const MAX_PRODUCTS = 4;
 
 export default function RecentProductsSection({ products = [] }) {
+  const { t } = useLanguage();
   const recentProducts = [...products]
     .filter((product) => product?.createdAt)
     .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
@@ -20,20 +22,20 @@ export default function RecentProductsSection({ products = [] }) {
           <div className="flex items-center gap-2">
 
             <h2 className="text-lg sm:text-xl font-black text-[#1B4332] dark:text-[var(--agri-brand-light)]">
-              Recently Added
+              {t("consumer.recentlyAdded")}
             </h2>
           </div>
 
           <p className="mt-1 text-xs sm:text-sm text-gray-500">
-            The latest products from local farmers
+            {t("consumer.recentlyAddedSubtitle")}
           </p>
         </div>
 
         <Link
-          to="?sort=newest"
+          to="/marketplace?sort=newest"
           className="shrink-0 text-xs sm:text-sm font-bold text-[#2D6A4F] transition-colors hover:text-[#1B4332] dark:text-[var(--agri-brand-light)]"
         >
-          View all
+          {t("consumer.viewAll")}
           <i className="ri-arrow-right-line ml-1" />
         </Link>
       </div>

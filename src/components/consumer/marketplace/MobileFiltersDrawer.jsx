@@ -1,3 +1,5 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 import FiltersSidebar from "./FiltersSidebar";
 
 export default function MobileFiltersDrawer({
@@ -7,6 +9,8 @@ export default function MobileFiltersDrawer({
   onReset,
   onClose,
 }) {
+  const { t } = useLanguage();
+
   return (
     <>
       <div
@@ -22,7 +26,7 @@ export default function MobileFiltersDrawer({
         }`}
       >
         <div className="flex items-center justify-between border-b border-[var(--agri-border)] px-5 py-4">
-          <h2 className="text-lg font-bold">Filters</h2>
+          <h2 className="text-lg font-bold">{t("nearby.filters")}</h2>
 
           <button onClick={onClose}>
             <i className="ri-close-line text-2xl" />
@@ -43,7 +47,7 @@ export default function MobileFiltersDrawer({
             onClick={onClose}
             className="w-full rounded-xl bg-[#2D6A4F] py-3 font-semibold text-white"
           >
-            Apply Filters
+            {t("nearby.applyFilters")}
           </button>
         </div>
       </div>

@@ -4,6 +4,7 @@ import {
   hasProductDiscount,
 } from "../../../utils/price";
 import { useLiveRemainingTime } from "../../../utils/productExpiration";
+import { useLanguage } from "../../../context/LanguageContext";
 
 const CATEGORY_ICONS = {
   Vegetables: "ri-plant-line",
@@ -23,6 +24,7 @@ export default function ProductInfo({
   onReport,
   isOwner = false,
 }) {
+  const { t } = useLanguage();
   const originalPriceNum = Number(product.originalPrice);
   const priceNum = Number(product.price ?? 0);
   const hasDiscount = hasProductDiscount(product.originalPrice, product.price);
@@ -49,10 +51,10 @@ export default function ProductInfo({
             type="button"
             onClick={onReport}
             className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--agri-text-muted)] hover:text-red-600 hover:bg-red-500/10 px-2.5 py-1 rounded-lg transition cursor-pointer"
-            title="Report this product"
+            title={t("productDetails.reportThisProduct")}
           >
             <i className="ri-alert-line text-sm" />
-            <span>Report</span>
+            <span>{t("productDetails.report")}</span>
           </button>
         )}
       </div>
@@ -85,7 +87,7 @@ export default function ProductInfo({
         {/* Category Pill with Icon & Shadow */}
         <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2D6A4F]/10 border border-[#2D6A4F]/20 px-3 py-1 text-xs font-bold text-[var(--agri-text)] shadow-xs">
           <i className={`${categoryIcon} text-[#2D6A4F] dark:text-[var(--agri-brand)] text-sm`} />
-          <span>{product.category || "Produce"}</span>
+          <span>{product.category || t("productDetails.produce")}</span>
         </span>
 
         {/* Stock Status */}
@@ -101,7 +103,9 @@ export default function ProductInfo({
               isAvailable ? "bg-emerald-600" : "bg-red-600"
             }`}
           />
-          {isAvailable ? "In Stock" : "Out of Stock"}
+          {isAvailable
+            ? t("product.inStock")
+            : t("product.outOfStock")}
         </span>
 
         {/* Duration Badge if set */}
@@ -120,14 +124,20 @@ export default function ProductInfo({
         </div>
 
         <span className="text-xs sm:text-sm font-semibold text-[var(--agri-text-secondary)]">
-          ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
+          ({reviewCount}{" "}
+          {reviewCount === 1
+            ? t("reviews.reviewSingular")
+            : t("reviews.reviewPlural")})
         </span>
 
         {product.stock != null && (
           <>
             <span className="text-[var(--agri-border)] font-bold">•</span>
             <span className="text-xs sm:text-sm font-bold text-[var(--agri-text-secondary)]">
-              {product.stock} {product.unit || "units"} available
+              {t("productDetails.stockAvailable", {
+                count: product.stock,
+                unit: product.unit || t("productDetails.unit"),
+              })}
             </span>
           </>
         )}

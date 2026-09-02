@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import logo from "../../assets/favicon.ico";
 import landscapeBg from "../../assets/img/landscape.jpg";
 
+import { useLanguage } from "../../context/LanguageContext";
+
 import AccountStep from "./AccountStep";
 import PasswordStep from "./PasswordStep";
 import ProfileStep from "./ProfileStep";
@@ -22,6 +24,8 @@ export default function RegisterForm({
   previousStep,
   submit,
 }) {
+  const { t } = useLanguage();
+
   return (
     <div
       className="flex-1 w-full min-w-0 relative h-full min-h-0 overflow-y-auto scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -60,11 +64,11 @@ export default function RegisterForm({
           {/* Header */}
           <div className="mb-4 sm:mb-5">
             <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332]">
-              Create Your Account
+              {t("auth.register.title")}
             </h1>
 
             <p className="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1">
-              Join AgriNet today.
+              {t("auth.register.subtitle")}
             </p>
           </div>
 
@@ -145,12 +149,12 @@ export default function RegisterForm({
 
           {/* Login */}
           <p className="text-center text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6">
-            Already have an account?{" "}
+            {t("auth.register.hasAccount")}{" "}
             <Link
               to="/login"
               className="text-[#2D6A4F] font-semibold hover:underline"
             >
-              Sign in
+              {t("auth.register.signIn")}
             </Link>
           </p>
 
@@ -161,7 +165,7 @@ export default function RegisterForm({
               className="inline-flex items-center justify-center gap-1 hover:text-[#2D6A4F]"
             >
               <i className="ri-arrow-left-line" />
-              Back to Home
+              {t("auth.backHome")}
             </Link>
           </p>
         </div>

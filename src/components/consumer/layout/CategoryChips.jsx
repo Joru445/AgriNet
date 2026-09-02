@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
+import { useLanguage } from "../../../context/LanguageContext";
+
 import all from "../../../assets/categories/all.webp";
 import vegetables from "../../../assets/categories/vegetables.webp";
 import fruits from "../../../assets/categories/fruits.webp";
@@ -12,48 +14,49 @@ import rootCrops from "../../../assets/categories/root-crops.webp";
 const categories = [
   {
     id: "All",
-    label: "All Produce",
+    labelKey: "categories.allProduce",
     image: all,
   },
   {
     id: "Vegetables",
-    label: "Vegetables",
+    labelKey: "categories.vegetables",
     image: vegetables,
   },
   {
     id: "Fruits",
-    label: "Fruits",
+    labelKey: "categories.fruits",
     image: fruits,
   },
   {
     id: "Grains",
-    label: "Grains & Rice",
+    labelKey: "categories.grains",
     image: grains,
   },
   {
     id: "Livestock",
-    label: "Livestock",
+    labelKey: "categories.livestock",
     image: livestocks,
   },
   {
     id: "Poultry",
-    label: "Poultry",
+    labelKey: "categories.poultry",
     image: poultry,
   },
   {
     id: "Herbs",
-    label: "Herbs",
+    labelKey: "categories.herbs",
     image: herbs,
   },
   {
     id: "Root Crops",
-    label: "Root Crops",
+    labelKey: "categories.rootCrops",
     image: rootCrops,
   },
 ];
 
 export default function CategoryChips({ value = "All", onChange }) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   function handleCategoryChange(category) {
     // Marketplace page
@@ -77,7 +80,7 @@ export default function CategoryChips({ value = "All", onChange }) {
   }
 
   return (
-    <div className="w-full flex items-center justify-start lg:justify-center gap-3 overflow-x-auto px-2 py-2 scrollbar-none">
+    <div className="w-full flex items-center justify-start lg:justify-center gap-3 overflow-x-auto px-4 py-2 scrollbar-none">
       {categories.map((cat) => {
         const active = value === cat.id;
 
@@ -155,7 +158,7 @@ export default function CategoryChips({ value = "All", onChange }) {
 
             {/* Label */}
             <span className="relative z-10 text-left leading-tight text-white drop-shadow-md">
-              {cat.label}
+              {t(cat.labelKey)}
             </span>
           </button>
         );

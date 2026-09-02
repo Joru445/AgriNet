@@ -41,29 +41,6 @@ export default function ImageViewerModal({
     }
   }, [isOpen, imageSrc]);
 
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    if (!isOpen) return;
-
-    function handleKeyDown(e) {
-      if (e.key === "Escape") {
-        onClose?.();
-      } else if (e.key === "+" || e.key === "=") {
-        e.preventDefault();
-        zoomIn();
-      } else if (e.key === "-" || e.key === "_") {
-        e.preventDefault();
-        zoomOut();
-      } else if (e.key === "0") {
-        e.preventDefault();
-        resetZoom();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose, scale]);
-
   // Lock body scroll when open
   useEffect(() => {
     if (isOpen) {
@@ -93,6 +70,29 @@ export default function ImageViewerModal({
     setScale(1);
     setPosition({ x: 0, y: 0 });
   }, []);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function handleKeyDown(e) {
+      if (e.key === "Escape") {
+        onClose?.();
+      } else if (e.key === "+" || e.key === "=") {
+        e.preventDefault();
+        zoomIn();
+      } else if (e.key === "-" || e.key === "_") {
+        e.preventDefault();
+        zoomOut();
+      } else if (e.key === "0") {
+        e.preventDefault();
+        resetZoom();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose, zoomIn, zoomOut, resetZoom]);
 
   // Double click or double tap toggle (1x <-> 2.5x)
   const handleToggleZoom = (e) => {

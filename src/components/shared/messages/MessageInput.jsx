@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { compressImage } from "../../../utils/imageCompression";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function MessageInput({
   value,
@@ -17,6 +18,7 @@ export default function MessageInput({
   const menuRef = useRef(null);
   const galleryInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+  const { t } = useLanguage();
 
   const [quantity, setQuantity] = useState(1);
   const [showMenu, setShowMenu] = useState(false);
@@ -247,7 +249,7 @@ export default function MessageInput({
               type="button"
               onClick={onCancelInquiry}
               className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full text-[var(--agri-text-muted)] hover:text-[var(--agri-text)] transition"
-              title="Cancel inquiry"
+              title={t("messages.cancelInquiry")}
             >
               <i className="ri-close-line text-lg" />
             </button>
@@ -264,7 +266,7 @@ export default function MessageInput({
 
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-[#2D6A4F] dark:text-[var(--agri-brand)]">
-                Product Inquiry
+                {t("messages.productInquiry")}
               </p>
 
               <p className="truncate text-sm font-semibold text-[var(--agri-text)]">

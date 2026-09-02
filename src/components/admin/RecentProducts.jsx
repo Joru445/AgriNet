@@ -1,3 +1,5 @@
+import { useLanguage } from "../../context/LanguageContext";
+
 function getImageUrl(images) {
   const image = images?.[0];
 
@@ -9,16 +11,17 @@ function getImageUrl(images) {
 }
 
 export default function RecentProducts({ products = [] }) {
+  const { t } = useLanguage();
   const displayedProducts = products.slice(0, 4);
 
   return (
     <section className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-lg shadow-black/5 overflow-hidden">
       <div className="flex items-center justify-between border-b border-[var(--agri-border-subtle)] p-5 bg-[var(--agri-hover)]/50">
         <div>
-          <h2 className="text-base font-bold text-[var(--agri-text)]">Recent Products</h2>
+          <h2 className="text-base font-bold text-[var(--agri-text)]">{t("admin.recentProducts")}</h2>
 
           <p className="mt-0.5 text-xs text-[var(--agri-text-muted)] font-medium">
-            Recently listed products
+            {t("admin.recentlyListed")}
           </p>
         </div>
 
@@ -29,7 +32,7 @@ export default function RecentProducts({ products = [] }) {
 
       {displayedProducts.length === 0 ? (
         <div className="p-8 text-center text-sm font-medium text-[var(--agri-text-muted)]">
-          No products found.
+          {t("admin.noProductsFound")}
         </div>
       ) : (
         <div className="divide-y divide-[var(--agri-border-subtle)]">

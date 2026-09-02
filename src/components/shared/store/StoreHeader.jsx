@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import landscape from "../../../assets/img/landscapeCover.jpg";
 
 import { getInitials } from "../../../utils/getInitials";
-import { useAuth } from "../../../context/AuthContext";
 import { getStoreProfilePath } from "../../../utils/routes";
 import ReportModal from "../../common/ReportModal";
 import { applyTransform, COVER_TF, PROFILE_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function StoreHeader({
   farmer,
@@ -14,7 +14,7 @@ export default function StoreHeader({
   averageRating,
   onMessage,
 }) {
-  const { profile } = useAuth();
+  const { t } = useLanguage();
   const [showReportModal, setShowReportModal] = useState(false);
   const joinedDate = farmer.createdAt?.seconds
     ? new Date(farmer.createdAt.seconds * 1000).toLocaleDateString("en-PH", {
@@ -24,7 +24,7 @@ export default function StoreHeader({
     : "-";
 
   return (
-    <section className="bg-[var(--agri-card)]">
+    <section data-onboarding="store-header" className="bg-[var(--agri-card)]">
       {/* Cover Photo */}
       <div className="mx-auto max-w-7xl">
         <div
@@ -45,7 +45,7 @@ export default function StoreHeader({
                 ? applyTransform(farmer.coverPhoto, COVER_TF)
                 : farmer.coverPhoto || landscape
             }
-            alt="Cover"
+            alt={t("storeProfile.cover")}
             width={1600}
             height={380}
             loading="lazy"
@@ -102,7 +102,7 @@ export default function StoreHeader({
               className="inline-flex items-center gap-2 rounded-xl bg-[#2D6A4F] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1B4332] cursor-pointer"
             >
               <i className="ri-chat-1-line" />
-              Message
+              {t("storeProfile.message")}
             </button>
 
             <button
@@ -111,7 +111,7 @@ export default function StoreHeader({
               className="inline-flex items-center gap-2 rounded-xl border border-[var(--agri-border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer"
             >
               <i className="ri-flag-line" />
-              Report
+              {t("storeProfile.report")}
             </button>
           </div>
         </div>
@@ -131,7 +131,7 @@ export default function StoreHeader({
 
           <div className="flex items-center gap-1.5 text-sm text-[var(--agri-text-muted)]">
             <i className="ri-calendar-line" />
-            <span>Joined {joinedDate}</span>
+            <span>{t("storeProfile.joined", { date: joinedDate })}</span>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { getProductImage } from "../../../utils/getProductImage";
 import { getInquiriesPath, getMessagesPath } from "../../../utils/routes";
 import { formatFullDateTime } from "../../../utils/date";
 import { useUnreadInquiries } from "../../../context/UnreadInquiriesContext";
+import { useLanguage } from "../../../context/LanguageContext";
 import InquiryStatusBadge from "./InquiryStatusBadge";
 import defaultAvatar from "../../../assets/img/defaultAvatar.png";
 
@@ -16,6 +17,7 @@ export default function InquiryCard({
 }) {
   const navigate = useNavigate();
   const { acknowledgeInquiry } = useUnreadInquiries();
+  const { t } = useLanguage();
 
   const status = normalizeStatus(inquiry.status);
   const productData = {
@@ -67,7 +69,7 @@ export default function InquiryCard({
     navigate(`${getMessagesPath(userRole)}?conversation=${inquiry.conversationId}`);
   }
 
-  const primaryLabel = getPrimaryLabel(status, userRole, isReviewed);
+  const primaryLabel = getPrimaryLabel(status, userRole, isReviewed, t);
 
   return (
     <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-md transition-all hover:shadow-xl hover:-translate-y-1">
@@ -92,7 +94,7 @@ export default function InquiryCard({
         <div className="absolute top-3 left-3">
           <span className="inline-flex items-center gap-1 rounded-lg bg-black/40 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-md">
             <i className="ri-shopping-bag-3-line" />
-            {userRole === "farmer" ? "Purchase Inquiry" : "My Inquiry"}
+            {userRole === "farmer" ? t("inquiries.purchaseInquiry") : t("inquiries.myInquiry")}
           </span>
         </div>
 
@@ -108,7 +110,7 @@ export default function InquiryCard({
         <div>
           <div className="flex items-start justify-between gap-2">
             <h3 className="truncate text-base font-bold text-[var(--agri-text)]" title={productData?.name}>
-              {productData?.name || "Product unavailable"}
+              {productData?.name || t("inquiries.productUnavailable")}
             </h3>
             {productData?.quantity != null && productData?.unit && (
               <span className="shrink-0 inline-flex items-center rounded-md bg-[var(--agri-hover)] px-2 py-0.5 text-xs font-semibold text-[var(--agri-text-secondary)]">
@@ -119,7 +121,7 @@ export default function InquiryCard({
 
           {productData?.unit && (
             <p className="mt-0.5 text-xs font-medium text-[var(--agri-text-muted)]">
-              ₱{price.toLocaleString()} per {productData.unit}
+              {t("inquiries.perUnit", { price: price.toLocaleString(), unit: productData.unit })}
             </p>
           )}
         </div>
@@ -128,7 +130,7 @@ export default function InquiryCard({
         <div className="rounded-xl bg-[#2D6A4F]/5 border border-[#2D6A4F]/10 p-2.5">
           <div className="flex items-baseline justify-between">
             <span className="text-xs font-bold text-[var(--agri-text-secondary)] uppercase tracking-wider">
-              Total Amount
+              {t("inquiries.totalAmount")}
             </span>
             <span className="text-lg font-black text-[#1B4332] dark:text-[var(--agri-brand-light)]">
               ₱{total.toLocaleString()}
@@ -146,12 +148,12 @@ export default function InquiryCard({
             />
             <span className="truncate font-bold text-[var(--agri-text)]">
               {counterparty?.fullname ||
-                (counterparty?.username ? `@${counterparty.username}` : "Unknown")}
+                (counterparty?.username ? `@${counterparty.username}` : t("inquiries.unknownUser"))}
             </span>
             {counterparty?.verified && (
               <span
-                title="Verified Farmer"
-                aria-label="Verified Farmer"
+                title={t("common.verifiedFarmer")}
+                aria-label={t("common.verifiedFarmer")}
                 className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-[var(--agri-brand)] text-sm"
               >
                 <i className="ri-verified-badge-fill" />
@@ -173,7 +175,7 @@ export default function InquiryCard({
           disabled={!inquiry.conversationId}
           onClick={openConversation}
           className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text)] disabled:opacity-40"
-          title="View conversation"
+          title={t("inquiries.viewConversation")}
         >
           <i className="ri-message-3-line text-base" />
           {userRole === "consumer" && status === "accepted" && (
@@ -195,7 +197,7 @@ export default function InquiryCard({
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 ring-1 ring-white" />
               </span>
             )}
-            {updating ? "Updating..." : primaryLabel}
+            {updating ? t("inquiries.updating") : primaryLabel}
           </button>
         )}
       </div>
@@ -203,21 +205,21 @@ export default function InquiryCard({
   );
 }
 
-function getPrimaryLabel(status, userRole, isReviewed) {
+function getPrimaryLabel(status, userRole, isReviewed, t) {
   if (userRole === "consumer") {
-    if (status === "accepted") return "View conversation";
-    if (status === "ongoing") return "Mark complete";
-    if (status === "awaiting_proof") return "Upload proof";
+    if (status === "accepted") return t("inquiries.viewConversation");
+    if (status === "ongoing") return t("inquiries.markComplete");
+    if (status === "awaiting_proof") return t("inquiries.uploadProof");
     if (status === "proof_submitted") return null;
-    if (status === "completed" && !isReviewed) return "Rate";
-    if (status === "completed" && isReviewed) return "View review";
+    if (status === "completed" && !isReviewed) return t("inquiries.rate");
+    if (status === "completed" && isReviewed) return t("inquiries.viewReview");
   }
   if (userRole === "farmer") {
-    if (status === "accepted") return "Start transaction";
-    if (status === "proof_submitted") return "Review proof";
-    if (status === "completed") return "View transaction";
+    if (status === "accepted") return t("inquiries.startTransaction");
+    if (status === "proof_submitted") return t("inquiries.reviewProof");
+    if (status === "completed") return t("inquiries.viewTransaction");
   }
-  return "View";
+  return t("inquiries.view");
 }
 
 function normalizeStatus(status) {

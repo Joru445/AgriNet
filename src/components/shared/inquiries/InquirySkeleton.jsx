@@ -1,4 +1,8 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function InquirySkeleton() {
+  const { t } = useLanguage();
+
   return (
     <div className="overflow-hidden rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)]">
       <div className="overflow-x-auto">
@@ -6,23 +10,23 @@ export default function InquirySkeleton() {
           <thead>
             <tr className="bg-[var(--agri-hover)]">
               <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
-                Product
+                {t("inquiries.table.product")}
               </th>
 
               <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
-                Consumer
+                {t("inquiries.table.consumer")}
               </th>
 
               <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
-                Date
+                {t("inquiries.table.date")}
               </th>
 
               <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
-                Status
+                {t("inquiries.table.status")}
               </th>
 
               <th className="px-5 py-3 text-left text-xs font-semibold text-[var(--agri-text-muted)]">
-                Action
+                {t("inquiries.table.action")}
               </th>
             </tr>
           </thead>

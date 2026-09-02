@@ -2,6 +2,8 @@ import { NavLink, useLocation, useSearchParams } from "react-router-dom";
 import { useUnreadMessages } from "../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../context/UnreadInquiriesContext";
 import { useUnreadReports } from "../context/UnreadReportsContext";
+import { useLanguage } from "../context/LanguageContext";
+import { getOnboardingNavKey } from "../constants/onboardingSteps";
 import useKeyboardVisible from "../hooks/useKeyboardVisible";
 import Badge, { PulsingDot } from "./ui/Badge";
 
@@ -9,6 +11,7 @@ export default function BottomNavigation({ items }) {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const isKeyboardVisible = useKeyboardVisible();
+  const { t } = useLanguage();
   const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
   const { pendingReportsCount, showReportPopup, reportPopupMessage } = useUnreadReports();
@@ -33,6 +36,7 @@ export default function BottomNavigation({ items }) {
               <NavLink
                 to={item.to}
                 end
+                data-onboarding={getOnboardingNavKey(item.to)}
                 className={({ isActive }) =>
                   `relative flex w-full h-full flex-col items-center justify-center rounded-2xl active:bg-[var(--agri-active)] transition-colors duration-150 select-none ${
                     isActive ? "text-[#2D6A4F] dark:text-[var(--agri-brand)] font-bold" : "text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)]"
@@ -51,7 +55,7 @@ export default function BottomNavigation({ items }) {
                     <Badge count={pendingReportsCount} className="!-top-1 !-right-2 min-w-[0.875rem] h-3.5 px-0.5 text-[9px] ring-2 ring-[var(--agri-surface)]" />
                   )}
                 </div>
-                <span className="text-[10px]">{item.label}</span>
+                <span className="text-[10px]">{t(item.labelKey)}</span>
               </NavLink>
 
               {/* Mobile speech bubble — messages */}
@@ -60,7 +64,7 @@ export default function BottomNavigation({ items }) {
                   <div className="relative flex items-center gap-2 whitespace-nowrap rounded-xl bg-[var(--agri-card)] px-3.5 py-2 text-xs font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-xl border border-[var(--agri-border)] ring-1 ring-black/5">
                     <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[var(--agri-card)] rotate-45 border-r border-b border-[var(--agri-border)]" />
                     <PulsingDot className="!h-2 !w-2" />
-                    New messages
+                    {t("sidebar.newMessages")}
                   </div>
                 </div>
               )}
@@ -82,7 +86,7 @@ export default function BottomNavigation({ items }) {
                   <div className="relative flex items-center gap-2 whitespace-nowrap rounded-xl bg-[var(--agri-card)] px-3.5 py-2 text-xs font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-xl border border-[var(--agri-border)] ring-1 ring-black/5">
                     <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[var(--agri-card)] rotate-45 border-r border-b border-[var(--agri-border)]" />
                     <PulsingDot className="!h-2 !w-2" />
-                    {reportPopupMessage || "New report!"}
+                    {reportPopupMessage || t("sidebar.newReport")}
                   </div>
                 </div>
               )}

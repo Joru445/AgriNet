@@ -1,6 +1,7 @@
 import Avatar from "../../common/Avatar";
 import { formatTimestamp } from "../../../utils/date";
 import { useAuth } from "../../../context/AuthContext";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ConversationItem({
   item,
@@ -11,6 +12,7 @@ export default function ConversationItem({
   onUser,
 }) {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const user = searching ? item : item.otherUser;
 
   const targetKey = searching ? `user_${user?.uid}` : item.id;
@@ -99,8 +101,8 @@ export default function ConversationItem({
             </h3>
             {user?.verified && (
               <span
-                title="Verified Farmer"
-                aria-label="Verified Farmer"
+                title={t("common.verifiedFarmer")}
+                aria-label={t("common.verifiedFarmer")}
                 className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-[var(--agri-brand)] text-sm"
               >
                 <i className="ri-verified-badge-fill" />
@@ -108,11 +110,11 @@ export default function ConversationItem({
             )}
             {user?.role === "admin" && (
               <span
-                title="Official Admin"
-                aria-label="Official Admin"
+                title={t("messages.officialAdmin")}
+                aria-label={t("messages.officialAdmin")}
                 className="inline-flex shrink-0 items-center rounded-md bg-purple-500/10 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 dark:text-purple-300 border border-purple-500/20"
               >
-                Admin
+                {t("roles.admin")}
               </span>
             )}
           </div>
@@ -126,7 +128,7 @@ export default function ConversationItem({
 
         {hasDraft ? (
           <p className="text-sm truncate">
-            <span className="text-red-900/75 font-bold">Draft: </span>
+            <span className="text-red-900/75 font-bold">{t("messages.draft")}</span>
             <span className="text-[var(--agri-text-secondary)]">{draft}</span>
           </p>
         ) : searching ? (
@@ -134,23 +136,23 @@ export default function ConversationItem({
         ) : isMine ? (
           <div className="flex items-center justify-between gap-1.5 min-w-0">
             <p className="text-sm text-[var(--agri-text-muted)] truncate flex-1 min-w-0">
-              <span className="text-[var(--agri-text-secondary)] font-medium">You: </span>
-              {item.lastMessage || "Sent a message"}
+              <span className="text-[var(--agri-text-secondary)] font-medium">{t("common.you")}: </span>
+              {item.lastMessage || t("messages.sentMessage")}
             </p>
             <span className="shrink-0 flex items-center gap-0.5 text-[11px] font-bold">
               {isSeen ? (
                 <span
                   className="text-[var(--agri-text-muted)] flex items-center gap-0.5"
-                  title="Seen"
+                  title={t("messages.seen")}
                 >
-                  Seen
+                  {t("messages.seen")}
                 </span>
               ) : (
                 <span
                   className="text-[var(--agri-text-muted)] flex items-center gap-0.5 font-semibold"
-                  title="Sent"
+                  title={t("messages.sent")}
                 >
-                  Sent
+                  {t("messages.sent")}
                 </span>
               )}
             </span>
@@ -161,7 +163,7 @@ export default function ConversationItem({
               item.unreadCount > 0 ? "font-bold text-[var(--agri-text)]" : "text-[var(--agri-text-muted)]"
             }`}
           >
-            {item.lastMessage || "Start a conversation"}
+            {item.lastMessage || t("messages.startConversation")}
           </p>
         )}
       </div>

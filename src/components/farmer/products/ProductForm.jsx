@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
+import { useLanguage } from "../../../context/LanguageContext";
+
 const categories = [
   "Vegetables",
   "Fruits",
@@ -16,16 +18,32 @@ const units = ["kg", "g", "pcs", "bundle", "pack", "box", "sack"];
 
 const standardDurations = ["0", "1", "2", "3", "6", "12", "24"];
 
-const durationOptions = [
-  { value: "0", label: "No limit (Until out of stock)" },
-  { value: "1", label: "1 hour" },
-  { value: "2", label: "2 hours" },
-  { value: "3", label: "3 hours" },
-  { value: "6", label: "6 hours" },
-  { value: "12", label: "12 hours" },
-  { value: "24", label: "24 hours (1 day)" },
-  { value: "custom", label: "Set custom hours..." },
-];
+function getDurationOptions(t) {
+  return [
+    { value: "0", label: t("products.noLimit") },
+    { value: "1", label: t("products.durationHours.1") },
+    { value: "2", label: t("products.durationHours.2") },
+    { value: "3", label: t("products.durationHours.3") },
+    { value: "6", label: t("products.durationHours.6") },
+    { value: "12", label: t("products.durationHours.12") },
+    { value: "24", label: t("products.durationHours.24") },
+    { value: "custom", label: t("products.setCustom") },
+  ];
+}
+
+function getCategories(t) {
+  return categories.map((cat) => ({
+    value: cat,
+    label: t(`products.categories.${cat.toLowerCase()}`),
+  }));
+}
+
+function getUnits(t) {
+  return units.map((u) => ({
+    value: u,
+    label: t(`products.units.${u}`),
+  }));
+}
 
 function CustomDropdown({
   label,
@@ -158,6 +176,7 @@ function CustomDropdown({
 }
 
 export default function ProductForm({ form, onChange }) {
+  const { t } = useLanguage();
   const originalPriceNum = Number(form.originalPrice);
   const priceNum = Number(form.price);
   const hasDiscount =
@@ -278,14 +297,14 @@ export default function ProductForm({ form, onChange }) {
       {/* 1. Product Name - Full Width */}
       <div className="col-span-1 sm:col-span-2 order-1">
         <label className="text-sm font-semibold text-[var(--agri-text)] block mb-2">
-          Product Name
+          {t("products.productName")}
         </label>
 
         <input
           name="name"
           value={form.name}
           onChange={onChange}
-          placeholder="e.g. Fresh Red Tomatoes"
+          placeholder={t("products.namePlaceholder")}
           className="w-full border border-[var(--agri-border)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
         />
       </div>
@@ -293,10 +312,10 @@ export default function ProductForm({ form, onChange }) {
       {/* 2. Category Custom Dropdown */}
       <div className="order-2 sm:order-2">
         <CustomDropdown
-          label="Category"
+          label={t("products.category")}
           value={form.category}
-          options={categories}
-          placeholder="Select category"
+          options={getCategories(t)}
+          placeholder={t("products.selectCategory")}
           onChange={(val) =>
             onChange({
               target: {
@@ -311,10 +330,10 @@ export default function ProductForm({ form, onChange }) {
       {/* 3. Unit Custom Dropdown */}
       <div className="order-3 sm:order-3">
         <CustomDropdown
-          label="Unit"
+          label={t("products.unit")}
           value={form.unit}
-          options={units}
-          placeholder="Select unit"
+          options={getUnits(t)}
+          placeholder={t("products.selectUnit")}
           onChange={(val) =>
             onChange({
               target: {
@@ -332,10 +351,10 @@ export default function ProductForm({ form, onChange }) {
       <div className="order-4 sm:order-6">
         <div className="flex items-center justify-between mb-2">
           <label className="text-sm font-semibold text-[var(--agri-text)]">
-            Listing Duration
+            {t("products.listingDuration")}
           </label>
           <span className="text-xs text-[var(--agri-text-muted)] font-medium">
-            Auto-disappear
+            {t("products.autoDisappear")}
           </span>
         </div>
 
@@ -348,8 +367,8 @@ export default function ProductForm({ form, onChange }) {
                   ? "0"
                   : currentDurationStr
             }
-            options={durationOptions}
-            placeholder="Select duration"
+            options={getDurationOptions(t)}
+            placeholder={t("products.selectDuration")}
             onChange={handleDurationSelectChange}
           />
 
@@ -372,8 +391,8 @@ export default function ProductForm({ form, onChange }) {
                 <CustomDropdown
                   value={customUnit}
                   options={[
-                    { value: "hours", label: "Hours" },
-                    { value: "minutes", label: "Minutes" },
+                    { value: "hours", label: t("products.hours") },
+                    { value: "minutes", label: t("products.minutes") },
                   ]}
                   onChange={(unit) => handleCustomChange(customValue, unit)}
                 />
@@ -387,7 +406,7 @@ export default function ProductForm({ form, onChange }) {
       <div className="order-5 sm:order-4">
         <div className="flex items-center justify-between mb-2">
           <label className="text-sm font-semibold text-[var(--agri-text)]">
-            Selling Price <span className="text-red-500">*</span>
+            {t("products.sellingPrice")} <span className="text-red-500">*</span>
           </label>
           {hasDiscount && (
             <span className="inline-flex items-center rounded-md bg-[#FF2D55] px-2 py-0.5 text-xs font-bold text-white shadow-2xs">
@@ -417,9 +436,9 @@ export default function ProductForm({ form, onChange }) {
       {/* 6. Original Price (For Slash Discount) */}
       <div className="order-6 sm:order-5">
         <label className="text-sm font-semibold text-[var(--agri-text)] block mb-2">
-          Original Price{" "}
+          {t("products.originalPrice")}{" "}
           <span className="text-xs text-[var(--agri-text-muted)] font-normal">
-            (Optional for discount slash)
+            {t("products.optionalDiscount")}
           </span>
         </label>
 
@@ -446,7 +465,7 @@ export default function ProductForm({ form, onChange }) {
           - Mobile (order-7): Below original price */}
       <div className="order-7 sm:order-7">
         <label className="text-sm font-semibold text-[var(--agri-text)] block mb-2">
-          Stock Quantity
+          {t("products.stockQuantity")}
         </label>
 
         <input
@@ -478,7 +497,7 @@ export default function ProductForm({ form, onChange }) {
             className="h-4 w-4 rounded accent-[#2D6A4F]"
           />
           <span className="text-sm font-semibold text-[var(--agri-text)]">
-            Available for sale
+            {t("products.availableForSale")}
           </span>
         </label>
       </div>

@@ -10,7 +10,6 @@
  * This SW handles push notifications only.
  */
 
-// eslint-disable-next-line no-undef
 const sw = self;
 
 sw.addEventListener("push", (event) => {

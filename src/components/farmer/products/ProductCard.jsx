@@ -5,7 +5,7 @@ import { getFormatPrice, getDiscount, hasProductDiscount } from "../../../utils/
 import { useLiveRemainingTime } from "../../../utils/productExpiration";
 
 import { CATEGORY_ICONS } from "../../../utils/categoryIcons";
-import { applyTransform, PRODUCT_THUMB_TF, THUMB_SM_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
+import { applyTransform, PRODUCT_THUMB_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
 
 export default function ProductCard({ product, view, onEdit, onDelete }) {
   const [imgError, setImgError] = useState(false);

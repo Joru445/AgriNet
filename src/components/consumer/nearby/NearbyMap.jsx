@@ -2,10 +2,12 @@ import { farmerIcon, userIcon } from "../../../constants/MapIcons";
 
 import useStartConversation from "../../../hooks/useStartConversation";
 
+import { useLanguage } from "../../../context/LanguageContext";
 import Map from "../../map/Map";
 import FarmerPopup from "./FarmerPopup";
 
 export default function NearbyMap({ userLocation, farmers, maxDistance }) {
+  const { t } = useLanguage();
   const startConversation = useStartConversation();
   const lucenaCenter = { lat: 13.9411, lng: 121.6243 };
 
@@ -31,7 +33,7 @@ export default function NearbyMap({ userLocation, farmers, maxDistance }) {
                 lat: userLocation.lat,
                 lng: userLocation.lng,
                 icon: userIcon,
-                popup: "You are here (Consumer Location)",
+                popup: t("nearby.youAreHere"),
               },
             ]
           : []),

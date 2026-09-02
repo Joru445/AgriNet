@@ -5,6 +5,7 @@ import { login } from "../services/login.service";
 import { getRoleHome } from "../utils/routes";
 import { validateLoginForm } from "../utils/validators";
 import { showToast } from "../utils/toast";
+import { t } from "../i18n";
 
 const EMPTY_ERRORS = { email: "", password: "", general: "" };
 
@@ -43,7 +44,7 @@ export function useLoginForm() {
       if (!profile?.role) {
         setErrors({
           ...EMPTY_ERRORS,
-          general: "Unable to determine your account role.",
+          general: t("auth.errors.accountRole"),
         });
         return;
       }
@@ -59,7 +60,7 @@ export function useLoginForm() {
       );
 
       if (!phoneVerified) {
-        showToast.info("Please verify your phone number to access your account.");
+        showToast.info(t("auth.errors.verifyPhone"));
         navigate("/verify-account", { replace: true });
         return;
       }
@@ -97,21 +98,21 @@ export function useLoginForm() {
         case "auth/invalid-credential":
           setErrors({
             ...EMPTY_ERRORS,
-            password: "Invalid email or password.",
+            password: t("auth.errors.invalidCredentials"),
           });
           break;
 
         case "auth/too-many-requests":
           setErrors({
             ...EMPTY_ERRORS,
-            password: "Too many login attempts. Please try again later.",
+            password: t("auth.errors.tooManyAttempts"),
           });
           break;
 
         default:
           setErrors({
             ...EMPTY_ERRORS,
-            general: "Unable to sign in. Please try again.",
+            general: t("auth.errors.signInFailed"),
           });
       }
     } finally {

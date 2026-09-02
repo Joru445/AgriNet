@@ -86,7 +86,13 @@ export default function useInquiries() {
     );
 
     return unsubscribe;
-  }, [profile?.uid, profile?.role]);
+  }, [
+    profile?.uid,
+    profile?.role,
+    profile?.completedDeals,
+    profile?.totalDeals,
+    profile?.cancelledDeals,
+  ]);
 
   /*
    * --------------------------------------------------

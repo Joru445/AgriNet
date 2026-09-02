@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 
+import { useLanguage } from "../../../context/LanguageContext";
 import ProductCard from "../../common/ProductCard"
 
 export default function RelevantProductsSection({ products = [] }) {
+  const { t } = useLanguage();
   if (!products.length) return null;
 
   return (
@@ -11,11 +13,11 @@ export default function RelevantProductsSection({ products = [] }) {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">
-            Recommended for You
+            {t("consumer.recommended")}
           </h2>
 
           <p className="text-sm text-gray-500 mt-1">
-            Products you might be interested in
+            {t("consumer.recommendedSubtitle")}
           </p>
         </div>
 
@@ -23,7 +25,7 @@ export default function RelevantProductsSection({ products = [] }) {
           to="/marketplace?sort=relevant"
           className="shrink-0 text-xs sm:text-sm font-bold text-[#2D6A4F] hover:text-[#1B4332] dark:text-[var(--agri-brand-light)] transition-colors"
         >
-          View all
+          {t("consumer.viewAll")}
           <i className="ri-arrow-right-line ml-1" />
         </Link>
       </div>

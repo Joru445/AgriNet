@@ -222,13 +222,13 @@ export default function useProfile(profile) {
           rating = await loadStats(profile.uid);
         }
 
-        setForm((prev) => ({
+        setForm({
           ...user,
           ...farmer,
           rating,
           profilePicture: user.profilePicture || "",
           profilePictureId: user.profilePictureId || "",
-        }));
+        });
 
         // Sync originals
         originalPictureRef.current = user.profilePicture || "";

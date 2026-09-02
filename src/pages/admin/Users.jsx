@@ -12,9 +12,11 @@ import UserEditModal from "../../components/admin/users/UserEditModal";
 import { InlineError } from "../../components/ui/ErrorState";
 
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function Users() {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const {
     users,
@@ -165,27 +167,27 @@ export default function Users() {
 
         <div className="grid grid-cols-2 gap-4 pb-6">
           <StatCard
-            title="Total Users"
+            title={t("admin.totalUsers")}
             value={stats.total}
-            description="Registered users"
+            description={t("admin.registeredUsers")}
           />
 
           <StatCard
-            title="Farmers"
+            title={t("admin.farmers")}
             value={stats.farmers}
-            description="Registered farmers"
+            description={t("admin.registeredFarmers")}
           />
 
           <StatCard
-            title="Consumers"
+            title={t("admin.consumers")}
             value={stats.consumers}
-            description="Registered consumers"
+            description={t("admin.registeredConsumers")}
           />
 
           <StatCard
-            title="Suspended"
+            title={t("adminUser.suspended")}
             value={stats.suspended}
-            description="Suspended users"
+            description={t("admin.suspended")}
           />
         </div>
 

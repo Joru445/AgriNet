@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 
+import { useLanguage } from "../../../context/LanguageContext";
 import ProductCard from "../../common/ProductCard";
 
 export default function ProductGrid({ products, hasActiveFilter }) {
+  const { t } = useLanguage();
   if (!products.length) {
     return null;
   }
@@ -15,7 +17,7 @@ export default function ProductGrid({ products, hasActiveFilter }) {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-lg sm:text-xl font-black text-[#1B4332]">
-                All Products
+                {t("consumer.allProducts")}
               </h2>
             </div>
           </div>
@@ -24,7 +26,7 @@ export default function ProductGrid({ products, hasActiveFilter }) {
             to="?sort=newest"
             className="shrink-0 text-xs sm:text-sm font-bold text-[#2D6A4F] transition-colors hover:text-[#1B4332]"
           >
-            View all
+            {t("consumer.viewAll")}
             <i className="ri-arrow-right-line ml-1" />
           </Link>
         </div>

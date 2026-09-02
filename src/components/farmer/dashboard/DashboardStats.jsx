@@ -1,6 +1,8 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import StatCard from "../../common/StatCard";
 
 export default function DashboardStats({ stats = {}, loading = false }) {
+  const { t } = useLanguage();
   if (loading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 animate-pulse">
@@ -21,30 +23,30 @@ export default function DashboardStats({ stats = {}, loading = false }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard
-        title="Products"
+        title={t("farmer.statProducts")}
         value={stats.totalProducts ?? 0}
-        description="Total of products you have."
+        description={t("farmer.statProductsDesc")}
         to="/farmer/products"
       />
 
       <StatCard
-        title="Reviews"
+        title={t("farmer.statReviews")}
         value={stats.reviewCount ?? 0}
-        description="Your profile's review count."
+        description={t("farmer.statReviewsDesc")}
         to="/farmer/reviews"
       />
 
       <StatCard
-        title="Average Rating"
+        title={t("farmer.statAvgRating")}
         value={(stats.averageRating ?? 0).toFixed(1)}
-        description="Your average rating."
+        description={t("farmer.statAvgRatingDesc")}
         to="/farmer/reviews"
       />
 
       <StatCard
-        title="Unread Messages"
+        title={t("farmer.statUnreadMessages")}
         value={stats.unreadMessages ?? 0}
-        description="Messages you haven't read"
+        description={t("farmer.statUnreadMessagesDesc")}
         to="/farmer/messages"
       />
     </div>

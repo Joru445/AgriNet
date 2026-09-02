@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function TransactionProofUpload({
   selectedFile,
@@ -10,6 +11,7 @@ export default function TransactionProofUpload({
   onSubmit,
 }) {
   const inputRef = useRef(null);
+  const { t } = useLanguage();
 
   function handleChange(event) {
     const file = event.target.files?.[0];
@@ -25,11 +27,11 @@ export default function TransactionProofUpload({
     <section className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-5 shadow-sm">
       <div>
         <h2 className="font-semibold text-[var(--agri-text)]">
-          Upload transaction proof
+          {t("transaction.uploadTitle")}
         </h2>
 
         <p className="mt-1 text-sm leading-6 text-[var(--agri-text-muted)]">
-          Upload a clear photo showing the product you received.
+          {t("transaction.uploadBody")}
         </p>
       </div>
 
@@ -40,11 +42,11 @@ export default function TransactionProofUpload({
 
             <div>
               <p className="text-sm font-semibold text-red-700 dark:text-red-300">
-                Previous proof was rejected.
+                {t("transaction.rejectedTitle")}
               </p>
 
               <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                Please upload another photo.
+                {t("transaction.rejectedBody")}
               </p>
             </div>
           </div>
@@ -79,11 +81,11 @@ export default function TransactionProofUpload({
           <i className="ri-image-add-line text-3xl" />
 
           <span className="mt-3 text-sm font-semibold text-[var(--agri-text-secondary)]">
-            Upload proof image
+            {t("transaction.uploadProofImage")}
           </span>
 
           <span className="mt-1 text-xs text-[var(--agri-text-muted)]">
-            JPG, PNG, or WEBP up to 10 MB
+            {t("transaction.fileFormatHint")}
           </span>
         </button>
       ) : (
@@ -91,7 +93,7 @@ export default function TransactionProofUpload({
           <div className="overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)]">
             <img
               src={previewUrl}
-              alt="Transaction proof preview"
+              alt={t("transaction.proofPreviewAlt")}
               className="max-h-[500px] w-full object-contain"
             />
           </div>
@@ -108,7 +110,7 @@ export default function TransactionProofUpload({
             disabled={processing}
             className="mt-3 text-sm font-semibold text-red-600 hover:text-red-700 disabled:opacity-50"
           >
-            Remove image
+            {t("transaction.removeImage")}
           </button>
         </div>
       )}

@@ -1,3 +1,5 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function UserFilters({
   search,
   onSearchChange,
@@ -8,6 +10,8 @@ export default function UserFilters({
   sortBy = "default",
   onSortByChange,
 }) {
+  const { t } = useLanguage();
+
   return (
     <div className="mb-6 rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-4.5 shadow-md shadow-black/5">
       <div className="flex flex-col gap-3 lg:flex-row">
@@ -18,7 +22,7 @@ export default function UserFilters({
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search by name, username, or email..."
+            placeholder={t("adminUser.searchPlaceholder")}
             className="w-full rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 py-2.5 pl-10 pr-4 text-sm font-medium text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/10"
           />
         </div>
@@ -28,9 +32,9 @@ export default function UserFilters({
           onChange={(e) => onSortByChange(e.target.value)}
           className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/10 cursor-pointer"
         >
-          <option value="default">Sort: Default</option>
-          <option value="name-asc">Alphabetical (A - Z)</option>
-          <option value="name-desc">Alphabetical (Z - A)</option>
+          <option value="default">{t("adminUser.sortDefault")}</option>
+          <option value="name-asc">{t("adminUser.sortAz")}</option>
+          <option value="name-desc">{t("adminUser.sortZa")}</option>
         </select>
 
         <select
@@ -38,10 +42,10 @@ export default function UserFilters({
           onChange={(e) => onRoleChange(e.target.value)}
           className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/10 cursor-pointer"
         >
-          <option value="all">All Roles</option>
-          <option value="consumer">Consumers</option>
-          <option value="farmer">Farmers</option>
-          <option value="admin">Admins</option>
+          <option value="all">{t("adminUser.allRoles")}</option>
+          <option value="consumer">{t("roles.consumer")}</option>
+          <option value="farmer">{t("roles.farmer")}</option>
+          <option value="admin">{t("roles.admin")}</option>
         </select>
 
         <select
@@ -49,9 +53,9 @@ export default function UserFilters({
           onChange={(e) => onStatusChange(e.target.value)}
           className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/10 cursor-pointer"
         >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
+          <option value="all">{t("adminUser.allStatus")}</option>
+          <option value="active">{t("adminStatus.active")}</option>
+          <option value="suspended">{t("adminStatus.suspended")}</option>
         </select>
       </div>
     </div>

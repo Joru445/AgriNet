@@ -94,6 +94,19 @@ export function getMePath(role) {
   }
 }
 
+export function getSettingsPath(role) {
+  switch (role) {
+    case "admin":
+      return "/admin/settings";
+
+    case "farmer":
+      return "/farmer/settings";
+
+    default:
+      return "/settings";
+  }
+}
+
 /**
  * Get the store profile path for a given user ID.
  * Consumers/admins see /profile/:uid, farmers see /farmer/profile/:uid.

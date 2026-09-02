@@ -236,6 +236,7 @@ export function UnreadReportsProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useUnreadReports() {
   return useContext(UnreadReportsContext);
 }

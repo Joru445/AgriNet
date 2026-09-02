@@ -1,24 +1,27 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function InquiryTabs({ activeTab, onChange }) {
+  const { t } = useLanguage();
   const tabs = [
     {
       id: "all",
-      label: "All",
+      label: t("inquiries.status.all"),
     },
     {
       id: "accepted",
-      label: "Accepted",
+      label: t("inquiries.status.accepted"),
     },
     {
       id: "ongoing",
-      label: "Ongoing",
+      label: t("inquiries.status.ongoing"),
     },
     {
       id: "completed",
-      label: "Completed",
+      label: t("inquiries.status.completed"),
     },
     {
       id: "cancelled",
-      label: "Cancelled",
+      label: t("inquiries.status.cancelled"),
     },
   ];
 

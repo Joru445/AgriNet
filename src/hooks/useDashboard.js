@@ -91,7 +91,7 @@ export default function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [profile?.uid]);
+  }, [profile?.uid, profile?.rating, profile?.reviewCount]);
 
   useEffect(() => {
     loadDashboard();

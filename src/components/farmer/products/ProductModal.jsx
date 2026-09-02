@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { useLanguage } from "../../../context/LanguageContext";
 import ProductForm from "./ProductForm";
 import ProductImageUploader from "./ProductImageUploader";
 
@@ -24,6 +25,7 @@ export default function ProductModal({
 }
 
 function ProductModalContent({ product, saving, onClose, onSubmit }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState(() => ({
     ...initialForm,
     ...product,
@@ -79,10 +81,10 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-[#1B4332]">
-                {product ? "Edit Product" : "Add Product"}
+                {product ? t("products.editProductTitle") : t("products.addProductTitle")}
               </h2>
               <p className="text-xs text-[#2D6A4F]/80">
-                {product ? "Update your product details" : "List a new agricultural product"}
+                {product ? t("products.updateDetails") : t("products.listNew")}
               </p>
             </div>
           </div>
@@ -112,7 +114,7 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
             onClick={onClose}
             className="px-5 py-2.5 rounded-xl border border-[var(--agri-border)] hover:bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] font-semibold text-sm transition-colors cursor-pointer"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
 
           <button
@@ -125,7 +127,7 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
                 : "bg-[#2D6A4F] hover:bg-[#1B4332] text-white cursor-pointer shadow-sm"
             }`}
           >
-            {saving ? "Saving..." : product ? "Save Changes" : "Create Product"}
+            {saving ? t("products.saving") : product ? t("products.saveChanges") : t("products.createProduct")}
           </button>
         </div>
       </div>

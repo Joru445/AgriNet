@@ -18,7 +18,7 @@ const DEFAULT_FILTERS = {
   minPrice: 0,
   maxPrice: 0,
   rating: 0,
-  sort: "newest",
+  sort: "relevant",
   showUnavailable: false,
 };
 
@@ -30,13 +30,13 @@ export default function useMarketplace() {
   const [products, setProducts] = useState(() => pageCache.get(CACHE_KEY) ?? []);
   const [hasMore, setHasMore] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
   const cursorRef = useRef(null);
-  const [, setTick] = useState(0);
 
   // Auto-tick every second so expired listings disappear immediately without refresh
   useEffect(() => {
     const timer = setInterval(() => {
-      setTick((t) => (t + 1) % 1000000);
+      setNow(Date.now());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
@@ -210,6 +210,40 @@ export default function useMarketplace() {
       case "rating":
         data.sort((a, b) => (b.productRating ?? 0) - (a.productRating ?? 0));
         break;
+      case "relevant":
+        /*
+         * Relevance = rating (0-40) + distance (0-30) + freshness (0-30).
+         * Mirrors the home page's relevant products model.
+         */
+        data = data
+          .map((product) => {
+            const rating = Number(product.productRating ?? 0);
+
+            const createdAt =
+              product.createdAt?.toDate?.()?.getTime?.() ??
+              (product.createdAt?.seconds ?? 0) * 1000;
+
+            const ageDays = Math.max(
+              0,
+              (now - createdAt) / (1000 * 60 * 60 * 24),
+            );
+
+            const ratingScore = Math.min(rating / 5, 1) * 40;
+
+            const distanceScore =
+              product.distance != null
+                ? Math.max(0, 1 - product.distance / 20) * 30
+                : 0;
+
+            const freshnessScore = Math.max(0, 1 - ageDays / 30) * 30;
+
+            return {
+              ...product,
+              relevanceScore: ratingScore + distanceScore + freshnessScore,
+            };
+          })
+          .sort((a, b) => b.relevanceScore - a.relevanceScore);
+        break;
       default:
         data.sort(
           (a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0),
@@ -217,7 +251,7 @@ export default function useMarketplace() {
     }
 
     return data;
-  }, [marketplaceProducts, filters, userLocation]);
+  }, [marketplaceProducts, filters, userLocation, now]);
 
   const totalPages = Math.max(
     1,

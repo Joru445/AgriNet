@@ -1,4 +1,5 @@
 import useReviews from "../../hooks/useReviews";
+import { useLanguage } from "../../context/LanguageContext";
 
 import ReviewSummary from "../../components/farmer/reviews/ReviewSummary";
 import RatingDistribution from "../../components/farmer/reviews/RatingDistribution";
@@ -8,6 +9,7 @@ import ReviewSkeleton from "../../components/farmer/reviews/ReviewSkeleton";
 import SkeletonBox from "../../components/common/SkeletonBox";
 
 export default function Reviews() {
+  const { t } = useLanguage();
   const {
     loading,
 
@@ -23,10 +25,10 @@ export default function Reviews() {
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-16 md:pb-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">Reviews</h1>
+        <h1 className="text-2xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">{t("farmer.reviewsTitle")}</h1>
 
         <p className="mt-1 text-sm text-[var(--agri-text-muted)]">
-          See what customers are saying about your products.
+          {t("farmer.reviewsSubtitle")}
         </p>
       </div>
 

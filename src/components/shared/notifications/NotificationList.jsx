@@ -1,13 +1,16 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import NotificationItem from "./NotificationItem";
 
 export default function NotificationList({
   notifications = [],
   loading = false,
 }) {
+  const { t } = useLanguage();
+
   if (loading) {
     return (
       <div className="py-12 text-center text-sm text-[var(--agri-text-muted)]">
-        Loading notifications...
+        {t("notifications.loading")}
       </div>
     );
   }
@@ -20,10 +23,10 @@ export default function NotificationList({
         </div>
 
         <h2 className="mt-4 font-semibold text-[var(--agri-text)]">
-          No notifications yet
+          {t("notifications.emptyTitle")}
         </h2>
 
-        <p className="mt-1 text-sm text-[var(--agri-text-muted)]">You're all caught up.</p>
+        <p className="mt-1 text-sm text-[var(--agri-text-muted)]">{t("notifications.emptySubtitle")}</p>
       </div>
     );
   }

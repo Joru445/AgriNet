@@ -1,6 +1,8 @@
-function formatRelativeTime(timestamp) {
+import { useLanguage } from "../../context/LanguageContext";
+
+function formatRelativeTime(timestamp, t) {
   if (!timestamp) {
-    return "Recently";
+    return t("admin.recentlyLabel");
   }
 
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -8,31 +10,31 @@ function formatRelativeTime(timestamp) {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
 
   if (seconds < 60) {
-    return "Just now";
+    return t("time.justNow");
   }
 
   const minutes = Math.floor(seconds / 60);
 
   if (minutes < 60) {
-    return `${minutes}m ago`;
+    return t("time.minAgo", { count: minutes });
   }
 
   const hours = Math.floor(minutes / 60);
 
   if (hours < 24) {
-    return `${hours}h ago`;
+    return t("time.hrAgo", { count: hours });
   }
 
   const days = Math.floor(hours / 24);
 
   if (days < 7) {
-    return `${days}d ago`;
+    return t("time.dayAgo", { count: days });
   }
 
   return date.toLocaleDateString();
 }
 
-function Activity({ icon, title, description, timestamp }) {
+function Activity({ icon, title, description, timestamp, t }) {
   return (
     <div className="flex items-start gap-3 p-4">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#2D6A4F]/10">
@@ -46,7 +48,7 @@ function Activity({ icon, title, description, timestamp }) {
       </div>
 
       <span className="shrink-0 text-xs text-[var(--agri-text-muted)]">
-        {formatRelativeTime(timestamp)}
+        {formatRelativeTime(timestamp, t)}
       </span>
     </div>
   );
@@ -57,30 +59,32 @@ export default function RecentActivity({
   products = [],
   inquiries = [],
 }) {
+  const { t } = useLanguage();
+
   const activities = [
     ...users.map((user) => ({
       type: "user",
-      title: "New user registered",
+      title: t("admin.newUserRegistered"),
       description:
         user.fullname ||
         user.username ||
         user.email ||
-        "A new user joined AgriNet",
+        t("admin.newUserJoined"),
       timestamp: user.createdAt,
     })),
 
     ...products.map((product) => ({
       type: "product",
-      title: "New product listed",
-      description: product.name || "A new product was listed",
+      title: t("admin.newProductListed"),
+      description: product.name || t("admin.newProductWasListed"),
       timestamp: product.createdAt,
     })),
 
     ...inquiries.map((inquiry) => ({
       type: "inquiry",
-      title: "New inquiry created",
+      title: t("admin.newInquiryCreated"),
       description:
-        inquiry.productSnapshot?.name || "A new product inquiry was created",
+        inquiry.productSnapshot?.name || t("admin.newInquiryDescription"),
       timestamp: inquiry.createdAt,
     })),
   ]
@@ -102,10 +106,10 @@ export default function RecentActivity({
     <section className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-lg shadow-black/5 overflow-hidden">
       <div className="flex items-center justify-between border-b border-[var(--agri-border-subtle)] p-5 bg-[var(--agri-hover)]/50">
         <div>
-          <h2 className="text-base font-bold text-[var(--agri-text)]">Recent Activity</h2>
+          <h2 className="text-base font-bold text-[var(--agri-text)]">{t("admin.recentActivity")}</h2>
 
           <p className="mt-0.5 text-xs text-[var(--agri-text-muted)] font-medium">
-            Latest activity on AgriNet
+            {t("admin.latestActivity")}
           </p>
         </div>
 
@@ -116,7 +120,7 @@ export default function RecentActivity({
 
       {activities.length === 0 ? (
         <div className="p-8 text-center text-sm font-medium text-[var(--agri-text-muted)]">
-          No recent activity.
+          {t("admin.noRecentActivity")}
         </div>
       ) : (
         <div className="divide-y divide-[var(--agri-border-subtle)]">
@@ -142,6 +146,7 @@ export default function RecentActivity({
                 title={activity.title}
                 description={activity.description}
                 timestamp={activity.timestamp}
+                t={t}
               />
             );
           })}

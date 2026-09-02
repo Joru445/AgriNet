@@ -20,7 +20,9 @@ try {
       });
     }
   }
-} catch (_) {}
+} catch {
+  /* noop */
+}
 
 function persistToSession() {
   try {
@@ -31,7 +33,9 @@ function persistToSession() {
       obj[uid] = data;
     });
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(obj));
-  } catch (_) {}
+  } catch {
+    /* noop */
+  }
 }
 
 export function getCachedUserProfile(uid) {

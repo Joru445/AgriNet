@@ -2,14 +2,16 @@ import { Link } from "react-router-dom";
 
 import logo from "../../assets/favicon.ico";
 import landscapeBg from "../../assets/img/landscape.jpg";
-
-const STAGES = [
-  { label: "Account", icon: "ri-user-line" },
-  { label: "Security", icon: "ri-shield-check-line" },
-  { label: "Profile", icon: "ri-map-pin-line" },
-];
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function SidePanel({ step = null }) {
+  const { t } = useLanguage();
+
+  const STAGES = [
+    { labelKey: "auth.sidePanel.stageAccount", icon: "ri-user-line" },
+    { labelKey: "auth.sidePanel.stageSecurity", icon: "ri-shield-check-line" },
+    { labelKey: "auth.sidePanel.stageProfile", icon: "ri-map-pin-line" },
+  ];
   return (
     <div className="hidden lg:flex lg:w-5/12 h-screen relative overflow-hidden">
       {/* Background image */}
@@ -46,21 +48,20 @@ export default function SidePanel({ step = null }) {
             <div className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-sm">
               <span className="w-2 h-2 rounded-full bg-[#74C69D] animate-pulse" />
               <span className="text-xs font-medium text-green-100/90 tracking-wide">
-                Supporting local agriculture
+                {t("auth.sidePanel.supportingAgri")}
               </span>
             </div>
 
             <p className="text-xs font-semibold tracking-[0.2em] text-[#F2C265] uppercase mb-3 drop-shadow">
-              Growing together
+              {t("auth.sidePanel.growingTogether")}
             </p>
 
             <h2 className="text-3xl font-bold text-white leading-tight mb-4 drop-shadow-md">
-              Every great harvest<br />starts with a seed.
+              {t("auth.sidePanel.tagline")}
             </h2>
 
             <p className="text-sm leading-6 text-green-100/75 mb-8">
-              Connect with farmers in Lucena and discover fresh produce directly
-              from the source. Join a thriving community built on trust and sustainability.
+              {t("auth.sidePanel.description")}
             </p>
 
 
@@ -74,7 +75,7 @@ export default function SidePanel({ step = null }) {
                   const current = step === stepNumber;
 
                   return (
-                    <div key={stage.label} className="flex items-center gap-4 relative">
+                    <div key={stage.labelKey} className="flex items-center gap-4 relative">
                       {/* connector line */}
                       {i < STAGES.length - 1 && (
                         <div
@@ -94,10 +95,10 @@ export default function SidePanel({ step = null }) {
 
                       <div className="flex flex-col">
                         <span className={`text-sm font-semibold ${active ? "text-white" : "text-white/40"}`}>
-                          {stage.label}
+                          {t(stage.labelKey)}
                         </span>
                         {current && (
-                          <span className="text-[10px] text-[#F2C265]/80">Current step</span>
+                          <span className="text-[10px] text-[#F2C265]/80">{t("auth.sidePanel.currentStep")}</span>
                         )}
                       </div>
                     </div>
@@ -113,7 +114,7 @@ export default function SidePanel({ step = null }) {
           <p className="text-xs text-green-100/35">© 2026 AgriNet Lucena</p>
           <div className="flex items-center gap-1.5">
             <i className="ri-leaf-line text-[#74C69D]/50 text-sm" />
-            <span className="text-[10px] text-green-100/30">Farm to Table</span>
+            <span className="text-[10px] text-green-100/30">{t("auth.sidePanel.farmToTable")}</span>
           </div>
         </div>
       </div>

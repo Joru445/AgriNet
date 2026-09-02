@@ -12,10 +12,10 @@ import {
 import {
   normalizePhilippinePhoneNumber,
   formatPhilippinePhoneNumber,
-  isValidPhilippinePhoneNumber,
 } from "../../utils/phone";
 import { getRoleHome } from "../../utils/routes";
 import { showToast } from "../../utils/toast";
+import { useLanguage } from "../../context/LanguageContext";
 
 import logo from "../../assets/favicon.ico";
 import landscapeBg from "../../assets/img/landscape.jpg";
@@ -23,6 +23,7 @@ import SidePanel from "../../components/auth/SidePanel";
 import Loading from "../../components/Loading";
 
 export default function VerifyAccount() {
+  const { t } = useLanguage();
   const {
     user,
     profile,
@@ -67,7 +68,7 @@ export default function VerifyAccount() {
     if (!phoneInput && profile?.phone) {
       setPhoneInput(profile.phone);
     }
-  }, [profile?.phone]);
+  }, [profile?.phone, phoneInput]);
 
   // Resend OTP Cooldown timer
   useEffect(() => {
@@ -100,7 +101,9 @@ export default function VerifyAccount() {
       if (window.recaptchaVerifier) {
         try {
           window.recaptchaVerifier.clear();
-        } catch (_) {}
+        } catch {
+          /* noop */
+        }
         window.recaptchaVerifier = null;
       }
     };
@@ -137,7 +140,7 @@ export default function VerifyAccount() {
 
     const normalized = normalizePhilippinePhoneNumber(phoneInput);
     if (!normalized) {
-      setPhoneError("Please enter a valid Philippine mobile number (e.g. 09XXXXXXXXX).");
+      setPhoneError(t("auth.errors.phoneInline"));
       return;
     }
 
@@ -146,7 +149,7 @@ export default function VerifyAccount() {
 
       const recaptchaVerifier = initPhoneRecaptcha("recaptcha-container");
       if (!recaptchaVerifier) {
-        throw new Error("Unable to initialize reCAPTCHA. Please refresh the page and try again.");
+        throw new Error(t("auth.errors.recaptcha"));
       }
 
       const confirmResult = await sendPhoneVerificationOtp(
@@ -158,25 +161,29 @@ export default function VerifyAccount() {
       setNormalizedPhone(normalized);
       setStep("otp");
       setResendCooldown(60);
-      showToast.success(`Verification code sent to ${formatPhilippinePhoneNumber(normalized)}`);
+      showToast.success(
+        t("auth.verify.toastSent", {
+          phone: formatPhilippinePhoneNumber(normalized),
+        })
+      );
     } catch (error) {
       console.error("Failed to send OTP:", error);
       resetPhoneRecaptcha();
 
       if (error.code === "auth/invalid-phone-number") {
-        setPhoneError("The phone number format is invalid.");
+        setPhoneError(t("auth.errors.phoneFormat"));
       } else if (error.code === "auth/too-many-requests") {
-        setPhoneError("Too many SMS requests sent. Please wait a few minutes before trying again or test with another number.");
+        setPhoneError(t("auth.errors.smsTooMany"));
       } else if (error.code === "auth/quota-exceeded") {
-        setPhoneError("SMS quota exceeded. Please contact support or try again later.");
+        setPhoneError(t("auth.errors.smsQuota"));
       } else if (error.code === "auth/operation-not-allowed") {
-        setPhoneError("Phone authentication or SMS region (+63 Philippines) is not enabled in Firebase Console.");
+        setPhoneError(t("auth.errors.smsNotEnabled"));
       } else if (error.code === "auth/billing-not-enabled") {
-        setPhoneError("SMS sending requires Firebase Blaze plan or adding a Test Phone Number in Firebase Console.");
+        setPhoneError(t("auth.errors.smsBlaze"));
       } else if (error.code?.includes("-39") || error.code === "auth/invalid-app-credential") {
-        setPhoneError("SMS verification check failed. Please refresh the page and try again.");
+        setPhoneError(t("auth.errors.smsCheckFailed"));
       } else {
-        setPhoneError(error.message || "Failed to send verification SMS. Please try again.");
+        setPhoneError(error.message || t("auth.errors.smsFailed"));
       }
     } finally {
       setSendingOtp(false);
@@ -192,7 +199,7 @@ export default function VerifyAccount() {
 
     const cleanedCode = otpCode.trim();
     if (!cleanedCode || cleanedCode.length !== 6 || !/^\d{6}$/.test(cleanedCode)) {
-      setOtpError("Please enter the complete 6-digit verification code.");
+      setOtpError(t("auth.errors.otpIncomplete"));
       return;
     }
 
@@ -211,7 +218,7 @@ export default function VerifyAccount() {
       // Refresh Auth User state to immediately reflect phone verification
       await refreshAuthUser();
 
-      showToast.success("Phone verified successfully! Welcome to AgriNet.");
+      showToast.success(t("auth.verify.toastSuccess"));
       navigate(getRoleHome(profile?.role), { replace: true });
     } catch (error) {
       console.error("Failed to verify OTP code:", error);
@@ -221,14 +228,14 @@ export default function VerifyAccount() {
         error.code === "auth/phone-number-already-exists" ||
         error.code === "auth/account-exists-with-different-credential"
       ) {
-        setOtpError("This phone number is already associated with another account.");
-        showToast.error("This phone number is already associated with another account.");
+        setOtpError(t("auth.errors.phoneTaken"));
+        showToast.error(t("auth.errors.phoneTaken"));
       } else if (error.code === "auth/invalid-verification-code") {
-        setOtpError("Invalid verification code. Please check the SMS sent to your phone.");
+        setOtpError(t("auth.errors.otpInvalid"));
       } else if (error.code === "auth/code-expired") {
-        setOtpError("Verification code has expired. Please request a new code.");
+        setOtpError(t("auth.errors.otpExpired"));
       } else {
-        setOtpError(error.message || "Verification failed. Please try again.");
+        setOtpError(error.message || t("auth.errors.verifyFailed"));
       }
     } finally {
       setVerifyingOtp(false);
@@ -245,14 +252,14 @@ export default function VerifyAccount() {
       setResendingEmail(true);
       await sendVerificationEmail(user);
       setEmailCooldown(60);
-      showToast.success("Verification link sent to your email!");
+      showToast.success(t("auth.verify.toastEmailSent"));
     } catch (error) {
       console.error("Email verification send error:", error);
       if (error.code === "auth/too-many-requests") {
         setEmailCooldown(60);
-        showToast.error("Too many email requests. Please wait a minute.");
+        showToast.error(t("auth.errors.emailTooMany"));
       } else {
-        showToast.error(error.message || "Failed to send email link.");
+        showToast.error(error.message || t("auth.errors.emailSendFailed"));
       }
     } finally {
       setResendingEmail(false);
@@ -271,7 +278,7 @@ export default function VerifyAccount() {
       navigate("/login", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
-      showToast.error("Failed to sign out.");
+      showToast.error(t("auth.errors.logoutFailed"));
       setLoggingOut(false);
     }
   }
@@ -317,18 +324,18 @@ export default function VerifyAccount() {
           {/* Heading */}
           <div className="text-center mb-5">
             <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332]">
-              {step === "otp" ? "Enter Verification Code" : "Verify Phone Number"}
+              {step === "otp" ? t("auth.verify.otpTitle") : t("auth.verify.title")}
             </h1>
             <p className="text-gray-600 text-xs sm:text-sm mt-1 leading-relaxed">
               {step === "otp" ? (
                 <>
-                  We sent a 6-digit SMS verification code to{" "}
+                  {t("auth.verify.otpSentTo")}{" "}
                   <strong className="text-gray-900 break-all">
                     {formatPhilippinePhoneNumber(normalizedPhone)}
                   </strong>
                 </>
               ) : (
-                "Please verify your Philippine mobile number to secure your AgriNet account."
+                t("auth.verify.subtitle")
               )}
             </p>
           </div>
@@ -338,7 +345,7 @@ export default function VerifyAccount() {
             <form onSubmit={handleSendOtp} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  Mobile Number <span className="text-red-500">*</span>
+                  {t("auth.verify.mobileLabel")} <span className="text-red-500">*</span>
                 </label>
 
                 <div className="relative">
@@ -346,7 +353,7 @@ export default function VerifyAccount() {
                   <input
                     type="tel"
                     inputMode="numeric"
-                    placeholder="Enter mobile number"
+                    placeholder={t("auth.verify.mobilePlaceholder")}
                     value={phoneInput}
                     onFocus={() => {
                       if (phoneError) setPhoneError("");
@@ -382,12 +389,12 @@ export default function VerifyAccount() {
                 {sendingOtp ? (
                   <>
                     <i className="ri-loader-4-line animate-spin text-base" />
-                    <span>Sending Code...</span>
+                    <span>{t("auth.verify.sendingCode")}</span>
                   </>
                 ) : (
                   <>
                     <i className="ri-send-plane-fill text-base" />
-                    <span>Send Verification Code</span>
+                    <span>{t("auth.verify.sendCode")}</span>
                   </>
                 )}
               </button>
@@ -399,7 +406,7 @@ export default function VerifyAccount() {
             <form onSubmit={handleVerifyOtp} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  6-Digit Verification Code <span className="text-red-500">*</span>
+                  {t("auth.verify.otpLabel")} <span className="text-red-500">*</span>
                 </label>
 
                 <div className="relative">
@@ -445,12 +452,12 @@ export default function VerifyAccount() {
                   {verifyingOtp ? (
                     <>
                       <i className="ri-loader-4-line animate-spin text-base" />
-                      <span>Verifying...</span>
+                      <span>{t("auth.verify.verifying")}</span>
                     </>
                   ) : (
                     <>
                       <i className="ri-checkbox-circle-fill text-base" />
-                      <span>Verify & Continue</span>
+                      <span>{t("auth.verify.verifyContinue")}</span>
                     </>
                   )}
                 </button>
@@ -466,7 +473,7 @@ export default function VerifyAccount() {
                     className="text-gray-600 hover:text-[#2D6A4F] font-semibold cursor-pointer transition-colors inline-flex items-center gap-1"
                   >
                     <i className="ri-arrow-left-line" />
-                    Change Phone Number
+                    {t("auth.verify.changePhone")}
                   </button>
 
                   <button
@@ -476,10 +483,10 @@ export default function VerifyAccount() {
                     className="text-[#2D6A4F] hover:text-[#1B4332] font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {sendingOtp
-                      ? "Sending..."
+                      ? t("auth.sending")
                       : resendCooldown > 0
-                        ? `Resend in ${resendCooldown}s`
-                        : "Resend Code"}
+                        ? t("auth.verify.resendIn", { count: resendCooldown })
+                        : t("auth.verify.resendCode")}
                   </button>
                 </div>
               </div>
@@ -502,7 +509,9 @@ export default function VerifyAccount() {
                     {user?.email}
                   </p>
                   <p className="text-[11px] text-gray-500">
-                    {emailVerified ? "Email verified" : "Email verification (Optional)"}
+                    {emailVerified
+                      ? t("auth.verify.emailVerified")
+                      : t("auth.verify.emailOptional")}
                   </p>
                 </div>
               </div>
@@ -515,10 +524,10 @@ export default function VerifyAccount() {
                   className="shrink-0 text-xs font-bold text-[#2D6A4F] hover:underline disabled:opacity-50 cursor-pointer"
                 >
                   {resendingEmail
-                    ? "Sending..."
+                    ? t("auth.sending")
                     : emailCooldown > 0
                       ? `${emailCooldown}s`
-                      : "Send link"}
+                      : t("auth.verify.sendLink")}
                 </button>
               )}
             </div>
@@ -533,7 +542,7 @@ export default function VerifyAccount() {
               className="text-xs font-semibold text-gray-500 hover:text-red-600 inline-flex items-center gap-1 transition-colors cursor-pointer"
             >
               <i className="ri-logout-box-r-line" />
-              {loggingOut ? "Signing out..." : "Sign Out"}
+              {loggingOut ? t("auth.signingOut") : t("auth.signOut")}
             </button>
           </div>
         </div>

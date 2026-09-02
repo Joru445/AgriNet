@@ -3,6 +3,7 @@ import useProductDetails from "../../hooks/useProductDetails";
 import useProductReviews from "../../hooks/useProductReviews";
 
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { isProductExpired } from "../../utils/productExpiration";
 
 import ProductGallery from "../../components/shared/product/ProductGallery";
@@ -18,6 +19,7 @@ import EmptyState from "../../components/ui/EmptyState";
 
 export default function ProductDetails() {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const [showReportModal, setShowReportModal] = useState(false);
 
   const { loading, product, farmer, reviewCount, averageRating } =
@@ -31,8 +33,8 @@ export default function ProductDetails() {
       <main className="mx-auto max-w-7xl px-2 py-8 pb-18 md:pb-4">
         <EmptyState
           icon="ri-error-warning-line"
-          title="Product Unavailable"
-          description="This listing has ended and is no longer available."
+          title={t("productDetails.unavailable")}
+          description={t("productDetails.unavailableDesc")}
         />
       </main>
     );
@@ -71,7 +73,7 @@ export default function ProductDetails() {
           {/* Reviews - loads independently */}
 
           <ReviewSection
-            title="Product Reviews"
+            title={t("reviews.productTitle")}
             reviews={reviews}
             loading={reviewsLoading}
             type="product"
@@ -88,14 +90,15 @@ export default function ProductDetails() {
               farmer
                 ? {
                     uid: farmer.uid || farmer.id || product.farmerId,
-                    fullname: farmer.fullname || farmer.storeName || "Farmer",
+                    fullname:
+                      farmer.fullname || farmer.storeName || t("roles.farmer"),
                     username: farmer.username || "",
                     role: "farmer",
                     email: farmer.email || "",
                   }
                 : {
                     uid: product.farmerId,
-                    fullname: "Farmer",
+                    fullname: t("roles.farmer"),
                     role: "farmer",
                   }
             }

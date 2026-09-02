@@ -1,10 +1,13 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function ReviewRating({ rating = 0 }) {
+  const { t } = useLanguage();
   const value = Math.min(5, Math.max(0, Number(rating) || 0));
 
   return (
     <div
       className="flex items-center gap-0.5"
-      aria-label={`${value} out of 5 stars`}
+      aria-label={t("farmerReviews.outOf5Stars", { value: value.toFixed(1) })}
     >
       {[1, 2, 3, 4, 5].map((star) => (
         <i

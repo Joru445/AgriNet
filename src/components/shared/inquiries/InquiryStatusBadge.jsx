@@ -1,4 +1,7 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function InquiryStatusBadge({ status }) {
+  const { t } = useLanguage();
   const styles = {
     accepted: "bg-amber-500/10 text-amber-700 dark:text-amber-300 font-semibold",
 
@@ -14,13 +17,13 @@ export default function InquiryStatusBadge({ status }) {
   };
 
   const labels = {
-    accepted: "Accepted",
-    ongoing: "Ongoing",
-    awaiting_proof: "Awaiting Proof",
-    proof_submitted: "Proof Submitted",
-    completed: "Completed",
+    accepted: t("inquiries.status.accepted"),
+    ongoing: t("inquiries.status.ongoing"),
+    awaiting_proof: t("inquiries.status.awaitingProof"),
+    proof_submitted: t("inquiries.status.proofSubmitted"),
+    completed: t("inquiries.status.completed"),
 
-    cancelled: "Cancelled",
+    cancelled: t("inquiries.status.cancelled"),
   };
 
   return (
@@ -29,7 +32,7 @@ export default function InquiryStatusBadge({ status }) {
         styles[status] || "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] font-semibold"
       }`}
     >
-      {labels[status] || "Unknown"}
+      {labels[status] || t("inquiries.status.unknown")}
     </span>
   );
 }

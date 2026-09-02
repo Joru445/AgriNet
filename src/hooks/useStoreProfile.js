@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 
 import { getFarmerById } from "../services/farmer.service";
 import { getFarmerProducts } from "../services/product.service";
-import { getFarmerReviews } from "../services/farmer-review.service";
+import { getFarmerReviews, enrichFarmerReviews } from "../services/farmer-review.service";
 import { getProductReviewSummaries } from "../services/product-review.service";
 import * as pageCache from "../utils/pageCache";
 
@@ -95,6 +95,13 @@ export default function useStoreProfile() {
       setReviews(reviewsData);
       setReviewCount(Number(reviewCountData) || 0);
       setAverageRating(Number(averageRatingData) || 0);
+
+      // Paint base reviews immediately; profiles fill in in the background.
+      enrichFarmerReviews(reviewsData)
+        .then((enriched) => setReviews(enriched))
+        .catch(() => {
+          /* noop */
+        });
     } catch (error) {
       console.error("Failed to load store reviews:", error);
     } finally {

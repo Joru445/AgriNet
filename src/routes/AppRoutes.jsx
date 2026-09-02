@@ -43,6 +43,7 @@ const TransactionProof = lazy(() => import("../pages/shared/TransactionProof"));
 const TransactionReview = lazy(() => import("../pages/shared/TransactionReview"));
 const Messages = lazy(() => import("../pages/shared/Messages"));
 const Profile = lazy(() => import("../pages/shared/Profile"));
+const Settings = lazy(() => import("../pages/shared/Settings"));
 const Notifications = lazy(() => import("../pages/shared/Notifications"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
@@ -104,6 +105,8 @@ export default function AppRoutes() {
 
               <Route path="/me" element={<Profile />} />
 
+              <Route path="/settings" element={<Settings />} />
+
               <Route path="/notifications" element={<Notifications />} />
             </Route>
           </Route>
@@ -138,6 +141,8 @@ export default function AppRoutes() {
 
               <Route path="/farmer/me" element={<Profile />} />
 
+              <Route path="/farmer/settings" element={<Settings />} />
+
               <Route path="/farmer/notifications" element={<Notifications />} />
             </Route>
           </Route>
@@ -165,6 +170,8 @@ export default function AppRoutes() {
               <Route path="/admin/messages" element={<Messages />} />
 
               <Route path="/admin/me" element={<Profile />} />
+
+              <Route path="/admin/settings" element={<Settings />} />
 
               <Route path="/admin/notifications" element={<Notifications />} />
             </Route>

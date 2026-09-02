@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
+import { useLanguage } from "../../../context/LanguageContext";
 import Avatar from "../../common/Avatar";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import { applyTransform, MESSAGE_IMG_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
@@ -13,6 +14,7 @@ export default function MessageBubble({
   onDeleteFailed,
 }) {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const [showLightbox, setShowLightbox] = useState(false);
 
   const mine = message.senderId === profile.uid;
@@ -60,7 +62,7 @@ export default function MessageBubble({
             <div className={`rounded-xl overflow-hidden mb-0 group relative ${mine ? "justify-self-end" : "justify-self-start"}`}>
               <img
                 src={isCloudinaryUrl(message.imageUrl) ? applyTransform(message.imageUrl, MESSAGE_IMG_TF) : message.imageUrl}
-                alt="Photo attachment"
+                alt={t("messages.photoAttachment")}
                 onClick={() => setShowLightbox(true)}
                 className="max-h-72 w-auto max-w-full rounded-xl object-cover cursor-pointer transition hover:opacity-95"
                 loading="lazy"
@@ -69,7 +71,7 @@ export default function MessageBubble({
                 type="button"
                 onClick={() => setShowLightbox(true)}
                 className="absolute bottom-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition shadow-md cursor-pointer"
-                title="View full image"
+                title={t("messages.viewFullImage")}
               >
                 <i className="ri-fullscreen-line text-sm" />
               </button>
@@ -82,20 +84,20 @@ export default function MessageBubble({
       {isFailed && (
         <div className="flex items-center gap-1.5 mt-1 mr-1 text-xs text-red-600 font-semibold select-none">
           <i className="ri-error-warning-fill text-sm text-red-500" />
-          <span>Couldn't send.</span>
+          <span>{t("messages.couldntSend")}</span>
           <button
             type="button"
             onClick={() => onRetry?.(message)}
             className="text-red-700 hover:text-red-900 underline font-bold cursor-pointer ml-1"
           >
-            Tap to retry
+            {t("messages.tapToRetry")}
           </button>
           {onDeleteFailed && (
             <button
               type="button"
               onClick={() => onDeleteFailed?.(message.id)}
               className="text-[var(--agri-text-muted)] hover:text-red-600 transition cursor-pointer ml-1 p-0.5"
-              title="Delete failed message"
+              title={t("messages.deleteFailedMessage")}
             >
               <i className="ri-close-line text-sm" />
             </button>
@@ -107,10 +109,10 @@ export default function MessageBubble({
       {mine && !isFailed && isLastMine && (
         <div className="flex items-center justify-end gap-1 mt-1 mr-1 text-[11px] font-bold select-none transition-all">
           {isSeen ? (
-            <span className="flex items-center gap-1 text-[var(--agri-text-muted)]">Seen</span>
+            <span className="flex items-center gap-1 text-[var(--agri-text-muted)]">{t("messages.seen")}</span>
           ) : (
             <span className="flex items-center gap-1 text-[var(--agri-text-muted)] font-semibold">
-              Sent
+              {t("messages.sent")}
             </span>
           )}
         </div>
@@ -120,8 +122,8 @@ export default function MessageBubble({
       <ImageViewerModal
         isOpen={showLightbox && Boolean(message.imageUrl)}
         src={message.imageUrl}
-        alt="Message photo"
-        title="Photo"
+        alt={t("messages.messagePhoto")}
+        title={t("messages.photo")}
         onClose={() => setShowLightbox(false)}
       />
     </div>

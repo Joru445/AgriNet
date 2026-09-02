@@ -1,17 +1,23 @@
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function ErrorState({
-  title = "Something went wrong",
+  title,
   message,
   onRetry,
-  retryLabel = "Try Again",
+  retryLabel,
   className = "",
 }) {
+  const { t } = useLanguage();
+  const resolvedTitle = title ?? t("ui.errorTitle");
+  const resolvedRetryLabel = retryLabel ?? t("ui.retry");
+
   return (
     <div className={`rounded-2xl border border-red-200 bg-red-50 p-5 anim-slide-in-up ${className}`}>
       <div className="flex items-start gap-3">
         <i className="ri-error-warning-line text-xl text-red-500 shrink-0 mt-0.5" />
 
         <div className="flex-1">
-          <h2 className="font-semibold text-red-800">{title}</h2>
+          <h2 className="font-semibold text-red-800">{resolvedTitle}</h2>
 
           {message && (
             <p className="mt-1 text-sm text-red-600">{message}</p>
@@ -23,7 +29,7 @@ export default function ErrorState({
               onClick={onRetry}
               className="mt-3 rounded-lg bg-red-600 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700 cursor-pointer"
             >
-              {retryLabel}
+              {resolvedRetryLabel}
             </button>
           )}
         </div>

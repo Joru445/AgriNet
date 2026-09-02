@@ -1,9 +1,13 @@
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function SearchBar({
   value = "",
   onChange,
   onSubmit,
   locationLabel = "Lucena City",
 }) {
+  const { t } = useLanguage();
+
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -38,7 +42,7 @@ export default function SearchBar({
             type="search"
             value={value}
             onChange={(e) => onChange?.(e.target.value)}
-            placeholder="Search for products and farmers."
+            placeholder={t("search.placeholder")}
             className="
               min-w-0
               flex-1
@@ -69,8 +73,8 @@ export default function SearchBar({
                 transition
                 cursor-pointer
               "
-              title="Clear search"
-              aria-label="Clear search"
+              title={t("search.clear")}
+              aria-label={t("search.clear")}
             >
               <i className="ri-close-circle-fill text-lg" />
             </button>

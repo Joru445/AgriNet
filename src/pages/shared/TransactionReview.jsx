@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 import useTransactionReview from "../../hooks/useTransactionReview";
 
@@ -11,6 +12,7 @@ import TransactionReviewView from "../../components/shared/transaction-review/Tr
 export default function TransactionReview() {
   const { inquiryId } = useParams();
   const { profile } = useAuth();
+  const { t } = useLanguage();
 
   const {
     inquiry,
@@ -54,9 +56,9 @@ export default function TransactionReview() {
       <div className="mx-auto w-full max-w-3xl p-4 pb-18 sm:p-6 sm:pb-4">
         <div className="rounded-2xl border border-red-200 bg-red-500/5 p-6 text-center">
           <i className="ri-error-warning-line text-4xl text-red-500 mb-2" />
-          <h2 className="text-base font-bold text-red-800 dark:text-red-300">Transaction Not Found</h2>
+          <h2 className="text-base font-bold text-red-800 dark:text-red-300">{t("transaction.notFoundTitle")}</h2>
           <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-            {error || "The requested transaction inquiry could not be found."}
+            {error || t("transaction.notFoundBody")}
           </p>
         </div>
       </div>
@@ -130,12 +132,11 @@ export default function TransactionReview() {
                 <i className="ri-star-line text-2xl text-[var(--agri-text-muted)]" />
 
                 <p className="mt-2 text-sm font-medium text-[var(--agri-text-secondary)]">
-                  No review submitted yet.
+                  {t("transaction.reviewNoSubmitted")}
                 </p>
 
                 <p className="mt-1 text-xs text-[var(--agri-text-muted)]">
-                  Only the consumer who completed this transaction can submit a
-                  review.
+                  {t("transaction.reviewOnlyOwner")}
                 </p>
               </div>
             )}

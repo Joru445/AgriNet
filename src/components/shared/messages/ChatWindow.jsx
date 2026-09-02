@@ -1,6 +1,7 @@
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import ChatHeader from "./ChatHeader";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ChatWindow({
   conversation,
@@ -27,6 +28,8 @@ export default function ChatWindow({
   onRemoveImage,
   uploadingImage,
 }) {
+  const { t } = useLanguage();
+
   return (
     <section
       className={`
@@ -40,7 +43,7 @@ export default function ChatWindow({
       {!isOnline && (
         <div className="bg-amber-500 text-white text-xs font-semibold py-1.5 px-4 flex items-center justify-center gap-2 shadow-xs shrink-0 select-none">
           <i className="ri-wifi-off-line text-sm" />
-          <span>No internet connection. Messages will send once reconnected.</span>
+          <span>{t("messages.offlineBanner")}</span>
         </div>
       )}
 

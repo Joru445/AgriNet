@@ -1,3 +1,5 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 import ProductGrid from "./ProductGrid";
 import EmptyProducts from "../home/EmptyProducts";
 import ProductPagination from "../home/ProductPagination";
@@ -13,6 +15,7 @@ export default function ProductsContainer({
   loadingMore,
   onLoadMore,
 }) {
+  const { t } = useLanguage();
   const hasProducts = products.length > 0;
 
   if (!hasProducts) {
@@ -59,8 +62,8 @@ export default function ProductsContainer({
             "
           >
             {loadingMore
-              ? "Loading more produce..."
-              : "Load More Products"}
+              ? t("consumer.loadingMore")
+              : t("consumer.loadMore")}
           </button>
         </div>
       )}

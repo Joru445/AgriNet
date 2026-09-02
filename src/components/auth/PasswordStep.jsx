@@ -1,5 +1,6 @@
 import PasswordInput from "./PasswordInput";
 import { getPasswordChecks } from "../../utils/registerValidation";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function PasswordStep({
   form,
@@ -10,6 +11,8 @@ export default function PasswordStep({
   onBack,
   onContinue,
 }) {
+  const { t } = useLanguage();
+
   const password = form.password || "";
   const checks = getPasswordChecks(password);
   const passed = Object.values(checks).filter(Boolean).length;
@@ -22,27 +25,27 @@ export default function PasswordStep({
   function strength() {
     if (!password) {
       return {
-        label: "None",
+        labelKey: "auth.register.strengthNone",
         color: "bg-gray-200",
         width: "w-0",
       };
     }
     if (passed <= 2)
       return {
-        label: "Weak",
+        labelKey: "auth.register.strengthWeak",
         color: "bg-red-500",
         width: "w-1/4",
       };
 
     if (passed <= 4)
       return {
-        label: "Medium",
+        labelKey: "auth.register.strengthMedium",
         color: "bg-yellow-500",
         width: "w-2/3",
       };
 
     return {
-      label: "Strong",
+      labelKey: "auth.register.strengthStrong",
       color: "bg-[#2D6A4F]",
       width: "w-full",
     };
@@ -55,7 +58,7 @@ export default function PasswordStep({
       {/* Password Field */}
       <div>
         <PasswordInput
-          label="Password"
+          label={t("auth.passwordLabel")}
           name="password"
           value={form.password}
           onChange={(e) => updateField("password", e.target.value)}
@@ -67,7 +70,7 @@ export default function PasswordStep({
       {/* Confirm Password Field */}
       <div>
         <PasswordInput
-          label="Confirm Password"
+          label={t("auth.register.confirmPassword")}
           name="confirmPassword"
           value={form.confirmPassword}
           onChange={(e) => updateField("confirmPassword", e.target.value)}
@@ -79,20 +82,20 @@ export default function PasswordStep({
       {/* Strength Bar */}
       <div>
         <div className="flex justify-between mb-1.5 text-xs font-semibold">
-          <span className="text-gray-600">Password Strength</span>
+          <span className="text-gray-600">{t("auth.register.passwordStrength")}</span>
 
           <span
             className={
-              level.label === "Strong"
+              level.labelKey === "auth.register.strengthStrong"
                 ? "text-[#2D6A4F]"
-                : level.label === "Medium"
+                : level.labelKey === "auth.register.strengthMedium"
                   ? "text-yellow-600"
-                  : level.label === "Weak"
+                  : level.labelKey === "auth.register.strengthWeak"
                     ? "text-red-600"
                     : "text-gray-400"
             }
           >
-            {level.label}
+            {t(level.labelKey)}
           </span>
         </div>
 
@@ -105,11 +108,11 @@ export default function PasswordStep({
 
       {/* Requirement Rules Checklist */}
       <div className="space-y-1.5 text-xs">
-        <Rule valid={checks.length} text="At least 8 characters" />
-        <Rule valid={checks.uppercase} text="One uppercase letter (A-Z)" />
-        <Rule valid={checks.lowercase} text="One lowercase letter (a-z)" />
-        <Rule valid={checks.number} text="One number (0-9)" />
-        <Rule valid={checks.special} text="One special character (!@#$%...)" />
+        <Rule valid={checks.length} text={t("auth.register.ruleLength")} />
+        <Rule valid={checks.uppercase} text={t("auth.register.ruleUppercase")} />
+        <Rule valid={checks.lowercase} text={t("auth.register.ruleLowercase")} />
+        <Rule valid={checks.number} text={t("auth.register.ruleNumber")} />
+        <Rule valid={checks.special} text={t("auth.register.ruleSpecial")} />
       </div>
 
       {/* Navigation Buttons */}
@@ -119,7 +122,7 @@ export default function PasswordStep({
           onClick={onBack}
           className="flex-1 border-2 border-gray-300 hover:border-gray-400 py-3 text-gray-700 font-bold rounded-full transition-all duration-200 text-sm flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
         >
-          Back
+          {t("common.back")}
         </button>
 
         <button
@@ -127,7 +130,7 @@ export default function PasswordStep({
           onClick={onContinue}
           className="flex-1 py-3 bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold rounded-full transition-all duration-200 text-sm flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer shadow-sm"
         >
-          Continue
+          {t("auth.continue")}
         </button>
       </div>
     </div>

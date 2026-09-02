@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import ConversationItem from "./ConversationItem";
 
 export default function ConversationList({
@@ -11,10 +12,11 @@ export default function ConversationList({
 
   activeConversation,
 
-  onConversation,
+    onConversation,
   onUser,
   hasChat,
 }) {
+  const { t } = useLanguage();
   const searching = search.trim().length > 0;
 
   return (
@@ -22,7 +24,7 @@ export default function ConversationList({
       className={`w-full lg:w-80 md:w-64 flex flex-col border-r border-[var(--agri-border)] ${hasChat ? "hidden md:flex" : "flex"}`}
     >
       <div className="p-4">
-        <h2 className="text-xl font-bold text-agri-dark dark:text-[var(--agri-brand-light)] mb-4">Messages</h2>
+        <h2 className="text-xl font-bold text-agri-dark dark:text-[var(--agri-brand-light)] mb-4">{t("nav.messages")}</h2>
 
         <div className="relative flex items-center gap-2 bg-[var(--agri-card)] rounded-xl px-3 py-1.5 border-2 border-[var(--agri-border)] shadow-xs focus-within:border-agri-primary focus-within:shadow-md focus-within:ring-3 focus-within:ring-[#2D6A4F]/15 transition-all">
           <i className="ri-search-line text-agri-primary text-lg font-bold shrink-0" />
@@ -30,7 +32,7 @@ export default function ConversationList({
           <input
             value={search}
             onChange={(e) => onSearch(e.target.value)}
-            placeholder="Search people..."
+            placeholder={t("messages.searchPeople")}
             className="w-full text-sm font-semibold text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] focus:outline-none bg-transparent"
           />
 
@@ -39,7 +41,7 @@ export default function ConversationList({
               type="button"
               onClick={() => onSearch("")}
               className="p-0.5 rounded-full text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer shrink-0"
-              title="Clear search"
+              title={t("search.clear")}
             >
               <i className="ri-close-circle-fill text-base text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)]" />
             </button>
@@ -52,7 +54,7 @@ export default function ConversationList({
           <>
             <div className="px-4 pt-4 pb-2">
               <p className="text-xs uppercase tracking-wide text-[var(--agri-text-muted)] font-semibold">
-                Recent Chats
+                {t("messages.recentChats")}
               </p>
             </div>
 
@@ -73,7 +75,7 @@ export default function ConversationList({
               </div>
             ) : conversations.length === 0 ? (
               <div className="text-center text-[var(--agri-text-muted)] py-10 px-6">
-                No conversations yet.
+                {t("messages.noConversations")}
               </div>
             ) : (
               conversations.map((conversation) => (
@@ -95,7 +97,7 @@ export default function ConversationList({
               <>
                 <div className="px-4 pt-4 pb-2">
                   <p className="text-xs uppercase tracking-wide text-[var(--agri-text-muted)] font-semibold">
-                    Recent Chats
+                    {t("messages.recentChats")}
                   </p>
                 </div>
 
@@ -118,7 +120,7 @@ export default function ConversationList({
               <>
                 <div className="px-4 pt-5 pb-2">
                   <p className="text-xs uppercase tracking-wide text-[var(--agri-text-muted)] font-semibold">
-                    People
+                    {t("messages.people")}
                   </p>
                 </div>
 
@@ -141,7 +143,7 @@ export default function ConversationList({
               <div className="text-center py-10 px-6 text-[var(--agri-text-muted)]">
                 <i className="ri-user-search-line text-4xl mb-3 block" />
 
-                <p>No people found.</p>
+                <p>{t("messages.noPeopleFound")}</p>
               </div>
             )}
           </>

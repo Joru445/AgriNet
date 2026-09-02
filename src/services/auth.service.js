@@ -117,7 +117,9 @@ export function getOrCreatePhoneRecaptcha(containerId = "recaptcha-container", o
   if (window.recaptchaVerifier) {
     try {
       window.recaptchaVerifier.clear();
-    } catch (_) {}
+    } catch {
+      /* noop */
+    }
     window.recaptchaVerifier = null;
   }
 
@@ -156,7 +158,9 @@ export function resetPhoneRecaptcha(containerId = "recaptcha-container") {
   if (window.recaptchaVerifier) {
     try {
       window.recaptchaVerifier.clear();
-    } catch (_) {}
+    } catch {
+      /* noop */
+    }
     window.recaptchaVerifier = null;
   }
   const containerElement = document.getElementById(containerId);

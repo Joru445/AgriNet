@@ -1,3 +1,5 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function DeleteProductModal({
   open,
   product,
@@ -5,6 +7,7 @@ export default function DeleteProductModal({
   onCancel,
   onConfirm,
 }) {
+  const { t } = useLanguage();
   if (!open || !product) return null;
 
   return (
@@ -16,10 +19,10 @@ export default function DeleteProductModal({
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold">Delete Product</h2>
+            <h2 className="text-lg font-semibold">{t("products.deleteTitle")}</h2>
 
             <p className="text-sm text-[var(--agri-text-muted)]">
-              This action cannot be undone.
+              {t("products.deleteConfirm")}
             </p>
           </div>
         </div>

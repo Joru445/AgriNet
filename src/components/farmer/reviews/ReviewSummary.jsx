@@ -1,6 +1,9 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import ReviewRating from "./ReviewRating";
 
 export default function ReviewSummary({ averageRating, reviewCount }) {
+  const { t } = useLanguage();
+
   return (
     <div className="bg-[var(--agri-card)] rounded-2xl border border-[var(--agri-border)] p-6">
       <div className="flex flex-col items-center justify-center">
@@ -13,7 +16,7 @@ export default function ReviewSummary({ averageRating, reviewCount }) {
         </div>
 
         <p className="mt-3 text-sm text-[var(--agri-text-muted)]">
-          Based on {reviewCount} reviews
+          {t("farmer.basedOnReviews", { count: reviewCount })}
         </p>
       </div>
     </div>

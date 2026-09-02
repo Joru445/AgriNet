@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 import { getProductPath } from "../../utils/routes";
 import {
@@ -23,6 +24,7 @@ export default function ProductCard({
   hideDiscount = false,
 }) {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const [imgError, setImgError] = useState(false);
   const rawImage = product.images?.[0]?.url ?? product.images?.[0];
   const image = imgError || !rawImage
@@ -59,6 +61,7 @@ export default function ProductCard({
   return (
     <Link
       to={`${getProductPath(profile?.role || "consumer")}/${product.id}`}
+      data-onboarding="product-card"
       className="group relative flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-[#2D6A4F]/60 hover:shadow-xl anim-fade-in"
     >
       {/* Top Image Container */}
@@ -78,21 +81,21 @@ export default function ProductCard({
           <i
             className={`${categoryIcon} text-[#2D6A4F] dark:text-[var(--agri-brand)] text-xs sm:text-sm shrink-0`}
           />
-          <span className="truncate">{product.category || "Produce"}</span>
+          <span className="truncate">{product.category || t("product.produce")}</span>
         </div>
 
         {/* Stock Badge - Stuck to Top Right Corner */}
         {!isAvailable ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
-            Out of Stock
+            {t("product.outOfStock")}
           </div>
         ) : isLowStock ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-[#E63946] px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
-            {stockNum} left
+            {t("product.stockLeft", { count: stockNum })}
           </div>
         ) : (
           <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-[#2D6A4F] px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
-            In Stock
+            {t("product.inStock")}
           </div>
         )}
 
@@ -149,7 +152,7 @@ export default function ProductCard({
 
             {isAvailable && (
             <span className="text-[10px] sm:text-xs font-semibold text-[var(--agri-text-muted)] shrink-0">
-                {stockNum} stocks
+                {t("product.stockCount", { count: stockNum })}
               </span>
             )}
           </div>
@@ -171,7 +174,7 @@ export default function ProductCard({
                   </span>
                 </>
               ) : (
-                <span className="text-[var(--agri-text-muted)] font-medium">No reviews</span>
+                <span className="text-[var(--agri-text-muted)] font-medium">{t("product.noReviews")}</span>
               )}
             </div>
 

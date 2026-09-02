@@ -1,8 +1,12 @@
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function RoleSelector({ value, onChange }) {
+  const { t } = useLanguage();
+
   return (
     <div>
       <label className="block text-sm font-semibold text-gray-700 mb-2">
-        I am a...
+        {t("auth.register.roleLabel")}
       </label>
 
       <div className="grid grid-cols-2 gap-4">
@@ -27,9 +31,9 @@ export default function RoleSelector({ value, onChange }) {
             ></i>
           </div>
 
-          <div className="mt-2 font-semibold">Consumer</div>
+          <div className="mt-2 font-semibold">{t("auth.register.roleConsumer")}</div>
 
-          <div className="text-sm text-gray-500">Buy local products</div>
+          <div className="text-sm text-gray-500">{t("auth.register.roleConsumerDescription")}</div>
         </button>
 
         <button
@@ -53,9 +57,9 @@ export default function RoleSelector({ value, onChange }) {
             ></i>
           </div>
 
-          <div className="mt-2 font-semibold">Farmer</div>
+          <div className="mt-2 font-semibold">{t("auth.register.roleFarmer")}</div>
 
-          <div className="text-sm text-gray-500">Sell your harvest</div>
+          <div className="text-sm text-gray-500">{t("auth.register.roleFarmerDescription")}</div>
         </button>
       </div>
     </div>

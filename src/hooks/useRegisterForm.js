@@ -9,6 +9,7 @@ import {
   validateStep3,
 } from "../utils/registerValidation";
 import { showToast } from "../utils/toast";
+import { t } from "../i18n";
 
 const INITIAL_FORM = {
   role: "consumer",
@@ -162,9 +163,9 @@ export default function useRegisterForm() {
       if (!result.available) {
         setErrors((prev) => ({
           ...prev,
-          email: result.error || "This email is already registered.",
+          email: result.error || t("auth.errors.emailTaken"),
         }));
-        showToast.error(result.error || "This email is already registered.");
+        showToast.error(result.error || t("auth.errors.emailTaken"));
         return;
       }
 
@@ -179,7 +180,7 @@ export default function useRegisterForm() {
     } catch (err) {
       console.error("Email availability check error:", err);
       // If network fails, show error and remain on Step 1
-      showToast.error("Failed to verify email availability. Please check your internet connection.");
+      showToast.error(t("auth.errors.emailCheckFailed"));
     } finally {
       setIsCheckingEmail(false);
     }
@@ -258,7 +259,7 @@ export default function useRegisterForm() {
     if (Object.keys(step1Errors).length > 0) {
       setStep(1);
       setErrors((prev) => ({ ...prev, ...step1Errors }));
-      showToast.error("Please fix errors in account information.");
+      showToast.error(t("auth.errors.fixStep1"));
       return;
     }
 
@@ -266,7 +267,7 @@ export default function useRegisterForm() {
     if (Object.keys(step2Errors).length > 0) {
       setStep(2);
       setErrors((prev) => ({ ...prev, ...step2Errors }));
-      showToast.error("Please fix errors in password requirements.");
+      showToast.error(t("auth.errors.fixStep2"));
       return;
     }
 
@@ -275,9 +276,7 @@ export default function useRegisterForm() {
 
       await register(form);
 
-      showToast.success(
-        "Account created! Please check your inbox or spam folder to verify your account."
-      );
+      showToast.success(t("auth.register.createdToast"));
 
       navigate("/verify-account", { replace: true });
     } catch (error) {
@@ -291,11 +290,11 @@ export default function useRegisterForm() {
         setStep(1);
         setErrors((prev) => ({
           ...prev,
-          email: "This email is already registered. Please use another email.",
+          email: t("auth.errors.emailTakenUseOther"),
         }));
         setTouched((prev) => ({ ...prev, email: true }));
         setCheckedEmail("");
-        showToast.error("This email is already registered. Please use another email.");
+        showToast.error(t("auth.errors.emailTakenUseOther"));
       } else if (
         error.code === "auth/weak-password" ||
         error.message?.includes("weak-password")
@@ -303,12 +302,12 @@ export default function useRegisterForm() {
         setStep(2);
         setErrors((prev) => ({
           ...prev,
-          password: "Password is too weak. Please choose a stronger password.",
+          password: t("auth.errors.weakPasswordLong"),
         }));
         setTouched((prev) => ({ ...prev, password: true }));
-        showToast.error("Password is too weak.");
+        showToast.error(t("auth.errors.weakPasswordShort"));
       } else {
-        showToast.error(error.message || "Failed to create account. Please try again.");
+        showToast.error(error.message || t("auth.errors.createFailed"));
       }
     } finally {
       setLoading(false);

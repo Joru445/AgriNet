@@ -1,5 +1,6 @@
 import useStoreProfile from "../../hooks/useStoreProfile";
 import useStartConversation from "../../hooks/useStartConversation";
+import { useLanguage } from "../../context/LanguageContext";
 
 import StoreHeader from "../../components/shared/store/StoreHeader";
 import StoreHeaderSkeleton from "../../components/shared/store/StoreHeaderSkeleton";
@@ -10,6 +11,7 @@ import EmptyState from "../../components/ui/EmptyState";
 
 export default function StoreProfile() {
   const startConversation = useStartConversation();
+  const { t } = useLanguage();
 
   const {
     loading,
@@ -29,8 +31,8 @@ export default function StoreProfile() {
       <main className="mx-auto max-w-6xl p-6 md:p-8">
         <EmptyState
           icon="ri-store-2-line"
-          title="Store Not Found"
-          description="The requested farmer or store profile does not exist."
+          title={t("storeProfile.notFound")}
+          description={t("storeProfile.notFoundDesc")}
         />
       </main>
     );
@@ -63,7 +65,7 @@ export default function StoreProfile() {
       {/* Reviews section */}
       <div className="px-4 sm:px-6 py-6 border-t border-[var(--agri-border-subtle)]">
         <ReviewSection
-          title="Farmer Reviews"
+          title={t("reviews.farmerTitle")}
           reviews={reviews}
           loading={loadingReviews}
           type="farmer"

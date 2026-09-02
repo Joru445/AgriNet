@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 
 import { useAuth } from "../../../context/AuthContext";
+import { useLanguage } from "../../../context/LanguageContext";
 import MessageBubble from "./MessageBubble";
 import ProductInquiryMessage from "./ProductInquiryMessage";
 import MessageSeparator from "./MessageSeparator";
@@ -23,6 +24,7 @@ export default function MessageList({
   onDeleteFailed,
 }) {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const containerRef = useRef(null);
   const bottomRef = useRef(null);
   const prevMessagesLengthRef = useRef(0);
@@ -144,7 +146,7 @@ export default function MessageList({
   if (!messages.length) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-[var(--agri-text-muted)]">
-        Start your conversation 👋
+        {t("messages.startConversationPrompt")}
       </div>
     );
   }
@@ -221,7 +223,7 @@ export default function MessageList({
             {loadingOlder ? (
               <div className="flex items-center gap-2 text-xs text-[var(--agri-text-muted)] font-semibold bg-[var(--agri-card)]/90 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-[var(--agri-border)] shadow-2xs">
                 <i className="ri-loader-4-line animate-spin text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-                <span>Loading earlier messages...</span>
+                <span>{t("messages.loadingEarlier")}</span>
               </div>
             ) : (
               <button
@@ -236,7 +238,7 @@ export default function MessageList({
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:text-[#1B4332] dark:hover:text-[var(--agri-brand-light)] bg-[#E8F5EE]/80 dark:bg-[var(--agri-brand-bg-alt)]/80 hover:bg-[#E8F5EE] dark:hover:bg-[var(--agri-brand-bg-alt)] px-4 py-1.5 rounded-full border border-[#2D6A4F]/25 shadow-2xs transition cursor-pointer active:scale-95"
               >
                 <i className="ri-history-line text-sm" />
-                <span>Load earlier messages</span>
+                <span>{t("messages.loadEarlier")}</span>
               </button>
             )}
           </div>
@@ -293,8 +295,8 @@ export default function MessageList({
             <i className="ri-arrow-down-line text-sm" />
             <span>
               {newMessageCount === 1
-                ? "1 new message"
-                : `${newMessageCount} new messages`}
+                ? t("messages.newMessage")
+                : t("messages.newMessages", { count: newMessageCount })}
             </span>
           </button>
         </div>

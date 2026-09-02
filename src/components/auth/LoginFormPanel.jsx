@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import logo from "../../assets/favicon.ico";
 import landscapeBg from "../../assets/img/landscape.jpg";
 
+import { useLanguage } from "../../context/LanguageContext";
+
 import FormInput from "./FormInput";
 import PasswordInput from "./PasswordInput";
 import ErrorAlert from "./ErrorAlert";
@@ -14,6 +16,8 @@ export default function LoginFormPanel({
   onChange,
   onSubmit,
 }) {
+  const { t } = useLanguage();
+
   return (
     <div
       className="flex-1 relative flex items-center justify-center p-3 sm:p-6 md:p-12 min-h-screen overflow-y-auto"
@@ -44,9 +48,9 @@ export default function LoginFormPanel({
         </div>
 
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332]">Welcome Back!</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332]">{t("auth.login.welcomeBack")}</h1>
           <p className="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1">
-            Sign in to access your dashboard.
+            {t("auth.login.subtitle")}
           </p>
         </div>
 
@@ -55,7 +59,7 @@ export default function LoginFormPanel({
             <ErrorAlert message={errors.general} />
 
             <FormInput
-              label="Email Address"
+              label={t("auth.emailLabel")}
               name="email"
               type="email"
               icon="ri-mail-line"
@@ -68,7 +72,7 @@ export default function LoginFormPanel({
           </div>
 
           <PasswordInput
-            label="Password"
+            label={t("auth.passwordLabel")}
             name="password"
             value={form.password}
             onChange={onChange}
@@ -80,7 +84,7 @@ export default function LoginFormPanel({
               to="/forgot-password"
               className="text-xs text-[#2D6A4F] hover:underline"
             >
-              Forgot password?
+              {t("auth.login.forgotPassword")}
             </Link>
           </div>
 
@@ -90,18 +94,18 @@ export default function LoginFormPanel({
             className="w-full py-2.5 sm:py-3 bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold rounded-full transition-all duration-200 text-sm flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-70 cursor-pointer"
           >
             <i className="ri-login-box-line"></i>
-            {loading ? "Signing In..." : "Sign In"}
+            {loading ? t("auth.login.signingIn") : t("auth.login.signIn")}
           </button>
         </form>
 
         <p className="text-center text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6">
-          Don't have an account?{" "}
+          {t("auth.login.noAccount")}{" "}
           <Link
             to="/register"
             data-route
             className="text-[#2D6A4F] font-semibold hover:underline cursor-pointer"
           >
-            Register here
+            {t("auth.login.registerHere")}
           </Link>
         </p>
 
@@ -111,7 +115,7 @@ export default function LoginFormPanel({
             className="hover:text-[#2D6A4F] flex items-center justify-center gap-1"
           >
             <i className="ri-arrow-left-line"></i>
-            Back to Home
+            {t("auth.backHome")}
           </Link>
         </p>
       </div>

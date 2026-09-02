@@ -20,13 +20,13 @@ export default function AppLayout() {
   const isTabRoutes = tabRoutes.includes(location.pathname);
 
   return (
-    <div className="fixed inset-0 flex overflow-hidden">
+    <div className="fixed inset-0 flex overflow-hidden h-full dark:lg:p-2">
       {isDesktop && (
         <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       )}
 
       <div
-        className={`flex-1 flex flex-col h-full overflow-hidden transition-[margin] duration-300 ml-0 ${
+        className={`flex-1 flex flex-col h-full overflow-hidden transition-[margin] duration-300 dark:lg:px-2 ${
           collapsed ? "lg:ml-20" : "lg:ml-64"
         }`}
       >
@@ -34,7 +34,7 @@ export default function AppLayout() {
         <OfflineIndicator />
 
         <div
-          className={`flex-1 min-h-0 overscroll-none scrollbar-none bg-[var(--agri-page)] ${
+          className={`flex-1 min-h-0 overscroll-none scrollbar-none bg-(--agri-page) ${
             isMessages
               ? "flex flex-col overflow-hidden"
               : "overflow-y-auto"

@@ -2,14 +2,16 @@ import { useState } from "react";
 import ReviewRating from "../farmer/reviews/ReviewRating";
 import { formatTimestamp } from "../../utils/date";
 import ImageViewerModal from "./ImageViewerModal";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ReviewCard({ review, type = "product" }) {
+  const { t } = useLanguage();
   const [activeImage, setActiveImage] = useState(null);
   const isProduct = type === "product";
 
   const reviewer = review.reviewer ?? {};
 
-  const reviewerName = reviewer.fullname || reviewer.username || "Anonymous";
+  const reviewerName = reviewer.fullname || reviewer.username || t("reviews.anonymous");
 
   const reviewerAvatar = reviewer.profilePicture || "";
 
@@ -35,9 +37,9 @@ export default function ReviewCard({ review, type = "product" }) {
             src={reviewerAvatar}
             alt={reviewerName}
             loading="lazy"
-            onClick={() => setActiveImage({ src: reviewerAvatar, title: `${reviewerName}'s Profile Picture` })}
+            onClick={() => setActiveImage({ src: reviewerAvatar, title: t("profile.picOf", { name: reviewerName }) })}
             className="h-10 w-10 shrink-0 rounded-full object-cover cursor-pointer hover:opacity-90 transition"
-            title="Click to view photo"
+            title={t("reviews.clickToViewPhoto")}
           />
         ) : (
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-sm font-semibold text-[var(--agri-text-muted)]">
@@ -80,18 +82,18 @@ export default function ReviewCard({ review, type = "product" }) {
       {proofImage && (
         <div
           className="mt-4 overflow-hidden rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)] cursor-pointer group relative"
-          onClick={() => setActiveImage({ src: proofImage, title: "Transaction Proof" })}
-          title="Click to view full screen"
+          onClick={() => setActiveImage({ src: proofImage, title: t("reviews.transactionProof") })}
+          title={t("reviews.clickToViewFullScreen")}
         >
           <img
             src={proofImage}
-            alt="Product transaction proof"
+            alt={t("reviews.proofImageAlt")}
             className="max-h-80 w-full object-cover sm:max-h-96 group-hover:scale-[1.01] transition-transform duration-200"
             loading="lazy"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
             <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-md backdrop-blur-xs flex items-center gap-1">
-              <i className="ri-zoom-in-line" /> View Photo
+              <i className="ri-zoom-in-line" /> {t("reviews.viewPhoto")}
             </span>
           </div>
         </div>
@@ -101,7 +103,7 @@ export default function ReviewCard({ review, type = "product" }) {
       {isProduct && review.inquiryId && (
         <div className="mt-3 flex items-center gap-1.5 text-xs text-[var(--agri-text-muted)]">
           <i className="ri-checkbox-circle-line text-[#2D6A4F]" />
-          Verified transaction review
+          {t("reviews.verifiedTransactionReview")}
         </div>
       )}
 

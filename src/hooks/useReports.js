@@ -5,6 +5,7 @@ import {
   subscribeReports,
   subscribeUserReports,
   createReport,
+  getReport,
   updateReportStatus,
   startReportReview,
   resolveReport,

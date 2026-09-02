@@ -1,11 +1,16 @@
 import { useNavigate } from "react-router-dom";
 
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function BackButton({
   to,
   className = "",
-  label = "Back",
+  label,
 }) {
+  const { t } = useLanguage();
   const navigate = useNavigate();
+
+  const ariaLabel = label ?? t("common.back");
 
   const handleBack = () => {
     if (to) {
@@ -19,8 +24,8 @@ export default function BackButton({
     <button
       type="button"
       onClick={handleBack}
-      className={`inline-flex items-center gap-2 font-medium text-gray-600 transition hover:text-[#2D6A4F] dark:text-(--agri-primary) ${className}`}
-      aria-label={label}
+      className={`inline-flex items-center gap-2 font-medium text-gray-600 transition hover:text-(--agri-brand) dark:text-(--agri-primary) px-3 pl-2 ${className}`}
+      aria-label={ariaLabel}
     >
       <i className="ri-arrow-left-line text-2xl" />
     </button>

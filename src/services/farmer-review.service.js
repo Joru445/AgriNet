@@ -14,10 +14,79 @@ import {
 
 import { db } from "../firebase/firestore";
 import { getUserProfile } from "./user.service";
+import { getCachedUserProfile } from "../utils/userProfileCache";
 import * as pageCache from "../utils/pageCache";
 
 const reviewsRef = collection(db, "reviews");
 const inquiriesRef = collection(db, "inquiries");
+
+const MAX_CONCURRENCY = 4;
+
+function attachReviewerFallback(reviewData) {
+  return {
+    ...reviewData,
+    reviewer: {
+      fullname: reviewData.reviewerName || "Anonymous",
+      profilePicture: reviewData.reviewerAvatar || "",
+    },
+  };
+}
+
+/**
+ * Fill in full reviewer profiles for farmer reviews.
+ *
+ * Uses the sync profile cache first and only fetches misses over the
+ * network with bounded concurrency so a busy farmer's review list
+ * never fans out into dozens of parallel document reads.
+ */
+export async function enrichFarmerReviews(reviews) {
+  const uniqueReviewerIds = [
+    ...new Set(reviews.map((r) => r.reviewerId).filter(Boolean)),
+  ];
+
+  const reviewerMap = new Map();
+  const pendingReviewers = [];
+
+  uniqueReviewerIds.forEach((uid) => {
+    const cached = getCachedUserProfile(uid);
+    if (cached) {
+      reviewerMap.set(uid, cached);
+    } else {
+      pendingReviewers.push(uid);
+    }
+  });
+
+  let nextIndex = 0;
+
+  async function runWorker() {
+    while (nextIndex < pendingReviewers.length) {
+      const uid = pendingReviewers[nextIndex];
+      nextIndex += 1;
+      try {
+        const profile = await getUserProfile(uid);
+        if (profile) reviewerMap.set(uid, profile);
+      } catch {
+        /* noop */
+      }
+    }
+  }
+
+  await Promise.all(
+    Array.from(
+      { length: Math.min(MAX_CONCURRENCY, pendingReviewers.length) },
+      () => runWorker(),
+    ),
+  );
+
+  return reviews.map((review) => ({
+    ...review,
+    reviewer:
+      reviewerMap.get(review.reviewerId) || {
+        fullname: review.reviewerName || "Anonymous",
+        profilePicture: review.reviewerAvatar || "",
+      },
+  }));
+}
 
 export async function getReviews() {
   const q = query(reviewsRef, orderBy("createdAt", "desc"));
@@ -51,35 +120,8 @@ export async function getFarmerReviews(farmerId) {
   );
 
   const snapshot = await getDocs(q);
-  const reviews = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
 
-  const uniqueReviewerIds = [
-    ...new Set(reviews.map((r) => r.reviewerId).filter(Boolean)),
-  ];
-
-  const reviewerProfiles = await Promise.all(
-    uniqueReviewerIds.map(async (uid) => {
-      try {
-        const user = await getUserProfile(uid);
-        return [uid, user];
-      } catch (_) {
-        return [uid, null];
-      }
-    }),
-  );
-
-  const reviewerMap = new Map(reviewerProfiles.filter(([, u]) => u != null));
-
-  return reviews.map((review) => ({
-    ...review,
-    reviewer: reviewerMap.get(review.reviewerId) || {
-      fullname: review.reviewerName || "Anonymous",
-      profilePicture: review.reviewerAvatar || "",
-    },
-  }));
+  return snapshot.docs.map((doc) => attachReviewerFallback(doc.data()));
 }
 
 export async function getRecentFarmerReviews(farmerId, maxLimit = 3) {
@@ -90,36 +132,11 @@ export async function getRecentFarmerReviews(farmerId, maxLimit = 3) {
   );
 
   const snapshot = await getDocs(q);
-  const recentDocs = snapshot.docs.slice(0, maxLimit);
-  const reviews = recentDocs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  const recentReviews = snapshot.docs
+    .slice(0, maxLimit)
+    .map((doc) => attachReviewerFallback(doc.data()));
 
-  const uniqueReviewerIds = [
-    ...new Set(reviews.map((r) => r.reviewerId).filter(Boolean)),
-  ];
-
-  const reviewerProfiles = await Promise.all(
-    uniqueReviewerIds.map(async (uid) => {
-      try {
-        const user = await getUserProfile(uid);
-        return [uid, user];
-      } catch (_) {
-        return [uid, null];
-      }
-    }),
-  );
-
-  const reviewerMap = new Map(reviewerProfiles.filter(([, u]) => u != null));
-
-  return reviews.map((review) => ({
-    ...review,
-    reviewer: reviewerMap.get(review.reviewerId) || {
-      fullname: review.reviewerName || "Anonymous",
-      profilePicture: review.reviewerAvatar || "",
-    },
-  }));
+  return enrichFarmerReviews(recentReviews);
 }
 
 export async function getAverageFarmerRating(farmerId) {

@@ -1,18 +1,20 @@
 import { Link } from "react-router-dom";
+import { useLanguage } from "../../../context/LanguageContext";
 import ReviewCard from "../../common/ReviewCard";
 
 export default function RecentReviews({ reviews = [], loading = false }) {
+  const { t } = useLanguage();
   const displayedReviews = reviews.slice(0, 2);
 
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-[var(--agri-text)]">Latest Reviews</h2>
+        <h2 className="text-xl font-semibold text-[var(--agri-text)]">{t("farmer.latestReviews")}</h2>
         <Link
           to="/farmer/reviews"
           className="text-sm font-semibold text-[#2D6A4F] hover:text-[#1B4332] transition hover:underline"
         >
-          View all
+          {t("farmer.viewAll")}
         </Link>
       </div>
 
@@ -36,8 +38,8 @@ export default function RecentReviews({ reviews = [], loading = false }) {
           ))}
         </div>
       ) : reviews.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[var(--agri-border)] bg-[var(--agri-card)] p-10 text-center text-[var(--agri-text-muted)]">
-          No reviews yet.
+          <div className="rounded-2xl border border-dashed border-[var(--agri-border)] bg-[var(--agri-card)] p-10 text-center text-[var(--agri-text-muted)]">
+          {t("farmer.noReviewsYet")}
         </div>
       ) : (
         <div className="space-y-4">

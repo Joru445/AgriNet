@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function LogoutConfirmModal({
   open,
   onCancel,
   onConfirm,
   loggingOut = false,
 }) {
+  const { t } = useLanguage();
   const [shouldRender, setShouldRender] = useState(false);
   const [animating, setAnimating] = useState(false);
 
@@ -47,10 +50,10 @@ export default function LogoutConfirmModal({
 
           <div>
             <h3 className="text-base font-bold text-[var(--agri-text)]">
-              Log Out
+              {t("common.logOut")}
             </h3>
             <p className="mt-1 text-sm text-[var(--agri-text-secondary)] font-medium">
-              Are you sure you want to log out?
+              {t("common.logoutConfirmBody")}
             </p>
           </div>
         </div>
@@ -62,7 +65,7 @@ export default function LogoutConfirmModal({
             disabled={loggingOut}
             className="rounded-xl border border-[var(--agri-border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer disabled:opacity-50"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
 
           <button
@@ -71,7 +74,7 @@ export default function LogoutConfirmModal({
             disabled={loggingOut}
             className="rounded-xl bg-[#dc2626] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#b91c1c] shadow-xs cursor-pointer disabled:opacity-50"
           >
-            {loggingOut ? "Logging out..." : "Yes"}
+            {loggingOut ? t("common.loggingOut") : t("common.yes")}
           </button>
         </div>
       </div>
