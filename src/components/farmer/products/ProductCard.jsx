@@ -209,7 +209,7 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
           <div className="mt-1 flex items-baseline justify-between gap-1 flex-wrap">
             <div className="flex items-baseline gap-1.5 flex-wrap">
               <div className="flex items-baseline gap-0.5">
-                <span className="text-sm sm:text-base md:text-lg font-black text-[#1B4332] leading-none">
+                <span className="text-sm sm:text-base md:text-lg font-black text-(--agri-brand-dark) dark:text-(--agri-brand) leading-none">
                   ₱{priceFormatted}
                 </span>
                 <span className="text-[10px] sm:text-[11px] font-bold text-[var(--agri-text-secondary)]">

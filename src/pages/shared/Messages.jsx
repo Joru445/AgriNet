@@ -34,6 +34,10 @@ export default function Messages() {
     message,
     setMessage,
 
+    replyTo,
+    setReplyTo,
+    clearReply,
+
     selectedImage,
     setSelectedImage,
     uploadingImage,
@@ -78,6 +82,9 @@ export default function Messages() {
             onLoadOlder={loadOlderMessages}
             message={message}
             onMessageChange={setMessage}
+            replyTo={replyTo}
+            onSetReply={setReplyTo}
+            onClearReply={clearReply}
             hasChat={hasChat}
             onSend={sendMessage}
             inquiryProduct={inquiryProduct}

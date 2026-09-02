@@ -2,11 +2,11 @@ import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react
 
 import { useAuth } from "../../../context/AuthContext";
 import { useLanguage } from "../../../context/LanguageContext";
-import MessageBubble from "./MessageBubble";
+import MessageRow from "./MessageRow";
 import ProductInquiryMessage from "./ProductInquiryMessage";
 import MessageSeparator from "./MessageSeparator";
 
-import { shouldShowSeparator } from "../../../utils/chat";
+import { shouldShowSeparator, getMessageGroupPosition } from "../../../utils/chat";
 
 const SCROLL_THRESHOLD = 120;
 
@@ -22,6 +22,7 @@ export default function MessageList({
   onAcceptInquiry,
   onRetry,
   onDeleteFailed,
+  onSetReply,
 }) {
   const { profile } = useAuth();
   const { t } = useLanguage();
@@ -34,6 +35,26 @@ export default function MessageList({
   const loadingOlderRef = useRef(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [newMessageCount, setNewMessageCount] = useState(0);
+  const [highlightedMessageId, setHighlightedMessageId] = useState(null);
+  const highlightTimerRef = useRef(null);
+
+  const scrollToMessage = useCallback((messageId) => {
+    if (!containerRef.current || !messageId) return;
+    const target = containerRef.current.querySelector(
+      `[data-message-id="${messageId}"]`,
+    );
+    if (!target) return;
+    target.scrollIntoView({ block: "center", behavior: "smooth" });
+    setHighlightedMessageId(messageId);
+    clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = setTimeout(() => {
+      setHighlightedMessageId(null);
+    }, 2200);
+  }, []);
+
+  useEffect(() => {
+    return () => clearTimeout(highlightTimerRef.current);
+  }, []);
 
   useEffect(() => {
     loadingOlderRef.current = loadingOlder;
@@ -210,6 +231,16 @@ export default function MessageList({
     }
   }
 
+  const lastMineMessage = lastMineIndex >= 0 ? messages[lastMineIndex] : null;
+  const lastMineSeen =
+    lastMineMessage != null && checkIfSeen(lastMineMessage, lastMineIndex);
+  const lastMineFailed =
+    lastMineMessage?.status === "failed" || lastMineMessage?.status === "sending";
+
+  const isLatestMine = Boolean(
+    messages.length && messages[messages.length - 1]?.senderId === profile?.uid,
+  );
+
   return (
     <div className="flex-1 min-w-0 flex flex-col relative overflow-hidden">
       <div
@@ -246,8 +277,8 @@ export default function MessageList({
 
         {messages.map((message, index) => {
           const previous = messages[index - 1];
-          const isLastMine = index === lastMineIndex;
-          const isSeen = checkIfSeen(message, index);
+          const next = messages[index + 1];
+          const isHighlighted = highlightedMessageId === message.id;
 
           return (
             <div key={message.id}>
@@ -261,15 +292,18 @@ export default function MessageList({
                   message={message}
                   product={inquiryProducts?.[message.productId]}
                   onAccept={onAcceptInquiry}
-                  isLastMine={isLastMine}
-                  isSeen={isSeen}
                 />
               ) : (
-                <MessageBubble
-                  user={user}
+                <MessageRow
                   message={message}
-                  isLastMine={isLastMine}
-                  isSeen={isSeen}
+                  previousMessage={previous}
+                  nextMessage={next}
+                  groupPosition={getMessageGroupPosition(message, previous, next)}
+                  user={user}
+                  profile={profile}
+                  isHighlighted={isHighlighted}
+                  onReply={onSetReply}
+                  onJumpToMessage={scrollToMessage}
                   onRetry={onRetry}
                   onDeleteFailed={onDeleteFailed}
                 />
@@ -280,6 +314,23 @@ export default function MessageList({
 
         <div ref={bottomRef} className="h-0.5" />
       </div>
+
+      {/* Pinned send-status footer: reflects the most recent outgoing message */}
+      {lastMineMessage && isLatestMine && !lastMineFailed && (
+        <div className="shrink-0 flex justify-end items-center gap-1 px-4 pb-1 pt-0.5 text-[11px] font-semibold text-[var(--agri-text-muted)] select-none">
+          {lastMineSeen ? (
+            <>
+              <i className="ri-check-double-line text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+              <span>{t("messages.seen")}</span>
+            </>
+          ) : (
+            <>
+              <i className="ri-check-line text-sm text-[var(--agri-text-muted)]" />
+              <span>{t("messages.sent")}</span>
+            </>
+          )}
+        </div>
+      )}
 
       {/* New messages indicator */}
       {!isAtBottom && newMessageCount > 0 && (

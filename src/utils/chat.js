@@ -1,4 +1,4 @@
-function parseTimestamp(timestamp) {
+export function parseTimestamp(timestamp) {
   if (!timestamp) return null;
 
   if (typeof timestamp.toDate === "function") {
@@ -33,6 +33,39 @@ export function shouldShowSeparator(current, previous) {
   const TEN_MINUTES = 10 * 60 * 1000;
 
   return currentTime - previousTime >= TEN_MINUTES;
+}
+
+const GROUP_MAX_GAP_MS = 60 * 1000; // < 1 minute = same visual group
+
+/**
+ * Determines whether a message visually connects to the previous/next one
+ * (Messenger-style grouping): same sender AND within `GROUP_MAX_GAP_MS`.
+ * Returns "single" | "first" | "middle" | "last".
+ */
+export function getMessageGroupPosition(message, previousMessage, nextMessage) {
+  if (!message) return "single";
+
+  const sameSenderAsPrev =
+    !!previousMessage &&
+    previousMessage.senderId === message.senderId &&
+    timeGapWithin(previousMessage.createdAt, message.createdAt, GROUP_MAX_GAP_MS);
+
+  const sameSenderAsNext =
+    !!nextMessage &&
+    nextMessage.senderId === message.senderId &&
+    timeGapWithin(message.createdAt, nextMessage.createdAt, GROUP_MAX_GAP_MS);
+
+  if (sameSenderAsPrev && sameSenderAsNext) return "middle";
+  if (sameSenderAsPrev) return "last";
+  if (sameSenderAsNext) return "first";
+  return "single";
+}
+
+function timeGapWithin(aTimestamp, bTimestamp, maxMs) {
+  const a = parseTimestamp(aTimestamp);
+  const b = parseTimestamp(bTimestamp);
+  if (!a || !b) return false;
+  return Math.abs(b.getTime() - a.getTime()) < maxMs;
 }
 
 export function formatSeparator(timestamp) {

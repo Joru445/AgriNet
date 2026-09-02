@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { useLanguage } from "../../../context/LanguageContext";
+import MessageImage from "./MessageImage";
 
 import defaultAvatar from "../../../assets/img/defaultAvatar.png";
 import productPlaceholder from "../../../assets/img/productPlaceholder.png";
@@ -10,8 +11,6 @@ export default function ProductInquiryMessage({
   message,
   product,
   onAccept,
-  isLastMine = false,
-  isSeen = false,
 }) {
   const { profile } = useAuth();
   const { t } = useLanguage();
@@ -23,8 +22,32 @@ export default function ProductInquiryMessage({
 
   if (product === undefined) {
     return (
-      <div className="w-72 rounded-xl bg-[var(--agri-card)] p-4">
-        <p className="text-sm text-[var(--agri-text-muted)]">{t("productInquiryMsg.loading")}</p>
+      <div
+        className={`flex gap-2 ${isOwn ? "justify-end" : "justify-start"} min-w-0 w-full`}
+      >
+        {!isOwn && (
+          <img
+            src={user?.profilePicture || defaultAvatar}
+            alt={user?.fullname}
+            onError={(e) => { e.currentTarget.src = defaultAvatar; }}
+            className="h-10 w-10 shrink-0 rounded-full object-cover flex"
+          />
+        )}
+
+        <div className="w-60 sm:w-72 max-w-[76vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-[var(--agri-card)] shadow-sm border border-[var(--agri-border-subtle)]">
+          <MessageImage
+            loading
+            alt=""
+            width={400}
+            height={400}
+            className="w-full max-h-48 sm:max-h-72"
+          />
+          <div className="p-3 space-y-2">
+            <p className="text-xs font-medium text-[#2D6A4F] dark:text-[var(--agri-brand)]">{t("productInquiryMsg.title")}</p>
+            <div className="h-4 w-3/4 animate-pulse rounded bg-[var(--agri-hover)]" />
+            <div className="h-3 w-1/2 animate-pulse rounded bg-[var(--agri-hover)]" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -61,16 +84,20 @@ export default function ProductInquiryMessage({
         <img
           src={user?.profilePicture || defaultAvatar}
           alt={user?.fullname}
+          onError={(e) => { e.currentTarget.src = defaultAvatar; }}
           className={`h-10 w-10 shrink-0 rounded-full object-cover ${
             isOwn ? "hidden" : "flex"
           }`}
         />
 
-        <div className="w-64 sm:w-72 max-w-[78vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-[var(--agri-card)] shadow-sm border border-[var(--agri-border-subtle)]">
-          <img
+        <div className="w-60 sm:w-72 max-w-[76vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-[var(--agri-card)] shadow-sm border border-[var(--agri-border-subtle)]">
+          <MessageImage
             src={productImage}
             alt={product.name}
-            className="h-36 sm:h-40 w-full object-cover"
+            width={400}
+            height={400}
+            className="w-full max-h-48 sm:max-h-72"
+            imageClassName="object-cover transition hover:opacity-95"
           />
 
           <div className="p-3">
@@ -142,23 +169,6 @@ export default function ProductInquiryMessage({
           </div>
         </div>
       </div>
-
-      {/* Sent / Seen indicator for sender */}
-      {isOwn && isLastMine && (
-        <div className="flex items-center justify-end gap-1 mt-1 mr-1 text-[11px] font-bold select-none transition-all">
-          {isSeen ? (
-            <span className="flex items-center gap-1 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
-              <i className="ri-check-double-line text-xs font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-              {t("productInquiryMsg.seen")}
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-[var(--agri-text-muted)] font-semibold">
-              <i className="ri-check-line text-xs text-[var(--agri-text-muted)]" />
-              {t("productInquiryMsg.sent")}
-            </span>
-          )}
-        </div>
-      )}
     </div>
   );
 }

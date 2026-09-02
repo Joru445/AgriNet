@@ -762,6 +762,12 @@ export default {
     offlineBanner:
       "Walang internet. Ipapadala ang mga mensahe kapag nakakonekta na ulit.",
     moreOptions: "Higit pang opsyon",
+    reply: "I-reply",
+    replyingTo: "I-reply kay {name}",
+    cancelReply: "Kanselahin ang reply",
+    replyToMessage: "Mensahe",
+    replyToLabel: "Pumunta sa orihinal na mensahe",
+    replyPreviewMedia: "Media",
     visitStore: "Bisitahin ang Tindahan",
     viewProfile: "Tingnan ang Profile",
     reportUser: "I-report ang User",
@@ -794,6 +800,7 @@ export default {
     sendMessage: "Ipadala ang mensahe",
     photoAttachment: "Photo attachment",
     viewFullImage: "Tingnan ang buong larawan",
+    imageError: "Hindi ma-load ang larawan",
     couldntSend: "Hindi maipadala.",
     tapToRetry: "I-tap para subukan muli",
     deleteFailedMessage: "Tanggalin ang nabigong mensahe",
@@ -1338,6 +1345,9 @@ export default {
       ruleSpecial: "Hindi bababa sa isang special character (!@#$%...)",
       contactNumber: "Numero ng Telepono",
       farmLocation: "Lokasyon ng Bukid",
+      detectingLocation: "Sinusuri ang lokasyon ng iyong bukid...",
+      setLocationManually:
+        "Hindi ma-detect ang lokasyon. Maaari mo itong itakda nang manu-mano o gamitin ang locate button.",
       creating: "Nililikha...",
       createAccount: "Lumikha ng Account",
       createdToast:

@@ -1,84 +1,127 @@
 import { useState } from "react";
-import { useAuth } from "../../../context/AuthContext";
 import { useLanguage } from "../../../context/LanguageContext";
-import Avatar from "../../common/Avatar";
 import ImageViewerModal from "../../common/ImageViewerModal";
-import { applyTransform, MESSAGE_IMG_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
+import MessageImage from "./MessageImage";
+import MessageLinkPreview from "./MessageLinkPreview";
+import MessageReplyContent from "./MessageReplyContent";
+import { extractFirstUrl } from "../../../utils/linkPreview";
+import {
+  applyTransform,
+  MESSAGE_IMG_TF,
+  isCloudinaryUrl,
+} from "../../../utils/cloudinaryTransform";
 
+/**
+ * Renders ONLY the message bubble/content. Row layout, avatar, alignment,
+ * reply button and swipe gesture are handled by `MessageRow`.
+ *
+ * `groupPosition` ("single" | "first" | "middle" | "last") drives the
+ * connected-bubble corner radius so grouped messages feel visually linked.
+ */
 export default function MessageBubble({
-  user,
   message,
-  isLastMine = false,
-  isSeen = false,
+  mine = false,
+  groupPosition = "single",
   onRetry,
   onDeleteFailed,
+  onJumpToMessage,
 }) {
-  const { profile } = useAuth();
   const { t } = useLanguage();
   const [showLightbox, setShowLightbox] = useState(false);
 
-  const mine = message.senderId === profile.uid;
   const isFailed = message.status === "failed";
   const isImage = message.type === "image" || Boolean(message.imageUrl);
 
+  const replyTo = message.replyTo;
+  const messageUrl = extractFirstUrl(message.text);
+  const showLinkPreview = Boolean(messageUrl && !isImage);
+
+  const textRadius =
+    {
+      single: "rounded-2xl",
+      first: "rounded-t-2xl rounded-b-lg",
+      middle: "rounded-t-lg rounded-b-lg",
+      last: "rounded-t-lg rounded-b-2xl",
+    }[groupPosition] || "rounded-2xl";
+
   return (
     <div
-      className={`flex flex-col ${mine ? "items-end" : "items-start"} min-w-0`}
+      className={`min-w-0 rounded-2xl select-none flex flex-col
+        ${isImage ? "overflow-hidden" : ""}
+        ${
+          isFailed
+            ? "bg-red-50 dark:bg-red-500/10 text-red-900 dark:text-red-300 border border-red-300 dark:border-red-500/30 shadow-sm"
+            : ""
+        }`}
     >
-      <div
-        className={`flex gap-2 ${mine ? "justify-end" : "justify-start"} min-w-0 w-full`}
-      >
-        <Avatar
-          src={user?.profilePicture}
-          name={user?.fullname}
-          size="sm"
-          className={`${mine ? "hidden" : "flex shrink-0"}`}
-        />
-        <div
-          className={`max-w-[85%] sm:max-w-[75%] min-w-0 rounded-2xl
-          ${isImage ? "overflow-hidden" : ""
-            }
-          ${isFailed
-              ? "bg-red-50 dark:bg-red-500/10 text-red-900 dark:text-red-300 border border-red-300 dark:border-red-500/30 shadow-sm"
-              : ""
-            }`}
+      {/* Reply quote */}
+      {replyTo && (
+        <button
+          type="button"
+          onClick={() => onJumpToMessage?.(replyTo.messageId)}
+          className={`block w-full text-left pt-2.5 pb-1 cursor-pointer ${mine ? "pl-4" : "pr-4"}`}
+          aria-label={t("messages.replyToLabel")}
         >
-          {message.text && (
-            <p
-              className={`break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-2.5 rounded-2xl shadow-md
-                ${isImage ? "text-sm font-medium" : ""}
-                ${mine
-                  ? "bg-[#2D6A4F] text-white shadow-green-900/20"
-                  : "bg-[var(--agri-elevated)] text-[var(--agri-text)] border border-[var(--agri-border)] shadow-black/10"
-                }
-              `}
-            >
-              {message.text}
-            </p>
-          )}
+          <span
+            className={`flex min-w-0 items-center rounded-2xl px-3 py-2 shadow-black/10
+              ${
+                mine
+                  ? "bg-(--agri-elevated) dark:bg-(--agri-elevated) text-(--agri-text) border border-(--agri-border)"
+                  : "bg-(--agri-hover) border-[#2D6A4F] dark:border-(--agri-brand)"
+              }
+            `}
+          >
+            <MessageReplyContent replyTo={replyTo} />
+          </span>
+        </button>
+      )}
 
-          {/* Image Attachment */}
-          {isImage && message.imageUrl && (
-            <div className={`rounded-xl overflow-hidden mb-0 group relative ${mine ? "justify-self-end" : "justify-self-start"}`}>
-              <img
-                src={isCloudinaryUrl(message.imageUrl) ? applyTransform(message.imageUrl, MESSAGE_IMG_TF) : message.imageUrl}
-                alt={t("messages.photoAttachment")}
-                onClick={() => setShowLightbox(true)}
-                className="max-h-72 w-auto max-w-full rounded-xl object-cover cursor-pointer transition hover:opacity-95"
-                loading="lazy"
-              />
-              <button
-                type="button"
-                onClick={() => setShowLightbox(true)}
-                className="absolute bottom-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition shadow-md cursor-pointer"
-                title={t("messages.viewFullImage")}
-              >
-                <i className="ri-fullscreen-line text-sm" />
-              </button>
-            </div>
-          )}
+      {message.text && (
+        <p
+          className={`break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-2.5 shadow-md ${textRadius}
+            ${isImage ? "text-sm font-medium" : ""}
+            ${replyTo ? "pt-1" : ""}
+            ${
+              mine
+                ? "bg-[#2D6A4F] text-white shadow-green-900/20"
+                : "bg-[var(--agri-elevated)] text-[var(--agri-text)] border border-[var(--agri-border)] shadow-black/10"
+            }
+          `}
+        >
+          {message.text}
+        </p>
+      )}
+
+      {showLinkPreview && (
+        <div className="px-1.5 pb-1 first:pt-1">
+          <MessageLinkPreview url={messageUrl} metadata={message.linkPreview} />
         </div>
-      </div>
+      )}
+
+      {/* Image Attachment */}
+      {isImage && message.imageUrl && (
+        <div className="rounded-xl overflow-hidden mb-0 group relative">
+          <MessageImage
+            src={
+              isCloudinaryUrl(message.imageUrl)
+                ? applyTransform(message.imageUrl, MESSAGE_IMG_TF)
+                : message.imageUrl
+            }
+            alt={t("messages.photoAttachment")}
+            onLightbox={() => setShowLightbox(true)}
+            className="max-h-72"
+            imageClassName="transition hover:opacity-95"
+          />
+          <button
+            type="button"
+            onClick={() => setShowLightbox(true)}
+            className="absolute bottom-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition shadow-md cursor-pointer"
+            title={t("messages.viewFullImage")}
+          >
+            <i className="ri-fullscreen-line text-sm" />
+          </button>
+        </div>
+      )}
 
       {/* Failed indicator */}
       {isFailed && (
@@ -101,19 +144,6 @@ export default function MessageBubble({
             >
               <i className="ri-close-line text-sm" />
             </button>
-          )}
-        </div>
-      )}
-
-      {/* Sent / Seen indicator for sender */}
-      {mine && !isFailed && isLastMine && (
-        <div className="flex items-center justify-end gap-1 mt-1 mr-1 text-[11px] font-bold select-none transition-all">
-          {isSeen ? (
-            <span className="flex items-center gap-1 text-[var(--agri-text-muted)]">{t("messages.seen")}</span>
-          ) : (
-            <span className="flex items-center gap-1 text-[var(--agri-text-muted)] font-semibold">
-              {t("messages.sent")}
-            </span>
           )}
         </div>
       )}

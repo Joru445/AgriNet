@@ -41,7 +41,7 @@ export default function useMessageActions({
   }, []);
 
   const sendMessage = useCallback(
-    async (activeImg = null) => {
+    async (activeImg = null, replyTo = null) => {
       const text = message.trim();
 
       if (!text && !activeImg) return;
@@ -109,6 +109,7 @@ export default function useMessageActions({
           type: activeImg ? "image" : "text",
           imageUrl,
           imageId,
+          replyTo,
         });
 
         if (!activeConversation?.id) {

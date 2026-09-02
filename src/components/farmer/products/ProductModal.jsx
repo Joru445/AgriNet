@@ -80,10 +80,10 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
               <i className={`${product ? "ri-edit-box-line" : "ri-plant-line"} text-2xl text-[#2D6A4F]`} />
             </div>
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-[#1B4332]">
+              <h2 className="text-lg sm:text-xl font-bold text-(--agri-text)">
                 {product ? t("products.editProductTitle") : t("products.addProductTitle")}
               </h2>
-              <p className="text-xs text-[#2D6A4F]/80">
+              <p className="text-xs text-(--agri-brand) dark:text-(--agri-brand-light)">
                 {product ? t("products.updateDetails") : t("products.listNew")}
               </p>
             </div>

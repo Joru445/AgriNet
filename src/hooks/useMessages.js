@@ -89,12 +89,21 @@ export default function useMessages() {
 
   const [selectedImage, setSelectedImage] = useState(null);
 
+  const [replyTo, setReplyTo] = useState(null);
+  const clearReply = useCallback(() => setReplyTo(null), []);
+
+  // Clear pending reply when switching conversations
+  useEffect(() => {
+    clearReply();
+  }, [currentTargetKey, clearReply]);
+
   const sendMessage = useCallback(
     (customImage) => {
-      sendAction(customImage || selectedImage);
+      sendAction(customImage || selectedImage, replyTo);
       setSelectedImage(null);
+      clearReply();
     },
-    [sendAction, selectedImage],
+    [sendAction, selectedImage, replyTo, clearReply],
   );
 
   /*
@@ -378,6 +387,9 @@ export default function useMessages() {
     setSearch,
     message,
     setMessage,
+    replyTo,
+    setReplyTo,
+    clearReply,
     selectedImage,
     setSelectedImage,
     uploadingImage,

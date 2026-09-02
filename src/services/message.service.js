@@ -44,6 +44,7 @@ export async function sendMessage({
   productId = null,
   quantity = null,
   inquiryStatus = null,
+  replyTo = null,
 }) {
   const actualSenderId = senderId || auth.currentUser?.uid;
 
@@ -96,6 +97,7 @@ export async function sendMessage({
   if (productId) messageData.productId = productId;
   if (quantity != null && quantity !== "") messageData.quantity = quantity;
   if (inquiryStatus) messageData.inquiryStatus = inquiryStatus;
+  if (replyTo) messageData.replyTo = replyTo;
 
   batch.set(messageRef, messageData);
 

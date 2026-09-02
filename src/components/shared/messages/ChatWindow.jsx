@@ -27,6 +27,9 @@ export default function ChatWindow({
   onSelectImage,
   onRemoveImage,
   uploadingImage,
+  replyTo,
+  onSetReply,
+  onClearReply,
 }) {
   const { t } = useLanguage();
 
@@ -59,6 +62,7 @@ export default function ChatWindow({
         onAcceptInquiry={onAcceptInquiry}
         onRetry={onRetryMessage}
         onDeleteFailed={onDeleteFailedMessage}
+        onSetReply={onSetReply}
       />
 
       <MessageInput
@@ -72,6 +76,8 @@ export default function ChatWindow({
         onSelectImage={onSelectImage}
         onRemoveImage={onRemoveImage}
         uploadingImage={uploadingImage}
+        replyTo={replyTo}
+        onClearReply={onClearReply}
       />
     </section>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { compressImage } from "../../../utils/imageCompression";
 import { useLanguage } from "../../../context/LanguageContext";
+import MessageReplyPreview from "./MessageReplyPreview";
 
 export default function MessageInput({
   value,
@@ -13,6 +14,8 @@ export default function MessageInput({
   onSelectImage,
   onRemoveImage,
   uploadingImage = false,
+  replyTo,
+  onClearReply,
 }) {
   const textareaRef = useRef(null);
   const menuRef = useRef(null);
@@ -379,6 +382,13 @@ export default function MessageInput({
 
       {/* Main Input Container - High Contrast and Clear Readability */}
       <div className="relative flex flex-col w-full rounded-2xl border-2 bg-[var(--agri-card)] border-[var(--agri-input-border)] shadow-xs focus-within:border-[#2D6A4F] focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 transition-all duration-150">
+        {/* Reply Preview */}
+        {replyTo && (
+          <div className="p-2.5 pb-1">
+            <MessageReplyPreview replyTo={replyTo} onClear={onClearReply} />
+          </div>
+        )}
+
         {/* Selected Image Preview */}
         {selectedImage?.previewUrl && (
           <div className="p-3 pb-1 flex items-center gap-3 border-b border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 rounded-t-2xl">
