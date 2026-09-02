@@ -1227,6 +1227,7 @@ export default {
       dark: "Dark",
     },
     notifications: "Notifications",
+    account: "Account",
     language: "Language",
     languageDescription:
       "Choose the language you want AgriNet to display in. The whole app updates instantly.",
@@ -1261,6 +1262,8 @@ export default {
     saving: "Saving...",
     saveChanges: "Save Changes",
     farmerInfo: "Farmer Information",
+    storeName: "Store Name",
+    farmStats: "Farm Statistics",
     rating: "Rating",
     farmDescription: "Farm Description",
     farmDescriptionPlaceholder: "Tell customers about your farm...",
@@ -1508,6 +1511,10 @@ export default {
       "farmer-products": {
         title: "Add & Manage Products",
         body: "List new harvests and manage existing products from My Products. Use “Add Product” to publish something new.",
+      },
+      "farmer-first-product": {
+        title: "Create Your First Product",
+        body: "You don't have any products yet. Tap “Add Product” to list your first harvest — photos, price, and a description are all you need to start selling.",
       },
       "farmer-messages": {
         title: "Messages",

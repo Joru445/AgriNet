@@ -5,11 +5,13 @@ import ProductSkeleton from "../../components/shared/product/ProductSkeleton";
 import ProductModal from "../../components/farmer/products/ProductModal";
 import ProductGrid from "../../components/farmer/products/ProductGrid";
 import DeleteProductModal from "../../components/farmer/products/DeleteProductModal";
+import FirstProductOnboarding from "../../components/onboarding/FirstProductOnboarding";
 
 export default function MyProducts() {
   const {
     loading,
     saving,
+    products,
     filteredProducts,
 
     search,
@@ -68,6 +70,12 @@ export default function MyProducts() {
         product={editingProduct}
         onCancel={closeDelete}
         onConfirm={handleDelete}
+      />
+
+      <FirstProductOnboarding
+        hasProducts={products.length > 0}
+        loading={loading}
+        onCreate={openCreate}
       />
     </main>
   );

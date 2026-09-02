@@ -157,7 +157,7 @@ export default function useMarketplace() {
           product.category?.toLowerCase().includes(keyword) ||
           product.farmer?.fullname?.toLowerCase().includes(keyword) ||
           product.farmer?.username?.toLowerCase().includes(keyword) ||
-          product.farmer?.farmName?.toLowerCase().includes(keyword),
+          product.farmer?.storeName?.toLowerCase().includes(keyword),
       );
     }
 

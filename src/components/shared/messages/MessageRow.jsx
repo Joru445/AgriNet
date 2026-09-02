@@ -40,9 +40,9 @@ export default function MessageRow({
   const reducedMotion = prefersReducedMotion();
 
   // Sent messages expose Reply on the LEFT edge, received on the RIGHT edge.
-  // Swipe direction mirrors that: sent swipe right→reveal left control,
-  // received swipe left→reveal right control.
-  const swipeDirection = mine ? "right" : "left";
+  // Swipe direction mirrors that: sent swipe left→reveal right control,
+  // received swipe right→reveal left control.
+  const swipeDirection = mine ? "left" : "right";
   const swipe = useSwipeToReply({
     enabled: isTouch,
     direction: swipeDirection,

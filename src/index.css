@@ -277,6 +277,24 @@ body {
   }
 }
 
+/* Subtle page-entrance transition for route changes. Uses `backwards` fill so
+   the element returns to a no-transform state after the animation (avoiding a
+   persistent CSS transform that could capture `position: fixed` overlays). */
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-page-enter {
+  animation: pageIn 0.22s ease-out backwards;
+}
+
 .anim-fade-in {
   animation: fadeIn 0.2s ease-out both;
 }

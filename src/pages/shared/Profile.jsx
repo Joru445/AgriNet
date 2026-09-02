@@ -1,11 +1,9 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import ProfileHeader from "../../components/shared/me/ProfileHeader";
 import ProfileForm from "../../components/shared/me/ProfileForm";
 import FarmerSection from "../../components/shared/me/FarmerSection";
 import ProfileSkeleton from "../../components/shared/me/ProfileSkeleton";
-import LogoutConfirmModal from "../../components/common/LogoutConfirmModal";
 
 import { useAuth } from "../../context/AuthContext";
 import { useOnboarding } from "../../context/OnboardingContext";
@@ -13,16 +11,12 @@ import { useLanguage } from "../../context/LanguageContext";
 import useProfile from "../../hooks/useProfile";
 
 import { getSettingsPath } from "../../utils/routes";
-import { showToast } from "../../utils/toast";
 
 export default function Profile() {
-  const { profile, logout } = useAuth();
+  const { profile } = useAuth();
   const { startTour } = useOnboarding();
   const { t } = useLanguage();
   const navigate = useNavigate();
-
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
 
   const {
     loading,
@@ -41,107 +35,95 @@ export default function Profile() {
     handleAvatar,
   } = useProfile(profile);
 
-  async function handleLogout() {
-    try {
-      setLoggingOut(true);
-      await logout();
-
-      showToast.success(t("common.loggedOut"));
-      setShowLogoutModal(false);
-      navigate("/login");
-    } catch (error) {
-      console.error(error);
-
-      showToast.error(error.message);
-    } finally {
-      setLoggingOut(false);
-    }
+  if (loading || !profile) {
+    return <ProfileSkeleton />;
   }
 
+  const actions = [
+    {
+      id: "settings",
+      icon: "ri-settings-3-line",
+      title: t("profile.settings"),
+      subtitle: t("profile.settingsSubtitle"),
+      onClick: () => navigate(getSettingsPath(profile.role)),
+    },
+    {
+      id: "tutorial",
+      icon: "ri-play-circle-line",
+      title: t("profile.replayTutorial"),
+      subtitle: t("profile.replayTutorialSubtitle"),
+      onClick: startTour,
+    },
+  ];
+
   return (
-    <main className="flex-1">
-      {loading ? (
-        <ProfileSkeleton />
-      ) : (
-        <div className="bg-[var(--agri-card)] mx-auto max-w-6xl shadow-sm overflow-hidden pb-16 md:pb-8">
-          <ProfileHeader
-            profile={form}
-            editing={editing}
-            saving={saving}
-            uploadingAvatar={uploadingAvatar}
-            onEdit={() => setEditing(true)}
-            onCancel={handleCancel}
-            onSave={handleSave}
-            onLogout={() => setShowLogoutModal(true)}
-            onAvatarChange={handleAvatar}
-          />
+    <main className="mx-auto w-full max-w-6xl px-4 md:px-6 pb-18 md:pb-8">
+      <div className="anim-page-enter space-y-6">
+        <ProfileHeader
+          profile={form}
+          editing={editing}
+          saving={saving}
+          uploadingAvatar={uploadingAvatar}
+          onEdit={() => setEditing(true)}
+          onCancel={handleCancel}
+          onSave={handleSave}
+          onAvatarChange={handleAvatar}
+        />
 
-          <ProfileForm form={form} editing={editing} onChange={handleChange} />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Main column: personal + farmer info */}
+          <div className="space-y-6 lg:col-span-2">
+            <ProfileForm form={form} editing={editing} onChange={handleChange} />
 
-          {form.role === "farmer" && (
-            <FarmerSection
-              form={form}
-              stats={stats}
-              editing={editing}
-              onChange={handleChange}
-            />
-          )}
+            {form.role === "farmer" && (
+              <FarmerSection
+                form={form}
+                stats={stats}
+                editing={editing}
+                onChange={handleChange}
+              />
+            )}
+          </div>
 
-          {/* Preferences */}
-          <div className="border-t border-[var(--agri-border-subtle)] px-4 sm:px-6 lg:px-8 py-6">
-            <h2 className="text-sm font-bold text-[var(--agri-text)] mb-4">
-              {t("profile.preferences")}
-            </h2>
+          {/* Side column: actions */}
+          <div className="space-y-6">
+            <div className="overflow-hidden rounded-3xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
+              <div className="border-b border-[var(--agri-border-subtle)] px-5 py-4">
+                <h2 className="flex items-center gap-2 text-base font-bold text-[var(--agri-text)]">
+                  <i className="ri-sliders-horizontal-line text-lg text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+                  {t("profile.preferences")}
+                </h2>
+              </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => navigate(getSettingsPath(profile?.role))}
-                className="flex items-center gap-3 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-3 text-left transition hover:bg-[var(--agri-hover)] cursor-pointer"
-              >
-                <i className="ri-settings-3-line text-lg text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
+              <div className="divide-y divide-[var(--agri-border-subtle)]">
+                {actions.map((action) => (
+                  <button
+                    key={action.id}
+                    type="button"
+                    onClick={action.onClick}
+                    className="flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-[var(--agri-hover)] cursor-pointer"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--agri-hover)] text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+                      <i className={`${action.icon} text-lg`} />
+                    </div>
 
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-[var(--agri-text)]">
-                    {t("profile.settings")}
-                  </span>
-                  <span className="block text-xs text-[var(--agri-text-muted)]">
-                    {t("profile.settingsSubtitle")}
-                  </span>
-                </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold text-[var(--agri-text)]">
+                        {action.title}
+                      </span>
+                      <span className="block text-xs text-[var(--agri-text-muted)]">
+                        {action.subtitle}
+                      </span>
+                    </span>
 
-                <i className="ri-arrow-right-s-line ml-auto text-[var(--agri-text-muted)]" />
-              </button>
-
-              <button
-                type="button"
-                onClick={startTour}
-                className="flex items-center gap-3 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-3 text-left transition hover:bg-[var(--agri-hover)] cursor-pointer"
-              >
-                <i className="ri-play-circle-line text-lg text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
-
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-[var(--agri-text)]">
-                    {t("profile.replayTutorial")}
-                  </span>
-                  <span className="block text-xs text-[var(--agri-text-muted)]">
-                    {t("profile.replayTutorialSubtitle")}
-                  </span>
-                </span>
-
-                <i className="ri-arrow-right-s-line ml-auto text-[var(--agri-text-muted)]" />
-              </button>
+                    <i className="ri-arrow-right-s-line ml-auto text-xl text-[var(--agri-text-muted)]" />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      )}
-
-      <LogoutConfirmModal
-        open={showLogoutModal}
-        loggingOut={loggingOut}
-        onCancel={() => setShowLogoutModal(false)}
-        onConfirm={handleLogout}
-      />
+      </div>
     </main>
   );
 }

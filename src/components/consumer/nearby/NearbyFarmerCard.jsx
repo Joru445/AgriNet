@@ -36,10 +36,10 @@ export default function NearbyFarmerCard({ farmer }) {
               @{farmer.username}
             </p>
 
-            {farmer.farmName && (
+            {farmer.storeName && (
               <p className="text-[10px] sm:text-[11px] text-[var(--agri-text-muted)] truncate mt-0.5 flex items-center gap-1">
                 <i className="ri-store-2-line text-[var(--agri-text-muted)] shrink-0 text-xs" />
-                <span className="truncate">{farmer.farmName}</span>
+                <span className="truncate">{farmer.storeName}</span>
               </p>
             )}
           </div>

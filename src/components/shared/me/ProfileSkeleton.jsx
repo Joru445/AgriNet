@@ -1,123 +1,99 @@
 export default function ProfileSkeleton() {
   return (
-    <main className="flex-1 mx-auto max-w-6xl animate-pulse bg-[var(--agri-card)]">
-      {/* Cover */}
-      <div>
-        <div
-          className="
-            h-56
-            bg-[var(--agri-hover)]
-            sm:h-72
-            md:h-80
-            lg:h-95
-            sm:rounded-b-2xl
-          "
-        />
-      </div>
+    <main className="mx-auto w-full max-w-6xl px-4 md:px-6 pb-18 md:pb-8 animate-pulse">
+      <div className="space-y-6">
+        {/* Hero card */}
+        <div className="overflow-hidden rounded-3xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-md">
+          {/* Cover */}
+          <div className="h-44 bg-[var(--agri-hover)] sm:h-60 md:h-72 lg:h-80" />
 
-      {/* Profile Information */}
-      <div
-        className="
-          relative
-          -mt-8
-          rounded-t-3xl
-          bg-[var(--agri-card)]
-          px-4
-          sm:mt-0
-          sm:rounded-none
-          sm:px-6
-        "
-      >
-        <div>
-          {/* Avatar + Information */}
-          <div className="flex items-end gap-4">
-            {/* Avatar */}
-            <div className="relative -mt-8 shrink-0 sm:-mt-20">
-              <div
-                className="
-                  h-32 w-32
-                  rounded-full
-                  border-4 border-[var(--agri-card)]
-                  bg-[var(--agri-hover)]
-                  shadow-sm
-                  sm:h-40 sm:w-40
-                "
-              />
-            </div>
-
-            {/* Profile Details */}
-            <div className="min-w-0 pb-4 pt-3 sm:pb-5">
-              <div className="h-7 w-40 rounded bg-[var(--agri-hover)] sm:h-9 sm:w-56" />
-
-              <div className="mt-2 h-4 w-20 rounded bg-[var(--agri-hover)]/60" />
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-3 py-4 sm:justify-end">
-            <div className="h-10 w-24 rounded-lg bg-[var(--agri-hover)]" />
-            <div className="h-10 w-24 rounded-lg bg-[var(--agri-hover)]/60" />
-          </div>
-
-          {/* Form */}
-          <div className="border-t border-[var(--agri-border-subtle)] pt-6 pb-8">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index}>
-                  <div className="mb-2 h-4 w-24 rounded bg-[var(--agri-hover)]" />
-                  <div className="h-11 w-full rounded-xl bg-[var(--agri-hover)]" />
-                </div>
-              ))}
-            </div>
-
-            {/* About */}
-            <div className="mt-6">
-              <div className="mb-2 h-4 w-20 rounded bg-[var(--agri-hover)]" />
-              <div className="h-20 w-full rounded-xl bg-[var(--agri-hover)]" />
-            </div>
-
-            {/* Address */}
-            <div className="mt-6">
-              <div className="mb-2 h-4 w-20 rounded bg-[var(--agri-hover)]" />
-              <div className="h-32 w-full rounded-xl bg-[var(--agri-hover)]" />
-            </div>
-          </div>
-
-          {/* Farmer Section */}
-          <div className="border-t border-[var(--agri-border)] py-8">
-            <div className="mb-6 h-6 w-44 rounded bg-[var(--agri-hover)]" />
-
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {/* Farm Name */}
-              <div>
-                <div className="mb-2 h-4 w-24 rounded bg-[var(--agri-hover)]" />
-                <div className="h-11 w-full rounded-xl bg-[var(--agri-hover)]" />
+          {/* Avatar + identity */}
+          <div className="px-4 pb-6 sm:px-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+              <div className="relative -mt-14 sm:-mt-16 self-start">
+                <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-full border-4 border-[var(--agri-card)] bg-[var(--agri-hover)] shadow-lg" />
               </div>
 
-              {/* Rating */}
-              <div>
-                <div className="mb-2 h-4 w-20 rounded bg-[var(--agri-hover)]" />
-                <div className="h-6 w-32 rounded bg-[var(--agri-hover)]" />
+              <div className="min-w-0 flex-1 pt-2">
+                <div className="h-7 w-44 rounded bg-[var(--agri-hover)] sm:h-8 sm:w-56" />
+                <div className="mt-2.5 h-4 w-24 rounded bg-[var(--agri-hover)]/60" />
+                <div className="mt-3 h-10 w-3/4 max-w-sm rounded bg-[var(--agri-hover)]/60" />
+              </div>
+
+              <div className="shrink-0 self-end">
+                <div className="h-10 w-28 rounded-xl bg-[var(--agri-hover)]" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Main column */}
+          <div className="space-y-6 lg:col-span-2">
+            {/* Personal info card */}
+            <div className="overflow-hidden rounded-3xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
+              <div className="border-b border-[var(--agri-border-subtle)] px-5 py-4">
+                <div className="h-5 w-40 rounded bg-[var(--agri-hover)]" />
+              </div>
+              <div className="divide-y divide-[var(--agri-border-subtle)]">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="flex items-center gap-3 px-5 py-4">
+                    <div className="h-9 w-9 rounded-xl bg-[var(--agri-hover)]" />
+                    <div className="flex-1">
+                      <div className="h-3 w-20 rounded bg-[var(--agri-hover)]/60" />
+                      <div className="mt-1.5 h-4 w-40 rounded bg-[var(--agri-hover)]" />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Location */}
-            <div className="mt-6">
-              <div className="mb-2 h-4 w-36 rounded bg-[var(--agri-hover)]" />
-              <div className="h-28 w-full rounded-xl bg-[var(--agri-hover)]" />
-            </div>
-
-            {/* Stats */}
-            <div className="mt-8 grid grid-cols-2 gap-5 lg:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-elevated)] p-5 text-center"
-                >
-                  <div className="mx-auto h-8 w-12 rounded bg-[var(--agri-hover)]" />
-                  <div className="mx-auto mt-3 h-4 w-20 rounded bg-[var(--agri-hover)]" />
+            {/* Farmer card */}
+            <div className="overflow-hidden rounded-3xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
+              <div className="border-b border-[var(--agri-border-subtle)] px-5 py-4">
+                <div className="h-5 w-44 rounded bg-[var(--agri-hover)]" />
+              </div>
+              <div className="space-y-6 p-5 sm:p-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="h-16 rounded-2xl bg-[var(--agri-hover)]" />
+                  <div className="h-16 rounded-2xl bg-[var(--agri-hover)]" />
                 </div>
-              ))}
+
+                <div className="h-20 w-full rounded-2xl bg-[var(--agri-hover)]" />
+
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-elevated)] p-4"
+                    >
+                      <div className="mx-auto h-5 w-5 rounded-full bg-[var(--agri-hover)]" />
+                      <div className="mx-auto mt-2 h-7 w-12 rounded bg-[var(--agri-hover)]" />
+                      <div className="mx-auto mt-2 h-3 w-16 rounded bg-[var(--agri-hover)]/60" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Side column */}
+          <div className="space-y-6">
+            <div className="overflow-hidden rounded-3xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
+              <div className="border-b border-[var(--agri-border-subtle)] px-5 py-4">
+                <div className="h-5 w-32 rounded bg-[var(--agri-hover)]" />
+              </div>
+              <div className="divide-y divide-[var(--agri-border-subtle)]">
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <div key={index} className="flex items-center gap-3 px-5 py-4">
+                    <div className="h-10 w-10 rounded-xl bg-[var(--agri-hover)]" />
+                    <div className="flex-1">
+                      <div className="h-4 w-32 rounded bg-[var(--agri-hover)]" />
+                      <div className="mt-1.5 h-3 w-40 rounded bg-[var(--agri-hover)]/60" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

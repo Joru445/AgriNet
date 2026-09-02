@@ -202,7 +202,7 @@ export async function getMarketplaceProductsPage({ pageSize = 24, cursor } = {})
             uid: farmer.uid,
             fullname: farmer.fullname,
             username: farmer.username,
-            farmName: farmer.farmName,
+            storeName: farmer.storeName,
             profilePicture: farmer.profilePicture,
             location: farmer.location,
             verified: farmer.verified === true,

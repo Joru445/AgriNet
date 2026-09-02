@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import BottomTab from "../components/BottomTab";
 import OfflineIndicator from "../components/common/OfflineIndicator";
+import PageTransition from "../components/ui/PageTransition";
 import { useAuth } from "../context/AuthContext";
 import useMediaQuery from "../hooks/useMediaQuery";
 
@@ -40,7 +41,9 @@ export default function AppLayout() {
               : "overflow-y-auto"
           }`}
         >
-          <Outlet />
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
         </div>
 
         {!isDesktop && <BottomTab showBottomTab={isTabRoutes} />}

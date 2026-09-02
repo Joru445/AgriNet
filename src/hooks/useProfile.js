@@ -40,7 +40,7 @@ export default function useProfile(profile) {
       lng: null,
     },
 
-    farmName: profile?.farmName || "",
+    storeName: profile?.storeName || "",
     description: profile?.description || "",
     rating: profile?.rating || 0,
     verified: profile?.verified === true,
@@ -142,7 +142,7 @@ export default function useProfile(profile) {
           location: form.location,
           profilePicture: form.profilePicture,
           profilePictureId: form.profilePictureId,
-          farmName: form.farmName,
+          storeName: form.storeName,
           description: form.description,
         });
       }

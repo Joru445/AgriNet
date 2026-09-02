@@ -35,10 +35,10 @@ export default function FarmerPopup({ farmer, onMessage }) {
             @{farmer.username}
           </p>
 
-          {farmer.farmName && (
+          {farmer.storeName && (
             <p className="text-[11px] text-[#2D6A4F] dark:text-[var(--agri-brand)] font-medium truncate !m-0 !mt-0.5 !p-0 leading-tight flex items-center gap-1">
               <i className="ri-store-2-line text-[11px] shrink-0 text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-              <span className="truncate">{farmer.farmName}</span>
+              <span className="truncate">{farmer.storeName}</span>
             </p>
           )}
         </div>

@@ -62,7 +62,7 @@ export default function RecentProducts({ products = [] }) {
                   </p>
 
                   <p className="truncate text-xs text-[var(--agri-text-muted)] font-medium mt-0.5">
-                    {product.farmName || product.farmerName || "Unknown farmer"}
+                    {product.storeName || product.farmerName || "Unknown farmer"}
                   </p>
                 </div>
 

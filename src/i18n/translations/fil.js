@@ -1252,6 +1252,7 @@ export default {
       dark: "Dark",
     },
     notifications: "Mga Notification",
+    account: "Account",
     language: "Wika",
     languageDescription:
       "Piliin ang wikang ipapakita ng AgriNet. Agad na nag-u-update ang buong app.",
@@ -1288,6 +1289,8 @@ export default {
     saving: "Nagsi-save...",
     saveChanges: "I-save ang mga Pagbabago",
     farmerInfo: "Impormasyon ng Magsasaka",
+    storeName: "Pangalan ng Tindahan",
+    farmStats: "Mga Estadistika ng Bukid",
     rating: "Rating",
     farmDescription: "Deskripsyon ng Bukid",
     farmDescriptionPlaceholder:
@@ -1547,6 +1550,10 @@ export default {
       "farmer-products": {
         title: "Magdagdag at Pamahalaan ang mga Produkto",
         body: "Maglagay ng mga bagong ani at pamahalaan ang mga umiiral na produkto mula sa My Products. Gamitin ang 'Add Product' para mag-publish ng bago.",
+      },
+      "farmer-first-product": {
+        title: "Gumawa ng Iyong Unang Produkto",
+        body: "Wala ka pang produkto. I-tap ang 'Add Product' para i-list ang iyong unang ani — mga larawan, presyo, at deskripsyon lang ang kailangan para magsimulang magbenta.",
       },
       "farmer-messages": {
         title: "Mga Mensahe",
