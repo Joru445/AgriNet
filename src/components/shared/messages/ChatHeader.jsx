@@ -6,7 +6,6 @@ import { useLanguage } from "../../../context/LanguageContext";
 
 import Avatar from "../../common/Avatar";
 import BackButton from "../../common/BackButton";
-import UserProfileModal from "./UserProfileModal";
 import ReportModal from "../../common/ReportModal";
 
 import { getProfilePath } from "../../../utils/routes";
@@ -17,7 +16,6 @@ export default function ChatHeader({ user }) {
 
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const menuRef = useRef(null);
 
@@ -42,19 +40,14 @@ export default function ChatHeader({ user }) {
   if (!user) return null;
 
   const targetUid = user.uid || user.id;
-  const isFarmer = user.role === "farmer";
   const isAdmin = user.role === "admin";
 
   const profilePath = getProfilePath(profile.role)
 
   function handleAction() {
     setMenuOpen(false);
-    if (isFarmer) {
-      if (targetUid) {
-        navigate(`${profilePath}/${targetUid}`);
-      }
-    } else {
-      setShowProfileModal(true);
+    if (targetUid) {
+      navigate(`${profilePath}/${targetUid}`);
     }
   }
 
@@ -66,7 +59,7 @@ export default function ChatHeader({ user }) {
   return (
     <>
       <header
-        className="w-full h-16 sm:h-18 shrink-0 bg-[var(--agri-bg)]/90 border-b border-[var(--agri-border-subtle)] px-4 sm:px-6 flex items-center justify-between shadow-xs z-10"
+        className="w-full h-16 sm:h-18 shrink-0 bg-[var(--agri-bg)]/90 border-b border-[var(--agri-border-subtle)] px-4 sm:px-6 flex items-center justify-between shadow-xs z-[9996]"
       >
         <div className="flex items-center gap-3 min-w-0">
           <BackButton className="flex sm:hidden" />
@@ -119,16 +112,16 @@ export default function ChatHeader({ user }) {
 
             {/* 3-dots dropdown menu */}
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-40 sm:w-44 rounded-xl bg-[var(--agri-card)] p-1 shadow-lg border border-[var(--agri-border)] ring-1 ring-black/5 z-50 anim-scale-in">
+              <div className="absolute right-0 top-full mt-1.5 w-40 sm:w-44 rounded-xl bg-[var(--agri-card)] p-1 shadow-lg border border-[var(--agri-border)] ring-1 ring-black/5 z-[9997] anim-scale-in">
                 <button
                   type="button"
                   onClick={handleAction}
                   className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[#2D6A4F]/10 hover:text-[#1B4332] dark:hover:text-[var(--agri-brand-light)] transition-colors cursor-pointer"
                 >
                   <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
-                    <i className={isFarmer ? "ri-store-2-line text-sm" : "ri-user-3-line text-sm"} />
+                    <i className="ri-user-3-line text-sm" />
                   </div>
-                  <span className="truncate">{isFarmer ? t("messages.visitStore") : t("messages.viewProfile")}</span>
+                  <span className="truncate">{t("messages.viewProfile")}</span>
                 </button>
 
                 <div className="my-1 border-t border-[var(--agri-border-subtle)]" />
@@ -148,14 +141,6 @@ export default function ChatHeader({ user }) {
           </div>
         )}
       </header>
-
-      {/* Consumer / User Profile Modal */}
-      {showProfileModal && (
-        <UserProfileModal
-          user={user}
-          onClose={() => setShowProfileModal(false)}
-        />
-      )}
 
       {/* Report Modal */}
       <ReportModal

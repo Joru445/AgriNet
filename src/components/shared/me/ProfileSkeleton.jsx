@@ -1,6 +1,6 @@
 export default function ProfileSkeleton() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 md:px-6 pb-18 md:pb-8 animate-pulse">
+    <main className="mx-auto w-full max-w-6xl md:px-6 pb-18 md:pb-8 animate-pulse">
       <div className="space-y-6">
         {/* Hero card */}
         <div className="overflow-hidden rounded-3xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-md">
@@ -29,7 +29,7 @@ export default function ProfileSkeleton() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main column */}
-          <div className="space-y-6 lg:col-span-2">
+          <div className="space-y-6 px-4 md:px-0 lg:col-span-2">
             {/* Personal info card */}
             <div className="overflow-hidden rounded-3xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
               <div className="border-b border-[var(--agri-border-subtle)] px-5 py-4">
@@ -78,7 +78,7 @@ export default function ProfileSkeleton() {
           </div>
 
           {/* Side column */}
-          <div className="space-y-6">
+          <div className="space-y-6 px-4 md:px-0">
             <div className="overflow-hidden rounded-3xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
               <div className="border-b border-[var(--agri-border-subtle)] px-5 py-4">
                 <div className="h-5 w-32 rounded bg-[var(--agri-hover)]" />

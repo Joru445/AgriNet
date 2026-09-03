@@ -8,6 +8,7 @@ import LogoutConfirmModal from "../../components/common/LogoutConfirmModal";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
+import { usePWAUpdate } from "../../hooks/usePWAUpdate";
 import { getMePath } from "../../utils/routes";
 import { showToast } from "../../utils/toast";
 
@@ -15,9 +16,11 @@ export default function Settings() {
   const { profile, logout } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { needRefresh, updateServiceWorker } = usePWAUpdate();
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   async function handleLogout() {
     try {
@@ -33,6 +36,18 @@ export default function Settings() {
       showToast.error(error.message);
     } finally {
       setLoggingOut(false);
+    }
+  }
+
+  async function handleUpdate() {
+    try {
+      setUpdating(true);
+      await updateServiceWorker(true);
+    } catch (error) {
+      console.error(error);
+      showToast.error(t("settings.updateFailed"));
+    } finally {
+      setUpdating(false);
     }
   }
 
@@ -122,6 +137,60 @@ export default function Settings() {
             {t("settings.notifications")}
           </h2>
           <PushNotificationManager />
+        </div>
+      </section>
+
+      {/* App Update */}
+      <section className="mt-6">
+        <h2 className="text-sm font-bold text-[var(--agri-text)] mb-3">
+          {t("settings.appUpdate")}
+        </h2>
+
+        <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden">
+          {needRefresh ? (
+            <div className="flex items-center gap-3 px-4 py-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-brand-bg)] text-[var(--agri-brand)]">
+                <i className="ri-refresh-line text-lg" />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-[var(--agri-text)]">
+                  {t("settings.updateAvailable")}
+                </p>
+                <p className="text-xs text-[var(--agri-text-muted)]">
+                  {t("settings.updateDescription")}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleUpdate}
+                disabled={updating}
+                className="shrink-0 rounded-xl bg-[var(--agri-brand-dark)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--agri-brand-dark)]/80 cursor-pointer disabled:opacity-50"
+              >
+                {updating ? (
+                  <i className="ri-loader-4-line animate-spin" />
+                ) : (
+                  t("settings.update")
+                )}
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 px-4 py-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
+                <i className="ri-check-line text-lg" />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-[var(--agri-text)]">
+                  {t("settings.upToDate")}
+                </p>
+                <p className="text-xs text-[var(--agri-text-muted)]">
+                  {t("settings.upToDateDescription")}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

@@ -87,7 +87,7 @@ export default function MessageRow({
         className={`relative flex items-center ${mine ? "justify-end" : "justify-start"} min-w-0 w-full group`}
       >
         {/* Shrink-wrapped message/reply group. Hovering this reveals the desktop reply button. */}
-        <div className="group/swipe relative z-10 flex min-w-0 max-w-[85%] sm:max-w-[75%] w-fit items-center">
+        <div className="group/swipe relative z-9995 flex min-w-0 max-w-[85%] sm:max-w-[75%] w-fit items-center">
           <ReplyAffordance
             mine={mine}
             isTouch={isTouch}
@@ -106,7 +106,7 @@ export default function MessageRow({
                 src={user?.profilePicture}
                 name={user?.fullname}
                 size="sm"
-                className={`flex shrink-0 ${avatarVisibility}`}
+                className={`flex shrink-0 ${message.replyTo ? "mt-16" : ""} ${avatarVisibility}`}
               />
             )}
 

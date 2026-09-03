@@ -6,7 +6,7 @@ import MobileFiltersDrawer from "../../components/consumer/marketplace/MobileFil
 import ProductsToolbar from "../../components/consumer/marketplace/ProductsToolbar";
 import ProductsContainer from "../../components/consumer/marketplace/ProductsContainer";
 
-import { ProductGridSkeleton } from "../../components/consumer/marketplace/MarketplaceSkeleton";
+import ProductGridSkeleton from "../../components/shared/product/ProductGridSkeleton";
 import MarketplaceSubHeader from "../../components/consumer/layout/MarketplaceSubHeader";
 
 export default function Marketplace() {
@@ -63,7 +63,10 @@ export default function Marketplace() {
             />
 
             {loading ? (
-              <ProductGridSkeleton />
+              <ProductGridSkeleton
+                count={12}
+                gridClassName="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 lg:gap-6"
+              />
             ) : (
               <ProductsContainer
                 products={filteredProducts}

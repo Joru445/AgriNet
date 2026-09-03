@@ -179,6 +179,13 @@ export default {
     profileOf: "User Profile ni {name}",
   },
 
+  consumerProfile: {
+    about: "Tungkol sa User",
+    noBioYet: "Wala pang nakasulat na bio ang user na ito.",
+    notFound: "Hindi Nakita ang Profile",
+    notFoundDesc: "Ang hinihinging user profile ay wala.",
+  },
+
   productInquiryMsg: {
     loading: "Naglo-load ng produkto...",
     title: "Product Inquiry",
@@ -271,7 +278,7 @@ export default {
     verifiedFarmer: "Verified na Magsasaka",
     seeLess: "Makita pa",
     seeMore: "Tingnan pa",
-    visitStore: "Bisitahin ang Store",
+    visitStore: "Tingnan ang Profile",
   },
 
   pwaUpdate: {
@@ -580,7 +587,6 @@ export default {
     stockAvailable: "{count} {unit} ang available",
     report: "I-report",
     reportThisProduct: "I-report ang produktong ito",
-    visitStore: "Bisitahin ang Tindahan",
     seeMore: "Tingnan pa",
     seeLess: "Bawasan",
     noImages: "Walang larawan",
@@ -768,7 +774,6 @@ export default {
     replyToMessage: "Mensahe",
     replyToLabel: "Pumunta sa orihinal na mensahe",
     replyPreviewMedia: "Media",
-    visitStore: "Bisitahin ang Tindahan",
     viewProfile: "Tingnan ang Profile",
     reportUser: "I-report ang User",
     conversationWith: "Chat kay {name}",
@@ -1261,6 +1266,13 @@ export default {
     languageEnglishDescription: "Default na wika",
     languageFilipinoDescription:
       "Natural na Filipino para sa buong app",
+    appUpdate: "Update ng App",
+    updateAvailable: "May Bagong Update",
+    updateDescription: "May bagong bersyon ng AgriNet na handa nang i-install.",
+    update: "Update",
+    updateFailed: "Nabigong mag-update. Mangyaring subukan muli.",
+    upToDate: "Naka-update ka na",
+    upToDateDescription: "Ang iyong app ay gumagana sa pinakabagong bersyon.",
   },
 
   profile: {

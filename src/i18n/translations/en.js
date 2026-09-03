@@ -179,6 +179,13 @@ export default {
     profileOf: "User Profile of {name}",
   },
 
+  consumerProfile: {
+    about: "About",
+    noBioYet: "This user hasn't written a bio yet.",
+    notFound: "Profile Not Found",
+    notFoundDesc: "The requested user profile does not exist.",
+  },
+
   productInquiryMsg: {
     loading: "Loading product...",
     title: "Product Inquiry",
@@ -271,7 +278,7 @@ export default {
     verifiedFarmer: "Verified Farmer",
     seeLess: "See less",
     seeMore: "See more",
-    visitStore: "Visit Store",
+    visitStore: "View Profile",
   },
 
   pwaUpdate: {
@@ -571,7 +578,6 @@ export default {
     stockAvailable: "{count} {unit} available",
     report: "Report",
     reportThisProduct: "Report this product",
-    visitStore: "Visit Store",
     seeMore: "See more",
     seeLess: "See less",
     noImages: "No images available",
@@ -756,7 +762,6 @@ export default {
     replyToMessage: "Message",
     replyToLabel: "Go to original message",
     replyPreviewMedia: "Media",
-    visitStore: "Visit Store",
     viewProfile: "View Profile",
     reportUser: "Report User",
     conversationWith: "Conversation with {name}",
@@ -1235,6 +1240,13 @@ export default {
     languageFilipino: "Filipino",
     languageEnglishDescription: "Default language",
     languageFilipinoDescription: "Natural, everyday Filipino for the whole app",
+    appUpdate: "App Update",
+    updateAvailable: "Update Available",
+    updateDescription: "A new version of AgriNet is ready to install.",
+    update: "Update",
+    updateFailed: "Failed to update. Please try again.",
+    upToDate: "You're up to date",
+    upToDateDescription: "Your app is running the latest version.",
   },
 
   profile: {

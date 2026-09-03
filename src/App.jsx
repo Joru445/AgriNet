@@ -5,7 +5,6 @@ import { UnreadInquiriesProvider } from "./context/UnreadInquiriesContext";
 import { UnreadReportsProvider } from "./context/UnreadReportsContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
 import AppRoutes from "./routes/AppRoutes";
-import PWAUpdatePrompt from "./components/common/PWAUpdatePrompt";
 
 import "remixicon/fonts/remixicon.css";
 
@@ -18,7 +17,6 @@ export default function App() {
             <UnreadInquiriesProvider>
               <UnreadReportsProvider>
                 <AppRoutes />
-                <PWAUpdatePrompt />
               </UnreadReportsProvider>
             </UnreadInquiriesProvider>
           </UnreadMessagesProvider>

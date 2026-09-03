@@ -57,7 +57,7 @@ export default function Profile() {
   ];
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 md:px-6 pb-18 md:pb-8">
+    <main className="mx-auto w-full max-w-6xl md:px-6 pb-18 md:pb-8">
       <div className="anim-page-enter space-y-6">
         <ProfileHeader
           profile={form}
@@ -72,7 +72,7 @@ export default function Profile() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main column: personal + farmer info */}
-          <div className="space-y-6 lg:col-span-2">
+          <div className="space-y-6 px-4 md:px-0 lg:col-span-2">
             <ProfileForm form={form} editing={editing} onChange={handleChange} />
 
             {form.role === "farmer" && (
@@ -86,7 +86,7 @@ export default function Profile() {
           </div>
 
           {/* Side column: actions */}
-          <div className="space-y-6">
+          <div className="space-y-6 px-4 md:px-0">
             <div className="overflow-hidden rounded-3xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
               <div className="border-b border-[var(--agri-border-subtle)] px-5 py-4">
                 <h2 className="flex items-center gap-2 text-base font-bold text-[var(--agri-text)]">

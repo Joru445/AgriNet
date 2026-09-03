@@ -37,7 +37,7 @@ const Reports = lazy(() => import("../pages/admin/Reports.jsx"));
 
 // Shared Pages
 const ProductDetails = lazy(() => import("../pages/shared/ProductDetails"));
-const StoreProfile = lazy(() => import("../pages/shared/StoreProfile"));
+const PublicProfile = lazy(() => import("../pages/shared/PublicProfile"));
 const Inquiries = lazy(() => import("../pages/shared/Inquiries"));
 const TransactionProof = lazy(() => import("../pages/shared/TransactionProof"));
 const TransactionReview = lazy(() => import("../pages/shared/TransactionReview"));
@@ -87,7 +87,7 @@ export default function AppRoutes() {
 
               <Route path="/product/:id" element={<ProductDetails />} />
 
-              <Route path="/profile/:uid" element={<StoreProfile />} />
+              <Route path="/profile/:uid" element={<PublicProfile />} />
 
               <Route path="/transactions" element={<Inquiries />} />
 
@@ -121,7 +121,7 @@ export default function AppRoutes() {
 
               <Route path="/farmer/products" element={<MyProducts />} />
 
-              <Route path="/farmer/profile/:uid" element={<StoreProfile />} />
+              <Route path="/farmer/profile/:uid" element={<PublicProfile />} />
 
               <Route path="/farmer/transactions" element={<Inquiries />} />
 

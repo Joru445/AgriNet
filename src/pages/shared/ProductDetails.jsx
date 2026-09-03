@@ -41,15 +41,17 @@ export default function ProductDetails() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl md:pt-2 pb-8 space-y-4">
+    <main className="mx-auto max-w-7xl pb-8 md:pt-2">
       {loading ? (
         <ProductDetailsSkeleton />
       ) : (
         <>
-          <div className="grid gap-2 sm:gap-4 lg:grid-cols-2">
-            <ProductGallery product={product} />
+          <div className="grid gap-2 sm:gap-5 lg:grid-cols-2 lg:gap-8 lg:items-start">
+            <div className="lg:sticky lg:top-0">
+              <ProductGallery product={product} />
+            </div>
 
-            <div className="px-2 space-y-1 sm:space-y-4">
+            <div className="space-y-2 sm:space-y-4 lg:space-y-5">
               <ProductInfo
                 product={product}
                 reviewCount={reviewCount}
@@ -71,13 +73,14 @@ export default function ProductDetails() {
           </div>
 
           {/* Reviews - loads independently */}
-
-          <ReviewSection
-            title={t("reviews.productTitle")}
-            reviews={reviews}
-            loading={reviewsLoading}
-            type="product"
-          />
+          <div className="mt-4 sm:mt-6 lg:mt-10">
+            <ReviewSection
+              title={t("reviews.productTitle")}
+              reviews={reviews}
+              loading={reviewsLoading}
+              type="product"
+            />
+          </div>
 
           {/* Report Product Modal */}
           <ReportModal

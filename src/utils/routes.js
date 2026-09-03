@@ -112,10 +112,10 @@ export function getSettingsPath(role) {
 }
 
 /**
- * Get the store profile path for a given user ID.
+ * Get the public profile path for a given user ID.
  * Consumers/admins see /profile/:uid, farmers see /farmer/profile/:uid.
  */
-export function getStoreProfilePath(uid, role) {
+export function getPublicProfilePath(uid, role) {
   if (!uid) return "/home";
   if (role === "farmer") return `/farmer/profile/${uid}`;
   return `/profile/${uid}`;
