@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useLanguage } from "../../context/LanguageContext";
 
 /**
@@ -211,10 +212,10 @@ export default function ImageViewerModal({
 
   if (!isOpen || !imageSrc) return null;
 
-  return (
+  return createPortal(
     <div
       ref={containerRef}
-      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/90 backdrop-blur-sm select-none p-2 sm:p-6"
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/90 backdrop-blur-sm select-none p-2 sm:p-6"
       onClick={onClose}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -332,6 +333,7 @@ export default function ImageViewerModal({
           </span>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }
