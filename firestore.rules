@@ -1,0 +1,1256 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /*
+     * ============================================================
+     * HELPERS
+     * ============================================================
+     */
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function currentUser() {
+      return get(
+        /databases/$(database)/documents/users/$(request.auth.uid)
+      );
+    }
+
+    /*
+     * Only users with status == "active" can perform
+     * normal application actions.
+     */
+    function isActive() {
+      return isSignedIn()
+        && currentUser().data.status == "active";
+    }
+
+    /*
+     * Admin bypasses the active-status restriction.
+     * This allows admins to manage suspended accounts.
+     */
+    function isAdmin() {
+      return isSignedIn()
+        && currentUser().data.role == "admin";
+    }
+
+    function isOwner(userId) {
+      return isActive()
+        && request.auth.uid == userId;
+    }
+
+    function isFarmer() {
+      return isActive()
+        && currentUser().data.role == "farmer";
+    }
+
+    function isConsumer() {
+      return isActive()
+        && currentUser().data.role == "consumer";
+    }
+
+    function isParticipant(conversationId) {
+      return isSignedIn()
+        && request.auth.uid in
+          get(
+            /databases/$(database)/documents/conversations/$(conversationId)
+          ).data.participants;
+    }
+
+    function isConversationParticipant(data) {
+      return isSignedIn()
+        && request.auth.uid in data.participants;
+    }
+
+
+    /*
+     * ============================================================
+     * USER PROFILE UPDATE
+     *
+     * Users can update their own profile but cannot change:
+     *
+     * uid
+     * email
+     * role
+     * status
+     * ============================================================
+     */
+
+    function isUserProfileUpdate(userId) {
+  		return isOwner(userId)
+
+    		&& !request.resource.data
+      		.diff(resource.data)
+      		.affectedKeys()
+      		.hasAny([
+        		"uid",
+        		"email",
+        		"role",
+        		"status"
+      		]);
+		}
+
+
+    /*
+     * ============================================================
+     * ADMIN USER UPDATE
+     *
+     * Admin can modify fields such as:
+     *
+     * status
+     *
+     * But cannot change the user's identity fields.
+     * ============================================================
+     */
+
+    function isAdminUserUpdate() {
+  		return isAdmin()
+    		&& request.resource.data
+      		.diff(resource.data)
+      		.affectedKeys()
+      		.hasOnly(["status"]);
+		}
+
+
+    /*
+     * ============================================================
+     * USERS
+     * ============================================================
+     */
+
+    match /users/{userId} {
+
+      /*
+       * Profiles are publicly readable.
+       */
+      allow read: if true;
+
+
+      /*
+       * Registration.
+       *
+       * We cannot use isActive() here because the user's
+       * Firestore document does not exist yet.
+       */
+      allow create: if
+        isSignedIn()
+        && request.auth.uid == userId;
+
+
+      /*
+       * User updates their own allowed profile fields.
+       *
+       * Admin updates account status.
+       */
+      allow update: if
+        isUserProfileUpdate(userId)
+        || isAdminUserUpdate();
+
+
+      allow delete: if isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * FARMERS
+     * ============================================================
+     */
+
+    match /farmers/{farmerId} {
+
+      allow read: if true;
+
+
+      /*
+       * New farmer profile creation.
+       */
+      allow create: if
+        isSignedIn()
+        && request.auth.uid == farmerId;
+
+
+      allow update, delete: if
+        isOwner(farmerId)
+        || isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * PRODUCTS
+     * ============================================================
+     */
+
+    match /products/{productId} {
+
+      allow read: if true;
+
+
+      allow create: if
+        isActive()
+
+        && isFarmer()
+
+        && request.resource.data.farmerId
+           == request.auth.uid;
+
+
+      allow update: if
+        (
+          isActive()
+
+          && resource.data.farmerId
+             == request.auth.uid
+
+          && request.resource.data.farmerId
+             == resource.data.farmerId
+        )
+        || isAdmin();
+
+
+      allow delete: if
+        (
+          isActive()
+
+          && resource.data.farmerId
+             == request.auth.uid
+        )
+        || isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * FARMER REVIEWS
+     *
+     * Document ID:
+     *
+     * reviews/{inquiryId}
+     *
+     * One farmer review per completed transaction.
+     * ============================================================
+     */
+
+    match /reviews/{reviewId} {
+
+      allow read: if true;
+
+
+      /*
+       * Only active consumers can create reviews.
+       */
+      allow create: if
+
+        isConsumer()
+
+        && reviewId
+           == request.resource.data.inquiryId
+
+        && request.resource.data.reviewerId
+           == request.auth.uid
+
+        && exists(
+          /databases/$(database)/documents/inquiries/$(request.resource.data.inquiryId)
+        )
+
+        && get(
+          /databases/$(database)/documents/inquiries/$(request.resource.data.inquiryId)
+        ).data.status
+           == "completed"
+
+        && get(
+          /databases/$(database)/documents/inquiries/$(request.resource.data.inquiryId)
+        ).data.consumerId
+           == request.auth.uid
+
+        && request.resource.data.farmerId
+           == get(
+             /databases/$(database)/documents/inquiries/$(request.resource.data.inquiryId)
+           ).data.farmerId
+
+        && request.resource.data.inquiryId
+           is string
+
+        && request.resource.data.farmerId
+           is string
+
+        && request.resource.data.reviewerId
+           is string
+
+        && request.resource.data.rating
+           is number
+
+        && request.resource.data.rating >= 1
+
+        && request.resource.data.rating <= 5
+
+        && request.resource.data.comment
+           is string;
+
+
+      allow update: if
+
+        isActive()
+
+        && resource.data.reviewerId
+           == request.auth.uid
+
+        && request.resource.data.inquiryId
+           == resource.data.inquiryId
+
+        && request.resource.data.farmerId
+           == resource.data.farmerId
+
+        && request.resource.data.reviewerId
+           == resource.data.reviewerId
+
+        && request.resource.data.rating
+           is number
+
+        && request.resource.data.rating >= 1
+
+        && request.resource.data.rating <= 5
+
+        && request.resource.data.comment
+           is string;
+
+
+      allow delete: if
+        (
+          isActive()
+
+          && resource.data.reviewerId
+             == request.auth.uid
+        )
+        || isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * PRODUCT REVIEWS
+     *
+     * Document ID:
+     *
+     * product-reviews/{inquiryId}
+     * ============================================================
+     */
+
+    match /product-reviews/{reviewId} {
+
+      allow read: if true;
+
+
+      allow create: if
+
+        isConsumer()
+
+        && reviewId
+           == request.resource.data.inquiryId
+
+        && request.resource.data.reviewerId
+           == request.auth.uid
+
+        && exists(
+          /databases/$(database)/documents/inquiries/$(request.resource.data.inquiryId)
+        )
+
+        && get(
+          /databases/$(database)/documents/inquiries/$(request.resource.data.inquiryId)
+        ).data.status
+           == "completed"
+
+        && get(
+          /databases/$(database)/documents/inquiries/$(request.resource.data.inquiryId)
+        ).data.consumerId
+           == request.auth.uid
+
+        && request.resource.data.productId
+           == get(
+             /databases/$(database)/documents/inquiries/$(request.resource.data.inquiryId)
+           ).data.productId
+
+        && request.resource.data.inquiryId
+           is string
+
+        && request.resource.data.productId
+           is string
+
+        && request.resource.data.reviewerId
+           is string
+
+        && request.resource.data.rating
+           is number
+
+        && request.resource.data.rating >= 1
+
+        && request.resource.data.rating <= 5
+
+        && request.resource.data.comment
+           is string;
+
+
+      allow update: if
+
+        isActive()
+
+        && resource.data.reviewerId
+           == request.auth.uid
+
+        && request.resource.data.inquiryId
+           == resource.data.inquiryId
+
+        && request.resource.data.productId
+           == resource.data.productId
+
+        && request.resource.data.reviewerId
+           == resource.data.reviewerId
+
+        && request.resource.data.rating
+           is number
+
+        && request.resource.data.rating >= 1
+
+        && request.resource.data.rating <= 5
+
+        && request.resource.data.comment
+           is string;
+
+
+      allow delete: if
+        (
+          isActive()
+
+          && resource.data.reviewerId
+             == request.auth.uid
+        )
+        || isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * CONVERSATIONS
+     * ============================================================
+     */
+
+    match /conversations/{conversationId} {
+
+      allow read: if
+        isAdmin()
+        || isConversationParticipant(resource.data);
+
+
+      allow create: if
+        isConversationParticipant(request.resource.data);
+
+
+      allow update: if
+        (
+          isConversationParticipant(resource.data)
+
+          && request.resource.data.participants
+             == resource.data.participants
+        )
+        || isAdmin();
+
+
+      allow delete: if
+        isConversationParticipant(resource.data)
+        || isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * MESSAGES
+     * ============================================================
+     */
+
+    match /messages/{messageId} {
+
+      allow create: if
+
+        isActive()
+
+        && request.resource.data.senderId
+           == request.auth.uid
+
+        && request.resource.data.conversationId
+           is string
+
+        && isParticipant(
+          request.resource.data.conversationId
+        )
+
+        && (
+          /*
+           * Normal text message.
+           */
+          request.resource.data.type
+             == "text"
+
+          ||
+
+    		/*
+     		* Image message.
+     		*/
+    		(
+      		request.resource.data.type
+         		== "image"
+
+      		&& request.resource.data.imageUrl
+         		is string
+
+      		&& request.resource.data.imageUrl
+         		!= ""
+
+      		&& (
+        		!request.resource.data.keys()
+          		.hasAny(["imageId"])
+
+        		||
+
+        		request.resource.data.imageId
+          		is string
+      		)
+    		)
+
+    		||
+
+          /*
+           * Product inquiry message.
+           */
+          (
+            request.resource.data.type
+               == "product_inquiry"
+
+            && request.resource.data.productId
+               is string
+
+            && request.resource.data.quantity
+               is number
+
+            && request.resource.data.quantity > 0
+
+            && request.resource.data.inquiryStatus
+               == "pending"
+          )
+        );
+
+
+      /*
+       * Farmer accepts inquiry.
+       */
+      allow update: if
+
+        isAdmin()
+
+        ||
+
+        (
+          isFarmer()
+
+          && resource.data.type
+             == "product_inquiry"
+
+          && resource.data.inquiryStatus
+             == "pending"
+
+          && isParticipant(
+            resource.data.conversationId
+          )
+
+          && resource.data.senderId
+             != request.auth.uid
+
+          && request.resource.data.type
+             == resource.data.type
+
+          && request.resource.data.productId
+             == resource.data.productId
+
+          && request.resource.data.quantity
+             == resource.data.quantity
+
+          && request.resource.data.conversationId
+             == resource.data.conversationId
+
+          && request.resource.data.senderId
+             == resource.data.senderId
+
+          && request.resource.data.text
+             == resource.data.text
+
+          && request.resource.data.inquiryStatus
+             == "accepted"
+
+          && request.resource.data.inquiryId
+             is string
+
+          && request.resource.data.acceptedAt
+             != null
+        );
+
+
+      allow delete: if
+        (
+          isActive()
+
+          && resource.data.senderId
+             == request.auth.uid
+        )
+        || isAdmin();
+
+
+      allow read: if
+        isAdmin()
+        || isParticipant(
+          resource.data.conversationId
+        );
+    }
+
+
+    /*
+     * ============================================================
+     * INQUIRIES
+     *
+     * Lifecycle:
+     *
+     * accepted
+     *    ↓
+     * ongoing
+     *    ↓
+     * awaiting_proof
+     *    ↓
+     * proof_submitted
+     *    ↓
+     * completed
+     *
+     * proof_submitted
+     *    ↓
+     * awaiting_proof
+     *
+     * accepted / ongoing
+     *    ↓
+     * cancelled
+     *
+     * completed
+     *    ↓
+     * reviewed = true
+     * ============================================================
+     */
+
+    match /inquiries/{inquiryId} {
+
+      allow read: if
+
+        isAdmin()
+
+        ||
+
+        (
+          isSignedIn()
+
+          && resource.data.consumerId
+             == request.auth.uid
+        )
+
+        ||
+
+        (
+          isSignedIn()
+
+          && resource.data.farmerId
+             == request.auth.uid
+        );
+
+
+      /*
+       * Farmer creates inquiry after accepting
+       * the product inquiry message.
+       */
+      allow create: if
+
+        isFarmer()
+
+        && request.resource.data.farmerId
+           == request.auth.uid
+
+        && request.resource.data.consumerId
+           != request.auth.uid
+
+        && request.resource.data.consumerId
+           is string
+
+        && request.resource.data.farmerId
+           is string
+
+        && request.resource.data.conversationId
+           is string
+
+        && request.resource.data.productId
+           is string
+
+        && request.resource.data.inquiryMessageId
+           is string
+
+        && request.resource.data.status
+           == "accepted"
+
+        && request.resource.data.quantity
+           is number
+
+        && request.resource.data.quantity > 0
+
+        && isParticipant(
+          request.resource.data.conversationId
+        )
+
+        && exists(
+          /databases/$(database)/documents/messages/$(request.resource.data.inquiryMessageId)
+        )
+
+        && get(
+          /databases/$(database)/documents/messages/$(request.resource.data.inquiryMessageId)
+        ).data.type
+           == "product_inquiry"
+
+        && get(
+          /databases/$(database)/documents/messages/$(request.resource.data.inquiryMessageId)
+        ).data.inquiryStatus
+           == "pending"
+
+        && request.resource.data.quantity
+           ==
+           get(
+             /databases/$(database)/documents/messages/$(request.resource.data.inquiryMessageId)
+           ).data.quantity
+
+        && get(
+          /databases/$(database)/documents/products/$(request.resource.data.productId)
+        ).data.farmerId
+           == request.auth.uid
+
+        && get(
+          /databases/$(database)/documents/messages/$(request.resource.data.inquiryMessageId)
+        ).data.productId
+           == request.resource.data.productId
+
+        && get(
+          /databases/$(database)/documents/messages/$(request.resource.data.inquiryMessageId)
+        ).data.conversationId
+           == request.resource.data.conversationId
+
+        && get(
+          /databases/$(database)/documents/messages/$(request.resource.data.inquiryMessageId)
+        ).data.senderId
+           == request.resource.data.consumerId;
+
+
+      /*
+       * ==========================================================
+       * UPDATE
+       * ==========================================================
+       */
+
+      allow update: if
+
+        isAdmin()
+
+        ||
+
+        /*
+         * Farmer:
+         * accepted -> ongoing
+         */
+        (
+          isFarmer()
+
+          && resource.data.farmerId
+             == request.auth.uid
+
+          && resource.data.status
+             == "accepted"
+
+          && request.resource.data.status
+             == "ongoing"
+
+          && request.resource.data.farmerId
+             == resource.data.farmerId
+
+          && request.resource.data.consumerId
+             == resource.data.consumerId
+
+          && request.resource.data.productId
+             == resource.data.productId
+
+          && request.resource.data.conversationId
+             == resource.data.conversationId
+
+          && request.resource.data.inquiryMessageId
+             == resource.data.inquiryMessageId
+
+          && request.resource.data.quantity
+             == resource.data.quantity
+
+          && request.resource.data.ongoingAt
+             != null
+        )
+
+        ||
+
+        /*
+         * Consumer:
+         * ongoing -> awaiting_proof
+         */
+        (
+          isConsumer()
+
+          && resource.data.consumerId
+             == request.auth.uid
+
+          && resource.data.status
+             == "ongoing"
+
+          && request.resource.data.status
+             == "awaiting_proof"
+
+          && request.resource.data.consumerId
+             == resource.data.consumerId
+
+          && request.resource.data.farmerId
+             == resource.data.farmerId
+
+          && request.resource.data.productId
+             == resource.data.productId
+
+          && request.resource.data.conversationId
+             == resource.data.conversationId
+
+          && request.resource.data.inquiryMessageId
+             == resource.data.inquiryMessageId
+
+          && request.resource.data.quantity
+             == resource.data.quantity
+
+          && request.resource.data.completionRequestedAt
+             != null
+
+          && request.resource.data.completionRequestedBy
+             == request.auth.uid
+        )
+
+        ||
+
+        /*
+         * Consumer:
+         * awaiting_proof -> proof_submitted
+         */
+        (
+          isConsumer()
+
+          && resource.data.consumerId
+             == request.auth.uid
+
+          && resource.data.status
+             == "awaiting_proof"
+
+          && request.resource.data.status
+             == "proof_submitted"
+
+          && request.resource.data.consumerId
+             == resource.data.consumerId
+
+          && request.resource.data.farmerId
+             == resource.data.farmerId
+
+          && request.resource.data.productId
+             == resource.data.productId
+
+          && request.resource.data.conversationId
+             == resource.data.conversationId
+
+          && request.resource.data.inquiryMessageId
+             == resource.data.inquiryMessageId
+
+          && request.resource.data.quantity
+             == resource.data.quantity
+
+          && request.resource.data.proof
+             != null
+
+          && request.resource.data.proof.url
+             is string
+
+          && request.resource.data.proof.url
+             != ""
+
+          && request.resource.data.proof.uploadedBy
+             == request.auth.uid
+
+          && request.resource.data.proof.uploadedAt
+             != null
+
+          && (
+            !request.resource.data.proof.keys()
+              .hasAny(["publicId"])
+
+            ||
+
+            request.resource.data.proof.publicId
+              is string
+          )
+
+          && request.resource.data.proofSubmittedAt
+             != null
+        )
+
+        ||
+
+        /*
+         * Farmer:
+         * proof_submitted -> completed
+         */
+        (
+          isFarmer()
+
+          && resource.data.farmerId
+             == request.auth.uid
+
+          && resource.data.status
+             == "proof_submitted"
+
+          && request.resource.data.status
+             == "completed"
+
+          && request.resource.data.consumerId
+             == resource.data.consumerId
+
+          && request.resource.data.farmerId
+             == resource.data.farmerId
+
+          && request.resource.data.productId
+             == resource.data.productId
+
+          && request.resource.data.conversationId
+             == resource.data.conversationId
+
+          && request.resource.data.inquiryMessageId
+             == resource.data.inquiryMessageId
+
+          && request.resource.data.quantity
+             == resource.data.quantity
+
+          && request.resource.data.proof
+             == resource.data.proof
+
+          && request.resource.data.proofSubmittedAt
+             == resource.data.proofSubmittedAt
+
+          && request.resource.data.completedBy
+             == request.auth.uid
+
+          && request.resource.data.completedAt
+             != null
+        )
+
+        ||
+
+        /*
+         * Farmer:
+         * proof_submitted -> awaiting_proof
+         */
+        (
+          isFarmer()
+
+          && resource.data.farmerId
+             == request.auth.uid
+
+          && resource.data.status
+             == "proof_submitted"
+
+          && request.resource.data.status
+             == "awaiting_proof"
+
+          && request.resource.data.consumerId
+             == resource.data.consumerId
+
+          && request.resource.data.farmerId
+             == resource.data.farmerId
+
+          && request.resource.data.productId
+             == resource.data.productId
+
+          && request.resource.data.conversationId
+             == resource.data.conversationId
+
+          && request.resource.data.inquiryMessageId
+             == resource.data.inquiryMessageId
+
+          && request.resource.data.quantity
+             == resource.data.quantity
+
+          && request.resource.data.proofRejectedAt
+             != null
+
+          && request.resource.data.proofRejectedBy
+             == request.auth.uid
+        )
+
+        ||
+
+        /*
+         * Cancellation:
+         * accepted / ongoing -> cancelled
+         */
+        (
+          isActive()
+
+          && (
+            (
+              isConsumer()
+
+              && resource.data.consumerId
+                 == request.auth.uid
+            )
+
+            ||
+
+            (
+              isFarmer()
+
+              && resource.data.farmerId
+                 == request.auth.uid
+            )
+          )
+
+          && (
+            resource.data.status
+               == "accepted"
+
+            ||
+
+            resource.data.status
+               == "ongoing"
+          )
+
+          && request.resource.data.status
+             == "cancelled"
+
+          && request.resource.data.consumerId
+             == resource.data.consumerId
+
+          && request.resource.data.farmerId
+             == resource.data.farmerId
+
+          && request.resource.data.productId
+             == resource.data.productId
+
+          && request.resource.data.conversationId
+             == resource.data.conversationId
+
+          && request.resource.data.inquiryMessageId
+             == resource.data.inquiryMessageId
+
+          && request.resource.data.quantity
+             == resource.data.quantity
+
+          && request.resource.data.cancelledAt
+             != null
+
+          && request.resource.data.cancelledBy
+             == request.auth.uid
+        )
+
+        ||
+
+        /*
+         * Consumer marks completed transaction as reviewed.
+         */
+        (
+          isConsumer()
+
+          && resource.data.consumerId
+             == request.auth.uid
+
+          && resource.data.status
+             == "completed"
+
+          && request.resource.data.reviewed
+             == true
+
+          && request.resource.data.consumerId
+             == resource.data.consumerId
+
+          && request.resource.data.farmerId
+             == resource.data.farmerId
+
+          && request.resource.data.productId
+             == resource.data.productId
+
+          && request.resource.data.conversationId
+             == resource.data.conversationId
+
+          && request.resource.data.inquiryMessageId
+             == resource.data.inquiryMessageId
+
+          && request.resource.data.quantity
+             == resource.data.quantity
+
+          && request.resource.data.status
+             == resource.data.status
+
+          && request.resource.data.farmerReviewId
+             == inquiryId
+
+          && request.resource.data.productReviewId
+             == inquiryId
+
+          && request.resource.data.reviewedAt
+             != null
+        );
+
+
+      allow delete: if false;
+    }
+
+
+    /*
+     * ============================================================
+     * NOTIFICATIONS
+     * ============================================================
+     */
+
+match /notifications/{notificationId} {
+
+  function isSignedIn() {
+    return request.auth != null;
+  }
+
+  function isValidType(type) {
+    return type in [
+      "message",
+      "inquiry",
+      "system",
+      "review",
+      "transaction",
+      "verification",
+      "product"
+    ];
+  }
+
+  function hasValidCreateFields(data) {
+    return data.keys().hasOnly([
+      "recipientId",
+      "actorId",
+      "type",
+      "title",
+      "body",
+      "entityType",
+      "entityId",
+      "data",
+      "read",
+      "createdAt"
+    ])
+    && data.recipientId is string
+    && data.recipientId != ""
+    && data.actorId is string
+    && data.actorId != ""
+    && data.actorId == request.auth.uid
+    && data.recipientId != request.auth.uid
+    && data.type is string
+    && isValidType(data.type)
+    && data.title is string
+    && data.title != ""
+    && data.body is string
+    && data.read == false
+    && data.createdAt != null;
+  }
+
+  // ============================================================
+  // CREATE
+  // ============================================================
+
+  allow create: if isSignedIn()
+    && hasValidCreateFields(request.resource.data);
+
+
+  // ============================================================
+  // READ
+  // ============================================================
+
+  allow read: if isSignedIn()
+    && resource.data.recipientId == request.auth.uid;
+
+
+  // ============================================================
+  // UPDATE
+  // ============================================================
+
+  allow update: if isSignedIn()
+    && resource.data.recipientId == request.auth.uid
+    && resource.data.read == false
+    && request.resource.data.read == true;
+
+
+  // ============================================================
+  // DELETE
+  // ============================================================
+
+  allow delete: if isSignedIn()
+    && resource.data.recipientId == request.auth.uid;
+}
+
+
+    /*
+     * ============================================================
+     * REPORTS
+     * ============================================================
+     */
+
+    match /reports/{reportId} {
+
+      allow read: if
+
+        isAdmin()
+
+        ||
+        (
+          isActive()
+
+          && resource.data.reporterId
+             == request.auth.uid
+        );
+
+
+      allow create: if
+
+        isActive()
+
+        && request.resource.data.reporterId
+           == request.auth.uid
+
+        && request.resource.data.reportedUserId
+           is string
+
+        && request.resource.data.reason
+           is string
+
+        && request.resource.data.status
+           == "pending"
+
+        && request.resource.data.createdAt
+           != null;
+
+
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+  }
+}
