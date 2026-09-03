@@ -149,7 +149,7 @@ export default function Users() {
         if (data.verified) {
           await verifyUserFarmer(uid, adminUid);
         } else {
-          await unverifyUserFarmer(uid);
+          await unverifyUserFarmer(uid, adminUid);
         }
       }
 

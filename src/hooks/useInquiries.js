@@ -37,6 +37,12 @@ export default function useInquiries() {
    * --------------------------------------------------
    */
 
+  const profileRef = useRef(profile);
+
+  useEffect(() => {
+    profileRef.current = profile;
+  });
+
   useEffect(() => {
     if (!profile?.uid || !profile?.role) {
       return;
@@ -52,7 +58,8 @@ export default function useInquiries() {
         setInquiries(data);
         setLoading(false);
 
-        if (profile.role === "consumer" && Array.isArray(data)) {
+        const p = profileRef.current;
+        if (p.role === "consumer" && Array.isArray(data)) {
           const completedCount = data.filter(
             (item) => item.status === "completed" || item.status === "resolved",
           ).length;
@@ -62,11 +69,11 @@ export default function useInquiries() {
           const totalCount = data.length;
 
           if (
-            profile.completedDeals !== completedCount ||
-            profile.totalDeals !== totalCount ||
-            profile.cancelledDeals !== cancelledCount
+            p.completedDeals !== completedCount ||
+            p.totalDeals !== totalCount ||
+            p.cancelledDeals !== cancelledCount
           ) {
-            updateUser(profile.uid, {
+            updateUser(p.uid, {
               completedDeals: completedCount,
               totalDeals: totalCount,
               cancelledDeals: cancelledCount,
@@ -86,13 +93,7 @@ export default function useInquiries() {
     );
 
     return unsubscribe;
-  }, [
-    profile?.uid,
-    profile?.role,
-    profile?.completedDeals,
-    profile?.totalDeals,
-    profile?.cancelledDeals,
-  ]);
+  }, [profile?.uid, profile?.role]);
 
   /*
    * --------------------------------------------------

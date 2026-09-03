@@ -93,6 +93,12 @@ export function UnreadMessagesProvider({ children }) {
     }
   }, [profile?.uid, isMessagesRoute, activeConvId, activeUserId]);
 
+  const recalculateUnreadsRef = useRef(recalculateUnreads);
+
+  useEffect(() => {
+    recalculateUnreadsRef.current = recalculateUnreads;
+  });
+
   useEffect(() => {
     if (!profile?.uid) {
       setUnreadCount(0);
@@ -106,7 +112,7 @@ export function UnreadMessagesProvider({ children }) {
       profile.uid,
       (conversations) => {
         rawConversationsRef.current = conversations;
-        recalculateUnreads();
+        recalculateUnreadsRef.current();
       },
     );
 
@@ -116,7 +122,7 @@ export function UnreadMessagesProvider({ children }) {
         clearTimeout(popupTimerRef.current);
       }
     };
-  }, [profile?.uid, recalculateUnreads]);
+  }, [profile?.uid]);
 
   // Recalculate when user switches conversations or navigates
   useEffect(() => {

@@ -89,6 +89,7 @@ export function UnreadReportsProvider({ children }) {
   const popupTimerRef = useRef(null);
 
   const isReportsPage = location.pathname.includes("/admin/reports");
+  const pathnameRef = useRef(location.pathname);
 
   // Load persistent seen cache when profile changes
   useEffect(() => {
@@ -100,6 +101,11 @@ export function UnreadReportsProvider({ children }) {
       lastSeenTimeRef.current = 0;
     }
   }, [profile?.uid]);
+
+  // Keep pathnameRef in sync
+  useEffect(() => {
+    pathnameRef.current = location.pathname;
+  }, [location.pathname]);
 
   // When admin visits the reports page, mark all existing reports as read and save to localStorage
   useEffect(() => {
@@ -133,7 +139,7 @@ export function UnreadReportsProvider({ children }) {
         );
 
         // If admin is currently on the reports page, acknowledge everything
-        if (location.pathname.includes("/admin/reports")) {
+        if (pathnameRef.current.includes("/admin/reports")) {
           const now = Date.now();
           lastSeenTimeRef.current = now;
           saveStoredLastSeenTime(profile.uid, now);
@@ -197,7 +203,7 @@ export function UnreadReportsProvider({ children }) {
       unsubscribe();
       if (popupTimerRef.current) clearTimeout(popupTimerRef.current);
     };
-  }, [profile?.uid, profile?.role, location.pathname]);
+  }, [profile?.uid, profile?.role]);
 
   const clearPendingCount = useCallback(() => {
     if (!profile?.uid) return;
