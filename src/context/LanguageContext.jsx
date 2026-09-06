@@ -31,14 +31,10 @@ function resolveInitialLanguage() {
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState(() => {
     const initial = resolveInitialLanguage();
-    // Keep the module mirror consistent from the very first render so that
-    // pure modules (validators/services) translate correctly immediately.
     setActiveLanguage(initial);
     return initial;
   });
 
-  // Keep the module mirror + HTML lang attribute in sync whenever the user
-  // switches languages. The context value below re-renders the app.
   useEffect(() => {
     setActiveLanguage(lang);
     document.documentElement.lang = lang;

@@ -1346,11 +1346,21 @@ export default {
       signingIn: "Signing In...",
       noAccount: "Don't have an account?",
       registerHere: "Register here",
+      orContinueWith: "or continue with",
+      continueWithGoogle: "Continue with Google",
     },
 
     register: {
       title: "Create Your Account",
       subtitle: "Join AgriNet today.",
+      chooseMethod: "Choose how you'd like to get started.",
+      continueWithGoogle: "Continue with Google",
+      continueWithFacebook: "Continue with Facebook",
+      continueWithEmail: "Continue with Email",
+      orContinueWithEmail: "or continue with email",
+      comingSoon: "Coming Soon",
+      googleComingSoon: "Google registration will be available soon.",
+      facebookComingSoon: "Facebook registration will be available soon.",
       hasAccount: "Already have an account?",
       signIn: "Sign in",
       roleLabel: "I am a...",
@@ -1422,6 +1432,11 @@ export default {
 
     errors: {
       accountRole: "Unable to determine your account role.",
+      accountExistsDifferentCredential:
+        "An account already exists with this email address using another sign-in method. Please sign in with your email and password.",
+      googleSignInFailed: "Failed to sign in with Google. Please try again.",
+      networkError:
+        "Network error. Please check your internet connection and try again.",
       verifyPhone:
         "Please verify your phone number to access your account.",
       invalidCredentials: "Invalid email or password.",

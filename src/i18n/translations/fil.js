@@ -1374,11 +1374,21 @@ export default {
       signingIn: "Nag-sign in...",
       noAccount: "Wala ka pang account?",
       registerHere: "Magparehistro dito",
+      orContinueWith: "o magpatuloy gamit ang",
+      continueWithGoogle: "Magpatuloy gamit ang Google",
     },
 
     register: {
       title: "Lumikha ng Account",
       subtitle: "Sumali sa AgriNet ngayon.",
+      chooseMethod: "Pumili kung paano mo gustong magsimula.",
+      continueWithGoogle: "Magpatuloy gamit ang Google",
+      continueWithFacebook: "Magpatuloy gamit ang Facebook",
+      continueWithEmail: "Magpatuloy gamit ang Email",
+      orContinueWithEmail: "o magpatuloy gamit ang email",
+      comingSoon: "Paparating Pa",
+      googleComingSoon: "Magiging available na ang pagpaparehistro gamit ang Google sa lalong madaling panahon.",
+      facebookComingSoon: "Magiging available na ang pagpaparehistro gamit ang Facebook sa lalong madaling panahon.",
       hasAccount: "May account ka na?",
       signIn: "Mag-sign in",
       roleLabel: "Ako ay isang...",
@@ -1450,6 +1460,11 @@ export default {
 
     errors: {
       accountRole: "Hindi matukoy ang iyong account role.",
+      accountExistsDifferentCredential:
+        "Mayroon nang account na gumagamit ng email na ito gamit ang ibang sign-in method. Mangyaring mag-sign in gamit ang iyong email at password.",
+      googleSignInFailed: "Nabigong mag-sign in gamit ang Google. Pakisubukan muli.",
+      networkError:
+        "Problema sa network. Pakisuri ang iyong koneksyon at subukan muli.",
       verifyPhone:
         "I-verify ang numero ng telepono mo para ma-access ang account mo.",
       invalidCredentials: "Mali ang email o password.",

@@ -10,6 +10,9 @@ import {
   signInWithPhoneNumber,
   linkWithCredential,
   PhoneAuthProvider,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
 } from "firebase/auth";
 import {
   collection,
@@ -79,6 +82,28 @@ export async function login(email, password) {
 
 export function logout() {
   return signOut(auth);
+}
+
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: "select_account",
+});
+
+/**
+ * Initiates Google authentication using redirect.
+ * Recommended by Firebase for mobile browsers and PWAs.
+ */
+export async function signInWithGoogle() {
+  return signInWithRedirect(auth, googleProvider);
+}
+
+/**
+ * Retrieves the result of a Google redirect sign-in.
+ * Should be called once during application startup.
+ * @returns {Promise<import("firebase/auth").UserCredential | null>}
+ */
+export async function processRedirectResult() {
+  return getRedirectResult(auth);
 }
 
 export async function resetPassword(email) {

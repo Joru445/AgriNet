@@ -8,8 +8,13 @@ import { useLanguage } from "../../context/LanguageContext";
 import AccountStep from "./AccountStep";
 import PasswordStep from "./PasswordStep";
 import ProfileStep from "./ProfileStep";
+import MethodStep from "./MethodStep";
+import { requiresPasswordStep } from "../../utils/registerValidation";
 
 export default function RegisterForm({
+  registrationMethod = null,
+  selectRegistrationMethod,
+  isEmailReadOnly = false,
   step,
   form,
   errors = {},
@@ -68,60 +73,71 @@ export default function RegisterForm({
             </h1>
 
             <p className="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1">
-              {t("auth.register.subtitle")}
+              {registrationMethod
+                ? t("auth.register.subtitle")
+                : t("auth.register.chooseMethod")}
             </p>
           </div>
 
-          {/* Step Indicator */}
-          <div className="flex items-center mb-4 sm:mb-6">
-            {[1, 2, 3].map((number) => (
-              <div
-                key={number}
-                className="flex items-center flex-1 last:flex-none"
-              >
+          {/* Step Indicator (multi-step email registration) */}
+          {registrationMethod === "email" && (
+            <div className="flex items-center mb-4 sm:mb-6">
+              {[1, 2, 3].map((number) => (
                 <div
-                  className={`
-                    h-6 w-6 sm:h-7 sm:w-7 shrink-0 rounded-full
-                    flex items-center justify-center
-                    text-xs sm:text-sm font-semibold
-                    transition-colors
-                    ${
-                      step >= number
-                        ? "bg-[#2D6A4F] text-white"
-                        : "bg-gray-100 text-gray-500"
-                    }
-                  `}
+                  key={number}
+                  className="flex items-center flex-1 last:flex-none"
                 >
-                  {number}
-                </div>
-
-                {number < 3 && (
                   <div
                     className={`
-                      flex-1 h-1 mx-2 rounded-full
+                      h-6 w-6 sm:h-7 sm:w-7 shrink-0 rounded-full
+                      flex items-center justify-center
+                      text-xs sm:text-sm font-semibold
                       transition-colors
-                      ${step > number ? "bg-[#2D6A4F]" : "bg-gray-200"}
+                      ${
+                        step >= number
+                          ? "bg-[#2D6A4F] text-white"
+                          : "bg-gray-100 text-gray-500"
+                      }
                     `}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
+                  >
+                    {number}
+                  </div>
+
+                  {number < 3 && (
+                    <div
+                      className={`
+                        flex-1 h-1 mx-2 rounded-full
+                        transition-colors
+                        ${step > number ? "bg-[#2D6A4F]" : "bg-gray-200"}
+                      `}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Method Selection Screen */}
+          {!registrationMethod && (
+            <MethodStep onSelectMethod={selectRegistrationMethod} />
+          )}
 
           {/* Registration Steps */}
-          {step === 1 && (
+          {registrationMethod && step === 1 && (
             <AccountStep
               form={form}
               errors={errors}
               touched={touched}
               isCheckingEmail={isCheckingEmail}
+              isEmailReadOnly={isEmailReadOnly}
               updateField={updateField}
               setFieldTouched={setFieldTouched}
+              onBack={previousStep}
               onContinue={handleStep1Continue}
             />
           )}
 
-          {step === 2 && (
+          {requiresPasswordStep(registrationMethod) && step === 2 && (
             <PasswordStep
               form={form}
               errors={errors}
@@ -133,7 +149,7 @@ export default function RegisterForm({
             />
           )}
 
-          {step === 3 && (
+          {registrationMethod && step === 3 && (
             <ProfileStep
               form={form}
               errors={errors}

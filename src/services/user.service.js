@@ -36,8 +36,8 @@ export async function createUser(data) {
     email: data.email,
     role: data.role,
 
-    profilePicture: "",
-    profilePictureId: "",
+    profilePicture: data.profilePicture || "",
+    profilePictureId: data.profilePictureId || "",
 
     phone: data.phone,
     bio: "",

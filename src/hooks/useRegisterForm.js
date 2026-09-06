@@ -7,6 +7,7 @@ import {
   validateStep1,
   validateStep2,
   validateStep3,
+  requiresPasswordStep,
 } from "../utils/registerValidation";
 import { showToast } from "../utils/toast";
 import { t } from "../i18n";
@@ -36,6 +37,8 @@ const INITIAL_FORM = {
 export default function useRegisterForm() {
   const navigate = useNavigate();
 
+  const [registrationMethod, setRegistrationMethod] = useState(null);
+  const [authProviderData, setAuthProviderData] = useState(null);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
@@ -44,6 +47,23 @@ export default function useRegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState(INITIAL_FORM);
+
+  const isEmailReadOnly = Boolean(authProviderData?.email);
+
+  /**
+   * Prefills registration fields from an authenticated OAuth provider
+   */
+  const setProviderData = useCallback((providerData) => {
+    setAuthProviderData(providerData);
+    if (providerData) {
+      setForm((prev) => ({
+        ...prev,
+        fullname: providerData.displayName || prev.fullname,
+        email: providerData.email || prev.email,
+        ...(providerData.username ? { username: providerData.username } : {}),
+      }));
+    }
+  }, []);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
@@ -71,7 +91,7 @@ export default function useRegisterForm() {
             delete nextErrors[name];
           }
         } else if (name === "password" || name === "confirmPassword") {
-          const step2Errors = validateStep2(updated);
+          const step2Errors = validateStep2(updated, { registrationMethod });
           if (step2Errors[name]) {
             nextErrors[name] = step2Errors[name];
           } else {
@@ -148,10 +168,11 @@ export default function useRegisterForm() {
     }
 
     const cleanEmail = form.email.trim().toLowerCase();
+    const nextStepNumber = requiresPasswordStep(registrationMethod) ? 2 : 3;
 
     // 3. If email was already checked and hasn't changed, advance immediately
     if (checkedEmail && checkedEmail === cleanEmail) {
-      setStep(2);
+      setStep(nextStepNumber);
       return;
     }
 
@@ -176,7 +197,7 @@ export default function useRegisterForm() {
         delete next.email;
         return next;
       });
-      setStep(2);
+      setStep(nextStepNumber);
     } catch (err) {
       console.error("Email availability check error:", err);
       // If network fails, show error and remain on Step 1
@@ -228,10 +249,41 @@ export default function useRegisterForm() {
   }
 
   /**
-   * Navigates back to previous step
+   * Handles selection of registration method
+   */
+  const selectRegistrationMethod = useCallback((method) => {
+    if (method === "email") {
+      setRegistrationMethod("email");
+      setStep(1);
+    } else if (method === "google") {
+      showToast.info(t("auth.register.googleComingSoon"));
+    } else if (method === "facebook") {
+      showToast.info(t("auth.register.facebookComingSoon"));
+    }
+  }, []);
+
+  /**
+   * Resets registration back to method selection
+   */
+  const resetRegistrationMethod = useCallback(() => {
+    setRegistrationMethod(null);
+    setAuthProviderData(null);
+    setStep(1);
+  }, []);
+
+  /**
+   * Navigates back to previous step, or back to method selection if on Step 1
    */
   function previousStep() {
-    setStep((prev) => Math.max(prev - 1, 1));
+    if (step <= 1) {
+      setRegistrationMethod(null);
+      setAuthProviderData(null);
+      setStep(1);
+    } else if (step === 3 && !requiresPasswordStep(registrationMethod)) {
+      setStep(1);
+    } else {
+      setStep((prev) => Math.max(prev - 1, 1));
+    }
   }
 
   /**
@@ -263,18 +315,20 @@ export default function useRegisterForm() {
       return;
     }
 
-    const step2Errors = validateStep2(form);
-    if (Object.keys(step2Errors).length > 0) {
-      setStep(2);
-      setErrors((prev) => ({ ...prev, ...step2Errors }));
-      showToast.error(t("auth.errors.fixStep2"));
-      return;
+    if (requiresPasswordStep(registrationMethod)) {
+      const step2Errors = validateStep2(form, { registrationMethod });
+      if (Object.keys(step2Errors).length > 0) {
+        setStep(2);
+        setErrors((prev) => ({ ...prev, ...step2Errors }));
+        showToast.error(t("auth.errors.fixStep2"));
+        return;
+      }
     }
 
     try {
       setLoading(true);
 
-      await register(form);
+      await register({ ...form, registrationMethod });
 
       showToast.success(t("auth.register.createdToast"));
 
@@ -315,6 +369,16 @@ export default function useRegisterForm() {
   }
 
   return {
+    registrationMethod,
+    selectRegistrationMethod,
+    setRegistrationMethod,
+    resetRegistrationMethod,
+
+    authProviderData,
+    setProviderData,
+    isEmailReadOnly,
+    requiresPasswordStep: requiresPasswordStep(registrationMethod),
+
     step,
     loading,
     isCheckingEmail,

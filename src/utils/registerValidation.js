@@ -58,11 +58,27 @@ export function validateStep1(form) {
 }
 
 /**
+ * Determines whether a registration method requires a password step.
+ * @param {string} registrationMethod "email" | "google" | "facebook" | null
+ * @returns {boolean}
+ */
+export function requiresPasswordStep(registrationMethod) {
+  return registrationMethod === "email";
+}
+
+/**
  * Validates Step 2: Password Requirements
  * @param {Object} form
+ * @param {Object} [options]
+ * @param {string} [options.registrationMethod="email"]
  * @returns {Object} errors map
  */
-export function validateStep2(form) {
+export function validateStep2(form, options = {}) {
+  const registrationMethod = options?.registrationMethod || "email";
+  if (!requiresPasswordStep(registrationMethod)) {
+    return {};
+  }
+
   const errors = {};
   const password = form.password || "";
   const confirmPassword = form.confirmPassword || "";

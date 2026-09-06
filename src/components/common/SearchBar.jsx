@@ -26,8 +26,8 @@ export default function SearchBar({
           px-2
           py-1
           border-2
-          bg-[var(--agri-card)]
-          border-[var(--agri-input-border)]
+          bg-(--agri-card)
+          border-(--agri-input-border)
           shadow-xs
           focus-within:border-[#2D6A4F]
           focus-within:shadow-md
@@ -37,7 +37,7 @@ export default function SearchBar({
         "
       >
         <div className="flex-1 min-w-0 flex items-center gap-3 px-3.5">
-          <i className="ri-search-line text-[#2D6A4F] dark:text-[var(--agri-brand)] text-xl font-bold shrink-0" />
+          <i className="ri-search-line text-[#2D6A4F] dark:text-(--agri-brand) text-xl font-bold shrink-0" />
 
           <input
             type="search"
@@ -50,8 +50,8 @@ export default function SearchBar({
               py-2.5
               text-sm
               sm:text-base
-              text-[var(--agri-text)]
-              placeholder-[var(--agri-text-muted)]
+              text-(--agri-text)
+              placeholder-(--agri-text-muted)
               font-medium
               focus:outline-none
               bg-transparent
@@ -68,9 +68,9 @@ export default function SearchBar({
                 shrink-0
                 p-1
                 rounded-full
-                text-[var(--agri-text-muted)]
-                hover:text-[var(--agri-text)]
-                hover:bg-[var(--agri-hover)]
+                text-(--agri-text-muted)
+                hover:text-(--agri-text)
+                hover:bg-(--agri-hover)
                 transition
                 cursor-pointer
               "
@@ -81,7 +81,7 @@ export default function SearchBar({
             </button>
           )}
 
-          {displayLocation && (
+          {/*displayLocation && (
             <div
               className="
                 hidden
@@ -97,13 +97,13 @@ export default function SearchBar({
                 border-[#2D6A4F]/20
               "
             >
-              <i className="ri-map-pin-2-fill text-[#2D6A4F] dark:text-[var(--agri-brand)] text-base" />
+              <i className="ri-map-pin-2-fill text-[#2D6A4F] dark:text-(--agri-brand) text-base" />
 
-              <span className="text-sm font-bold text-[var(--agri-text)]">
+              <span className="text-sm font-bold text-(--agri-text)">
                 {displayLocation}
               </span>
             </div>
-          )}
+          )*/}
         </div>
       </div>
     </form>

@@ -8,7 +8,13 @@ export default function Register() {
 
   return (
     <div className="min-h-screen h-screen w-full flex">
-      <SidePanel step={registerFormState.step} />
+      <SidePanel
+        step={
+          registerFormState.registrationMethod
+            ? registerFormState.step
+            : null
+        }
+      />
 
       <RegisterForm {...registerFormState} />
     </div>
