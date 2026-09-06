@@ -28,6 +28,21 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
+// Allow the page to signal this SW to skip the waiting phase.
+// This is required on Android Chrome where push events are only
+// delivered to ACTIVE service workers.
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
+// When activated, claim all open clients immediately so push
+// events are routed here instead of a competing SW.
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
 // Handle background FCM messages
 messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title || payload.data?.title || "AgriNet";

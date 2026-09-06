@@ -60,7 +60,11 @@ export function getPermissionState() {
  *
  * Firebase needs a ServiceWorkerRegistration to deliver push messages.
  * This registers firebase-messaging-sw.js which handles background delivery.
- * The existing push-sw.js remains available for backward compatibility.
+ *
+ * CRITICAL: On Android Chrome, push events are only delivered to ACTIVE
+ * service workers. If another SW (e.g. Workbox) already controls the
+ * scope, the FCM SW enters "waiting" state and push events are dropped.
+ * This function ensures the FCM SW is activated before returning.
  *
  * @param {string} swPath - Path to the FCM service worker file
  * @returns {Promise<ServiceWorkerRegistration|null>}
@@ -74,7 +78,45 @@ export async function registerMessagingSW(
     const registration = await navigator.serviceWorker.register(swPath, {
       scope: "/",
     });
-    console.log("[FCM] Service worker registered:", registration.scope);
+
+    // Already active — nothing to wait for
+    if (registration.active) {
+      console.log("[FCM] Service worker registered and active:", registration.scope);
+      return registration;
+    }
+
+    // SW is installing or waiting — Android Chrome requires it to be
+    // active before push events will be delivered.
+    const sw = registration.installing || registration.waiting;
+    if (sw) {
+      // Race check: may have activated between register() and here
+      if (sw.state === "activated") {
+        console.log("[FCM] Service worker already activated:", registration.scope);
+        return registration;
+      }
+
+      console.log(
+        "[FCM] Service worker is",
+        sw.state,
+        "- waiting for activation before getToken()",
+      );
+
+      // Tell a waiting SW to skip the queue
+      if (registration.waiting) {
+        registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      }
+
+      await new Promise((resolve) => {
+        sw.addEventListener("statechange", (e) => {
+          if (e.target.state === "activated") {
+            resolve();
+          }
+        });
+      });
+
+      console.log("[FCM] Service worker activated:", registration.scope);
+    }
+
     return registration;
   } catch (error) {
     console.error("[FCM] Service worker registration failed:", error);
