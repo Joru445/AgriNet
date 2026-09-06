@@ -28,7 +28,7 @@ export default function AppLayout() {
 
       <div
         className={`flex-1 flex flex-col h-full overflow-hidden transition-[margin] duration-300 ${
-          collapsed ? "lg:ml-20" : "lg:ml-64"
+          collapsed ? "lg:ml-20" : "lg:ml-60"
         }`}
       >
         <Header user={profile} collapsed={collapsed} hideBackButton={isTabRoutes} />

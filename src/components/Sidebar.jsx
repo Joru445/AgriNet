@@ -87,7 +87,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     >
       {/* ── Branding ─────────────────────────────────────── */}
       <div
-        className={`flex h-14 shrink-0 items-center gap-2.5 px-3 border-b border-white/[0.08] ${
+        className={`flex h-14 shrink-0 items-center gap-2.5 px-3 border-b border-white/8 ${
           collapsed ? "justify-center" : ""
         }`}
       >
@@ -105,7 +105,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </div>
 
       {/* ── Profile ──────────────────────────────────────── */}
-      <div className={`border-b border-white/[0.08] ${collapsed ? "px-2 py-3" : "px-3 py-3"}`}>
+      <div className={` border-b border-white/8 ${collapsed ? "flex justify-center items-center w-full h-14 mx-auto" : "px-3 py-3"}`}>
         {collapsed ? (
           <div className="flex justify-center">
             {profile?.profilePicture ? (
@@ -248,9 +248,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         {/* Collapse toggle */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className={`flex items-center rounded-lg text-white/40 hover:text-white/80 hover:bg-white/[0.07] transition-colors duration-150 cursor-pointer ${
+          className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-white/80 hover:bg-white/[0.07] transition-colors duration-150 cursor-pointer ${
             collapsed
-              ? "justify-center size-10 mx-auto"
+              ? "justify-center w-16 h-12 mx-auto"
               : "gap-2.5 px-2.5 py-2 w-full"
           }`}
           title={
@@ -274,9 +274,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         {/* Logout */}
         <button
           onClick={() => setShowLogoutModal(true)}
-          className={`flex items-center rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-150 cursor-pointer ${
+          className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-150 cursor-pointer ${
             collapsed
-              ? "justify-center size-10 mx-auto"
+              ? "justify-center w-16 h-12 mx-auto"
               : "gap-2.5 px-2.5 py-2 w-full"
           }`}
         >

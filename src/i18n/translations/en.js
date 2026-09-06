@@ -1253,6 +1253,7 @@ export default {
 
   header: {
     notifications: "Notifications",
+    messages: "Messages",
     suspended: "Your account is suspended!",
   },
 

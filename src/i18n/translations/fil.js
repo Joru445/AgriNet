@@ -1278,6 +1278,7 @@ export default {
 
   header: {
     notifications: "Mga Notification",
+    messages: "Mga Mensahe",
     suspended: "Na-suspend ang account mo!",
   },
 

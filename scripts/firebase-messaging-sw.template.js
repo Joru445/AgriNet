@@ -37,7 +37,7 @@ messaging.onBackgroundMessage((payload) => {
     badge: "/icon-192x192.png",
     image: payload.notification?.image || payload.data?.image || undefined,
     data: payload.data || {},
-    tag: payload.data?.tag || payload.fcmOptions?.link || "agrinet-notification",
+    tag: payload.data?.tag || "agrinet-notification",
     renotify: true,
     vibrate: [100, 50, 100],
   };
@@ -50,7 +50,19 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const data = event.notification.data || {};
-  const targetUrl = data.url || data.fcmOptions?.link || "/";
+
+  let targetUrl = data.url || "/";
+  if (!data.url) {
+    if (data.conversationId) {
+      targetUrl = "/messages";
+    } else if (data.inquiryId) {
+      targetUrl = "/transactions";
+    } else if (data.type === "message") {
+      targetUrl = "/messages";
+    } else if (data.type === "inquiry" || data.type === "transaction") {
+      targetUrl = "/transactions";
+    }
+  }
 
   event.waitUntil(
     self.clients
