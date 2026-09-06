@@ -61,10 +61,13 @@ export function getPermissionState() {
  * Firebase needs a ServiceWorkerRegistration to deliver push messages.
  * This registers firebase-messaging-sw.js which handles background delivery.
  *
- * CRITICAL: On Android Chrome, push events are only delivered to ACTIVE
- * service workers. If another SW (e.g. Workbox) already controls the
- * scope, the FCM SW enters "waiting" state and push events are dropped.
- * This function ensures the FCM SW is activated before returning.
+ * CRITICAL: On Android Chrome, push events are only delivered to the
+ * SERVICE WORKER CONTROLLER — not just any "activated" SW. If Workbox
+ * (vite-plugin-pwa) already registered a SW at scope "/" first, the FCM
+ * SW may reach "activated" state but never become the controller, so
+ * push events are silently dropped. This function waits for the
+ * 'controllerchange' event, which fires only after the SW calls
+ * self.clients.claim() and the browser promotes it to controller.
  *
  * @param {string} swPath - Path to the FCM service worker file
  * @returns {Promise<ServiceWorkerRegistration|null>}
@@ -79,33 +82,49 @@ export async function registerMessagingSW(
       scope: "/",
     });
 
-    // Already active — nothing to wait for
-    if (registration.active) {
-      console.log("[FCM] Service worker registered and active:", registration.scope);
+    // Already the controller — nothing to wait for
+    const currentController = navigator.serviceWorker.controller;
+    if (currentController?.scriptURL?.endsWith(swPath)) {
+      console.log("[FCM] Service worker is already the controller");
       return registration;
     }
 
-    // SW is installing or waiting — Android Chrome requires it to be
-    // active before push events will be delivered.
+    // SW is active but NOT the controller — wait for clients.claim()
+    if (registration.active && !registration.waiting && !registration.installing) {
+      console.log(
+        "[FCM] Service worker is active but not the controller — waiting for claim",
+      );
+
+      await waitForControllerChange();
+      console.log("[FCM] Service worker is now the controller");
+      return registration;
+    }
+
+    // SW is installing or waiting — send SKIP_WAITING, then wait for
+    // both activation AND controller change.
     const sw = registration.installing || registration.waiting;
     if (sw) {
       // Race check: may have activated between register() and here
       if (sw.state === "activated") {
-        console.log("[FCM] Service worker already activated:", registration.scope);
+        // Activated but may not be controller yet
+        if (!currentController?.scriptURL?.endsWith(swPath)) {
+          await waitForControllerChange();
+        }
+        console.log("[FCM] Service worker activated and is controller");
         return registration;
       }
 
       console.log(
         "[FCM] Service worker is",
         sw.state,
-        "- waiting for activation before getToken()",
+        "- activating and claiming clients",
       );
 
-      // Tell a waiting SW to skip the queue
       if (registration.waiting) {
         registration.waiting.postMessage({ type: "SKIP_WAITING" });
       }
 
+      // Wait for activation
       await new Promise((resolve) => {
         sw.addEventListener("statechange", (e) => {
           if (e.target.state === "activated") {
@@ -114,7 +133,10 @@ export async function registerMessagingSW(
         });
       });
 
-      console.log("[FCM] Service worker activated:", registration.scope);
+      // Wait for the SW to become the controller (via clients.claim())
+      await waitForControllerChange();
+
+      console.log("[FCM] Service worker activated and is controller");
     }
 
     return registration;
@@ -122,6 +144,48 @@ export async function registerMessagingSW(
     console.error("[FCM] Service worker registration failed:", error);
     return null;
   }
+}
+
+/**
+ * Wait for the 'controllerchange' event on navigator.serviceWorker.
+ *
+ * This event fires when a Service Worker calls self.clients.claim()
+ * and the browser promotes it to the active controller. Without this,
+ * push events are routed to the old controller (Workbox) and the FCM
+ * SW never receives them.
+ *
+ * Includes a 3s safety timeout: if controllerchange never fires
+ * (e.g., another SW already claimed), we resolve anyway so the
+ * caller doesn't hang. The caller will proceed with getToken()
+ * which may or may not work depending on whether the FCM SW
+ * actually received the push subscription.
+ */
+function waitForControllerChange() {
+  return new Promise((resolve) => {
+    // If the FCM SW is already the controller, resolve immediately
+    if (navigator.serviceWorker.controller?.scriptURL?.includes("firebase-messaging")) {
+      resolve();
+      return;
+    }
+
+    const onChange = () => {
+      navigator.serviceWorker.removeEventListener("controllerchange", onChange);
+      clearTimeout(timeoutId);
+      resolve();
+    };
+
+    navigator.serviceWorker.addEventListener("controllerchange", onChange);
+
+    // Safety timeout — don't block getToken() forever if claim() fails
+    const timeoutId = setTimeout(() => {
+      navigator.serviceWorker.removeEventListener("controllerchange", onChange);
+      console.warn(
+        "[FCM] controllerchange did not fire within 3s — " +
+        "the FCM SW may not be the controller. Push delivery is not guaranteed."
+      );
+      resolve();
+    }, 3000);
+  });
 }
 
 /**
