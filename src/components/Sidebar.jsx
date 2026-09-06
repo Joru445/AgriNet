@@ -81,7 +81,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside
-      className={`hidden lg:flex h-full dark:h-[calc(100vh-1rem)] shrink-0 fixed top-0 left-0 bg-(--agri-brand-dark) dark:bg-transparent flex-col z-9996 pt-1 dark:rounded-2xl transition-all duration-300 ease-in-out ${
+      className={`hidden lg:flex h-full shrink-0 fixed top-0 left-0 bg-(--agri-brand-dark) dark:bg-transparent flex-col z-9996 pt-1 transition-all border-r border-white/8 duration-300 ease-in-out ${
         collapsed ? "w-20" : "w-60"
       }`}
     >
@@ -98,8 +98,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         />
         {!collapsed && (
           <span className="font-bold text-white text-lg tracking-tight whitespace-nowrap">
-            AgriNet{" "}
-            <span className="font-light text-white/50">Lucena</span>
+            AgriNet
           </span>
         )}
       </div>

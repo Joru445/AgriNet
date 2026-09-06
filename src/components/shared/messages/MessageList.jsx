@@ -1,4 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 
 import { useAuth } from "../../../context/AuthContext";
 import { useLanguage } from "../../../context/LanguageContext";
@@ -6,7 +12,10 @@ import MessageRow from "./MessageRow";
 import ProductInquiryMessage from "./ProductInquiryMessage";
 import MessageSeparator from "./MessageSeparator";
 
-import { shouldShowSeparator, getMessageGroupPosition } from "../../../utils/chat";
+import {
+  shouldShowSeparator,
+  getMessageGroupPosition,
+} from "../../../utils/chat";
 
 const SCROLL_THRESHOLD = 120;
 
@@ -80,7 +89,12 @@ export default function MessageList({
       setNewMessageCount(0);
     }
 
-    if (scrollTop < 80 && hasMoreOlder && !loadingOlderRef.current && onLoadOlder) {
+    if (
+      scrollTop < 80 &&
+      hasMoreOlder &&
+      !loadingOlderRef.current &&
+      onLoadOlder
+    ) {
       prevScrollHeightRef.current = scrollHeight;
       onLoadOlder();
     }
@@ -235,7 +249,8 @@ export default function MessageList({
   const lastMineSeen =
     lastMineMessage != null && checkIfSeen(lastMineMessage, lastMineIndex);
   const lastMineFailed =
-    lastMineMessage?.status === "failed" || lastMineMessage?.status === "sending";
+    lastMineMessage?.status === "failed" ||
+    lastMineMessage?.status === "sending";
 
   const isLatestMine = Boolean(
     messages.length && messages[messages.length - 1]?.senderId === profile?.uid,
@@ -298,7 +313,11 @@ export default function MessageList({
                   message={message}
                   previousMessage={previous}
                   nextMessage={next}
-                  groupPosition={getMessageGroupPosition(message, previous, next)}
+                  groupPosition={getMessageGroupPosition(
+                    message,
+                    previous,
+                    next,
+                  )}
                   user={user}
                   profile={profile}
                   isHighlighted={isHighlighted}
@@ -312,25 +331,22 @@ export default function MessageList({
           );
         })}
 
-        <div ref={bottomRef} className="h-0.5" />
+        {lastMineMessage && isLatestMine && !lastMineFailed && (
+          <div ref={bottomRef} className="shrink-0 flex justify-end items-center gap-1 px-4 pb-1 pt-0.5 text-[11px] font-semibold text-(--agri-text-muted) select-none">
+            {lastMineSeen ? (
+              <>
+                <i className="ri-check-double-line text-sm text-[#2D6A4F] dark:text-(--agri-brand)" />
+                <span>{t("messages.seen")}</span>
+              </>
+            ) : (
+              <>
+                <i className="ri-check-line text-sm text-(--agri-text-muted)" />
+                <span>{t("messages.sent")}</span>
+              </>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* Pinned send-status footer: reflects the most recent outgoing message */}
-      {lastMineMessage && isLatestMine && !lastMineFailed && (
-        <div className="shrink-0 flex justify-end items-center gap-1 px-4 pb-1 pt-0.5 text-[11px] font-semibold text-[var(--agri-text-muted)] select-none">
-          {lastMineSeen ? (
-            <>
-              <i className="ri-check-double-line text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-              <span>{t("messages.seen")}</span>
-            </>
-          ) : (
-            <>
-              <i className="ri-check-line text-sm text-[var(--agri-text-muted)]" />
-              <span>{t("messages.sent")}</span>
-            </>
-          )}
-        </div>
-      )}
 
       {/* New messages indicator */}
       {!isAtBottom && newMessageCount > 0 && (

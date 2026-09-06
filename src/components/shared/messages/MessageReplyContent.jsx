@@ -3,11 +3,6 @@ import { extractDomain } from "../../../utils/linkPreview";
 import { isCloudinaryUrl, applyTransform, THUMB_SM_TF } from "../../../utils/cloudinaryTransform";
 import defaultAvatar from "../../../assets/img/defaultAvatar.png";
 
-/**
- * Renders a compact, type-aware snapshot for a `replyTo` reference.
- * Used by the composer preview and the in-bubble reply quote.
- * All data comes from the stored snapshot — no extra reads or fetches.
- */
 export default function MessageReplyContent({ replyTo }) {
   const { t } = useLanguage();
 
@@ -72,7 +67,6 @@ export default function MessageReplyContent({ replyTo }) {
     );
   }
 
-  // text fallback (also covers old replies without a `type`)
   return (
     <span className="flex items-center gap-2 min-w-0">
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">

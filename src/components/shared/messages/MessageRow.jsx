@@ -39,9 +39,6 @@ export default function MessageRow({
   const isTouch = useIsTouch();
   const reducedMotion = prefersReducedMotion();
 
-  // Sent messages expose Reply on the LEFT edge, received on the RIGHT edge.
-  // Swipe direction mirrors that: sent swipe left→reveal right control,
-  // received swipe right→reveal left control.
   const swipeDirection = mine ? "left" : "right";
   const swipe = useSwipeToReply({
     enabled: isTouch,
@@ -55,19 +52,15 @@ export default function MessageRow({
     if (onReply) onReply(buildReplySnapshot({ message, user, currentUserId: profile?.uid }));
   };
 
-  // Show the avatar on the last message of a received group (like Messenger).
-  // For received rows that are NOT the last, keep the slot reserved so all
-  // bubbles in a group align vertically; the avatar is hidden (invisible) but
-  // still occupies its space.
   const showAvatar = !mine && (groupPosition === "single" || groupPosition === "last");
   const avatarVisibility = !mine && !showAvatar ? "invisible" : "";
 
-  // Keep grouped messages visually connected (small gap) by cancelling the
-  // list's surrounding margin for rows that are not the start of a group.
-  const groupSpacing =
-    groupPosition === "middle" || groupPosition === "last"
+  const isGrouped = groupPosition === "middle" || groupPosition === "last";
+  const groupSpacing = isGrouped
+    ? mine
       ? "-mt-3 pt-0.5"
-      : "";
+      : "-mt-4.5 pt-0.5"
+    : "";
 
   const swipeStyle = {
     transform: swipe.offset ? `translate3d(${swipe.offset}px,0,0)` : undefined,
@@ -82,11 +75,9 @@ export default function MessageRow({
         isHighlighted ? "bg-gray-200/60 dark:bg-gray-500/20" : ""
       }`}
     >
-      {/* Full-width row: keeps left/right alignment. The group below shrink-wraps. */}
       <div
         className={`relative flex items-center ${mine ? "justify-end" : "justify-start"} min-w-0 w-full group`}
       >
-        {/* Shrink-wrapped message/reply group. Hovering this reveals the desktop reply button. */}
         <div className="group/swipe relative z-9995 flex min-w-0 max-w-[85%] sm:max-w-[75%] w-fit items-center">
           <ReplyAffordance
             mine={mine}
@@ -125,15 +116,6 @@ export default function MessageRow({
   );
 }
 
-/**
- * The Reply affordance rendered beside a message bubble.
- * Absolute on both platforms, so it never reserves space: the empty margin
- * beside the bubble stays empty and the bubble never shifts.
- * - Desktop: opacity-gated by hover/focus; placed just outside the bubble's
- *   outer edge (sent → left, received → right).
- * - Touch: `pointer-events-none`, revealed only as the swipe progresses; the
- *   sliding bubble moves away from it to expose it.
- */
 function ReplyAffordance({ mine, isTouch, revealProgress, onReply }) {
   if (isTouch) {
     return (
@@ -149,8 +131,6 @@ function ReplyAffordance({ mine, isTouch, revealProgress, onReply }) {
     );
   }
 
-  // Desktop: absolute beside the bubble's outer edge; occupies no space.
-  // Shows when hovering the bubble (group/swipe wraps the bubble + avatar).
   return (
     <div
       className={[

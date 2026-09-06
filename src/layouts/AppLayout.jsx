@@ -21,7 +21,7 @@ export default function AppLayout() {
   const isTabRoutes = tabRoutes.includes(location.pathname);
 
   return (
-    <div className="fixed inset-0 flex overflow-hidden h-full dark:lg:p-2">
+    <div className="fixed inset-0 flex overflow-hidden h-full">
       {isDesktop && (
         <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       )}

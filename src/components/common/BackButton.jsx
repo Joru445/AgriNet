@@ -24,7 +24,7 @@ export default function BackButton({
     <button
       type="button"
       onClick={handleBack}
-      className={`inline-flex items-center gap-2 font-medium text-gray-600 transition hover:text-(--agri-brand) dark:text-(--agri-primary) px-3 pl-2 ${className}`}
+      className={`inline-flex items-center gap-2 font-medium text-[var(--agri-text-secondary)] transition hover:text-(--agri-brand) px-3 pl-2 ${className}`}
       aria-label={ariaLabel}
     >
       <i className="ri-arrow-left-line text-2xl" />

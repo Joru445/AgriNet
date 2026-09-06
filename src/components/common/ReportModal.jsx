@@ -11,49 +11,49 @@ const REPORT_REASONS = [
     labelKey: "reportModal.reasons.scam_fraud",
     descKey: "reportModal.reasons.scam_fraud_desc",
     icon: "ri-alarm-warning-line",
-    color: "text-red-600 bg-red-50",
+    color: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10",
   },
   {
     id: "bullying_harassment",
     labelKey: "reportModal.reasons.bullying_harassment",
     descKey: "reportModal.reasons.bullying_harassment_desc",
     icon: "ri-user-unfollow-line",
-    color: "text-orange-600 bg-orange-50",
+    color: "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10",
   },
   {
     id: "human_trafficking",
     labelKey: "reportModal.reasons.human_trafficking",
     descKey: "reportModal.reasons.human_trafficking_desc",
     icon: "ri-hand-sanitizer-line",
-    color: "text-purple-600 bg-purple-50",
+    color: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10",
   },
   {
     id: "prohibited_goods",
     labelKey: "reportModal.reasons.prohibited_goods",
     descKey: "reportModal.reasons.prohibited_goods_desc",
     icon: "ri-prohibited-line",
-    color: "text-amber-600 bg-amber-50",
+    color: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10",
   },
   {
     id: "inappropriate_content",
     labelKey: "reportModal.reasons.inappropriate_content",
     descKey: "reportModal.reasons.inappropriate_content_desc",
     icon: "ri-eye-off-line",
-    color: "text-rose-600 bg-rose-50",
+    color: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10",
   },
   {
     id: "spam_impersonation",
     labelKey: "reportModal.reasons.spam_impersonation",
     descKey: "reportModal.reasons.spam_impersonation_desc",
     icon: "ri-spam-line",
-    color: "text-blue-600 bg-blue-50",
+    color: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10",
   },
   {
     id: "other",
     labelKey: "reportModal.reasons.other",
     descKey: "reportModal.reasons.other_desc",
     icon: "ri-more-line",
-    color: "text-gray-600 bg-gray-50",
+    color: "text-[var(--agri-text-secondary)] bg-[var(--agri-hover)]",
   },
 ];
 
@@ -484,7 +484,7 @@ export default function ReportModal({
 
             {/* Error Message */}
             {error && (
-              <div className="flex items-center gap-2 rounded-2xl bg-red-50 border border-red-200 p-3 text-xs text-red-700 font-bold shadow-2xs">
+              <div className="flex items-center gap-2 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 p-3 text-xs text-red-700 dark:text-red-300 font-bold shadow-2xs">
                 <i className="ri-error-warning-line text-base shrink-0" />
                 <span>{error}</span>
               </div>

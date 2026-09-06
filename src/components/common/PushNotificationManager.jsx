@@ -100,7 +100,7 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
       <div className="space-y-2">
         <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-500">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10 text-red-500">
               <i className="ri-notification-off-line text-lg" />
             </div>
             <div className="min-w-0">
@@ -152,7 +152,7 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
           disabled={requesting}
           onClick={handleToggle}
           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
-            subscribed ? "bg-[var(--agri-brand)]" : "bg-gray-300"
+            subscribed ? "bg-[var(--agri-brand)]" : "bg-[var(--agri-border)]"
           } ${requesting ? "opacity-50" : ""}`}
         >
           <span
@@ -165,7 +165,7 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
 
       {/* Toggle feedback */}
       {statusMessage === "success" && (
-        <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-700 anim-fade-in">
+        <div className="flex items-center gap-2 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 px-3 py-2 text-xs text-green-700 dark:text-green-300 anim-fade-in">
           <i className="ri-check-line text-sm text-green-500" />
           <span>
             {subscribed
@@ -176,7 +176,7 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
       )}
 
       {statusMessage === "error" && (
-        <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700 anim-fade-in">
+        <div className="flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 px-3 py-2 text-xs text-red-700 dark:text-red-300 anim-fade-in">
           <i className="ri-error-warning-line text-sm text-red-500" />
           <span>
             {subscribed

@@ -6,10 +6,11 @@ import { useLanguage } from "../../../context/LanguageContext";
 import Map from "../../map/Map";
 import FarmerPopup from "./FarmerPopup";
 
+const PHILIPPINES_CENTER = { lat: 12.8797, lng: 121.7740 };
+
 export default function NearbyMap({ userLocation, farmers, maxDistance }) {
   const { t } = useLanguage();
   const startConversation = useStartConversation();
-  const lucenaCenter = { lat: 13.9411, lng: 121.6243 };
 
   const hasValidUserLocation =
     userLocation &&
@@ -18,7 +19,20 @@ export default function NearbyMap({ userLocation, farmers, maxDistance }) {
     typeof userLocation.lng === "number" &&
     !isNaN(userLocation.lng);
 
-  const mapCenter = hasValidUserLocation ? userLocation : lucenaCenter;
+  const firstFarmerWithLocation = (farmers || []).find(
+    (f) =>
+      f?.location &&
+      typeof f.location.lat === "number" &&
+      !isNaN(f.location.lat) &&
+      typeof f.location.lng === "number" &&
+      !isNaN(f.location.lng),
+  );
+
+  const mapCenter = hasValidUserLocation
+    ? userLocation
+    : firstFarmerWithLocation
+      ? { lat: firstFarmerWithLocation.location.lat, lng: firstFarmerWithLocation.location.lng }
+      : PHILIPPINES_CENTER;
 
   return (
     <Map

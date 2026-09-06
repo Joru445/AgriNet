@@ -101,7 +101,7 @@ export default function ForgotPassword() {
                 className="h-8 w-8 sm:h-9 sm:w-9 object-contain"
               />
               <span className="font-bold text-[#1B4332] text-lg sm:text-xl">
-                AgriNet <span className="font-light">Lucena</span>
+                AgriNet
               </span>
             </Link>
           </div>

@@ -37,7 +37,7 @@ export default function LandingFooter() {
             <div className="flex items-center gap-2 mb-4">
               <img alt="AgriNet Logo" className="h-10 w-10 object-contain" src={logo} />
               <span className="font-bold text-lg text-[#1B4332]">
-                AgriNet <span className="font-light">Lucena</span>
+                AgriNet
               </span>
             </div>
             <p className="text-gray-600 text-sm leading-relaxed mb-5">
@@ -103,7 +103,7 @@ export default function LandingFooter() {
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex items-center justify-center text-center">
           <p className="text-gray-500 text-xs text-center">
-            &copy; 2026 AgriNet Lucena. {t("landing.footer.copyright")}
+            &copy; 2026 AgriNet. {t("landing.footer.copyright")}
           </p>
         </div>
       </div>

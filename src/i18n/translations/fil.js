@@ -8,7 +8,7 @@
 export default {
   common: {
     appName: "AgriNet",
-    appTagline: "Lucena",
+    appTagline: "",
     back: "Bumalik",
     continue: "Magpatuloy",
     cancel: "Cancel",
@@ -317,13 +317,13 @@ export default {
       closeMenu: "Isara ang menu",
     },
     hero: {
-      badge: "Direktang Farm-to-Table Trading sa Lucena City",
+      badge: "Direktang Farm-to-Table Trading",
       titleLine1: "Kumonekta",
       titleHighlight: " nang Direkta ",
       titleLine2: " sa",
       titleLine3: "Lokal na Magsasaka",
       subtitle:
-        "Inaalis ng AgriNet Lucena ang mga中间人, binibigyan ang mga magsasaka ng patas na presyo at ang mga mamimili ng access sa pinakasariwang lokal na produktong agrikultural.",
+        "Inaalis ng AgriNet ang mga中间人, binibigyan ang mga magsasaka ng patas na presyo at ang mga mamimili ng access sa pinakasariwang lokal na produktong agrikultural.",
       getStarted: "Magsimula",
       browseProducts: "Mag-browse ng Produkto",
       findNearby: "Maghanap ng Malapit na Magsasaka",
@@ -331,9 +331,9 @@ export default {
     },
     about: {
       badge: "Tungkol sa Platform",
-      title: "Pinapalakas ang Komunidad ng Agrikultura sa Lucena City",
+      title: "Pinapalakas ang Komunidad ng Agrikultura",
       paragraph1:
-        "Ang AgriNet Lucena ay isang web-based platform na dinisenyo para tulay ang agwat sa pagitan ng lokal na magsasaka at mamimili sa Lucena City, Quezon Province. Ang aming misyon ay lumikha ng patas, transparent, at mahusay na ekosistema ng kalakalan sa agrikultura.",
+        "Ang AgriNet ay isang web-based platform na dinisenyo para tulay ang agwat sa pagitan ng lokal na magsasaka at mamimili. Ang aming misyon ay lumikha ng patas, transparent, at mahusay na ekosistema ng kalakalan sa agrikultura.",
       paragraph2:
         "Sa pamamagitan ng pag-alis ng mga中间man, kumikita nang higit pa ang mga magsasaka mula sa kanilang masipag na trabaho habang nakakakuha ang mga mamimili ng mas sariwang produkto sa mas magandang presyo. Naniniwala kami sa pagsuporta sa lokal na agrikultura at pagbuo ng mas matibay na ugnayan sa komunidad sa pamamagitan ng teknolohiya.",
       verifiedFarmers: "Verified na Magsasaka",
@@ -352,7 +352,7 @@ export default {
         fairPricing: "Patas na Presyo",
         fairPricingDesc: "Itakda ang sarili mong presyo at kumita nang higit pa nang walang mga中间man.",
         widerReach: "Mas Malawak na Abot",
-        widerReachDesc: "Abutin ang mga mamimili sa buong Lucena City nang direkta sa aming platform.",
+        widerReachDesc: "Abutin ang mga mamimili nang direkta sa aming platform.",
         easyListings: "Madaling Pamahalaan ang mga Listing",
         easyListingsDesc: "Magdagdag, mag-update, at pamahalaan ang mga listing ng produkto gamit ang simpleng dashboard.",
         directChat: "Direktang Komunikasyon",
@@ -372,7 +372,7 @@ export default {
     howItWorks: {
       badge: "Simpleng Proseso",
       title: "Paano Gumagana",
-      subtitle: "Mabilis at madali ang magsimula sa AgriNet Lucena. Sundin ang apat na simpleng hakbang na ito.",
+      subtitle: "Mabilis at madali ang magsimula sa AgriNet. Sundin ang apat na simpleng hakbang na ito.",
       step1: {
         title: "Lumikha ng Account",
         description: "Mag-register bilang Magsasaka o Mamimili. Itakda ng mga magsasaka ang kanilang profile sa bukid; itakda ng mga mamimili ang kanilang lokasyon.",
@@ -392,7 +392,7 @@ export default {
     },
     footer: {
       description:
-        "Kumokonekta sa mga magsasaka at mamimili sa Lucena City para sa mas patas, mas sariwang, at mas napapanatiling kalakalan sa agrikultura.",
+        "Kumokonekta sa mga magsasaka at mamimili para sa mas patas, mas sariwang, at mas napapanatiling kalakalan sa agrikultura.",
       quickLinks: "Mga Mabilis na Link",
       forUsers: "Para sa mga User",
       aboutUs: "Tungkol sa Amin",
@@ -716,7 +716,7 @@ export default {
     joined: "Sumali noong {date}",
     cover: "Cover",
     aboutFarm: "Tungkol sa Bukid",
-    locationFallback: "Lucena City",
+    locationFallback: "Iyong Lugar",
     all: "Lahat",
     vegetables: "Mga Gulay",
     fruits: "Mga Prutas",
@@ -1022,7 +1022,7 @@ export default {
   nearby: {
     title: "Malapit na Magsasaka",
     subtitle:
-      "Tuklasin ang mga magsasakang malapit sa lokasyon mo sa Lucena City.",
+      "Tuklasin ang mga magsasakang malapit sa lokasyon mo.",
     noFarmers: "Walang nahanap na magsasaka",
     noFarmersHint: "Subukan dagdagan ang distansya ng paghahanap mo.",
     profile: "Profile",
@@ -1440,7 +1440,7 @@ export default {
       growingTogether: "Sama-samang lumalago",
       tagline: "Bawat magandang ani, nagsisimula sa isang binhi.",
       description:
-        "Makipag-ugnayan sa mga magsasaka sa Lucena at tumuklas ng mga sariwang produkto nang direkta mula sa pinagmulan. Sumali sa isang masiglang komunidad na binuo sa tiwala at pagpapanatili.",
+        "Makipag-ugnayan sa mga lokal na magsasaka at tumuklas ng mga sariwang produkto nang direkta mula sa pinagmulan. Sumali sa isang masiglang komunidad na binuo sa tiwala at pagpapanatili.",
       stageAccount: "Account",
       stageSecurity: "Security",
       stageProfile: "Profile",
@@ -1567,7 +1567,7 @@ export default {
     steps: {
       "consumer-welcome": {
         title: "Welcome sa AgriNet!",
-        body: "Tuklasin ang mga sariwang lokal na produkto at makipag-ugnayan nang direkta sa mga magsasaka sa Lucena. Iikot tayo sa app sa tulong ng maikling tour na ito.",
+        body: "Tuklasin ang mga sariwang lokal na produkto at makipag-ugnayan nang direkta sa mga magsasaka. Iikot tayo sa app sa tulong ng maikling tour na ito.",
       },
       "consumer-search": {
         title: "Paghahanap at Kategorya",

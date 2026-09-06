@@ -11,13 +11,6 @@ import {
   isCloudinaryUrl,
 } from "../../../utils/cloudinaryTransform";
 
-/**
- * Renders ONLY the message bubble/content. Row layout, avatar, alignment,
- * reply button and swipe gesture are handled by `MessageRow`.
- *
- * `groupPosition` ("single" | "first" | "middle" | "last") drives the
- * connected-bubble corner radius so grouped messages feel visually linked.
- */
 export default function MessageBubble({
   message,
   mine = false,
@@ -32,17 +25,29 @@ export default function MessageBubble({
   const isFailed = message.status === "failed";
   const isImage = message.type === "image" || Boolean(message.imageUrl);
 
-  const replyTo = message.replyTo;
+  const replyTo =
+    message.replyToSnapshot ||
+    (message.replyTo && typeof message.replyTo === "object"
+      ? message.replyTo
+      : null);
   const messageUrl = extractFirstUrl(message.text);
   const showLinkPreview = Boolean(messageUrl && !isImage);
 
   const textRadius =
     {
-      single: "rounded-2xl",
-      first: "rounded-t-2xl rounded-b-lg",
-      middle: "rounded-t-lg rounded-b-lg",
-      last: "rounded-t-lg rounded-b-2xl",
-    }[groupPosition] || "rounded-2xl";
+      mine: {
+        single: "rounded-2xl",
+        first: "rounded-t-2xl rounded-bl-2xl rounded-br-sm",
+        middle: "rounded-tl-2xl rounded-bl-2xl rounded-tr-sm rounded-br-sm",
+        last: "rounded-tl-2xl rounded-bl-2xl rounded-tr-sm rounded-br-2xl",
+      },
+      other: {
+        single: "rounded-2xl",
+        first: "rounded-t-2xl rounded-br-2xl rounded-bl-sm",
+        middle: "rounded-tr-2xl rounded-br-2xl rounded-tl-sm rounded-bl-sm",
+        last: "rounded-tr-2xl rounded-br-2xl rounded-tl-sm rounded-bl-2xl",
+      },
+    }[mine ? "mine" : "other"][groupPosition] || "rounded-2xl";
 
   return (
     <div
@@ -78,13 +83,13 @@ export default function MessageBubble({
 
       {message.text && (
         <p
-          className={`break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-2.5 shadow-md ${textRadius}
+          className={`break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-1 shadow-md ${textRadius}
             ${isImage ? "text-sm font-medium" : ""}
             ${replyTo ? "pt-1" : ""}
             ${
               mine
                 ? "bg-[#2D6A4F] text-white shadow-green-900/20"
-                : "bg-[var(--agri-elevated)] text-[var(--agri-text)] border border-[var(--agri-border)] shadow-black/10"
+                : "bg-(--agri-elevated) text-(--agri-text) border border-(--agri-border) shadow-black/10"
             }
           `}
         >
@@ -139,7 +144,7 @@ export default function MessageBubble({
             <button
               type="button"
               onClick={() => onDeleteFailed?.(message.id)}
-              className="text-[var(--agri-text-muted)] hover:text-red-600 transition cursor-pointer ml-1 p-0.5"
+              className="text-(--agri-text-muted) hover:text-red-600 transition cursor-pointer ml-1 p-0.5"
               title={t("messages.deleteFailedMessage")}
             >
               <i className="ri-close-line text-sm" />

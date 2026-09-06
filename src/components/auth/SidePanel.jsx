@@ -36,7 +36,7 @@ export default function SidePanel({ step = null }) {
         <Link to="/" className="flex items-center gap-2.5 w-fit group">
           <img src={logo} alt="AgriNet" className="h-9 w-9 object-contain drop-shadow-lg" />
           <span className="text-lg font-bold text-white drop-shadow">
-            AgriNet <span className="font-light text-green-100/90">Lucena</span>
+            AgriNet
           </span>
         </Link>
 
@@ -111,7 +111,7 @@ export default function SidePanel({ step = null }) {
 
         {/* Footer */}
         <div className="flex items-center justify-between">
-          <p className="text-xs text-green-100/35">© 2026 AgriNet Lucena</p>
+          <p className="text-xs text-green-100/35">© 2026 AgriNet</p>
           <div className="flex items-center gap-1.5">
             <i className="ri-leaf-line text-[#74C69D]/50 text-sm" />
             <span className="text-[10px] text-green-100/30">{t("auth.sidePanel.farmToTable")}</span>

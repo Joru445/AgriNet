@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { compressImage } from "../../../utils/imageCompression";
 import { useLanguage } from "../../../context/LanguageContext";
 import MessageReplyPreview from "./MessageReplyPreview";
@@ -25,12 +26,14 @@ export default function MessageInput({
 
   const [quantity, setQuantity] = useState(1);
   const [showMenu, setShowMenu] = useState(false);
+  const [menuPos, setMenuPos] = useState(null);
 
   // Close menu on click outside
   useEffect(() => {
     function handleClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setShowMenu(false);
+        setMenuPos(null);
       }
     }
 
@@ -227,7 +230,7 @@ export default function MessageInput({
   const canSend = Boolean(value.trim() || selectedImage) && !uploadingImage;
 
   return (
-    <div className="shrink-0 w-full border-t p-3 bg-[var(--agri-surface)] border-[var(--agri-border-subtle)] z-10">
+    <div className="shrink-0 w-full bg-transparent p-3 sm:border-t border-(--agri-border-subtle) z-10">
       {/* Hidden file inputs for Camera and Gallery */}
       <input
         ref={galleryInputRef}
@@ -268,24 +271,24 @@ export default function MessageInput({
             )}
 
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+              <p className="text-xs font-medium text-[#2D6A4F] dark:text-(--agri-brand)">
                 {t("messages.productInquiry")}
               </p>
 
-              <p className="truncate text-sm font-semibold text-[var(--agri-text)]">
+              <p className="truncate text-sm font-semibold text-(--agri-text)">
                 {inquiryProduct.name}
               </p>
 
               {inquiryProduct.price != null && (
-                <p className="text-xs text-[var(--agri-text-muted)]">
+                <p className="text-xs text-(--agri-text-muted)">
                   ₱{inquiryProduct.price}
                   {inquiryProduct.unit ? ` / ${inquiryProduct.unit}` : ""}
                 </p>
               )}
 
               {isAvailable && hasStock && (
-                <p className="mt-0.5 text-xs text-[var(--agri-text-muted)]">
-                   {t("messageInput.available", { count: stock, unit: inquiryProduct.unit || "units" })}
+                <p className="mt-0.5 text-xs text-(--agri-text-muted)">
+                  {t("messageInput.available", { count: stock, unit: inquiryProduct.unit || "units" })}
                 </p>
               )}
             </div>
@@ -294,11 +297,11 @@ export default function MessageInput({
           {/* Quantity + Send */}
           <div className="mt-3 flex items-center justify-between gap-3">
             <div>
-              <p className="mb-1.5 text-xs font-medium text-[var(--agri-text-secondary)]">
-                 {t("messageInput.quantity")}
+              <p className="mb-1.5 text-xs font-medium text-(--agri-text-secondary)">
+                {t("messageInput.quantity")}
               </p>
 
-              <div className="flex h-10 items-center rounded-xl border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)]">
+              <div className="flex h-10 items-center rounded-xl border border-(--agri-input-border)] bg-(--agri-input-bg)">
                 <button
                   type="button"
                   onClick={decreaseQuantity}
@@ -306,9 +309,9 @@ export default function MessageInput({
                   className="
                     flex h-full w-10 items-center
                     justify-center
-                    text-[var(--agri-text-muted)]
+                    text-(--agri-text-muted)
                     transition
-                    hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]
+                    hover:text-[#2D6A4F] dark:hover:text-(--agri-brand)
                     disabled:cursor-not-allowed
                     disabled:opacity-30
                   "
@@ -325,10 +328,10 @@ export default function MessageInput({
                   onChange={handleQuantityChange}
                   className="
                     h-full w-14
-                    border-x border-[var(--agri-border-subtle)]
+                    border-x border-(--agri-border-subtle)
                     bg-transparent
                     text-center text-sm
-                    font-semibold text-[var(--agri-text)]
+                    font-semibold text-(--agri-text)
                     outline-none
                   "
                   aria-label={t("messageInput.inquiryQuantity")}
@@ -380,8 +383,8 @@ export default function MessageInput({
         </div>
       )}
 
-      {/* Main Input Container - High Contrast and Clear Readability */}
-      <div className="relative flex flex-col w-full rounded-2xl border-2 bg-[var(--agri-card)] border-[var(--agri-input-border)] shadow-xs focus-within:border-[#2D6A4F] focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 transition-all duration-150">
+      {/* Main Input Container */}
+      <div className="relative flex flex-col w-full rounded-2xl border-2 bg-transparent border-(--agri-input-border) shadow-xs focus-within:border-[#2D6A4F] focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 transition-all duration-150">
         {/* Reply Preview */}
         {replyTo && (
           <div className="p-2.5 pb-1">
@@ -446,7 +449,18 @@ export default function MessageInput({
           <div className="relative" ref={menuRef}>
             <button
               type="button"
-              onClick={() => setShowMenu((prev) => !prev)}
+              onClick={() => {
+                if (showMenu) {
+                  setShowMenu(false);
+                  setMenuPos(null);
+                } else {
+                  const rect = menuRef.current?.getBoundingClientRect();
+                  if (rect) {
+                    setMenuPos({ left: rect.left, bottom: window.innerHeight - rect.top + 4 });
+                  }
+                  setShowMenu(true);
+                }
+              }}
               aria-label={t("messageInput.addAttachment")}
               title={t("messageInput.addPhotoMedia")}
               className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-[#2D6A4F] dark:text-[var(--agri-brand)] transition hover:text-[#1B4332] dark:hover:text-[var(--agri-brand-light)] hover:bg-black/5 cursor-pointer ${
@@ -456,13 +470,18 @@ export default function MessageInput({
               <i className="ri-add-large-fill text-lg font-bold transition-transform duration-200" />
             </button>
 
-            {/* Menu Popover */}
-            {showMenu && (
-              <div className="absolute bottom-14 left-0 z-50 w-52 bg-[var(--agri-card)] rounded-2xl shadow-xl border border-[var(--agri-border)] p-1.5 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-150">
+            {/* Menu Popover - rendered via portal to escape overflow-hidden */}
+            {showMenu && menuPos && createPortal(
+              <div
+                ref={menuRef}
+                className="fixed z-[99999] w-52 bg-[var(--agri-card)] rounded-2xl shadow-xl border border-[var(--agri-border)] p-1.5 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-150"
+                style={{ left: menuPos.left, bottom: menuPos.bottom }}
+              >
                 <button
                   type="button"
                   onClick={() => {
                     setShowMenu(false);
+                    setMenuPos(null);
                     cameraInputRef.current?.click();
                   }}
                   className="flex sm:hidden items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] transition cursor-pointer"
@@ -477,6 +496,7 @@ export default function MessageInput({
                   type="button"
                   onClick={() => {
                     setShowMenu(false);
+                    setMenuPos(null);
                     galleryInputRef.current?.click();
                   }}
                   className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] transition cursor-pointer"
@@ -486,7 +506,8 @@ export default function MessageInput({
                   </div>
                    <span>{t("messageInput.chooseFromGallery")}</span>
                 </button>
-              </div>
+              </div>,
+              document.body,
             )}
           </div>
 

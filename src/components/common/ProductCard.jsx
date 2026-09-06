@@ -119,7 +119,7 @@ export default function ProductCard({
             >
               {product.name}
             </h3>
-            <span className="text-[10px] sm:text-xs font-semibold text-gray-500 shrink-0">
+            <span className="text-[10px] sm:text-xs font-semibold text-[var(--agri-text-muted)] shrink-0">
               {createdAtFormatted}
             </span>
           </div>
@@ -143,7 +143,7 @@ export default function ProductCard({
                   <span className="text-[11px] sm:text-xs font-bold text-[var(--agri-text-muted)] line-through decoration-[var(--agri-text-muted)]">
                     ₱{originalPriceFormatted}
                   </span>
-                  <span className="inline-flex items-center rounded bg-red-50 border border-red-200/80 px-1 py-0.2 text-[8px] sm:text-[9px] font-black text-red-600 leading-tight">
+                  <span className="inline-flex items-center rounded bg-red-50 dark:bg-red-500/10 border border-red-200/80 dark:border-red-500/30 px-1 py-0.2 text-[8px] sm:text-[9px] font-black text-red-600 dark:text-red-400 leading-tight">
                     -{discountPercent}%
                   </span>
                 </div>

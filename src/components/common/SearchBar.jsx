@@ -4,9 +4,10 @@ export default function SearchBar({
   value = "",
   onChange,
   onSubmit,
-  locationLabel = "Lucena City",
+  locationLabel,
 }) {
   const { t } = useLanguage();
+  const displayLocation = locationLabel ?? t("common.locationFallback");
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -80,7 +81,7 @@ export default function SearchBar({
             </button>
           )}
 
-          {locationLabel && (
+          {displayLocation && (
             <div
               className="
                 hidden
@@ -99,7 +100,7 @@ export default function SearchBar({
               <i className="ri-map-pin-2-fill text-[#2D6A4F] dark:text-[var(--agri-brand)] text-base" />
 
               <span className="text-sm font-bold text-[var(--agri-text)]">
-                {locationLabel}
+                {displayLocation}
               </span>
             </div>
           )}

@@ -107,7 +107,7 @@ export default function NotificationPreferences({ pushEnabled = true }) {
               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
                 pushEnabled
                   ? "bg-[var(--agri-hover)] text-[var(--agri-text-muted)]"
-                  : "bg-gray-100 text-gray-400"
+                  : "bg-[var(--agri-hover)] text-[var(--agri-text-muted)]"
               }`}
             >
               <i className="ri-message-3-line text-base" />
@@ -115,7 +115,7 @@ export default function NotificationPreferences({ pushEnabled = true }) {
             <div className="min-w-0">
               <p
                 className={`text-sm font-semibold ${
-                  pushEnabled ? "text-[var(--agri-text)]" : "text-gray-400"
+                  pushEnabled ? "text-[var(--agri-text)]" : "text-[var(--agri-text-muted)]"
                 }`}
               >
                 {t("notificationPreferences.messages")}
@@ -134,7 +134,7 @@ export default function NotificationPreferences({ pushEnabled = true }) {
             onClick={() => handleToggle("messages", messages)}
             className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
               disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"
-            } ${messages && pushEnabled ? "bg-[var(--agri-brand)]" : "bg-gray-300"}`}
+            } ${messages && pushEnabled ? "bg-[var(--agri-brand)]" : "bg-[var(--agri-border)]"}`}
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -149,18 +149,18 @@ export default function NotificationPreferences({ pushEnabled = true }) {
           <div className="flex items-center justify-between gap-3 px-4 py-3.5">
             <div className="flex items-center gap-3 min-w-0">
               <div
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
                   pushEnabled
                     ? "bg-[var(--agri-hover)] text-[var(--agri-text-muted)]"
-                    : "bg-gray-100 text-gray-400"
-                }`}
-              >
-                <i className="ri-exchange-funds-line text-base" />
-              </div>
-              <div className="min-w-0">
-                <p
-                  className={`text-sm font-semibold ${
-                    pushEnabled ? "text-[var(--agri-text)]" : "text-gray-400"
+                    : "bg-[var(--agri-hover)] text-[var(--agri-text-muted)]"
+              }`}
+            >
+              <i className="ri-exchange-funds-line text-base" />
+            </div>
+            <div className="min-w-0">
+              <p
+                className={`text-sm font-semibold ${
+                    pushEnabled ? "text-[var(--agri-text)]" : "text-[var(--agri-text-muted)]"
                   }`}
                 >
                   {t("notificationPreferences.transactions")}
@@ -179,7 +179,7 @@ export default function NotificationPreferences({ pushEnabled = true }) {
               onClick={() => handleToggle("transactions", transactions)}
               className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
                 disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"
-              } ${transactions && pushEnabled ? "bg-[var(--agri-brand)]" : "bg-gray-300"}`}
+              } ${transactions && pushEnabled ? "bg-[var(--agri-brand)]" : "bg-[var(--agri-border)]"}`}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -203,14 +203,14 @@ export default function NotificationPreferences({ pushEnabled = true }) {
 
       {/* Save feedback */}
       {saveStatus === "success" && (
-        <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-700 anim-fade-in">
+        <div className="flex items-center gap-2 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 px-3 py-2 text-xs text-green-700 dark:text-green-300 anim-fade-in">
           <i className="ri-check-line text-sm text-green-500" />
           <span>{t("notificationPreferences.saveSuccess")}</span>
         </div>
       )}
 
       {saveStatus === "error" && (
-        <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700 anim-fade-in">
+        <div className="flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 px-3 py-2 text-xs text-red-700 dark:text-red-300 anim-fade-in">
           <i className="ri-error-warning-line text-sm text-red-500" />
           <span>{t("notificationPreferences.saveFailed")}</span>
         </div>

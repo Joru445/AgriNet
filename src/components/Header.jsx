@@ -23,7 +23,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
   const { unreadCount: msgCount } = useUnreadMessages();
 
   return (
-    <header className="shrink-0 sticky top-0 right-0 z-9996 dark:lg:rounded-2xl flex h-[calc(3.75rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] items-center justify-between bg-(--agri-surface)/95 border-b border-(--agri-border) px-3 md:px-5 backdrop-blur-sm transition-all duration-300 ease-in-out">
+    <header className="shrink-0 sticky top-0 right-0 z-9996 dark:lg:rounded-2xl flex h-[calc(3.75rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] items-center justify-between bg-(--agri-surface)/95 border-b border-(--agri-border) dark:border-(--agri-surface) px-3 md:px-5 dark:m-2 backdrop-blur-sm transition-all duration-300 ease-in-out">
       {/* ── Left ──────────────────────────────────────── */}
       <div className="flex items-center gap-1 min-w-0">
         {hideBackButton ? (
@@ -32,7 +32,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
               !collapsed ? "lg:hidden" : "block"
             }`}
           >
-            AgriNet <span className="font-light">Lucena</span>
+            AgriNet
           </span>
         ) : (
           <BackButton />

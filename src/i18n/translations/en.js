@@ -8,7 +8,7 @@
 export default {
   common: {
     appName: "AgriNet",
-    appTagline: "Lucena",
+    appTagline: "",
     back: "Back",
     continue: "Continue",
     cancel: "Cancel",
@@ -317,13 +317,13 @@ export default {
       closeMenu: "Close menu",
     },
     hero: {
-      badge: "Direct Farm-to-Table Trading in Lucena City",
+      badge: "Direct Farm-to-Table Trading",
       titleLine1: "Connect",
       titleHighlight: " Directly ",
       titleLine2: " with",
       titleLine3: "Local Farmers",
       subtitle:
-        "AgriNet Lucena eliminates middlemen, giving farmers fair prices and consumers access to the freshest local agricultural products.",
+        "AgriNet eliminates middlemen, giving farmers fair prices and consumers access to the freshest local agricultural products.",
       getStarted: "Get Started",
       browseProducts: "Browse Products",
       findNearby: "Find Nearby Farmers",
@@ -331,9 +331,9 @@ export default {
     },
     about: {
       badge: "About the Platform",
-      title: "Empowering Lucena City's Agricultural Community",
+      title: "Empowering Local Agricultural Communities",
       paragraph1:
-        "AgriNet Lucena is a web-based platform designed to bridge the gap between local farmers and consumers in Lucena City, Quezon Province. Our mission is to create a fair, transparent, and efficient agricultural trading ecosystem.",
+        "AgriNet is a web-based platform designed to bridge the gap between local farmers and consumers. Our mission is to create a fair, transparent, and efficient agricultural trading ecosystem.",
       paragraph2:
         "By removing middlemen from the equation, farmers earn more from their hard work while consumers enjoy fresher produce at better prices. We believe in supporting local agriculture and building stronger community ties through technology.",
       verifiedFarmers: "Verified Farmers",
@@ -352,7 +352,7 @@ export default {
         fairPricing: "Fair Pricing",
         fairPricingDesc: "Set your own prices and earn more without middlemen taking a cut.",
         widerReach: "Wider Market Reach",
-        widerReachDesc: "Reach consumers across Lucena City directly through our platform.",
+        widerReachDesc: "Reach consumers directly through our platform.",
         easyListings: "Manage Listings Easily",
         easyListingsDesc: "Add, update, and manage your product listings with a simple dashboard.",
         directChat: "Direct Communication",
@@ -372,7 +372,7 @@ export default {
     howItWorks: {
       badge: "Simple Process",
       title: "How It Works",
-      subtitle: "Getting started with AgriNet Lucena is quick and easy. Follow these four simple steps.",
+      subtitle: "Getting started with AgriNet is quick and easy. Follow these four simple steps.",
       step1: {
         title: "Create Your Account",
         description: "Register as a Farmer or Consumer. Farmers set up their farm profile; consumers set up their location.",
@@ -392,7 +392,7 @@ export default {
     },
     footer: {
       description:
-        "Connecting farmers and consumers in Lucena City for a fairer, fresher, and more sustainable agricultural trade.",
+        "Connecting farmers and consumers for a fairer, fresher, and more sustainable agricultural trade.",
       quickLinks: "Quick Links",
       forUsers: "For Users",
       aboutUs: "About Us",
@@ -706,7 +706,7 @@ export default {
     joined: "Joined {date}",
     cover: "Cover",
     aboutFarm: "About the Farm",
-    locationFallback: "Lucena City",
+    locationFallback: "Your Area",
     all: "All",
     vegetables: "Vegetables",
     fruits: "Fruits",
@@ -1007,7 +1007,7 @@ export default {
 
   nearby: {
     title: "Nearby Farmers",
-    subtitle: "Discover farmers near your location in Lucena City.",
+    subtitle: "Discover farmers near your location.",
     noFarmers: "No farmers found",
     noFarmersHint: "Try increasing your search distance.",
     profile: "Profile",
@@ -1412,7 +1412,7 @@ export default {
       growingTogether: "Growing together",
       tagline: "Every great harvest starts with a seed.",
       description:
-        "Connect with farmers in Lucena and discover fresh produce directly from the source. Join a thriving community built on trust and sustainability.",
+        "Connect with local farmers and discover fresh produce directly from the source. Join a thriving community built on trust and sustainability.",
       stageAccount: "Account",
       stageSecurity: "Security",
       stageProfile: "Profile",
@@ -1528,7 +1528,7 @@ export default {
     steps: {
       "consumer-welcome": {
         title: "Welcome to AgriNet!",
-        body: "Discover fresh local produce and connect directly with farmers in Lucena. This quick tour will show you around.",
+        body: "Discover fresh local produce and connect directly with farmers. This quick tour will show you around.",
       },
       "consumer-search": {
         title: "Search & Categories",

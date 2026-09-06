@@ -13,7 +13,7 @@ export default function ProductSeller({ farmer, isOwner }) {
     farmer.fullname || farmer.storeName || farmer.username || t("productDetails.farmerFallback");
   const farmerAvatar = farmer.profilePicture || "";
   const farmerId = farmer.uid || farmer.id;
-  const address = farmer.location?.address || farmer.address || "Lucena City";
+  const address = farmer.location?.address || farmer.address || "";
   const isLongAddress = address.length > 28;
 
   return (

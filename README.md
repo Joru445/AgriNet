@@ -1,6 +1,6 @@
 # AgriNet
 
-AgriNet is a web-based agricultural marketplace designed to connect local farmers with consumers in Lucena City. The platform provides farmers with a digital space to showcase their agricultural products while allowing consumers to discover products, find nearby farmers, and communicate directly with sellers.
+AgriNet is a web-based agricultural marketplace designed to connect local farmers with consumers. The platform provides farmers with a digital space to showcase their agricultural products while allowing consumers to discover products, find nearby farmers, and communicate directly with sellers.
 
 The system is designed to support local agricultural commerce by making it easier for consumers to discover locally available products and for farmers to reach potential customers.
 
@@ -319,7 +319,7 @@ The current system does **not** directly process online payments or provide inte
 
 **AgriNet is currently under development.**
 
-The project is being developed as an academic/capstone project with a focus on creating a functional local agricultural marketplace for Lucena City.
+The project is being developed as an academic/capstone project with a focus on creating a functional local agricultural marketplace.
 
 ## License
 

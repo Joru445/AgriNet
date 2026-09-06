@@ -42,13 +42,13 @@ export default function LandingHeader() {
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between h-16 md:h-20">
           <a className="flex items-center gap-2 cursor-pointer" href="/">
-            <img alt="AgriNet Lucena Logo" className="h-10 w-10 object-contain" src={logo} />
+            <img alt="AgriNet Logo" className="h-10 w-10 object-contain" src={logo} />
             <span
               className={`font-bold text-lg whitespace-nowrap transition-colors duration-300 ${
                 isScrolled ? "text-gray-800" : "text-white"
               }`}
             >
-              AgriNet <span className="font-light">Lucena</span>
+              AgriNet
             </span>
           </a>
 

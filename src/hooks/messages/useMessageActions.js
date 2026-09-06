@@ -102,7 +102,8 @@ export default function useMessageActions({
           type: activeImg ? "image" : "text",
           imageUrl,
           imageId,
-          replyTo,
+          replyTo: replyTo?.messageId || replyTo || null,
+          replyToSnapshot: replyTo && typeof replyTo === "object" ? replyTo : null,
         });
 
         if (!activeConversation?.id) {
