@@ -4,7 +4,6 @@ import { apiGetMarketplaceProducts } from "../services/product.service";
 import useUserLocation from "./useUserLocation";
 import { getDistanceKm } from "../utils/distance";
 import { isProductExpired } from "../utils/productExpiration";
-import { showToast } from "../utils/toast";
 import * as pageCache from "../utils/pageCache";
 
 const HOME_PRODUCT_LIMIT = 12;
@@ -17,6 +16,7 @@ export default function useHomeProducts() {
 
   const [products, setProducts] = useState(() => pageCache.get(CACHE_KEY) ?? []);
   const [loading, setLoading] = useState(!pageCache.get(CACHE_KEY));
+  const [error, setError] = useState(null);
   const [now, setNow] = useState(() => Date.now());
   const loadedRef = useRef(!!pageCache.get(CACHE_KEY));
 
@@ -30,6 +30,8 @@ export default function useHomeProducts() {
 
   const loadProducts = useCallback(async ({ useCache = true } = {}) => {
     try {
+      setError(null);
+
       const cached = useCache ? pageCache.get(CACHE_KEY) : null;
       if (cached) {
         setProducts(cached);
@@ -47,9 +49,9 @@ export default function useHomeProducts() {
       setProducts(data);
       pageCache.set(CACHE_KEY, data, CACHE_TTL);
       loadedRef.current = true;
-    } catch (error) {
-      console.error(error);
-      showToast.error("Failed to load products.");
+    } catch (err) {
+      console.error(err);
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -171,6 +173,7 @@ export default function useHomeProducts() {
 
   return {
     loading,
+    error,
 
     products: marketplaceProducts,
 

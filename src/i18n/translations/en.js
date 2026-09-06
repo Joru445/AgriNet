@@ -978,6 +978,8 @@ export default {
     recommendedSubtitle: "Products you might be interested in",
     noProducts: "No products found",
     noProductsHint: "Try adjusting your search or filters.",
+    productLoadError: "Failed to load products",
+    productLoadErrorHint: "Something went wrong while loading products. Please check your connection and try again.",
     pagination: {
       showing: "Showing {count} of {total} products",
     },
@@ -1241,6 +1243,12 @@ export default {
     collapseSidebar: "Collapse sidebar",
     expand: "Expand",
     collapse: "Collapse",
+    groups: {
+      main: "Main",
+      marketplace: "Marketplace",
+      communication: "Communication",
+      system: "System",
+    },
   },
 
   header: {

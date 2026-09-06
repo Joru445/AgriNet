@@ -9,6 +9,8 @@ import {
   RelevantProductsSkeleton,
 } from "../../components/consumer/home/SectionSkeletons";
 
+import ProductLoadError from "../../components/shared/product/ProductLoadError";
+
 import NearYouSection from "../../components/consumer/home/NearYouSection";
 import RecentProductsSection from "../../components/consumer/home/RecentProductsSection";
 import RelevantProductsSection from "../../components/consumer/home/RelevantProductsSection";
@@ -19,10 +21,12 @@ import MarketplaceSubHeader from "../../components/consumer/layout/MarketplaceSu
 export default function Home() {
   const {
     loading,
+    error,
     nearbyProducts,
     recentProducts,
     relevantProducts,
     userLocation,
+    reloadProducts,
   } = useHomeProducts();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,6 +57,8 @@ export default function Home() {
           <RecentProductsSkeleton />
           <RelevantProductsSkeleton />
         </div>
+      ) : error ? (
+        <ProductLoadError onRetry={reloadProducts} />
       ) : (
         <div className="px-2 sm:px-4 space-y-8">
           <NearYouSection

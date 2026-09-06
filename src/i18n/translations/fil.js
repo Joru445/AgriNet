@@ -992,6 +992,8 @@ export default {
     recommendedSubtitle: "Mga produktong baka interesado ka",
     noProducts: "Walang nahanap na produkto",
     noProductsHint: "Subukan baguhin ang paghahanap o mga filter mo.",
+    productLoadError: "Nabigo ang pag-load ng mga produkto",
+    productLoadErrorHint: "May nangyaring mali habang naglo-load ng mga produkto. Mangyaring suriin ang iyong koneksyon at subukan muli.",
     pagination: {
       showing: "Nagpapakita ng {count} sa {total} na produkto",
     },
@@ -1266,6 +1268,12 @@ export default {
     collapseSidebar: "I-collapse ang sidebar",
     expand: "Palawakin",
     collapse: "I-collapse",
+    groups: {
+      main: "Main",
+      marketplace: "Marketplace",
+      communication: "Communication",
+      system: "System",
+    },
   },
 
   header: {

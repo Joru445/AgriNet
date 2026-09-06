@@ -5,7 +5,6 @@ import { apiGetMarketplaceProducts } from "../services/product.service";
 import useUserLocation from "./useUserLocation";
 import { getDistanceKm } from "../utils/distance";
 import { isProductExpired } from "../utils/productExpiration";
-import { showToast } from "../utils/toast";
 import * as pageCache from "../utils/pageCache";
 
 const PRODUCTS_PER_PAGE = 12;
@@ -27,6 +26,7 @@ export default function useMarketplace() {
   const { location: userLocation } = useUserLocation();
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
   const [products, setProducts] = useState(() => pageCache.get(CACHE_KEY) ?? []);
   const [hasMore, setHasMore] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
@@ -69,6 +69,8 @@ export default function useMarketplace() {
 
   const loadProducts = useCallback(async ({ reset = false, useCache = true } = {}) => {
     try {
+      setError(null);
+
       if (reset) {
         const cached = useCache ? pageCache.get(CACHE_KEY) : null;
         if (cached) {
@@ -107,9 +109,9 @@ export default function useMarketplace() {
       if (reset) {
         pageCache.set(CACHE_KEY, result.products, CACHE_TTL);
       }
-    } catch (error) {
-      console.error(error);
-      showToast.error("Failed to load marketplace.");
+    } catch (err) {
+      console.error(err);
+      setError(err);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -296,6 +298,7 @@ export default function useMarketplace() {
   return {
     loading,
     loadingMore,
+    error,
     products: marketplaceProducts,
     filteredProducts: paginatedProducts,
     totalProducts: filteredProducts.length,

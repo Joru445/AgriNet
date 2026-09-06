@@ -7,11 +7,13 @@ import ProductsToolbar from "../../components/consumer/marketplace/ProductsToolb
 import ProductsContainer from "../../components/consumer/marketplace/ProductsContainer";
 
 import ProductGridSkeleton from "../../components/shared/product/ProductGridSkeleton";
+import ProductLoadError from "../../components/shared/product/ProductLoadError";
 import MarketplaceSubHeader from "../../components/consumer/layout/MarketplaceSubHeader";
 
 export default function Marketplace() {
   const {
     loading,
+    error,
     filteredProducts,
     totalProducts,
 
@@ -30,6 +32,7 @@ export default function Marketplace() {
 
     showFilters,
     setShowFilters,
+    reloadProducts,
   } = useMarketplace();
 
   return (
@@ -67,6 +70,8 @@ export default function Marketplace() {
                 count={12}
                 gridClassName="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 lg:gap-6"
               />
+            ) : error ? (
+              <ProductLoadError onRetry={reloadProducts} />
             ) : (
               <ProductsContainer
                 products={filteredProducts}
