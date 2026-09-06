@@ -4,11 +4,11 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 import {
-  confirmTransactionProof,
-  getInquiry,
-  rejectTransactionProof,
-  requestTransactionCompletion,
-  submitTransactionProof,
+  apiGetInquiryById,
+  apiRequestCompletion,
+  apiSubmitProof,
+  apiConfirmProof,
+  apiRejectProof,
 } from "../services/inquiry.service";
 
 import { uploadTransactionProof } from "../services/cloudinary.service";
@@ -37,7 +37,7 @@ export default function useTransactionProof() {
       setLoading(true);
       setError("");
 
-      const data = await getInquiry(inquiryId);
+      const data = await apiGetInquiryById(inquiryId);
 
       if (!data) {
         throw new Error("Transaction not found.");
@@ -120,10 +120,7 @@ export default function useTransactionProof() {
       setProcessing(true);
       setError("");
 
-      await requestTransactionCompletion({
-        inquiryId,
-        consumerId: profile.uid,
-      });
+      await apiRequestCompletion(inquiryId);
 
       await loadInquiry();
     } catch (error) {
@@ -155,11 +152,7 @@ export default function useTransactionProof() {
 
       const proof = await uploadTransactionProof(selectedFile);
 
-      await submitTransactionProof({
-        inquiryId,
-        consumerId: profile.uid,
-        proof,
-      });
+      await apiSubmitProof(inquiryId, proof);
 
       removeFile();
 
@@ -184,10 +177,7 @@ export default function useTransactionProof() {
       setProcessing(true);
       setError("");
 
-      await confirmTransactionProof({
-        inquiryId,
-        farmerId: profile.uid,
-      });
+      await apiConfirmProof(inquiryId);
 
       await loadInquiry();
     } catch (error) {
@@ -210,10 +200,7 @@ export default function useTransactionProof() {
       setProcessing(true);
       setError("");
 
-      await rejectTransactionProof({
-        inquiryId,
-        farmerId: profile.uid,
-      });
+      await apiRejectProof(inquiryId);
 
       await loadInquiry();
     } catch (error) {

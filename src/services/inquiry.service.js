@@ -12,10 +12,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
-import {
-  createNotificationIdempotent,
-  getInquiryNotificationId,
-} from "./notification.service";
+import { apiRequest } from "./api/api.client";
 
 const inquiriesRef = collection(db, "inquiries");
 
@@ -275,40 +272,6 @@ export async function acceptProductInquiry({ inquiryMessage, farmer }) {
     };
   });
 
-  // Send notification to consumer that farmer accepted the inquiry
-  if (result) {
-    const recipientId = result.consumerId;
-
-    if (recipientId) {
-      const notificationId = getInquiryNotificationId(
-        inquiryMessage.id,
-        "accepted",
-        recipientId
-      );
-
-      await createNotificationIdempotent({
-        notificationId,
-        data: {
-          recipientId,
-          type: "inquiry",
-          title: "Inquiry Accepted",
-          body: "Farmer accepted your inquiry. You can now message them to proceed.",
-          actorId: farmer.uid || null,
-          entityType: "inquiry",
-          entityId: inquiryMessage.id,
-          data: {
-            inquiryId: inquiryMessage.id,
-            eventType: "accepted",
-            productId: result.productId,
-            productName: result.productName,
-          },
-        },
-      }).catch((err) => {
-        console.warn(`Could not dispatch inquiry accepted notification:`, err);
-      });
-    }
-  }
-
   return result?.inquiryId;
 }
 
@@ -387,92 +350,6 @@ export async function updateInquiryStatus({ inquiryId, status, actor }) {
     }
 
     transaction.update(inquiryRef, update);
-  });
-
-  // Send notification after transaction commits
-  const updatedSnap = await getDoc(inquiryRef);
-  if (updatedSnap.exists()) {
-    const updatedInquiry = updatedSnap.data();
-    const isFarmer = actor.role === "farmer";
-    const recipientId = isFarmer ? updatedInquiry.consumerId : updatedInquiry.farmerId;
-    const actorName = isFarmer
-      ? updatedInquiry.farmerSnapshot?.fullname || "Farmer"
-      : updatedInquiry.consumerSnapshot?.fullname || "Consumer";
-
-    const productName = updatedInquiry.productSnapshot?.name || "the product";
-
-    let eventType;
-    let title;
-    let body;
-
-    switch (status) {
-      case "ongoing":
-        eventType = "ongoing";
-        title = "Transaction Started";
-        body = `${actorName} started the transaction for "${productName}". Please coordinate delivery.`;
-        break;
-      case "awaiting_proof":
-        eventType = "awaiting_proof";
-        title = "Proof Required";
-        body = `${actorName} requested completion for "${productName}". Please upload transaction proof.`;
-        break;
-      case "cancelled":
-        eventType = "cancelled";
-        title = "Transaction Cancelled";
-        body = `${actorName} cancelled the transaction for "${productName}".`;
-        break;
-      default:
-        return;
-    }
-
-    await sendInquiryNotification({
-      inquiryId,
-      inquiry: updatedInquiry,
-      eventType,
-      actor,
-      recipientId,
-      title,
-      body,
-    });
-  }
-}
-
-/**
- * Create idempotent notification for inquiry lifecycle events.
- * Must be called AFTER the transaction commits, with the inquiry data.
- */
-async function sendInquiryNotification({
-  inquiryId,
-  inquiry,
-  eventType,
-  actor,
-  recipientId,
-  title,
-  body,
-}) {
-  if (!recipientId) return;
-
-  const notificationId = getInquiryNotificationId(inquiryId, eventType, recipientId);
-
-  await createNotificationIdempotent({
-    notificationId,
-    data: {
-      recipientId,
-      type: "inquiry",
-      title,
-      body,
-      actorId: actor?.uid || null,
-      entityType: "inquiry",
-      entityId: inquiryId,
-      data: {
-        inquiryId,
-        eventType,
-        productId: inquiry.productId,
-        productName: inquiry.productSnapshot?.name,
-      },
-    },
-  }).catch((err) => {
-    console.warn(`Could not dispatch inquiry ${eventType} notification:`, err);
   });
 }
 
@@ -554,24 +431,6 @@ export async function submitTransactionProof({ inquiryId, consumerId, proof }) {
       statusUpdatedAt: serverTimestamp(),
     });
   });
-
-  // Send notification to farmer that proof was submitted
-  const updatedSnap = await getDoc(inquiryRef);
-  if (updatedSnap.exists()) {
-    const updatedInquiry = updatedSnap.data();
-    const consumerName = updatedInquiry.consumerSnapshot?.fullname || "Consumer";
-    const productName = updatedInquiry.productSnapshot?.name || "the product";
-
-    await sendInquiryNotification({
-      inquiryId,
-      inquiry: updatedInquiry,
-      eventType: "proof_submitted",
-      actor: { uid: consumerId, role: "consumer" },
-      recipientId: updatedInquiry.farmerId,
-      title: "Proof Submitted",
-      body: `${consumerName} submitted transaction proof for "${productName}". Please review and confirm.`,
-    });
-  }
 }
 
 /**
@@ -665,24 +524,6 @@ export async function confirmTransactionProof({ inquiryId, farmerId }) {
       statusUpdatedAt: serverTimestamp(),
     });
   });
-
-  // Send notification to consumer that transaction was completed
-  const updatedSnap = await getDoc(inquiryRef);
-  if (updatedSnap.exists()) {
-    const updatedInquiry = updatedSnap.data();
-    const farmerName = updatedInquiry.farmerSnapshot?.fullname || "Farmer";
-    const productName = updatedInquiry.productSnapshot?.name || "the product";
-
-    await sendInquiryNotification({
-      inquiryId,
-      inquiry: updatedInquiry,
-      eventType: "completed",
-      actor: { uid: farmerId, role: "farmer" },
-      recipientId: updatedInquiry.consumerId,
-      title: "Transaction Completed",
-      body: `${farmerName} confirmed the transaction for "${productName}". You can now leave a review.`,
-    });
-  }
 }
 
 /**
@@ -726,24 +567,6 @@ export async function rejectTransactionProof({ inquiryId, farmerId }) {
       statusUpdatedAt: serverTimestamp(),
     });
   });
-
-  // Send notification to consumer that proof was rejected
-  const updatedSnap = await getDoc(inquiryRef);
-  if (updatedSnap.exists()) {
-    const updatedInquiry = updatedSnap.data();
-    const farmerName = updatedInquiry.farmerSnapshot?.fullname || "Farmer";
-    const productName = updatedInquiry.productSnapshot?.name || "the product";
-
-    await sendInquiryNotification({
-      inquiryId,
-      inquiry: updatedInquiry,
-      eventType: "proof_rejected",
-      actor: { uid: farmerId, role: "farmer" },
-      recipientId: updatedInquiry.consumerId,
-      title: "Proof Rejected",
-      body: `${farmerName} rejected the transaction proof for "${productName}". Please upload a new proof.`,
-    });
-  }
 }
 
 /**
@@ -840,4 +663,76 @@ function getImageUrl(images) {
   const image = images?.[0];
 
   return typeof image === "string" ? image : (image?.url ?? "");
+}
+
+/*
+ * ============================================================
+ * BACKEND API FUNCTIONS
+ * ============================================================
+ *
+ * These functions call the Express backend instead of Firebase
+ * directly. They are used by hooks that have been migrated to
+ * the backend API. The original Firebase functions above are
+ * preserved for easy rollback.
+ */
+
+export async function apiGetInquiries() {
+  const data = await apiRequest("/inquiries");
+  return data.data ?? [];
+}
+
+export async function apiGetInquiryById(inquiryId) {
+  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}`);
+  return data.data ?? null;
+}
+
+export async function apiAcceptInquiry(inquiryData) {
+  const data = await apiRequest("/inquiries/accept", {
+    method: "POST",
+    body: JSON.stringify(inquiryData),
+  });
+  return data.data?.id ?? null;
+}
+
+export async function apiStartTransaction(inquiryId) {
+  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/start`, {
+    method: "PATCH",
+  });
+  return data.data ?? null;
+}
+
+export async function apiRequestCompletion(inquiryId) {
+  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/request-completion`, {
+    method: "PATCH",
+  });
+  return data.data ?? null;
+}
+
+export async function apiSubmitProof(inquiryId, proof) {
+  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/proof`, {
+    method: "POST",
+    body: JSON.stringify({ proof }),
+  });
+  return data.data ?? null;
+}
+
+export async function apiConfirmProof(inquiryId) {
+  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/confirm-completion`, {
+    method: "PATCH",
+  });
+  return data.data ?? null;
+}
+
+export async function apiRejectProof(inquiryId) {
+  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/reject-proof`, {
+    method: "PATCH",
+  });
+  return data.data ?? null;
+}
+
+export async function apiCancelInquiry(inquiryId) {
+  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/cancel`, {
+    method: "PATCH",
+  });
+  return data.data ?? null;
 }

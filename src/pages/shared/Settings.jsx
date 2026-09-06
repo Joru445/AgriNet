@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import ThemeToggle from "../../components/common/ThemeToggle";
 import LanguageSelector from "../../components/common/LanguageSelector";
 import PushNotificationManager from "../../components/common/PushNotificationManager";
+import NotificationPreferences from "../../components/common/NotificationPreferences";
 import LogoutConfirmModal from "../../components/common/LogoutConfirmModal";
 
 import { useAuth } from "../../context/AuthContext";
@@ -21,6 +22,7 @@ export default function Settings() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [pushSubscribed, setPushSubscribed] = useState(false);
 
   async function handleLogout() {
     try {
@@ -136,7 +138,20 @@ export default function Settings() {
           <h2 className="text-sm font-bold text-[var(--agri-text)] mb-3">
             {t("settings.notifications")}
           </h2>
-          <PushNotificationManager />
+          <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4 space-y-4">
+            <PushNotificationManager onSubscriptionChange={setPushSubscribed} />
+
+            <div className="border-t border-[var(--agri-border-subtle)] pt-4">
+              <p
+                className={`text-xs font-semibold mb-3 ${
+                  pushSubscribed ? "text-[var(--agri-text-secondary)]" : "text-gray-400"
+                }`}
+              >
+                {t("notificationPreferences.title")}
+              </p>
+              <NotificationPreferences pushEnabled={pushSubscribed} />
+            </div>
+          </div>
         </div>
       </section>
 

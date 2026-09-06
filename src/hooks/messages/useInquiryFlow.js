@@ -2,10 +2,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { getProductById } from "../../services/product.service";
 import {
-  sendMessage as sendMessageService,
+  apiSendMessage,
 } from "../../services/message.service";
-import { createConversation } from "../../services/conversation.service";
-import { acceptProductInquiry } from "../../services/inquiry.service";
+import { apiFindOrCreateConversation } from "../../services/conversation.service";
+import { apiAcceptInquiry } from "../../services/inquiry.service";
 import { buildOptimisticConversation } from "../../utils/messaging/buildOptimisticConversation";
 import { showToast } from "../../utils/toast";
 
@@ -131,19 +131,11 @@ export default function useInquiryFlow({
             return;
           }
 
-          conversationId = await createConversation(profile, activeUser);
+          conversationId = await apiFindOrCreateConversation(activeUser.uid);
         }
 
-        const receiverId =
-          activeUser?.uid ||
-          activeConversation?.otherUser?.uid ||
-          inquiryProduct.farmerId ||
-          null;
-
-        await sendMessageService({
+        await apiSendMessage({
           conversationId,
-          senderId: profile.uid,
-          receiverId,
           text: `I'm interested in ${inquiryProduct.name}.`,
           type: "product_inquiry",
           productId: inquiryProduct.id,
@@ -152,12 +144,11 @@ export default function useInquiryFlow({
         });
 
         if (!activeConversation?.id) {
-          const otherUserInfo = activeUser || { uid: receiverId };
           setActiveConversation(
             buildOptimisticConversation({
               conversationId,
               currentUser: profile,
-              otherUser: otherUserInfo,
+              otherUser: activeUser,
             }),
           );
           setActiveUser(null);
@@ -208,9 +199,12 @@ export default function useInquiryFlow({
       }
 
       try {
-        await acceptProductInquiry({
-          inquiryMessage,
-          farmer: profile,
+        await apiAcceptInquiry({
+          messageId: inquiryMessage.id,
+          conversationId: inquiryMessage.conversationId,
+          productId: inquiryMessage.productId,
+          consumerId: inquiryMessage.senderId,
+          quantity: inquiryMessage.quantity,
         });
         showToast.success("Inquiry accepted.");
       } catch (error) {

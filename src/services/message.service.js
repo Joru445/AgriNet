@@ -17,10 +17,7 @@ import {
 
 import { db } from "../firebase/firestore";
 import { auth } from "../firebase/auth";
-import {
-  createNotificationIdempotent,
-  getMessageNotificationId,
-} from "./notification.service";
+import { apiRequest } from "./api/api.client";
 
 const messagesRef = collection(db, "messages");
 const conversationsRef = collection(db, "conversations");
@@ -116,28 +113,6 @@ export async function sendMessage({
   });
 
   await batch.commit();
-
-  // Create notification for the receiver
-  if (receiverId && receiverId !== actualSenderId) {
-    await createNotificationIdempotent({
-      notificationId: getMessageNotificationId(messageRef.id, receiverId),
-      data: {
-        recipientId: receiverId,
-        type: "message",
-        title: "New Message",
-        body: "You received a new message.",
-        actorId: actualSenderId,
-        entityType: "message",
-        entityId: messageRef.id,
-        data: {
-          messageId: messageRef.id,
-          conversationId,
-        },
-      },
-    }).catch((err) => {
-      console.warn("Failed to create message notification:", err);
-    });
-  }
 
   return messageRef.id;
 }
@@ -270,4 +245,34 @@ export async function updateMessage(messageId, data) {
   const messageRef = doc(db, "messages", messageId);
 
   await updateDoc(messageRef, data);
+}
+
+// ============================================================
+// BACKEND API WRAPPERS
+// ============================================================
+
+export async function apiSendMessage(data) {
+  const result = await apiRequest("/messages", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+  return result.data.id;
+}
+
+export async function apiGetMessages(conversationId, { cursor = null, limit: pageSize = 40 } = {}) {
+  const params = new URLSearchParams();
+  if (cursor) params.set("cursor", cursor);
+  if (pageSize !== 40) params.set("limit", String(pageSize));
+
+  const qs = params.toString();
+  const endpoint = `/messages/${conversationId}${qs ? `?${qs}` : ""}`;
+
+  const result = await apiRequest(endpoint);
+
+  return {
+    messages: result.data,
+    cursor: result.cursor,
+    hasMore: result.hasMore,
+  };
 }

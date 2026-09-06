@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { sendMessage as sendMessageService } from "../../services/message.service";
-import { createConversation } from "../../services/conversation.service";
+import { apiSendMessage } from "../../services/message.service";
+import { apiFindOrCreateConversation } from "../../services/conversation.service";
 import { uploadMessageImage } from "../../services/cloudinary.service";
 import { buildFailedMessage } from "../../utils/messaging/buildFailedMessage";
 import { buildOptimisticConversation } from "../../utils/messaging/buildOptimisticConversation";
@@ -81,7 +81,7 @@ export default function useMessageActions({
 
         if (!conversationId) {
           stage = "create-conversation";
-          conversationId = await createConversation(profile, activeUser);
+          conversationId = await apiFindOrCreateConversation(activeUser.uid);
         }
 
         let imageUrl = null;
@@ -96,15 +96,8 @@ export default function useMessageActions({
 
         stage = "send-message";
 
-        const receiverId =
-          activeUser?.uid ||
-          activeConversation?.otherUser?.uid ||
-          null;
-
-        await sendMessageService({
+        await apiSendMessage({
           conversationId,
-          senderId: profile.uid,
-          receiverId,
           text,
           type: activeImg ? "image" : "text",
           imageUrl,
@@ -113,12 +106,11 @@ export default function useMessageActions({
         });
 
         if (!activeConversation?.id) {
-          const otherUserInfo = activeUser || { uid: receiverId };
           setActiveConversation(
             buildOptimisticConversation({
               conversationId,
               currentUser: profile,
-              otherUser: otherUserInfo,
+              otherUser: activeUser,
             }),
           );
           setActiveUser(null);
@@ -201,7 +193,7 @@ export default function useMessageActions({
 
         if (!conversationId && activeUser?.uid) {
           stage = "create-conversation";
-          conversationId = await createConversation(profile, activeUser);
+          conversationId = await apiFindOrCreateConversation(activeUser.uid);
         }
 
         if (!conversationId) {
@@ -210,16 +202,8 @@ export default function useMessageActions({
 
         stage = "send-message";
 
-        const receiverId =
-          failedMessage.receiverId ||
-          activeUser?.uid ||
-          activeConversation?.otherUser?.uid ||
-          null;
-
-        await sendMessageService({
+        await apiSendMessage({
           conversationId,
-          senderId: profile.uid,
-          receiverId,
           text: failedMessage.text || "",
           type: failedMessage.type || "text",
           imageUrl: failedMessage.imageUrl?.startsWith("blob:")
@@ -258,7 +242,7 @@ export default function useMessageActions({
         }
       }
     },
-    [profile, activeConversation, activeUser, setSearchParams, removeMessage, enqueueMessage],
+    [activeConversation, activeUser, setSearchParams, removeMessage, enqueueMessage],
   );
 
   const deleteFailedMessage = useCallback(

@@ -4,8 +4,8 @@ import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 import {
-  getConversation,
-  findConversation,
+  apiGetConversationById,
+  apiFindOrCreateConversation,
 } from "../services/conversation.service";
 
 import { getUserProfile } from "../services/user.service";
@@ -39,7 +39,7 @@ export default function useMessages() {
   const isOnline = useOnlineStatus();
   const { message, setMessage, drafts, clearCurrentDraft } =
     useDrafts(currentTargetKey);
-  const { conversations, loading } = useConversationList(profile?.uid);
+  const { conversations, loading } = useConversationList();
   const {
     search,
     setSearch,
@@ -138,7 +138,7 @@ export default function useMessages() {
             return;
           }
 
-          const conversation = await getConversation(conversationId);
+          const conversation = await apiGetConversationById(conversationId);
 
           if (cancelled) return;
 
@@ -239,9 +239,9 @@ export default function useMessages() {
             return;
           }
 
-          const existingConversation = await findConversation(
-            profile.uid,
+          const existingConversation = await apiFindOrCreateConversation(
             userId,
+            { findOnly: true },
           );
 
           if (cancelled) return;

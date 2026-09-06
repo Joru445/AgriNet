@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { getMarketplaceProductsPage } from "../services/product.service";
+import { apiGetMarketplaceProducts } from "../services/product.service";
 import useUserLocation from "./useUserLocation";
 import { getDistanceKm } from "../utils/distance";
 import { isProductExpired } from "../utils/productExpiration";
@@ -39,8 +39,7 @@ export default function useHomeProducts() {
 
       setLoading(true);
 
-      const result = await getMarketplaceProductsPage({
-        cursor: null,
+      const result = await apiGetMarketplaceProducts({
         limit: HOME_PRODUCT_LIMIT,
       });
 

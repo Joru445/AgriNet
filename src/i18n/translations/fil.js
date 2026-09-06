@@ -84,6 +84,7 @@ export default {
   },
 
   pushNotifications: {
+    title: "Mga Push Notification",
     notSupported: "Hindi suportado sa browser na ito",
     blocked: "Hindi pinapagana ng browser settings. I-enable sa site settings ng browser mo.",
     enabled: "Naka-enable",
@@ -91,6 +92,22 @@ export default {
     enable: "I-enable",
     enabling: "Nag-e-enable...",
     description: "Maka-receive ng notification tungkol sa bagong mensahe at transaksyon",
+    deviceDescription: "Mga push notification sa device na ito",
+    enableSuccess: "Naka-enable na ang push notification.",
+    disableSuccess: "Na-disable na ang push notification.",
+    enableFailed: "Hindi na-enable ang push notification.",
+    disableFailed: "Hindi na-disable ang push notification.",
+  },
+
+  notificationPreferences: {
+    title: "Mga Kategorya ng Notification",
+    messages: "Mga Mensahe",
+    messagesDescription: "Bagong mensahe mula sa ibang user",
+    transactions: "Mga Transaksyon",
+    transactionsDescription: "Mga pagtatanong at update ng transaksyon",
+    pushRequired: "I-enable ang push notification para i-configure ang mga kategorya",
+    saveSuccess: "Nai-save na ang mga kagustuhan.",
+    saveFailed: "Hindi nai-save ang mga kagustuhan. Subukan muli.",
   },
 
   reportModal: {
@@ -393,6 +410,22 @@ export default {
     emptyTitle: "Wala pang laman dito",
     errorTitle: "May nangyaring mali",
     retry: "Subukan Muli",
+  },
+
+  errors: {
+    generic: "May nangyaring mali. Subukan muli.",
+    network: "Walang internet connection. Suriin ang network mo.",
+    badRequest: "Hindi wastong kahilingan. Subukan muli.",
+    unauthorized: "Mag-log in para magpatuloy.",
+    forbidden: "Wala kang pahintulot na gawin ito.",
+    notFound: "Hindi nahanap ang hinihiling.",
+    conflict: "May alitan sa umiiral na datos.",
+    tooManyRequests: "Maraming kahilingan. Maghintay sandali.",
+    server: "May naganap na error sa server. Subukan muli mamaya.",
+    saveFailed: "Hindi nai-save. Subukan muli.",
+    loadFailed: "Hindi nai-load ang datos. Subukan muli.",
+    deleteFailed: "Hindi nai-delete. Subukan muli.",
+    updateFailed: "Hindi na-update. Subukan muli.",
   },
 
   notifications: {

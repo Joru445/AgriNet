@@ -8,7 +8,7 @@ import {
 } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "./AuthContext";
-import { subscribeUserConversations } from "../services/conversation.service";
+import { useConversationsContext } from "./ConversationsContext";
 
 const UnreadMessagesContext = createContext({
   unreadCount: 0,
@@ -19,11 +19,11 @@ export function UnreadMessagesProvider({ children }) {
   const { profile } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { conversations } = useConversationsContext();
 
   const [unreadCount, setUnreadCount] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
 
-  const rawConversationsRef = useRef([]);
   const dismissedIdRef = useRef(null);
   const popupTimerRef = useRef(null);
 
@@ -32,7 +32,6 @@ export function UnreadMessagesProvider({ children }) {
   const isMessagesRoute = location.pathname.includes("messages");
 
   const recalculateUnreads = useCallback(() => {
-    const conversations = rawConversationsRef.current;
     if (!profile?.uid || !conversations) {
       setUnreadCount(0);
       setShowPopup(false);
@@ -43,7 +42,6 @@ export function UnreadMessagesProvider({ children }) {
     const unreads = [];
 
     conversations.forEach((conv) => {
-      // If user is currently looking at this conversation, ignore for red dot & popup
       const isCurrentActive =
         isMessagesRoute &&
         ((activeConvId && conv.id === activeConvId) ||
@@ -60,7 +58,6 @@ export function UnreadMessagesProvider({ children }) {
 
     setUnreadCount(totalUnread);
 
-    // Clear popup if no unread messages outside the active conversation
     if (totalUnread === 0 || unreads.length === 0) {
       setShowPopup(false);
       dismissedIdRef.current = null;
@@ -70,7 +67,6 @@ export function UnreadMessagesProvider({ children }) {
       return;
     }
 
-    // Show popup for newest unread from OTHER chats
     const newestUnread = unreads[0];
     const lastTime =
       newestUnread.lastMessageAt?.seconds ||
@@ -91,7 +87,7 @@ export function UnreadMessagesProvider({ children }) {
         setShowPopup(false);
       }, 5000);
     }
-  }, [profile?.uid, isMessagesRoute, activeConvId, activeUserId]);
+  }, [profile?.uid, conversations, isMessagesRoute, activeConvId, activeUserId]);
 
   const recalculateUnreadsRef = useRef(recalculateUnreads);
 
@@ -100,34 +96,16 @@ export function UnreadMessagesProvider({ children }) {
   });
 
   useEffect(() => {
-    if (!profile?.uid) {
-      setUnreadCount(0);
-      setShowPopup(false);
-      rawConversationsRef.current = [];
-      dismissedIdRef.current = null;
-      return;
-    }
+    recalculateUnreads();
+  }, [recalculateUnreads]);
 
-    const unsubscribe = subscribeUserConversations(
-      profile.uid,
-      (conversations) => {
-        rawConversationsRef.current = conversations;
-        recalculateUnreadsRef.current();
-      },
-    );
-
+  useEffect(() => {
     return () => {
-      unsubscribe();
       if (popupTimerRef.current) {
         clearTimeout(popupTimerRef.current);
       }
     };
-  }, [profile?.uid]);
-
-  // Recalculate when user switches conversations or navigates
-  useEffect(() => {
-    recalculateUnreads();
-  }, [recalculateUnreads]);
+  }, []);
 
   return (
     <UnreadMessagesContext.Provider

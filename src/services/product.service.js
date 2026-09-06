@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
+import { apiRequest } from "./api/api.client";
 import { getProductReviewSummaries } from "./product-review.service";
 import * as pageCache from "../utils/pageCache";
 
@@ -258,4 +259,77 @@ async function getFarmersByIds(ids) {
   }
 
   return farmers;
+}
+
+/*
+ * ============================================================
+ * BACKEND API FUNCTIONS
+ * ============================================================
+ *
+ * These functions call the Express backend instead of Firebase
+ * directly. They are used by hooks that have been migrated to
+ * the backend API. The original Firebase functions above are
+ * preserved for easy rollback.
+ */
+
+export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor } = {}) {
+  const params = new URLSearchParams();
+  params.set("limit", String(pageSize));
+  if (cursor) params.set("cursor", String(cursor));
+
+  const data = await apiRequest(`/products/marketplace?${params}`);
+
+  return {
+    products: data.data ?? [],
+    cursor: data.cursor ?? null,
+    hasMore: data.hasMore ?? false,
+  };
+}
+
+export async function apiGetProductById(id) {
+  const data = await apiRequest(`/products/${encodeURIComponent(id)}`);
+  return data.data ?? null;
+}
+
+export async function apiGetFarmerProducts(farmerId) {
+  const data = await apiRequest(`/products/farmer/${encodeURIComponent(farmerId)}`);
+  return data.data ?? [];
+}
+
+export async function apiCreateProduct(productData) {
+  const data = await apiRequest("/products", {
+    method: "POST",
+    body: JSON.stringify(productData),
+  });
+  return data.data ?? null;
+}
+
+export async function apiUpdateProduct(id, productData) {
+  const data = await apiRequest(`/products/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(productData),
+  });
+  return data.data ?? null;
+}
+
+export async function apiDeleteProduct(id) {
+  const data = await apiRequest(`/products/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+  return data.data ?? null;
+}
+
+export async function apiToggleProductAvailability(id) {
+  const data = await apiRequest(`/products/${encodeURIComponent(id)}/availability`, {
+    method: "PATCH",
+  });
+  return data.data ?? null;
+}
+
+export async function apiUpdateProductStock(id, stock) {
+  const data = await apiRequest(`/products/${encodeURIComponent(id)}/stock`, {
+    method: "PATCH",
+    body: JSON.stringify({ stock }),
+  });
+  return data.data ?? null;
 }

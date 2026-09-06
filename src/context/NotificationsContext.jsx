@@ -10,8 +10,8 @@ import {
 import { useAuth } from "./AuthContext";
 
 import {
-  markAllNotificationsRead,
-  markNotificationRead,
+  apiMarkAllNotificationsRead,
+  apiMarkNotificationRead,
   subscribeUserNotifications,
 } from "../services/notification.service";
 
@@ -60,13 +60,13 @@ export function NotificationsProvider({ children }) {
 
   const markAsRead = useCallback(async (notification) => {
     if (!notification || notification.read) return;
-    await markNotificationRead(notification.id);
+    await apiMarkNotificationRead(notification.id);
   }, []);
 
   const markAllAsRead = useCallback(async () => {
     if (!profile?.uid) return;
-    await markAllNotificationsRead(profile.uid, notifications);
-  }, [profile?.uid, notifications]);
+    await apiMarkAllNotificationsRead();
+  }, [profile?.uid]);
 
   const value = useMemo(
     () => ({

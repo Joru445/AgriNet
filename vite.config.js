@@ -19,6 +19,7 @@ export default defineConfig({
         'icon-512x512.png',
         'icon-maskable-512x512.png',
         'push-sw.js',
+        'firebase-messaging-sw.js',
       ],
       manifest: {
         name: 'AgriNet - Farm Fresh Marketplace',
@@ -60,6 +61,7 @@ export default defineConfig({
         globIgnores: [
           '**/remixicon-BTtOSOPh.svg',
           '**/push-sw.js',
+          '**/firebase-messaging-sw.js',
         ],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MiB
         runtimeCaching: [

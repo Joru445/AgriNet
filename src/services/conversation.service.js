@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
+import { apiRequest } from "./api/api.client";
 
 const conversationsRef = collection(db, "conversations");
 
@@ -183,4 +184,64 @@ export async function updateConversation(conversationId, data) {
   const conversationRef = doc(db, "conversations", conversationId);
 
   await updateDoc(conversationRef, data);
+}
+
+/*
+ * ============================================================
+ * BACKEND API WRAPPERS
+ *
+ * Migrated to Express backend. The Firebase functions above are
+ * preserved as rollback implementations.
+ * ============================================================
+ */
+
+/**
+ * Get conversations from the backend API.
+ */
+export async function apiGetConversations() {
+  const response = await apiRequest("/api/conversations");
+  return response.data;
+}
+
+/**
+ * Get a conversation by ID from the backend API.
+ * Verifies the authenticated user is a participant.
+ */
+export async function apiGetConversationById(conversationId) {
+  const response = await apiRequest(`/api/conversations/${conversationId}`);
+  return response.data;
+}
+
+/**
+ * Find an existing conversation or create a new one via the backend API.
+ *
+ * The backend retrieves authoritative participant information from
+ * Firestore, preventing client-side spoofing of participant data.
+ *
+ * Uses the deterministic ID strategy so duplicate conversations
+ * cannot be created for the same pair of users.
+ *
+ * @param {string} otherUserId - The other user's UID.
+ * @param {object} options
+ * @param {boolean} [options.findOnly=false] - If true, returns null instead
+ *   of creating a conversation when none exists.
+ */
+export async function apiFindOrCreateConversation(otherUserId, { findOnly = false } = {}) {
+  const response = await apiRequest("/api/conversations", {
+    method: "POST",
+    body: JSON.stringify({ otherUserId, findOnly }),
+  });
+  return response.data;
+}
+
+/**
+ * Mark a conversation as read via the backend API.
+ * Only updates the authenticated user's read/unread fields.
+ */
+export async function apiMarkConversationRead(conversationId) {
+  const response = await apiRequest(
+    `/api/conversations/${conversationId}/read`,
+    { method: "PATCH" },
+  );
+  return response.data;
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { getInquiry } from "../services/inquiry.service";
+import { apiGetInquiryById } from "../services/inquiry.service";
 
 import { getInquiryFarmerReview } from "../services/farmer-review.service";
 
@@ -32,7 +32,7 @@ export default function useTransactionReview(inquiryId) {
       setLoading(true);
       setError(null);
 
-      const inquiryData = await getInquiry(inquiryId);
+      const inquiryData = await apiGetInquiryById(inquiryId);
 
       if (!inquiryData) {
         throw new Error("Inquiry not found.");

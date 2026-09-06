@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
+import { useConversationsContext } from "../context/ConversationsContext";
 
 import { getFarmerProducts } from "../services/product.service";
 import { getRecentFarmerReviews } from "../services/farmer-review.service";
-import { subscribeUserConversations } from "../services/conversation.service";
 
 import { showToast } from "../utils/toast";
 import * as pageCache from "../utils/pageCache";
@@ -13,6 +13,7 @@ const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
 export default function useDashboard() {
   const { profile } = useAuth();
+  const { conversations } = useConversationsContext();
 
   const [loading, setLoading] = useState(true);
 
@@ -98,28 +99,21 @@ export default function useDashboard() {
   }, [loadDashboard]);
 
   useEffect(() => {
-    if (!profile?.uid) return;
+    if (!conversations.length) return;
 
-    const unsubscribe = subscribeUserConversations(
-      profile.uid,
-      (conversations) => {
-        setRecentConversations(conversations.slice(0, 5));
+    setRecentConversations(conversations.slice(0, 5));
 
-        const unreadMessages = conversations.reduce(
-          (total, conversation) =>
-            total + (conversation.unreadCount?.[profile.uid] ?? 0),
-          0,
-        );
-
-        setStats((prev) => ({
-          ...prev,
-          unreadMessages,
-        }));
-      },
+    const unreadMessages = conversations.reduce(
+      (total, conversation) =>
+        total + (conversation.unreadCount?.[profile.uid] ?? 0),
+      0,
     );
 
-    return unsubscribe;
-  }, [profile?.uid]);
+    setStats((prev) => ({
+      ...prev,
+      unreadMessages,
+    }));
+  }, [conversations, profile?.uid]);
 
   return {
     loading,

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { getMarketplaceProductsPage } from "../services/product.service";
+import { apiGetMarketplaceProducts } from "../services/product.service";
 import useUserLocation from "./useUserLocation";
 import { getDistanceKm } from "../utils/distance";
 import { isProductExpired } from "../utils/productExpiration";
@@ -85,7 +85,8 @@ export default function useMarketplace() {
         loadingMoreRef.current = true;
       }
 
-      const result = await getMarketplaceProductsPage({
+      const result = await apiGetMarketplaceProducts({
+        limit: 24,
         cursor: reset ? null : cursorRef.current,
       });
 

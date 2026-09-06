@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { getProductById } from "../services/product.service";
+import { apiGetProductById } from "../services/product.service";
 import { getFarmerById } from "../services/farmer.service";
 import * as pageCache from "../utils/pageCache";
 
@@ -37,7 +37,9 @@ export default function useProductDetails() {
         setReviewCount(cached.reviewCount);
         setAverageRating(cached.averageRating);
 
-        if (cached.product.farmerId) {
+        if (cached.farmer) {
+          setFarmer(cached.farmer);
+        } else if (cached.product.farmerId) {
           setLoadingFarmer(true);
           getFarmerById(cached.product.farmerId)
             .then(setFarmer)
@@ -49,7 +51,7 @@ export default function useProductDetails() {
         return;
       }
 
-      const productData = await getProductById(id);
+      const productData = await apiGetProductById(id);
 
       if (!productData) {
         setProduct(null);
@@ -63,20 +65,16 @@ export default function useProductDetails() {
         productData.ratingSummary?.average ?? productData.productRating ?? 0,
       );
 
+      // The API returns farmer data embedded in the product
+      const farmerData = productData.farmer ?? null;
+
       setProduct(productData);
+      setFarmer(farmerData);
       setReviewCount(reviewCount);
       setAverageRating(averageRating);
 
       // Cache the product data
-      pageCache.set(cacheKey, { product: productData, reviewCount, averageRating }, CACHE_TTL);
-
-      if (productData.farmerId) {
-        setLoadingFarmer(true);
-        getFarmerById(productData.farmerId)
-          .then(setFarmer)
-          .catch(() => setFarmer(null))
-          .finally(() => setLoadingFarmer(false));
-      }
+      pageCache.set(cacheKey, { product: productData, farmer: farmerData, reviewCount, averageRating }, CACHE_TTL);
     } catch (error) {
       console.error(error);
     } finally {

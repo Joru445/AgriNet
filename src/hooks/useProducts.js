@@ -3,10 +3,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 import {
-  getFarmerProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct,
+  apiGetFarmerProducts,
+  apiCreateProduct,
+  apiUpdateProduct,
+  apiDeleteProduct,
 } from "../services/product.service";
 import { uploadProductImage } from "../services/cloudinary.service";
 
@@ -37,7 +37,7 @@ export default function useProducts() {
         setLoading(true);
       }
 
-      const data = await getFarmerProducts(profile.uid);
+      const data = await apiGetFarmerProducts(profile.uid);
 
       setProducts(data);
     } catch (error) {
@@ -119,9 +119,8 @@ export default function useProducts() {
 
       const uploadedImages = await uploadImages(form.images);
 
-      await createProduct({
+      await apiCreateProduct({
         ...form,
-        farmerId: profile.uid,
         images: uploadedImages,
       });
 
@@ -143,7 +142,7 @@ export default function useProducts() {
 
       const uploadedImages = await uploadImages(form.images);
 
-      await updateProduct(form.id, {
+      await apiUpdateProduct(form.id, {
         ...form,
         images: uploadedImages,
       });
@@ -164,7 +163,7 @@ export default function useProducts() {
     if (!editingProduct) return;
 
     try {
-      await deleteProduct(editingProduct.id);
+      await apiDeleteProduct(editingProduct.id);
 
       setProducts((prev) => prev.filter((p) => p.id !== editingProduct.id));
 

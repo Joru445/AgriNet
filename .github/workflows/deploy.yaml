@@ -30,6 +30,10 @@ jobs:
       VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
       VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
       VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+      VITE_FIREBASE_VAPID_KEY: ${{ secrets.VITE_FIREBASE_VAPID_KEY }}
+
+      # API
+      VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       # Cloudinary
       VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
@@ -62,6 +66,8 @@ jobs:
           test -n "$VITE_FIREBASE_MESSAGING_SENDER_ID" || (echo "ERROR: VITE_FIREBASE_MESSAGING_SENDER_ID is missing" && exit 1)
           test -n "$VITE_FIREBASE_APP_ID" || (echo "ERROR: VITE_FIREBASE_APP_ID is missing" && exit 1)
           test -n "$VITE_FIREBASE_MEASUREMENT_ID" || (echo "ERROR: VITE_FIREBASE_MEASUREMENT_ID is missing" && exit 1)
+          test -n "$VITE_FIREBASE_VAPID_KEY" || (echo "ERROR: VITE_FIREBASE_VAPID_KEY is missing" && exit 1)
+          test -n "$VITE_API_URL" || (echo "ERROR: VITE_API_URL is missing" && exit 1)
 
           test -n "$VITE_CLOUDINARY_CLOUD_NAME" || (echo "ERROR: VITE_CLOUDINARY_CLOUD_NAME is missing" && exit 1)
           test -n "$VITE_CLOUDINARY_PRODUCT_PRESET" || (echo "ERROR: VITE_CLOUDINARY_PRODUCT_PRESET is missing" && exit 1)
@@ -70,6 +76,18 @@ jobs:
           test -n "$VITE_CLOUDINARY_MESSAGE_PRESET" || (echo "ERROR: VITE_CLOUDINARY_MESSAGE_PRESET is missing" && exit 1)
 
           echo "All required environment variables are present."
+
+      - name: Create .env.local for FCM SW generation
+        run: |
+          cat > .env.local << EOF
+          VITE_FIREBASE_API_KEY=$VITE_FIREBASE_API_KEY
+          VITE_FIREBASE_AUTH_DOMAIN=$VITE_FIREBASE_AUTH_DOMAIN
+          VITE_FIREBASE_PROJECT_ID=$VITE_FIREBASE_PROJECT_ID
+          VITE_FIREBASE_STORAGE_BUCKET=$VITE_FIREBASE_STORAGE_BUCKET
+          VITE_FIREBASE_MESSAGING_SENDER_ID=$VITE_FIREBASE_MESSAGING_SENDER_ID
+          VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID
+          VITE_FIREBASE_MEASUREMENT_ID=$VITE_FIREBASE_MEASUREMENT_ID
+          EOF
 
       - name: Build
         run: npm run build

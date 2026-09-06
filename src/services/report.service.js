@@ -14,10 +14,6 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
-import {
-  createNotificationIdempotent,
-  getReportNotificationId,
-} from "./notification.service";
 
 const reportsRef = collection(db, "reports");
 
@@ -424,8 +420,7 @@ export async function updateReportStatus(reportId, status, adminUid, adminNotes 
   }
 
   const reportRef = doc(db, "reports", reportId);
-  const reportSnap = await getDoc(reportRef);
-  const existingData = reportSnap.exists() ? reportSnap.data() : null;
+  await getDoc(reportRef);
 
   const updateData = {
     status,
@@ -445,38 +440,6 @@ export async function updateReportStatus(reportId, status, adminUid, adminNotes 
   }
 
   await updateDoc(reportRef, updateData);
-
-  // Send resolution notification to the reporter
-  if (existingData?.reporterId && (status === "resolved" || status === "dismissed")) {
-    const isResolved = status === "resolved";
-    const targetName = existingData.targetTitle || "your reported item";
-    const noteText = adminNotes?.trim() ? ` Note: "${adminNotes.trim()}"` : "";
-    const eventType = isResolved ? "resolved" : "dismissed";
-
-    const notificationId = getReportNotificationId(reportId, eventType, existingData.reporterId);
-
-    createNotificationIdempotent({
-      notificationId,
-      data: {
-        recipientId: existingData.reporterId,
-        type: "system",
-        title: isResolved ? "Report Resolved" : "Report Update",
-        body: isResolved
-          ? `Your report regarding "${targetName}" has been reviewed and resolved by our moderation team.${noteText} Thank you for helping keep AgriNet safe!`
-          : `Your report regarding "${targetName}" has been reviewed and closed by our moderation team.${noteText}`,
-        actorId: adminUid,
-        entityType: "report",
-        entityId: reportId,
-        data: {
-          reportId,
-          status,
-          adminNotes: adminNotes || "",
-        },
-      },
-    }).catch((err) => {
-      console.warn("Could not dispatch report notification to reporter:", err);
-    });
-  }
 }
 
 /*

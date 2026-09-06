@@ -13,6 +13,9 @@ dist-ssr
 *.local
 .env
 
+# Auto-generated FCM service worker (regenerate with: npm run generate-fcm-sw)
+public/firebase-messaging-sw.js
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

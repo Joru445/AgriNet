@@ -84,6 +84,7 @@ export default {
   },
 
   pushNotifications: {
+    title: "Push Notifications",
     notSupported: "Not supported in this browser",
     blocked: "Blocked by browser settings. Enable in your browser's site settings.",
     enabled: "Enabled",
@@ -91,6 +92,22 @@ export default {
     enable: "Enable",
     enabling: "Enabling...",
     description: "Get notified about new messages and transactions",
+    deviceDescription: "Push notifications on this device",
+    enableSuccess: "Push notifications enabled.",
+    disableSuccess: "Push notifications disabled.",
+    enableFailed: "Failed to enable push notifications.",
+    disableFailed: "Failed to disable push notifications.",
+  },
+
+  notificationPreferences: {
+    title: "Notification Categories",
+    messages: "Messages",
+    messagesDescription: "New messages from other users",
+    transactions: "Transactions",
+    transactionsDescription: "Inquiries and transaction updates",
+    pushRequired: "Enable push notifications to configure categories",
+    saveSuccess: "Preferences saved.",
+    saveFailed: "Failed to save preferences. Please try again.",
   },
 
   reportModal: {
@@ -393,6 +410,22 @@ export default {
     emptyTitle: "Nothing here yet",
     errorTitle: "Something went wrong",
     retry: "Try Again",
+  },
+
+  errors: {
+    generic: "Something went wrong. Please try again.",
+    network: "No internet connection. Please check your network.",
+    badRequest: "Invalid request. Please try again.",
+    unauthorized: "Please log in to continue.",
+    forbidden: "You don't have permission to do that.",
+    notFound: "The requested resource was not found.",
+    conflict: "This action conflicts with existing data.",
+    tooManyRequests: "Too many requests. Please wait a moment.",
+    server: "A server error occurred. Please try again later.",
+    saveFailed: "Failed to save. Please try again.",
+    loadFailed: "Failed to load data. Please try again.",
+    deleteFailed: "Failed to delete. Please try again.",
+    updateFailed: "Failed to update. Please try again.",
   },
 
   notifications: {

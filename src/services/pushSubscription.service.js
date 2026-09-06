@@ -1,44 +1,23 @@
 import {
-  doc,
-  setDoc,
-  deleteDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-import { db } from "../firebase/firestore";
+  isMessagingSupported,
+  getPermissionState,
+  registerMessagingSW,
+  requestFCMToken,
+} from "../firebase/messaging";
+import { apiRequest } from "./api/api.client";
 
-const PUSH_SW_SCOPE = "/push-sw.js";
+// Re-export for consumers that need direct SW registration
+export { registerMessagingSW };
 
-/**
- * Convert a URL-safe base64 string to a Uint8Array for VAPID.
- */
-function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
-/**
- * Get the VAPID public key from environment.
- * In production, set VITE_VAPID_PUBLIC_KEY in your .env.local.
- */
-function getVapidPublicKey() {
-  return import.meta.env.VITE_VAPID_PUBLIC_KEY || null;
-}
+// ============================================================
+// PUSH SUPPORT DETECTION
+// ============================================================
 
 /**
  * Check if push notifications are supported in this browser.
  */
 export function isPushSupported() {
-  return (
-    "serviceWorker" in navigator &&
-    "PushManager" in window &&
-    "Notification" in window
-  );
+  return isMessagingSupported();
 }
 
 /**
@@ -46,28 +25,12 @@ export function isPushSupported() {
  * Returns: "granted" | "denied" | "default"
  */
 export function getNotificationPermission() {
-  if (!("Notification" in window)) return "denied";
-  return Notification.permission;
+  return getPermissionState();
 }
 
-/**
- * Register the push service worker (the lightweight one for push events).
- * The Workbox SW is registered separately by vite-plugin-pwa.
- */
-export async function registerPushSW() {
-  if (!("serviceWorker" in navigator)) return null;
-
-  try {
-    const registration = await navigator.serviceWorker.register(PUSH_SW_SCOPE, {
-      scope: "/",
-    });
-    console.log("[Push] Push SW registered:", registration.scope);
-    return registration;
-  } catch (error) {
-    console.error("[Push] Push SW registration failed:", error);
-    return null;
-  }
-}
+// ============================================================
+// PERMISSION REQUEST
+// ============================================================
 
 /**
  * Request notification permission from the user.
@@ -77,123 +40,134 @@ export async function registerPushSW() {
 export async function requestNotificationPermission() {
   if (!("Notification" in window)) return "denied";
 
-  // If already granted, no need to ask
   if (Notification.permission === "granted") return "granted";
-
-  // If denied, we can't ask again (browser blocks it)
   if (Notification.permission === "denied") return "denied";
 
   const result = await Notification.requestPermission();
   return result;
 }
 
+// ============================================================
+// FCM TOKEN MANAGEMENT
+// ============================================================
+
 /**
- * Subscribe to web push via the PushManager.
- * Requires the push SW to be registered and notification permission granted.
+ * Register the FCM service worker and obtain an FCM token.
  *
- * @param {ServiceWorkerRegistration} registration - The push SW registration
- * @returns {PushSubscription | null}
+ * Does NOT auto-request permission — the caller must ensure
+ * permission is "granted" before calling, or handle the
+ * permission prompt via requestNotificationPermission() first.
+ *
+ * @param {ServiceWorkerRegistration} [registration] - Pre-registered SW
+ * @returns {Promise<string|null>} FCM token, or null on failure
  */
-export async function subscribeToPush(registration) {
-  const vapidPublicKey = getVapidPublicKey();
-  if (!vapidPublicKey) {
-    console.warn(
-      "[Push] No VAPID public key configured. Set VITE_VAPID_PUBLIC_KEY in .env.local",
-    );
-    return null;
+export async function getFCMToken(registration) {
+  if (!registration) {
+    registration = await registerMessagingSW();
   }
-
-  try {
-    // Check for existing subscription
-    let subscription = await registration.pushManager.getSubscription();
-
-    // If there's an existing subscription, check if it's still valid
-    if (subscription) {
-      // Check if the subscription's endpoint is still reachable
-      // by checking the expiration time if available
-      const expirationTime = subscription.expirationTime;
-      if (expirationTime && expirationTime < Date.now()) {
-        // Subscription expired, unsubscribe and create new one
-        await subscription.unsubscribe();
-        subscription = null;
-      }
-    }
-
-    if (!subscription) {
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-      });
-    }
-
-    return subscription;
-  } catch (error) {
-    console.error("[Push] Failed to subscribe to push:", error);
-    return null;
-  }
-}
-
-/**
- * Unsubscribe from web push.
- */
-export async function unsubscribeFromPush(registration) {
-  try {
-    const subscription = await registration.pushManager.getSubscription();
-    if (subscription) {
-      await subscription.unsubscribe();
-    }
-  } catch (error) {
-    console.error("[Push] Failed to unsubscribe from push:", error);
-  }
-}
-
-/**
- * Get the current push subscription.
- */
-export async function getPushSubscription(registration) {
   if (!registration) return null;
+
+  return requestFCMToken(registration);
+}
+
+// ============================================================
+// INSTALLATION REGISTRATION (Backend API)
+// ============================================================
+
+/**
+ * Register a push installation with the backend.
+ *
+ * POST /api/push/installations
+ *
+ * The backend associates the installation with req.user.uid.
+ * The client does NOT send recipient/user IDs as authoritative identity.
+ *
+ * @param {object} params
+ * @param {string} params.fcmToken - FCM registration token
+ * @param {string} [params.installationId] - Client-generated installation identifier
+ * @param {string} [params.platform] - "web" | "android" | "ios"
+ * @param {string} [params.userAgent] - Browser user agent string
+ */
+export async function registerPushInstallation({
+  fcmToken,
+  installationId,
+  platform = "web",
+  userAgent,
+} = {}) {
+  if (!fcmToken) return null;
+
+  const body = {
+    fcmToken,
+    installationId: installationId || getInstallationId(),
+    platform,
+    userAgent: userAgent || navigator.userAgent,
+  };
+
   try {
-    return await registration.pushManager.getSubscription();
-  } catch {
-    return null;
+    const result = await apiRequest("/push/installations", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    return result;
+  } catch (error) {
+    // Backend endpoint may not exist yet — don't crash
+    if (error.status === 404 || error.status === 501) {
+      console.info(
+        "[Push] Backend push installation endpoint not available yet.",
+      );
+      return null;
+    }
+    throw error;
+  }
+}
+
+/**
+ * Remove a push installation from the backend.
+ *
+ * DELETE /api/push/installations/:installationId
+ *
+ * @param {string} installationId
+ */
+export async function removePushInstallation(installationId) {
+  if (!installationId) return;
+
+  try {
+    await apiRequest(`/push/installations/${encodeURIComponent(installationId)}`, {
+      method: "DELETE",
+    });
+  } catch (error) {
+    // Backend endpoint may not exist yet — don't crash
+    if (error.status === 404 || error.status === 501) {
+      return;
+    }
+    console.error("[Push] Failed to remove installation:", error);
   }
 }
 
 // ============================================================
-// FIRESTORE SUBSCRIPTION STORAGE
+// INSTALLATION IDENTIFICATION
 // ============================================================
 
-/**
- * Store the push subscription in Firestore under pushSubscriptions collection.
- * Document ID is the user's UID (one subscription per user).
- *
- * NOTE: Without a backend (Cloud Functions), this stored subscription
- * cannot automatically trigger push delivery. It serves as the foundation
- * for a future push sender service.
- */
-export async function savePushSubscription(uid, subscription) {
-  if (!uid || !subscription) return;
-
-  const subscriptionData = subscription.toJSON();
-
-  await setDoc(doc(db, "pushSubscriptions", uid), {
-    uid,
-    endpoint: subscriptionData.endpoint,
-    keys: subscriptionData.keys,
-    expirationTime: subscriptionData.expirationTime || null,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-}
+const INSTALLATION_ID_KEY = "agrinet_push_installation_id";
 
 /**
- * Remove the push subscription from Firestore.
+ * Get or generate a stable installation identifier.
+ * Stored in localStorage to persist across sessions.
  */
-export async function removePushSubscription(uid) {
-  if (!uid) return;
+export function getInstallationId() {
   try {
-    await deleteDoc(doc(db, "pushSubscriptions", uid));
+    let id = localStorage.getItem(INSTALLATION_ID_KEY);
+    if (id) return id;
+
+    // Generate a new installation ID
+    id = crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+
+    localStorage.setItem(INSTALLATION_ID_KEY, id);
+    return id;
   } catch {
-    // Document might not exist
+    // localStorage unavailable (private browsing, etc.)
+    return `fallback-${Date.now()}`;
   }
 }

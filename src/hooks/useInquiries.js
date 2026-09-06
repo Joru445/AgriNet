@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
+import { useInquiriesContext } from "../context/InquiriesContext";
 
 import {
-  subscribeUserInquiries,
-  updateInquiryStatus,
-  requestTransactionCompletion,
-  submitTransactionProof,
-  confirmTransactionProof,
-  rejectTransactionProof,
-  cancelInquiry,
+  apiStartTransaction,
+  apiRequestCompletion,
+  apiSubmitProof,
+  apiConfirmProof,
+  apiRejectProof,
+  apiCancelInquiry,
 } from "../services/inquiry.service";
 
 import { getProductById } from "../services/product.service";
@@ -20,22 +20,13 @@ import { showToast } from "../utils/toast";
 
 export default function useInquiries() {
   const { profile } = useAuth();
+  const { inquiries, loading, error } = useInquiriesContext();
 
-  const [inquiries, setInquiries] = useState([]);
   const [inquiryData, setInquiryData] = useState({});
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const [activeTab, setActiveTab] = useState("all");
   const [updatingId, setUpdatingId] = useState(null);
   const farmerCacheRef = useRef(new Map());
-
-  /*
-   * --------------------------------------------------
-   * Subscribe to user's inquiries
-   * --------------------------------------------------
-   */
 
   const profileRef = useRef(profile);
 
@@ -43,57 +34,38 @@ export default function useInquiries() {
     profileRef.current = profile;
   });
 
+  /*
+   * --------------------------------------------------
+   * Sync consumer deal counts when inquiries change
+   * --------------------------------------------------
+   */
+
   useEffect(() => {
-    if (!profile?.uid || !profile?.role) {
-      return;
+    if (!inquiries.length) return;
+
+    const p = profileRef.current;
+    if (p.role === "consumer" && Array.isArray(inquiries)) {
+      const completedCount = inquiries.filter(
+        (item) => item.status === "completed" || item.status === "resolved",
+      ).length;
+      const cancelledCount = inquiries.filter(
+        (item) => item.status === "cancelled",
+      ).length;
+      const totalCount = inquiries.length;
+
+      if (
+        p.completedDeals !== completedCount ||
+        p.totalDeals !== totalCount ||
+        p.cancelledDeals !== cancelledCount
+      ) {
+        updateUser(p.uid, {
+          completedDeals: completedCount,
+          totalDeals: totalCount,
+          cancelledDeals: cancelledCount,
+        }).catch(() => {});
+      }
     }
-
-    setLoading(true);
-    setError(null);
-
-    const unsubscribe = subscribeUserInquiries(
-      profile.uid,
-      profile.role,
-      (data) => {
-        setInquiries(data);
-        setLoading(false);
-
-        const p = profileRef.current;
-        if (p.role === "consumer" && Array.isArray(data)) {
-          const completedCount = data.filter(
-            (item) => item.status === "completed" || item.status === "resolved",
-          ).length;
-          const cancelledCount = data.filter(
-            (item) => item.status === "cancelled",
-          ).length;
-          const totalCount = data.length;
-
-          if (
-            p.completedDeals !== completedCount ||
-            p.totalDeals !== totalCount ||
-            p.cancelledDeals !== cancelledCount
-          ) {
-            updateUser(p.uid, {
-              completedDeals: completedCount,
-              totalDeals: totalCount,
-              cancelledDeals: cancelledCount,
-            }).catch(() => {});
-          }
-        }
-      },
-      (err) => {
-        console.error("Failed to load inquiries:", err);
-
-        setInquiries([]);
-        setError(err);
-        setLoading(false);
-
-        showToast.error(err.message || "Failed to load inquiries.");
-      },
-    );
-
-    return unsubscribe;
-  }, [profile?.uid, profile?.role]);
+  }, [inquiries]);
 
   /*
    * --------------------------------------------------
@@ -222,17 +194,11 @@ export default function useInquiries() {
     try {
       setUpdatingId(inquiryId);
 
-      await updateInquiryStatus({
-        inquiryId,
-        status,
-        actor: profile,
-      });
-
       if (status === "ongoing") {
+        await apiStartTransaction(inquiryId);
         showToast.success("Inquiry marked as ongoing.");
-      }
-
-      if (status === "cancelled") {
+      } else if (status === "cancelled") {
+        await apiCancelInquiry(inquiryId);
         showToast.success("Inquiry cancelled.");
       }
     } catch (error) {
@@ -257,10 +223,7 @@ export default function useInquiries() {
     try {
       setUpdatingId(inquiryId);
 
-      await requestTransactionCompletion({
-        inquiryId,
-        consumerId: profile.uid,
-      });
+      await apiRequestCompletion(inquiryId);
 
       showToast.success("Transaction completion requested.");
 
@@ -292,11 +255,7 @@ export default function useInquiries() {
     try {
       setUpdatingId(inquiryId);
 
-      await submitTransactionProof({
-        inquiryId,
-        consumerId: profile.uid,
-        proof,
-      });
+      await apiSubmitProof(inquiryId, proof);
 
       showToast.success("Proof submitted. Waiting for farmer confirmation.");
 
@@ -326,10 +285,7 @@ export default function useInquiries() {
     try {
       setUpdatingId(inquiryId);
 
-      await confirmTransactionProof({
-        inquiryId,
-        farmerId: profile.uid,
-      });
+      await apiConfirmProof(inquiryId);
 
       showToast.success("Transaction completed successfully.");
 
@@ -359,10 +315,7 @@ export default function useInquiries() {
     try {
       setUpdatingId(inquiryId);
 
-      await rejectTransactionProof({
-        inquiryId,
-        farmerId: profile.uid,
-      });
+      await apiRejectProof(inquiryId);
 
       showToast.success(
         "Proof rejected. The consumer can upload another photo.",
@@ -394,10 +347,7 @@ export default function useInquiries() {
     try {
       setUpdatingId(inquiryId);
 
-      await cancelInquiry({
-        inquiryId,
-        actor: profile,
-      });
+      await apiCancelInquiry(inquiryId);
 
       showToast.success("Inquiry cancelled.");
 

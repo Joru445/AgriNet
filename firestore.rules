@@ -151,6 +151,10 @@ service cloud.firestore {
 
 
       allow delete: if isAdmin();
+
+      match /installations/{installationId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
     }
 
 
@@ -1144,40 +1148,15 @@ match /notifications/{notificationId} {
     ];
   }
 
-  function hasValidCreateFields(data) {
-    return data.keys().hasOnly([
-      "recipientId",
-      "actorId",
-      "type",
-      "title",
-      "body",
-      "entityType",
-      "entityId",
-      "data",
-      "read",
-      "createdAt"
-    ])
-    && data.recipientId is string
-    && data.recipientId != ""
-    && data.actorId is string
-    && data.actorId != ""
-    && data.actorId == request.auth.uid
-    && data.recipientId != request.auth.uid
-    && data.type is string
-    && isValidType(data.type)
-    && data.title is string
-    && data.title != ""
-    && data.body is string
-    && data.read == false
-    && data.createdAt != null;
-  }
-
   // ============================================================
   // CREATE
+  //
+  // Notification creation is handled exclusively by the backend
+  // using the Firebase Admin SDK (bypasses Firestore rules).
+  // Clients must not create notifications directly.
   // ============================================================
 
-  allow create: if isSignedIn()
-    && hasValidCreateFields(request.resource.data);
+  allow create: if false;
 
 
   // ============================================================
