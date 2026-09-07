@@ -1,16 +1,12 @@
 import {
-  collection,
   doc,
   setDoc,
-  getDoc,
-  getDocs,
-  query,
-  where,
   serverTimestamp,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
+import { setCachedUserProfile } from "../utils/userProfileCache";
 
 export async function createFarmerProfile(data) {
   await setDoc(doc(db, "farmers", data.uid), {
@@ -36,84 +32,25 @@ export async function createFarmerProfile(data) {
 }
 
 export async function getFarmers() {
-  try {
-    const [farmersSnap, usersSnap] = await Promise.all([
-      getDocs(collection(db, "farmers")),
-      getDocs(query(collection(db, "users"), where("role", "==", "farmer"))),
-    ]);
-
-    const farmerMap = new Map();
-
-    usersSnap.docs.forEach((doc) => {
-      const data = doc.data();
-      farmerMap.set(doc.id, {
-        uid: doc.id,
-        ...data,
-        rating: Number(data.rating || 0),
-        reviewCount: Number(data.reviewCount || 0),
-      });
-    });
-
-    farmersSnap.docs.forEach((doc) => {
-      const existing = farmerMap.get(doc.id) || {};
-      const data = doc.data();
-      const rating = Number(data.rating ?? existing.rating ?? 0);
-      const reviewCount = Number(data.reviewCount ?? existing.reviewCount ?? 0);
-
-      farmerMap.set(doc.id, {
-        ...existing,
-        uid: doc.id,
-        ...data,
-        rating,
-        reviewCount,
-      });
-    });
-
-    return Array.from(farmerMap.values());
-  } catch (error) {
-    console.error("Error fetching farmers:", error);
-    return [];
-  }
+  const result = await apiRequest("/farmers");
+  return result.data || [];
 }
 
-import { setCachedUserProfile } from "../utils/userProfileCache";
-
 export async function getFarmerById(uid) {
-  const [farmerSnap, userSnap] = await Promise.all([
-    getDoc(doc(db, "farmers", uid)),
-    getDoc(doc(db, "users", uid)),
-  ]);
+  const result = await apiRequest(`/farmers/${uid}`);
+  const farmer = result.data;
 
-  if (!farmerSnap.exists() && !userSnap.exists()) {
+  if (!farmer) {
     throw new Error("Farmer not found.");
   }
 
-  const userData = userSnap.exists() ? userSnap.data() : {};
-  const farmerData = farmerSnap.exists() ? farmerSnap.data() : {};
+  setCachedUserProfile(uid, farmer);
 
-  const rating = farmerData.rating || userData.rating || 0;
-  const reviewCount = farmerData.reviewCount || userData.reviewCount || 0;
-
-  const farmerResult = {
-    uid,
-    ...userData,
-    ...farmerData,
-    rating,
-    reviewCount,
-    verified: farmerData.verified === true || userData.verified === true,
-  };
-
-  setCachedUserProfile(uid, farmerResult);
-
-  return farmerResult;
+  return farmer;
 }
 
 /**
  * Verify or unverify a farmer via the backend API.
- *
- * Verification data belongs to the
- * farmers collection, not users. The server derives
- * the admin identity from the token.
  */
 export async function apiSetFarmerVerification(uid, verified) {
   if (!uid) {

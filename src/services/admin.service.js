@@ -1,22 +1,5 @@
-import {
-  collection,
-  getCountFromServer,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
-
-import { db } from "../firebase/firestore";
 import * as pageCache from "../utils/pageCache";
 import { apiRequest } from "./api/api.client";
-
-const usersRef = collection(db, "users");
-const productsRef = collection(db, "products");
-const inquiriesRef = collection(db, "inquiries");
-
-const RECENT_LIMIT = 5;
 
 /*
  * ============================================================
@@ -24,33 +7,17 @@ const RECENT_LIMIT = 5;
  * ============================================================
  */
 
-/**
- * Suspend or activate a user via the backend API.
- *
- * This only changes the Firestore account status.
- *
- * status:
- * - "active"
- * - "suspended"
- *
- * Firebase Authentication is NOT disabled.
- */
 export async function apiSetUserSuspension(uid, status) {
   const result = await apiRequest(`/admin/users/${uid}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
   });
 
-  // Invalidate admin dashboard cache
   pageCache.invalidate("adminDashboard");
 
   return result.user;
 }
 
-/**
- * Toggle a product's availability via the backend API.
- * Admin-only; allows moderators to unpublish any product.
- */
 export async function apiSetProductAvailability(productId, available) {
   const result = await apiRequest(`/admin/products/${productId}/availability`, {
     method: "PATCH",
@@ -62,149 +29,31 @@ export async function apiSetProductAvailability(productId, available) {
 
 /*
  * ============================================================
- * DASHBOARD HELPERS
+ * DASHBOARD (via backend API)
  * ============================================================
  */
 
-/**
- * Get the count of documents matching
- * a Firestore query.
- */
-async function getCount(q) {
-  const snapshot = await getCountFromServer(q);
-
-  return snapshot.data().count;
+export async function getDashboardData() {
+  const result = await apiRequest("/admin/dashboard");
+  return result.data;
 }
-
-/**
- * Get the most recently created documents.
- */
-async function getRecentDocuments(ref) {
-  const q = query(ref, orderBy("createdAt", "desc"), limit(RECENT_LIMIT));
-
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((document) => ({
-    id: document.id,
-    ...document.data(),
-  }));
-}
-
-/*
- * ============================================================
- * DASHBOARD STATISTICS
- * ============================================================
- */
 
 export async function getDashboardStats() {
-  const [
-    totalUsers,
-    totalFarmers,
-    totalConsumers,
-    totalAdmins,
-    suspendedUsers,
-
-    totalProducts,
-    availableProducts,
-
-    totalInquiries,
-    acceptedInquiries,
-    ongoingInquiries,
-    completedInquiries,
-    cancelledInquiries,
-  ] = await Promise.all([
-    /*
-     * --------------------------------------------------------
-     * Users
-     * --------------------------------------------------------
-     */
-
-    getCount(usersRef),
-
-    getCount(query(usersRef, where("role", "==", "farmer"))),
-
-    getCount(query(usersRef, where("role", "==", "consumer"))),
-
-    getCount(query(usersRef, where("role", "==", "admin"))),
-
-    getCount(query(usersRef, where("status", "==", "suspended"))),
-
-    /*
-     * --------------------------------------------------------
-     * Products
-     * --------------------------------------------------------
-     */
-
-    getCount(productsRef),
-
-    getCount(query(productsRef, where("available", "==", true))),
-
-    /*
-     * --------------------------------------------------------
-     * Inquiries
-     * --------------------------------------------------------
-     */
-
-    getCount(inquiriesRef),
-
-    getCount(query(inquiriesRef, where("status", "==", "accepted"))),
-
-    getCount(query(inquiriesRef, where("status", "==", "ongoing"))),
-
-    getCount(query(inquiriesRef, where("status", "==", "completed"))),
-
-    getCount(query(inquiriesRef, where("status", "==", "cancelled"))),
-  ]);
-
-  return {
-    users: {
-      total: totalUsers,
-      farmers: totalFarmers,
-      consumers: totalConsumers,
-      admins: totalAdmins,
-      suspended: suspendedUsers,
-      active: totalUsers - suspendedUsers,
-    },
-
-    products: {
-      total: totalProducts,
-      available: availableProducts,
-      unavailable: totalProducts - availableProducts,
-    },
-
-    inquiries: {
-      total: totalInquiries,
-      accepted: acceptedInquiries,
-      ongoing: ongoingInquiries,
-      completed: completedInquiries,
-      cancelled: cancelledInquiries,
-    },
-  };
+  const data = await getDashboardData();
+  return data.stats;
 }
 
-/*
- * ============================================================
- * RECENT DATA
- * ============================================================
- */
-
-/**
- * Get recently registered users.
- */
 export async function getRecentUsers() {
-  return getRecentDocuments(usersRef);
+  const data = await getDashboardData();
+  return data.recentUsers;
 }
 
-/**
- * Get recently created products.
- */
 export async function getRecentProducts() {
-  return getRecentDocuments(productsRef);
+  const data = await getDashboardData();
+  return data.recentProducts;
 }
 
-/**
- * Get recently created inquiries.
- */
 export async function getRecentInquiries() {
-  return getRecentDocuments(inquiriesRef);
+  const data = await getDashboardData();
+  return data.recentInquiries;
 }

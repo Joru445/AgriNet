@@ -6,8 +6,28 @@ import { useLanguage } from "../../../context/LanguageContext";
 const labelClass =
   "block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5";
 
-export default function FarmerSection({ form, stats, editing, onChange }) {
+function VisibilitySelect({ value, onChange }) {
   const { t } = useLanguage();
+
+  return (
+    <div className="flex items-center gap-1.5 mt-1.5">
+      <i className={`${value === "public" ? "ri-earth-line" : "ri-lock-line"} text-xs text-[var(--agri-text-muted)]`} />
+      <select
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        className="text-xs font-medium rounded-lg border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)] text-[var(--agri-text-secondary)] px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#2D6A4F] cursor-pointer"
+      >
+        <option value="public">{t("profile.visibility.public")}</option>
+        <option value="private">{t("profile.visibility.private")}</option>
+      </select>
+    </div>
+  );
+}
+
+export default function FarmerSection({ form, stats, editing, onChange, onVisibilityChange }) {
+  const { t } = useLanguage();
+
+  const vis = form.profileVisibility || {};
 
   const statsItems = [
     { key: "products", icon: "ri-shopping-bag-3-line", value: stats.products ?? 0 },
@@ -86,14 +106,20 @@ export default function FarmerSection({ form, stats, editing, onChange }) {
 
         {/* Location */}
         {editing ? (
-          <LocationPicker
-            editing={editing}
-            value={form.location}
-            onProfile={true}
-            onChange={(location) =>
-              onChange({ target: { name: "location", value: location } })
-            }
-          />
+          <div>
+            <LocationPicker
+              editing={editing}
+              value={form.location}
+              onProfile={true}
+              onChange={(location) =>
+                onChange({ target: { name: "location", value: location } })
+              }
+            />
+            <VisibilitySelect
+              value={vis.address || "private"}
+              onChange={(val) => onVisibilityChange?.("address", val)}
+            />
+          </div>
         ) : (
           <div className="flex items-start gap-3 rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-elevated)] px-4 py-3.5">
             <i className="ri-map-pin-2-line mt-0.5 text-lg text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
@@ -104,6 +130,9 @@ export default function FarmerSection({ form, stats, editing, onChange }) {
               <p className="mt-0.5 text-sm font-medium text-[var(--agri-text)]">
                 {form.location?.address || "—"}
               </p>
+            </div>
+            <div className="shrink-0 mt-0.5" title={vis.address === "public" ? "Public" : "Only me"}>
+              <i className={`${vis.address === "public" ? "ri-earth-line" : "ri-lock-line"} text-sm text-[var(--agri-text-muted)]`} />
             </div>
           </div>
         )}

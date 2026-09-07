@@ -1,7 +1,5 @@
 import * as authService from "./auth.service";
-import * as userService from "./user.service";
-import * as farmerService from "./farmer.service";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, writeBatch, serverTimestamp } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
 
@@ -28,29 +26,45 @@ export async function createAgriNetProfile(user, profileData) {
     return user;
   }
 
-  await userService.createUser({
+  const batch = writeBatch(db);
+  const userRef = doc(db, "users", user.uid);
+
+  batch.set(userRef, {
     uid: user.uid,
     fullname: profileData.fullname,
     fullnameLower: profileData.fullname.toLowerCase(),
     username: profileData.username.toLowerCase(),
     email: profileData.email || user.email || "",
-    phone: profileData.contactNumber || profileData.phone || "",
     role: profileData.role,
-    location: profileData.location,
     profilePicture: profileData.profilePicture || "",
+    profilePictureId: profileData.profilePictureId || "",
+    phone: profileData.contactNumber || profileData.phone || "",
+    bio: "",
+    location: profileData.location,
+    status: "active",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   });
 
   if (profileData.role === "farmer") {
-    await farmerService.createFarmerProfile({
+    const farmerRef = doc(db, "farmers", user.uid);
+    batch.set(farmerRef, {
       uid: user.uid,
       fullname: profileData.fullname,
       fullnameLower: profileData.fullname.toLowerCase(),
       username: profileData.username.toLowerCase(),
       email: profileData.email || user.email || "",
-      location: profileData.location,
       profilePicture: profileData.profilePicture || "",
+      profilePictureId: "",
+      description: "",
+      location: profileData.location,
+      rating: 0,
+      verified: false,
+      createdAt: serverTimestamp(),
     });
   }
+
+  await batch.commit();
 
   return user;
 }

@@ -1,30 +1,8 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
-
-import { db } from "../firebase/firestore";
+import { apiRequest } from "./api/api.client";
 import { getUserProfile } from "./user.service";
 import { getCachedUserProfile } from "../utils/userProfileCache";
 
-const reviewsRef = collection(db, "reviews");
-
 const MAX_CONCURRENCY = 4;
-
-function attachReviewerFallback(reviewData) {
-  return {
-    ...reviewData,
-    reviewer: {
-      fullname: reviewData.reviewerName || "Anonymous",
-      profilePicture: reviewData.reviewerAvatar || "",
-    },
-  };
-}
 
 /**
  * Fill in full reviewer profiles for farmer reviews.
@@ -82,73 +60,52 @@ export async function enrichFarmerReviews(reviews) {
   }));
 }
 
-export async function getReviews() {
-  const q = query(reviewsRef, orderBy("createdAt", "desc"));
+export async function getFarmerReviews(farmerId) {
+  const result = await apiRequest(`/reviews/farmers/${farmerId}`);
+  const reviews = result.data || [];
 
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((reviewDoc) => ({
-    id: reviewDoc.id,
-    ...reviewDoc.data(),
+  return reviews.map((r) => ({
+    ...r,
+    reviewer: {
+      fullname: r.reviewerName || "Anonymous",
+      profilePicture: r.reviewerAvatar || "",
+    },
   }));
 }
 
-export async function getFarmerReviews(farmerId) {
-  const q = query(
-    reviewsRef,
-    where("farmerId", "==", farmerId),
-    orderBy("createdAt", "desc"),
-  );
-
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((doc) => attachReviewerFallback(doc.data()));
-}
-
 export async function getRecentFarmerReviews(farmerId, maxLimit = 3) {
-  const q = query(
-    reviewsRef,
-    where("farmerId", "==", farmerId),
-    orderBy("createdAt", "desc"),
+  const result = await apiRequest(
+    `/reviews/farmers/${farmerId}?limit=${maxLimit}`,
   );
+  const reviews = result.data || [];
 
-  const snapshot = await getDocs(q);
-  const recentReviews = snapshot.docs
-    .slice(0, maxLimit)
-    .map((doc) => attachReviewerFallback(doc.data()));
-
-  return enrichFarmerReviews(recentReviews);
+  return enrichFarmerReviews(
+    reviews.map((r) => ({
+      ...r,
+      reviewer: {
+        fullname: r.reviewerName || "Anonymous",
+        profilePicture: r.reviewerAvatar || "",
+      },
+    })),
+  );
 }
 
 export async function getAverageFarmerRating(farmerId) {
-  const reviews = await getFarmerReviews(farmerId);
-
-  if (!reviews.length) {
-    return 0;
-  }
-
-  const total = reviews.reduce((sum, review) => sum + Number(review.rating), 0);
-
-  return Number((total / reviews.length).toFixed(1));
+  const result = await apiRequest(`/reviews/farmers/${farmerId}/summary`);
+  return result.data?.average ?? 0;
 }
 
 export async function getFarmerReviewCount(farmerId) {
-  const q = query(reviewsRef, where("farmerId", "==", farmerId));
-
-  const snapshot = await getDocs(q);
-
-  return snapshot.size;
+  const result = await apiRequest(`/reviews/farmers/${farmerId}/summary`);
+  return result.data?.count ?? 0;
 }
 
 export async function getInquiryFarmerReview(inquiryId) {
-  const snapshot = await getDoc(doc(reviewsRef, inquiryId));
-
-  if (!snapshot.exists()) {
-    return null;
+  try {
+    const result = await apiRequest(`/reviews/inquiries/${inquiryId}/farmer`);
+    return result.data ?? null;
+  } catch (error) {
+    if (error.status === 404) return null;
+    throw error;
   }
-
-  return {
-    id: snapshot.id,
-    ...snapshot.data(),
-  };
 }

@@ -1365,6 +1365,10 @@ export default {
       transactions: "Mga Transaction",
       completed: "Tapos na",
     },
+    visibility: {
+      public: "Pampubliko",
+      private: "Ako lang",
+    },
   },
 
   auth: {

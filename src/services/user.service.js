@@ -1,7 +1,6 @@
 import {
   collection,
   doc,
-  getDoc,
   limit,
   onSnapshot,
   orderBy,
@@ -12,6 +11,7 @@ import {
 
 import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
+import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
 
 const usersRef = collection(db, "users");
 
@@ -50,93 +50,42 @@ export async function createUser(data) {
 
 /*
  * ============================================================
- * GET USER PROFILE
+ * GET USER PROFILE (via backend API)
  * ============================================================
  */
 
-import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
-
-export async function getUserProfile(uid) {
+export async function getUserProfile(uid, requesterUid) {
   if (!uid || typeof uid !== "string") {
     throw new Error("Invalid user UID.");
   }
 
-  const cached = getCachedUserProfile(uid);
-
+  const cached = getCachedUserProfile(uid, requesterUid);
   if (cached) {
     return cached;
   }
 
-  const userRef = doc(db, "users", uid);
+  try {
+    const endpoint = requesterUid && requesterUid !== uid
+      ? `/users/${uid}?requester=${requesterUid}`
+      : `/users/${uid}`;
 
-  const snapshot = await getDoc(userRef);
+    const result = await apiRequest(endpoint);
+    const profile = result.user;
 
-  if (!snapshot.exists()) {
-    try {
-      const farmerSnap = await getDoc(doc(db, "farmers", uid));
-      if (farmerSnap.exists()) {
-        const farmerData = farmerSnap.data();
-        const res = {
-          uid: farmerSnap.id,
-          ...farmerData,
-          role: farmerData.role || "farmer",
-          verified: farmerData.verified === true,
-        };
-        setCachedUserProfile(uid, res);
-        return res;
-      }
-    } catch {
-      /* noop */
+    if (profile) {
+      setCachedUserProfile(uid, profile);
     }
+
+    return profile || null;
+  } catch {
     return null;
   }
-
-  const data = snapshot.data();
-  let profilePicture = data.profilePicture || "";
-  let profilePictureId = data.profilePictureId || "";
-  let verified = data.verified === true;
-
-  if (data.role === "farmer" || !profilePicture) {
-    try {
-      const farmerSnap = await getDoc(doc(db, "farmers", uid));
-      if (farmerSnap.exists()) {
-        const farmerData = farmerSnap.data();
-        if (farmerData?.verified === true) {
-          verified = true;
-        }
-        if (!profilePicture && farmerData?.profilePicture) {
-          profilePicture = farmerData.profilePicture;
-        }
-        if (!profilePictureId && farmerData?.profilePictureId) {
-          profilePictureId = farmerData.profilePictureId;
-        }
-      }
-    } catch {
-      /* noop */
-    }
-  }
-
-  const userResult = {
-    uid: snapshot.id,
-    ...data,
-    profilePicture,
-    profilePictureId,
-    verified,
-  };
-
-  setCachedUserProfile(uid, userResult);
-
-  return userResult;
 }
 
 /*
  * ============================================================
  * UPDATE MY PROFILE (BACKEND)
  * ============================================================
- *
- * The server derives the user identity from the token and updates the
- * user profile (and farmer profile fields when the user is a farmer).
- * Protected fields (role, status, uid, rating, ...) are ignored server-side.
  */
 
 export async function updateMyProfile(data) {
@@ -152,10 +101,6 @@ export async function updateMyProfile(data) {
  * ============================================================
  * SYNC CONSUMER TRANSACTION STATS (BACKEND)
  * ============================================================
- *
- * The server recomputes completedDeals / totalDeals / cancelledDeals
- * from the consumer's inquiries and writes them only when changed.
- * Replaces the old client-side getDocs + updateDoc fan-out.
  */
 
 export async function apiSyncTransactionStats() {
@@ -172,7 +117,7 @@ export async function apiSyncTransactionStats() {
 
 /*
  * ============================================================
- * SUBSCRIBE TO USERS
+ * SUBSCRIBE TO USERS (intentional Firebase realtime)
  * ============================================================
  *
  * Used by the Admin User Management page.
@@ -209,13 +154,8 @@ export function subscribeUsers(callback, onError) {
 
 /*
  * ============================================================
- * SEARCH USERS
+ * SEARCH USERS (via backend API)
  * ============================================================
- *
- * Migrated to the Express backend (GET /users/search). The server
- * ranges over fullnameLower/username and batch-enriches farmer docs,
- * replacing the old per-result getDoc fan-out. The caller is excluded
- * server-side.
  */
 
 export async function searchUsers(search) {

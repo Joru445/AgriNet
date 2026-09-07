@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import {
-  getDashboardStats,
-  getRecentInquiries,
-  getRecentProducts,
-  getRecentUsers,
-} from "../services/admin.service";
+import { getDashboardData } from "../services/admin.service";
 import * as pageCache from "../utils/pageCache";
 
 const CACHE_KEY = "adminDashboard";
@@ -58,23 +53,18 @@ export default function useAdminDashboard() {
       setLoading(true);
       setError(null);
 
-      const [dashboardStats, users, products, inquiries] = await Promise.all([
-        getDashboardStats(),
-        getRecentUsers(),
-        getRecentProducts(),
-        getRecentInquiries(),
-      ]);
+      const data = await getDashboardData();
 
-      setStats(dashboardStats);
-      setRecentUsers(users);
-      setRecentProducts(products);
-      setRecentInquiries(inquiries);
+      setStats(data.stats);
+      setRecentUsers(data.recentUsers);
+      setRecentProducts(data.recentProducts);
+      setRecentInquiries(data.recentInquiries);
 
       pageCache.set(CACHE_KEY, {
-        stats: dashboardStats,
-        recentUsers: users,
-        recentProducts: products,
-        recentInquiries: inquiries,
+        stats: data.stats,
+        recentUsers: data.recentUsers,
+        recentProducts: data.recentProducts,
+        recentInquiries: data.recentInquiries,
       }, CACHE_TTL);
     } catch (err) {
       console.error("Failed to load admin dashboard:", err);

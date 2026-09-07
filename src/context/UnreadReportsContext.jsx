@@ -14,6 +14,7 @@ const UnreadReportsContext = createContext({
   pendingReportsCount: 0,
   showReportPopup: false,
   reportPopupMessage: "New report",
+  allReports: [],
   clearPendingCount: () => {},
   acknowledgeReport: () => {},
 });
@@ -82,6 +83,7 @@ export function UnreadReportsProvider({ children }) {
   const [pendingReportsCount, setPendingReportsCount] = useState(0);
   const [showReportPopup, setShowReportPopup] = useState(false);
   const [reportPopupMessage, setReportPopupMessage] = useState("New report");
+  const [allReports, setAllReports] = useState([]);
 
   const seenReportsRef = useRef(new Set());
   const lastSeenTimeRef = useRef(0);
@@ -133,6 +135,7 @@ export function UnreadReportsProvider({ children }) {
     const unsubscribe = subscribeReports(
       (reports) => {
         allReportsRef.current = reports;
+        setAllReports(reports);
 
         const pendingReports = reports.filter(
           (r) => r.status === "pending" || r.status === "reviewing",
@@ -233,6 +236,7 @@ export function UnreadReportsProvider({ children }) {
         pendingReportsCount,
         showReportPopup,
         reportPopupMessage,
+        allReports,
         clearPendingCount,
         acknowledgeReport,
       }}

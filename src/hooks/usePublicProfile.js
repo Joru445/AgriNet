@@ -8,6 +8,7 @@ import { getFarmerById } from "../services/farmer.service";
 import { getFarmerProducts } from "../services/product.service";
 import { getFarmerReviews, enrichFarmerReviews } from "../services/farmer-review.service";
 import { getProductReviewSummaries } from "../services/product-review.service";
+import { useAuth } from "../context/AuthContext";
 import * as pageCache from "../utils/pageCache";
 
 const CACHE_KEY = (uid) => `publicProfile:${uid}`;
@@ -15,6 +16,7 @@ const CACHE_TTL = 3 * 60 * 1000; // 3 minutes
 
 export default function usePublicProfile() {
   const { uid } = useParams();
+  const { profile: authProfile } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -98,7 +100,7 @@ export default function usePublicProfile() {
         return;
       }
 
-      const user = await getUserProfile(uid);
+      const user = await getUserProfile(uid, authProfile?.uid);
       if (!user) {
         setProfile(null);
         setRole(null);
@@ -210,7 +212,7 @@ export default function usePublicProfile() {
     } finally {
       setLoading(false);
     }
-  }, [uid, loadConsumerStats]);
+  }, [uid, loadConsumerStats, authProfile?.uid]);
 
   useEffect(() => {
     loadProfile();

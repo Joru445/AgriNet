@@ -39,13 +39,6 @@ export default function Header({ user, collapsed, hideBackButton }) {
         )}
       </div>
 
-      {/* ── Suspended banner ──────────────────────────── */}
-      {user.status === "suspended" && (
-        <span className="absolute inset-x-0 top-full mx-auto w-fit mt-1 text-red-500 text-xs font-medium bg-red-50 dark:bg-red-500/10 px-3 py-1 rounded-full z-50">
-          {t("header.suspended")}
-        </span>
-      )}
-
       {/* ── Right actions ─────────────────────────────── */}
       <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
         {/* Notifications */}
@@ -78,7 +71,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
         <Link
           to={mePath}
           data-onboarding="header-profile"
-          className="flex items-center gap-2 px-2.5 py-1 min-w-0 max-w-[100px] sm:max-w-[180px] md:max-w-[240px] rounded-lg transition-colors hover:bg-[var(--agri-hover)]"
+          className="flex items-center gap-2 px-2.5 py-1 max-w-45 md:max-w-60 rounded-lg transition-colors hover:bg-[var(--agri-hover)]"
         >
           <UserIdentity user={user} showUsername={false} showRole={true} />
         </Link>

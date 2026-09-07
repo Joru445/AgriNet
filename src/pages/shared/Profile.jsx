@@ -30,6 +30,7 @@ export default function Profile() {
     stats,
 
     handleChange,
+    handleVisibilityChange,
     handleSave,
     handleCancel,
     handleAvatar,
@@ -73,7 +74,7 @@ export default function Profile() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main column: personal + farmer info */}
           <div className="space-y-6 px-4 md:px-0 lg:col-span-2">
-            <ProfileForm form={form} editing={editing} onChange={handleChange} />
+            <ProfileForm form={form} editing={editing} onChange={handleChange} onVisibilityChange={handleVisibilityChange} />
 
             {form.role === "farmer" && (
               <FarmerSection
@@ -81,6 +82,7 @@ export default function Profile() {
                 stats={stats}
                 editing={editing}
                 onChange={handleChange}
+                onVisibilityChange={handleVisibilityChange}
               />
             )}
           </div>

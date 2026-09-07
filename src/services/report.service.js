@@ -1,14 +1,11 @@
 import {
-  addDoc,
   collection,
   doc,
   getDoc,
-  getDocs,
   limit,
   onSnapshot,
   orderBy,
   query,
-  serverTimestamp,
   where,
 } from "firebase/firestore";
 
@@ -38,11 +35,23 @@ export function getReportPriority(reason = "") {
 
 /*
  * ============================================================
- * GET ACTIVE REPORT FOR TARGET
+ * CREATE REPORT (via backend API)
  * ============================================================
- *
- * Checks if the user already has an unresolved (pending or reviewing)
- * report for this specific target or user.
+ */
+
+export async function createReport(data) {
+  const result = await apiRequest("/admin/reports", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+  return result.data;
+}
+
+/*
+ * ============================================================
+ * GET ACTIVE REPORT FOR TARGET (via backend API)
+ * ============================================================
  */
 
 export async function getActiveReportForTarget({
@@ -54,18 +63,11 @@ export async function getActiveReportForTarget({
   if (!reporterId) return null;
 
   try {
-    const q = query(
-      reportsRef,
-      where("reporterId", "==", reporterId),
-    );
-    const snapshot = await getDocs(q);
+    const result = await apiRequest("/admin/reports/mine?limit=100");
+    const reports = result.data || [];
 
-    const activeReports = snapshot.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .filter((r) => r.status === "pending" || r.status === "reviewing");
-
-    // Match by targetId or reportedUserId
-    const match = activeReports.find((r) => {
+    const match = reports.find((r) => {
+      if (r.status !== "pending" && r.status !== "reviewing") return false;
       if (targetId && r.targetId === targetId) return true;
       if (reportedUserId && r.reportedUserId === reportedUserId) {
         if (targetType === "user" || targetType === "profile" || r.targetType === "user" || r.targetType === "profile") {
@@ -76,143 +78,14 @@ export async function getActiveReportForTarget({
     });
 
     return match || null;
-  } catch (err) {
-    console.error("Failed to check existing active report:", err);
+  } catch {
     return null;
   }
 }
 
 /*
  * ============================================================
- * CREATE REPORT
- * ============================================================
- *
- * A report belongs to the user who submitted it.
- *
- * The Firestore rules also enforce reporterId === auth.uid.
- */
-
-export async function createReport({
-  reporterId,
-  reporterName = "",
-  reporterUsername = "",
-  reporterEmail = "",
-  reporterRole = "",
-
-  reportedUserId,
-  reportedUserName = "",
-  reportedUserUsername = "",
-  reportedUserRole = "",
-  reportedUserEmail = "",
-
-  targetType = "user",
-  targetId = null,
-  targetTitle = "",
-
-  reason,
-  description = "",
-  evidenceUrl = null,
-  evidencePublicId = null,
-}) {
-  if (!reporterId) {
-    throw new Error("Reporter UID is required.");
-  }
-
-  if (!reportedUserId) {
-    throw new Error("Reported user UID is required.");
-  }
-
-  if (!reason?.trim()) {
-    throw new Error("Report reason is required.");
-  }
-
-  if (reporterId === reportedUserId) {
-    throw new Error("You cannot report yourself.");
-  }
-
-  // Check 24-hour rate limit (max 5 reports in 24 hours per user)
-  try {
-    const userReportsSnap = await getDocs(
-      query(reportsRef, where("reporterId", "==", reporterId)),
-    );
-    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-    const now = Date.now();
-    const reportsIn24h = userReportsSnap.docs.filter((d) => {
-      const data = d.data();
-      const time = data.createdAt?.toMillis?.() || (data.createdAt?.seconds ? data.createdAt.seconds * 1000 : 0);
-      return now - time < ONE_DAY_MS;
-    });
-
-    if (reportsIn24h.length >= 5) {
-      throw new Error("You have reached the limit of 5 reports in a 24-hour period. Please try again later.");
-    }
-  } catch (err) {
-    if (err?.message?.includes("limit of 5 reports")) {
-      throw err;
-    }
-  }
-
-  // Prevent duplicate report until previous one is resolved
-  const existingActiveReport = await getActiveReportForTarget({
-    reporterId,
-    targetId: targetId || reportedUserId,
-    reportedUserId,
-    targetType,
-  });
-
-  if (existingActiveReport) {
-    throw new Error(
-      "You have already submitted a report for this item. Our moderation team is currently reviewing it and will contact you if needed.",
-    );
-  }
-
-  const priority = getReportPriority(reason);
-
-  const reportData = {
-    reporterId,
-    reporterName: reporterName || null,
-    reporterUsername: reporterUsername || null,
-    reporterEmail: reporterEmail || null,
-    reporterRole: reporterRole || null,
-
-    reportedUserId,
-    reportedUserName: reportedUserName || null,
-    reportedUserUsername: reportedUserUsername || null,
-    reportedUserRole: reportedUserRole || null,
-    reportedUserEmail: reportedUserEmail || null,
-
-    targetType: targetType || "user",
-    targetId: targetId || null,
-    targetTitle: targetTitle || null,
-
-    reason: reason.trim(),
-    description: description.trim(),
-    priority,
-
-    evidenceUrl: evidenceUrl || null,
-    evidencePublicId: evidencePublicId || null,
-
-    status: "pending",
-    adminNotes: null,
-
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-
-    resolvedAt: null,
-    resolvedBy: null,
-  };
-
-  const reportRef = await addDoc(reportsRef, reportData);
-
-  return {
-    id: reportRef.id,
-    ...reportData,
-  };
-}
-
-/*
- * ============================================================
- * GET REPORT
+ * GET REPORT (direct Firestore read)
  * ============================================================
  */
 
@@ -237,9 +110,6 @@ export async function getReport(reportId) {
  * ============================================================
  * UPDATE REPORT STATUS (BACKEND)
  * ============================================================
- *
- * Admin-only operation. The server derives the admin identity
- * from the token and enforces the allowed status values.
  */
 
 export async function updateReportStatus(reportId, status, adminNotes = "") {
@@ -259,31 +129,13 @@ export async function updateReportStatus(reportId, status, adminNotes = "") {
   return result.report;
 }
 
-/*
- * ============================================================
- * START REVIEW
- * ============================================================
- */
-
 export async function startReportReview(reportId) {
   return updateReportStatus(reportId, "reviewing");
 }
 
-/*
- * ============================================================
- * RESOLVE REPORT
- * ============================================================
- */
-
 export async function resolveReport(reportId, adminNotes = "") {
   return updateReportStatus(reportId, "resolved", adminNotes);
 }
-
-/*
- * ============================================================
- * DISMISS REPORT
- * ============================================================
- */
 
 export async function dismissReport(reportId, adminNotes = "") {
   return updateReportStatus(reportId, "dismissed", adminNotes);
@@ -291,8 +143,10 @@ export async function dismissReport(reportId, adminNotes = "") {
 
 /*
  * ============================================================
- * SUBSCRIBE TO USER REPORTS
+ * REALTIME LISTENERS (intentional Firebase)
  * ============================================================
+ *
+ * These stay on direct Firestore for live updates.
  */
 
 export function subscribeUserReports(reporterId, callback, onError) {
@@ -300,13 +154,18 @@ export function subscribeUserReports(reporterId, callback, onError) {
     return () => {};
   }
 
+  let primaryUnsub = null;
+  let fallbackUnsub = null;
+  let fallbackActive = false;
+
   const reportsQuery = query(
     reportsRef,
     where("reporterId", "==", reporterId),
     orderBy("createdAt", "desc"),
+    limit(100),
   );
 
-  return onSnapshot(
+  primaryUnsub = onSnapshot(
     reportsQuery,
     (snapshot) => {
       const reports = snapshot.docs.map((reportDoc) => ({
@@ -317,12 +176,18 @@ export function subscribeUserReports(reporterId, callback, onError) {
       callback(reports);
     },
     (error) => {
-      console.warn("Retrying subscribeUserReports fallback:", error);
+      console.warn("subscribeUserReports: primary failed, trying fallback:", error);
+      primaryUnsub?.();
+      primaryUnsub = null;
+      fallbackActive = true;
+
       const fallbackQuery = query(
         reportsRef,
         where("reporterId", "==", reporterId),
+        limit(100),
       );
-      return onSnapshot(
+
+      fallbackUnsub = onSnapshot(
         fallbackQuery,
         (snapshot) => {
           const reports = snapshot.docs.map((reportDoc) => ({
@@ -340,20 +205,24 @@ export function subscribeUserReports(reporterId, callback, onError) {
       );
     },
   );
-}
 
-/*
- * ============================================================
- * SUBSCRIBE TO ALL REPORTS
- * ============================================================
- *
- * Intended for the admin reports page.
- */
+  return () => {
+    if (fallbackActive) {
+      fallbackUnsub?.();
+    } else {
+      primaryUnsub?.();
+    }
+  };
+}
 
 export function subscribeReports(callback, onError, maxLimit = 100) {
   if (!callback) {
     return () => {};
   }
+
+  let primaryUnsub = null;
+  let fallbackUnsub = null;
+  let fallbackActive = false;
 
   const reportsQuery = query(
     reportsRef,
@@ -361,7 +230,7 @@ export function subscribeReports(callback, onError, maxLimit = 100) {
     limit(maxLimit),
   );
 
-  return onSnapshot(
+  primaryUnsub = onSnapshot(
     reportsQuery,
     (snapshot) => {
       const reports = snapshot.docs.map((reportDoc) => ({
@@ -372,9 +241,14 @@ export function subscribeReports(callback, onError, maxLimit = 100) {
       callback(reports);
     },
     (error) => {
-      console.warn("Retrying subscribeReports fallback:", error);
+      console.warn("subscribeReports: primary failed, trying fallback:", error);
+      primaryUnsub?.();
+      primaryUnsub = null;
+      fallbackActive = true;
+
       const fallbackQuery = query(reportsRef, limit(maxLimit));
-      return onSnapshot(
+
+      fallbackUnsub = onSnapshot(
         fallbackQuery,
         (snapshot) => {
           const reports = snapshot.docs.map((reportDoc) => ({
@@ -392,13 +266,12 @@ export function subscribeReports(callback, onError, maxLimit = 100) {
       );
     },
   );
-}
 
-/*
- * ============================================================
- * UPDATE REPORT STATUS (BACKEND)
- * ============================================================
- *
- * Admin-only operation. The server derives the admin identity
- * from the token and enforces the allowed status values.
- */
+  return () => {
+    if (fallbackActive) {
+      fallbackUnsub?.();
+    } else {
+      primaryUnsub?.();
+    }
+  };
+}

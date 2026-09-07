@@ -2,13 +2,13 @@
  * In-memory + storage cache for user & farmer profiles.
  * Provides instantaneous synchronous lookup so avatars never flash letter initials.
  *
- * Payload is obfuscated/encoded and stripped of sensitive fields (email, phone, etc.)
- * so user details are not openly visible in browser DevTools Local/Session storage.
+ * Full profile data is cached. Private fields (email, phone, location) are
+ * stripped at read time based on the requester's identity.
  */
 
 const memoryCache = new Map();
 
-const STORAGE_KEY = "agrinet_user_profiles_cache_v1";
+const STORAGE_KEY = "agrinet_user_profiles_cache_v2";
 
 function encodePayload(obj) {
   try {
@@ -34,6 +34,9 @@ function decodePayload(raw) {
   }
 }
 
+const PRIVATE_FIELDS = ["email", "phone", "location"];
+const DEFAULT_VISIBILITY = "private";
+
 function sanitizeProfile(data) {
   if (!data || typeof data !== "object") return null;
   return {
@@ -47,7 +50,23 @@ function sanitizeProfile(data) {
     rating: data.rating,
     reviewCount: data.reviewCount,
     bio: data.bio || "",
+    email: data.email || "",
+    phone: data.phone || "",
+    location: data.location || null,
+    profileVisibility: data.profileVisibility || {},
   };
+}
+
+function stripPrivateFields(data, requesterUid) {
+  if (!requesterUid || requesterUid === data.uid) return data;
+  const vis = data.profileVisibility || {};
+  const result = { ...data };
+  for (const field of PRIVATE_FIELDS) {
+    if ((vis[field] || DEFAULT_VISIBILITY) === "private") {
+      delete result[field];
+    }
+  }
+  return result;
 }
 
 // Hydrate from storage once on load (checks sessionStorage first, then localStorage)
@@ -117,9 +136,11 @@ function persistToStorage() {
   }
 }
 
-export function getCachedUserProfile(uid) {
+export function getCachedUserProfile(uid, requesterUid) {
   if (!uid) return null;
-  return memoryCache.get(uid) || null;
+  const cached = memoryCache.get(uid) || null;
+  if (!cached) return null;
+  return stripPrivateFields(cached, requesterUid);
 }
 
 export function setCachedUserProfile(uid, profileData) {

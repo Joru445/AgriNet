@@ -1,6 +1,6 @@
 import { useLanguage } from "../../../context/LanguageContext";
 
-function InfoRow({ icon, label, value, empty }) {
+function InfoRow({ icon, label, value, empty, visibility }) {
   return (
     <div className="flex items-start gap-3 px-4 py-3.5 sm:px-5">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--agri-hover)] text-[#2D6A4F] dark:text-[var(--agri-brand)]">
@@ -16,6 +16,31 @@ function InfoRow({ icon, label, value, empty }) {
           {value || empty}
         </p>
       </div>
+
+      {visibility && (
+        <div className="shrink-0 mt-0.5" title={visibility === "public" ? "Public" : "Only me"}>
+          <i className={`${visibility === "public" ? "ri-earth-line" : "ri-lock-line"} text-sm text-[var(--agri-text-muted)]`} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function VisibilitySelect({ value, onChange, disabled }) {
+  const { t } = useLanguage();
+
+  return (
+    <div className="flex items-center gap-1.5 mt-1.5">
+      <i className={`${value === "public" ? "ri-earth-line" : "ri-lock-line"} text-xs text-[var(--agri-text-muted)]`} />
+      <select
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        disabled={disabled}
+        className="text-xs font-medium rounded-lg border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)] text-[var(--agri-text-secondary)] px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#2D6A4F] cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <option value="public">{t("profile.visibility.public")}</option>
+        <option value="private">{t("profile.visibility.private")}</option>
+      </select>
     </div>
   );
 }
@@ -26,8 +51,10 @@ const inputClass =
 const labelClass =
   "block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5";
 
-export default function ProfileForm({ form, editing, onChange }) {
+export default function ProfileForm({ form, editing, onChange, onVisibilityChange }) {
   const { t } = useLanguage();
+
+  const vis = form.profileVisibility || {};
 
   return (
     <div className="overflow-hidden rounded-3xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
@@ -85,6 +112,10 @@ export default function ProfileForm({ form, editing, onChange }) {
                 readOnly
                 className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)] text-sm text-[var(--agri-text-muted)] cursor-not-allowed"
               />
+              <VisibilitySelect
+                value={vis.email || "private"}
+                onChange={(val) => onVisibilityChange?.("email", val)}
+              />
             </div>
 
             {/* Phone */}
@@ -99,6 +130,10 @@ export default function ProfileForm({ form, editing, onChange }) {
                 onChange={onChange}
                 placeholder="09XXXXXXXXX"
                 className={inputClass}
+              />
+              <VisibilitySelect
+                value={vis.phone || "private"}
+                onChange={(val) => onVisibilityChange?.("phone", val)}
               />
             </div>
           </div>
@@ -137,12 +172,14 @@ export default function ProfileForm({ form, editing, onChange }) {
             icon="ri-mail-line"
             label={t("profile.formLabels.email")}
             value={form.email}
+            visibility={vis.email}
           />
           <InfoRow
             icon="ri-phone-line"
             label={t("profile.formLabels.contactNumber")}
             value={form.phone}
             empty="—"
+            visibility={vis.phone}
           />
           <InfoRow
             icon="ri-quote-text-line"

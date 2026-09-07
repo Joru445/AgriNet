@@ -1337,6 +1337,10 @@ export default {
       transactions: "Transactions",
       completed: "Completed",
     },
+    visibility: {
+      public: "Public",
+      private: "Only me",
+    },
   },
 
   auth: {

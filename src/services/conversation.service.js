@@ -239,6 +239,12 @@ export async function apiFindOrCreateConversation(otherUserId, { findOnly = fals
         convRef,
         {
           participants: [currentUid, otherUserId],
+          participantInfo: {
+            [currentUid]: { joinedAt: serverTimestamp() },
+            [otherUserId]: { joinedAt: serverTimestamp() },
+          },
+          lastMessage: null,
+          unreadCount: { [currentUid]: 0, [otherUserId]: 0 },
           updatedAt: serverTimestamp(),
         },
         { merge: true },

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useUnreadReports } from "../context/UnreadReportsContext";
 
 import {
-  subscribeReports,
   subscribeUserReports,
   createReport,
   getReport,
@@ -19,6 +19,8 @@ export default function useReports({ userId = null, admin = false } = {}) {
   const isAdmin = admin || profile?.role === "admin";
   const effectiveUserId = userId || profile?.uid;
 
+  const { allReports: contextReports } = useUnreadReports();
+
   const [reports, setReports] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -33,14 +35,20 @@ export default function useReports({ userId = null, admin = false } = {}) {
    * ============================================================
    *
    * Admin:
-   *   Subscribe to all reports.
+   *   Consume from UnreadReportsContext (single shared listener).
    *
    * Normal user:
    *   Subscribe only to their own reports.
    */
 
   useEffect(() => {
-    if (!effectiveUserId && !isAdmin) {
+    if (isAdmin) {
+      setReports(contextReports);
+      setLoading(false);
+      return;
+    }
+
+    if (!effectiveUserId) {
       setReports([]);
       setLoading(false);
       return;
@@ -49,43 +57,25 @@ export default function useReports({ userId = null, admin = false } = {}) {
     setLoading(true);
     setError(null);
 
-    let unsubscribe;
+    const unsubscribe = subscribeUserReports(
+      effectiveUserId,
+      (data) => {
+        setReports(data);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Failed to load user reports:", err);
 
-    if (isAdmin) {
-      unsubscribe = subscribeReports(
-        (data) => {
-          setReports(data);
-          setLoading(false);
-        },
-        (err) => {
-          console.error("Failed to load reports:", err);
+        setError(err?.message || "Failed to load reports.");
 
-          setError(err?.message || "Failed to load reports.");
-
-          setLoading(false);
-        },
-      );
-    } else {
-      unsubscribe = subscribeUserReports(
-        effectiveUserId,
-        (data) => {
-          setReports(data);
-          setLoading(false);
-        },
-        (err) => {
-          console.error("Failed to load user reports:", err);
-
-          setError(err?.message || "Failed to load reports.");
-
-          setLoading(false);
-        },
-      );
-    }
+        setLoading(false);
+      },
+    );
 
     return () => {
       unsubscribe?.();
     };
-  }, [effectiveUserId, isAdmin]);
+  }, [effectiveUserId, isAdmin, contextReports]);
 
   /*
    * ============================================================

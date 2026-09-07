@@ -38,20 +38,40 @@ export function shouldShowSeparator(current, previous) {
 const GROUP_MAX_GAP_MS = 60 * 1000; // < 1 minute = same visual group
 
 /**
+ * A message is a reply when it carries a quoted reference to another message.
+ */
+export function isReplyMessage(message) {
+  if (!message) return false;
+  return Boolean(
+    message.replyToSnapshot ||
+      (message.replyTo && typeof message.replyTo === "object"),
+  );
+}
+
+/**
  * Determines whether a message visually connects to the previous/next one
  * (Messenger-style grouping): same sender AND within `GROUP_MAX_GAP_MS`.
  * Returns "single" | "first" | "middle" | "last".
+ *
+ * Reply messages break the group chain backward: a reply is never a
+ * continuation ("middle" or "last") of the surrounding group.  It acts as
+ * "single" or "first" (top of a new group).  Messages after the reply
+ * continue the group normally.
  */
 export function getMessageGroupPosition(message, previousMessage, nextMessage) {
   if (!message) return "single";
 
+  const messageIsReply = isReplyMessage(message);
+
   const sameSenderAsPrev =
     !!previousMessage &&
+    !messageIsReply &&
     previousMessage.senderId === message.senderId &&
     timeGapWithin(previousMessage.createdAt, message.createdAt, GROUP_MAX_GAP_MS);
 
   const sameSenderAsNext =
     !!nextMessage &&
+    !isReplyMessage(nextMessage) &&
     nextMessage.senderId === message.senderId &&
     timeGapWithin(message.createdAt, nextMessage.createdAt, GROUP_MAX_GAP_MS);
 

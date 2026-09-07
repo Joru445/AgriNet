@@ -40,6 +40,12 @@ export default function useProfile(profile) {
       lng: null,
     },
 
+    profileVisibility: {
+      email: profile?.profileVisibility?.email || "private",
+      phone: profile?.profileVisibility?.phone || "private",
+      address: profile?.profileVisibility?.address || "private",
+    },
+
     storeName: profile?.storeName || "",
     description: profile?.description || "",
     rating: profile?.rating || 0,
@@ -88,6 +94,16 @@ export default function useProfile(profile) {
     }));
   };
 
+  const handleVisibilityChange = (field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      profileVisibility: {
+        ...prev.profileVisibility,
+        [field]: value,
+      },
+    }));
+  };
+
   async function handleSave() {
     // Guard: don't save if avatar upload is still in progress
     if (uploadingAvatar) {
@@ -131,6 +147,7 @@ export default function useProfile(profile) {
         location: form.location,
         profilePicture: form.profilePicture,
         profilePictureId: form.profilePictureId,
+        profileVisibility: form.profileVisibility,
 
         ...(profile.role === "farmer"
           ? {
@@ -202,7 +219,7 @@ export default function useProfile(profile) {
           setLoading(true);
         }
 
-        const user = await getUserProfile(profile.uid);
+        const user = await getUserProfile(profile.uid, profile.uid);
 
         if (!user) return;
 
@@ -319,6 +336,7 @@ export default function useProfile(profile) {
     stats,
 
     handleChange,
+    handleVisibilityChange,
     handleSave,
     handleCancel,
     handleAvatar,

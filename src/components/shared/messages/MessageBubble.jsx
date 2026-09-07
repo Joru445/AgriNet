@@ -39,18 +39,18 @@ export default function MessageBubble({
   const textRadius =
     {
       mine: {
-        single: "rounded-2xl",
-        first: "rounded-t-2xl rounded-bl-2xl rounded-br-sm",
-        middle: "rounded-tl-2xl rounded-bl-2xl rounded-tr-sm rounded-br-sm",
-        last: "rounded-tl-2xl rounded-bl-2xl rounded-tr-sm rounded-br-2xl",
+        single: "rounded-3xl",
+        first: "rounded-t-3xl rounded-bl-3xl rounded-br-lg",
+        middle: "rounded-tl-3xl rounded-bl-3xl rounded-tr-lg rounded-br-lg",
+        last: "rounded-tl-3xl rounded-bl-3xl rounded-tr-lg rounded-br-3xl",
       },
       other: {
-        single: "rounded-2xl",
-        first: "rounded-t-2xl rounded-br-2xl rounded-bl-sm",
-        middle: "rounded-tr-2xl rounded-br-2xl rounded-tl-sm rounded-bl-sm",
-        last: "rounded-tr-2xl rounded-br-2xl rounded-tl-sm rounded-bl-2xl",
+        single: "rounded-3xl",
+        first: "rounded-t-3xl rounded-br-3xl rounded-bl-lg",
+        middle: "rounded-tr-3xl rounded-br-3xl rounded-tl-lg rounded-bl-lg",
+        last: "rounded-tr-3xl rounded-br-3xl rounded-tl-lg rounded-bl-3xl",
       },
-    }[mine ? "mine" : "other"][groupPosition] || "rounded-2xl";
+    }[mine ? "mine" : "other"][groupPosition] || "rounded-3xl";
 
   const otherUserName = user?.fullname || user?.username || message.senderName || "";
   const isSelfReply = mine

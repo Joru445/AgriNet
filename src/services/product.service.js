@@ -223,39 +223,64 @@ async function getFarmersByIds(ids) {
   const farmers = new Map();
   if (!ids || ids.length === 0) return farmers;
 
-  for (let index = 0; index < ids.length; index += 30) {
-    const batch = ids.slice(index, index + 30);
-    try {
-      const snapshot = await getDocs(
-        query(collection(db, "farmers"), where(documentId(), "in", batch)),
-      );
+  const batches = [];
+  for (let i = 0; i < ids.length; i += 30) {
+    batches.push(ids.slice(i, i + 30));
+  }
 
-      snapshot.docs.forEach((farmerDoc) => {
-        farmers.set(farmerDoc.id, {
-          uid: farmerDoc.id,
-          ...farmerDoc.data(),
+  const farmerSnapshots = await Promise.all(
+    batches.map((batch) =>
+      getDocs(
+        query(collection(db, "farmers"), where(documentId(), "in", batch)),
+      ).catch((err) => {
+        console.warn("Error fetching farmers batch:", err);
+        return { docs: [] };
+      }),
+    ),
+  );
+
+  const missingIds = [];
+
+  farmerSnapshots.forEach((snapshot) => {
+    snapshot.docs.forEach((farmerDoc) => {
+      farmers.set(farmerDoc.id, {
+        uid: farmerDoc.id,
+        ...farmerDoc.data(),
+      });
+    });
+  });
+
+  batches.forEach((batch) => {
+    batch.forEach((id) => {
+      if (!farmers.has(id)) missingIds.push(id);
+    });
+  });
+
+  if (missingIds.length > 0) {
+    const fallbackBatches = [];
+    for (let i = 0; i < missingIds.length; i += 30) {
+      fallbackBatches.push(missingIds.slice(i, i + 30));
+    }
+
+    const userSnapshots = await Promise.all(
+      fallbackBatches.map((batch) =>
+        getDocs(
+          query(collection(db, "users"), where(documentId(), "in", batch)),
+        ).catch((err) => {
+          console.warn("Error fetching fallback users batch:", err);
+          return { docs: [] };
+        }),
+      ),
+    );
+
+    userSnapshots.forEach((snapshot) => {
+      snapshot.docs.forEach((userDoc) => {
+        farmers.set(userDoc.id, {
+          uid: userDoc.id,
+          ...userDoc.data(),
         });
       });
-    } catch (err) {
-      console.warn("Error fetching farmers batch:", err);
-    }
-
-    const missingIds = batch.filter((id) => !farmers.has(id));
-    if (missingIds.length > 0) {
-      try {
-        const userSnapshot = await getDocs(
-          query(collection(db, "users"), where(documentId(), "in", missingIds)),
-        );
-        userSnapshot.docs.forEach((userDoc) => {
-          farmers.set(userDoc.id, {
-            uid: userDoc.id,
-            ...userDoc.data(),
-          });
-        });
-      } catch (err) {
-        console.warn("Error fetching fallback users batch:", err);
-      }
-    }
+    });
   }
 
   return farmers;
