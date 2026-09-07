@@ -10,7 +10,6 @@ import {
   query,
   serverTimestamp,
   startAfter,
-  updateDoc,
   where,
   writeBatch,
 } from "firebase/firestore";
@@ -213,41 +212,6 @@ export async function fetchOlderMessages(
     console.error("Failed to fetch older messages:", error);
     return { messages: [], oldestDocSnapshot: null, hasMore: false };
   }
-}
-
-/**
- * Mark a conversation as read for the current user.
- * Skips write if unreadCount is already 0.
- */
-export async function markConversationAsRead(
-  conversationId,
-  currentUserId,
-  currentUnreadCount = null,
-) {
-  if (!conversationId || !currentUserId) return;
-
-  if (currentUnreadCount === 0) {
-    return;
-  }
-
-  try {
-    const conversationRef = doc(db, "conversations", conversationId);
-    await updateDoc(conversationRef, {
-      [`lastRead.${currentUserId}`]: serverTimestamp(),
-      [`unreadCount.${currentUserId}`]: 0,
-    });
-  } catch (error) {
-    console.error("Failed to mark conversation read:", error);
-  }
-}
-
-/**
- * Update a message.
- */
-export async function updateMessage(messageId, data) {
-  const messageRef = doc(db, "messages", messageId);
-
-  await updateDoc(messageRef, data);
 }
 
 // ============================================================

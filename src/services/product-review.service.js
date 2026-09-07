@@ -1,24 +1,17 @@
 import {
   collection,
-  deleteDoc,
   doc,
   getDoc,
   getDocs,
   limit,
   orderBy,
   query,
-  serverTimestamp,
-  updateDoc,
   where,
-  setDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
-import * as pageCache from "../utils/pageCache";
 
 const productReviewsRef = collection(db, "product-reviews");
-const productsRef = collection(db, "products");
-const inquiriesRef = collection(db, "inquiries");
 
 export async function getProductReviews() {
   const q = query(productReviewsRef, orderBy("createdAt", "desc"));
@@ -119,88 +112,6 @@ export async function getProductReviewCount(productId) {
   const reviews = await getReviewsByProduct(productId);
 
   return reviews.length;
-}
-
-/**
- * Create product review using inquiry ID.
- */
-export async function createProductReview(data) {
-  const { inquiryId, productId, reviewerId, rating, comment } = data;
-
-  if (!inquiryId || !productId || !reviewerId) {
-    throw new Error("Missing review information.");
-  }
-
-  const inquiryRef = doc(inquiriesRef, inquiryId);
-  const inquirySnapshot = await getDoc(inquiryRef);
-
-  if (!inquirySnapshot.exists()) {
-    throw new Error("Inquiry not found.");
-  }
-
-  const inquiry = inquirySnapshot.data();
-
-  if (inquiry.status !== "completed") {
-    throw new Error("Only completed transactions can be reviewed.");
-  }
-
-  if (inquiry.consumerId !== reviewerId) {
-    throw new Error("Only the consumer can submit this review.");
-  }
-
-  if (inquiry.productId !== productId) {
-    throw new Error("The product does not belong to this inquiry.");
-  }
-
-  const reviewRef = doc(productReviewsRef, inquiryId);
-
-  const existingReview = await getDoc(reviewRef);
-
-  if (existingReview.exists()) {
-    throw new Error("You have already reviewed this transaction.");
-  }
-
-  await setDoc(reviewRef, {
-    inquiryId,
-    productId,
-    reviewerId,
-
-    rating: Number(rating),
-    comment: comment?.trim() || "",
-
-    createdAt: serverTimestamp(),
-  });
-
-  // Recalculate and persist the ratingSummary on the product document
-  try {
-    const allReviews = await getReviewsByProduct(productId);
-    const totalRating =
-      allReviews.reduce((sum, r) => sum + Number(r.rating), 0) + Number(rating);
-    const newCount = allReviews.length + 1;
-    const newAverage = Number((totalRating / newCount).toFixed(1));
-
-    await updateDoc(doc(productsRef, productId), {
-      ratingSummary: {
-        average: newAverage,
-        count: newCount,
-      },
-      productRating: newAverage,
-      reviewCount: newCount,
-    });
-  } catch (err) {
-    console.warn("Could not update product ratingSummary:", err);
-  }
-
-  // Invalidate related caches
-  pageCache.invalidate(`product:${productId}`);
-  pageCache.invalidate("homeProducts");
-  pageCache.invalidate("marketplaceProducts");
-
-  return reviewRef.id;
-}
-
-export async function deleteProductReview(id) {
-  await deleteDoc(doc(productReviewsRef, id));
 }
 
 export async function getUserProductReview(productId, reviewerId) {

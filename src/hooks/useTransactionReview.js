@@ -6,7 +6,7 @@ import { getInquiryFarmerReview } from "../services/farmer-review.service";
 
 import { getInquiryProductReview } from "../services/product-review.service";
 
-import { submitTransactionReview } from "../services/transaction-review.service";
+import { apiSubmitTransactionReview } from "../services/transaction-review.service";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -86,9 +86,8 @@ export default function useTransactionReview(inquiryId) {
         setSubmitting(true);
         setError(null);
 
-        await submitTransactionReview({
+        await apiSubmitTransactionReview({
           inquiryId,
-          reviewerId: profile.uid,
 
           farmerRating,
           farmerComment,

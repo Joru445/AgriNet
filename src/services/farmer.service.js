@@ -4,13 +4,13 @@ import {
   setDoc,
   getDoc,
   getDocs,
-  updateDoc,
   query,
   where,
   serverTimestamp,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
+import { apiRequest } from "./api/api.client";
 
 export async function createFarmerProfile(data) {
   await setDoc(doc(db, "farmers", data.uid), {
@@ -108,65 +108,40 @@ export async function getFarmerById(uid) {
   return farmerResult;
 }
 
-export async function updateFarmer(uid, data) {
-  const farmerRef = doc(db, "farmers", uid);
-
-  await updateDoc(farmerRef, removeUndefined(data));
-}
-
 /**
- * Verify or unverify a farmer.
+ * Verify or unverify a farmer via the backend API.
  *
  * Verification data belongs to the
- * farmers collection, not users.
+ * farmers collection, not users. The server derives
+ * the admin identity from the token.
  */
-export async function setFarmerVerification(uid, verified, adminUid) {
+export async function apiSetFarmerVerification(uid, verified) {
   if (!uid) {
     throw new Error("Farmer UID is required.");
-  }
-
-  if (!adminUid) {
-    throw new Error("Admin UID is required.");
   }
 
   if (typeof verified !== "boolean") {
     throw new Error("Verification value must be true or false.");
   }
 
-  const farmerRef = doc(db, "farmers", uid);
-
-  await updateDoc(farmerRef, {
-    verified,
-
-    verifiedAt: verified ? serverTimestamp() : null,
-
-    verifiedBy: verified ? adminUid : null,
-
-    updatedAt: serverTimestamp(),
+  const result = await apiRequest(`/admin/farmers/${uid}/verification`, {
+    method: "PATCH",
+    body: JSON.stringify({ verified }),
   });
 
-  return {
-    uid,
-    verified,
-  };
+  return result.farmer;
 }
 
 /**
  * Verify a farmer.
  */
-export async function verifyFarmer(uid, adminUid) {
-  return setFarmerVerification(uid, true, adminUid);
+export async function verifyFarmer(uid) {
+  return apiSetFarmerVerification(uid, true);
 }
 
 /**
  * Revoke farmer verification.
  */
-export async function unverifyFarmer(uid, adminUid) {
-  return setFarmerVerification(uid, false, adminUid);
-}
-
-function removeUndefined(obj) {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([, value]) => value !== undefined),
-  );
+export async function unverifyFarmer(uid) {
+  return apiSetFarmerVerification(uid, false);
 }

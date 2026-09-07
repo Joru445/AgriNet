@@ -138,7 +138,7 @@ export default function useReports({ userId = null, admin = false } = {}) {
    * ============================================================
    */
 
-  const changeStatus = useCallback(async (reportId, status, adminUid) => {
+  const changeStatus = useCallback(async (reportId, status) => {
     if (!reportId) {
       throw new Error("Report ID is required.");
     }
@@ -147,15 +147,11 @@ export default function useReports({ userId = null, admin = false } = {}) {
       throw new Error("Invalid report status.");
     }
 
-    if (!adminUid) {
-      throw new Error("Admin UID is required.");
-    }
-
     try {
       setActionLoading(true);
       setActionError(null);
 
-      return await updateReportStatus(reportId, status, adminUid);
+      return await updateReportStatus(reportId, status);
     } catch (err) {
       console.error("Failed to update report status:", err);
 
@@ -200,20 +196,16 @@ export default function useReports({ userId = null, admin = false } = {}) {
    * ============================================================
    */
 
-  const markResolved = useCallback(async (reportId, adminUid, adminNotes = "") => {
+  const markResolved = useCallback(async (reportId, adminNotes = "") => {
     if (!reportId) {
       throw new Error("Report ID is required.");
-    }
-
-    if (!adminUid) {
-      throw new Error("Admin UID is required.");
     }
 
     try {
       setActionLoading(true);
       setActionError(null);
 
-      return await resolveReport(reportId, adminUid, adminNotes);
+      return await resolveReport(reportId, adminNotes);
     } catch (err) {
       console.error("Failed to resolve report:", err);
 
@@ -231,20 +223,16 @@ export default function useReports({ userId = null, admin = false } = {}) {
    * ============================================================
    */
 
-  const markDismissed = useCallback(async (reportId, adminUid, adminNotes = "") => {
+  const markDismissed = useCallback(async (reportId, adminNotes = "") => {
     if (!reportId) {
       throw new Error("Report ID is required.");
-    }
-
-    if (!adminUid) {
-      throw new Error("Admin UID is required.");
     }
 
     try {
       setActionLoading(true);
       setActionError(null);
 
-      return await dismissReport(reportId, adminUid, adminNotes);
+      return await dismissReport(reportId, adminNotes);
     } catch (err) {
       console.error("Failed to dismiss report:", err);
 

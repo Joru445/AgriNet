@@ -1,24 +1,18 @@
 import {
   collection,
-  deleteDoc,
   doc,
   getDoc,
   getDocs,
   orderBy,
   query,
-  serverTimestamp,
   where,
-  setDoc,
-  updateDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
 import { getUserProfile } from "./user.service";
 import { getCachedUserProfile } from "../utils/userProfileCache";
-import * as pageCache from "../utils/pageCache";
 
 const reviewsRef = collection(db, "reviews");
-const inquiriesRef = collection(db, "inquiries");
 
 const MAX_CONCURRENCY = 4;
 
@@ -99,19 +93,6 @@ export async function getReviews() {
   }));
 }
 
-export async function getReviewById(id) {
-  const snapshot = await getDoc(doc(reviewsRef, id));
-
-  if (!snapshot.exists()) {
-    throw new Error("Review not found.");
-  }
-
-  return {
-    id: snapshot.id,
-    ...snapshot.data(),
-  };
-}
-
 export async function getFarmerReviews(farmerId) {
   const q = query(
     reviewsRef,
@@ -157,91 +138,6 @@ export async function getFarmerReviewCount(farmerId) {
   const snapshot = await getDocs(q);
 
   return snapshot.size;
-}
-
-/**
- * Create a farmer review using the inquiry ID
- * as the review document ID.
- */
-export async function createReview(data) {
-  const { inquiryId, farmerId, reviewerId, rating, comment } = data;
-
-  if (!inquiryId || !farmerId || !reviewerId) {
-    throw new Error("Missing review information.");
-  }
-
-  const inquiryRef = doc(inquiriesRef, inquiryId);
-  const inquirySnapshot = await getDoc(inquiryRef);
-
-  if (!inquirySnapshot.exists()) {
-    throw new Error("Inquiry not found.");
-  }
-
-  const inquiry = inquirySnapshot.data();
-
-  if (inquiry.status !== "completed") {
-    throw new Error("Only completed transactions can be reviewed.");
-  }
-
-  if (inquiry.consumerId !== reviewerId) {
-    throw new Error("Only the consumer can submit this review.");
-  }
-
-  if (inquiry.farmerId !== farmerId) {
-    throw new Error("The farmer does not belong to this inquiry.");
-  }
-
-  const reviewRef = doc(reviewsRef, inquiryId);
-
-  const existingReview = await getDoc(reviewRef);
-
-  if (existingReview.exists()) {
-    throw new Error("You have already reviewed this transaction.");
-  }
-
-  await setDoc(reviewRef, {
-    inquiryId,
-    farmerId,
-    reviewerId,
-
-    rating: Number(rating),
-    comment: comment?.trim() || "",
-
-    createdAt: serverTimestamp(),
-  });
-
-  // Persist aggregated rating & reviewCount on farmer and user documents
-  try {
-    const q = query(reviewsRef, where("farmerId", "==", farmerId));
-    const allReviewsSnap = await getDocs(q);
-    const totalRating =
-      allReviewsSnap.docs.reduce((sum, r) => sum + Number(r.data().rating || 0), 0);
-    const newCount = allReviewsSnap.size;
-    const newAverage = newCount > 0 ? Number((totalRating / newCount).toFixed(1)) : 0;
-
-    await Promise.all([
-      updateDoc(doc(db, "farmers", farmerId), {
-        rating: newAverage,
-        reviewCount: newCount,
-      }).catch(() => {}),
-      updateDoc(doc(db, "users", farmerId), {
-        rating: newAverage,
-        reviewCount: newCount,
-      }).catch(() => {}),
-    ]);
-  } catch (err) {
-    console.warn("Could not update farmer aggregate rating:", err);
-  }
-
-  // Invalidate related caches
-  pageCache.invalidatePrefix(`storeProfile:${farmerId}`);
-  pageCache.invalidatePrefix(`farmerDashboard:${farmerId}`);
-
-  return reviewRef.id;
-}
-
-export async function deleteReview(id) {
-  await deleteDoc(doc(reviewsRef, id));
 }
 
 export async function getInquiryFarmerReview(inquiryId) {

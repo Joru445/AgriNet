@@ -6,7 +6,7 @@ import {
   subscribeUsers,
 } from "../services/user.service";
 
-import { setUserSuspension } from "../services/admin.service";
+import { apiSetUserSuspension } from "../services/admin.service";
 
 import {
   getFarmerById,
@@ -104,12 +104,12 @@ export default function useUsers() {
    * ============================================================
    */
 
-  const findUsers = useCallback(async (search, currentUserId) => {
+  const findUsers = useCallback(async (search) => {
     if (!search?.trim()) {
       return [];
     }
 
-    return searchUsers(search, currentUserId);
+    return searchUsers(search);
   }, []);
 
   /*
@@ -150,7 +150,7 @@ export default function useUsers() {
       setActionLoading(true);
       setActionError(null);
 
-      const result = await setUserSuspension(uid, status);
+      const result = await apiSetUserSuspension(uid, status);
 
       /*
        * Update the local user immediately.
@@ -199,7 +199,7 @@ export default function useUsers() {
       setActionLoading(true);
       setActionError(null);
 
-      const result = await verifyFarmer(farmerUid, adminUid);
+      const result = await verifyFarmer(farmerUid);
 
       /*
        * Immediately update the local farmer state.
@@ -246,7 +246,7 @@ export default function useUsers() {
       setActionLoading(true);
       setActionError(null);
 
-      const result = await unverifyFarmer(farmerUid, adminUid);
+      const result = await unverifyFarmer(farmerUid);
 
       /*
        * Immediately update the local farmer state.

@@ -13,7 +13,10 @@ import {
 } from "../services/inquiry.service";
 
 import { getProductById } from "../services/product.service";
-import { getUserProfile, updateUser } from "../services/user.service";
+import {
+  getUserProfile,
+  apiSyncTransactionStats,
+} from "../services/user.service";
 import { getFarmerById } from "../services/farmer.service";
 
 import { showToast } from "../utils/toast";
@@ -45,25 +48,9 @@ export default function useInquiries() {
 
     const p = profileRef.current;
     if (p.role === "consumer" && Array.isArray(inquiries)) {
-      const completedCount = inquiries.filter(
-        (item) => item.status === "completed" || item.status === "resolved",
-      ).length;
-      const cancelledCount = inquiries.filter(
-        (item) => item.status === "cancelled",
-      ).length;
-      const totalCount = inquiries.length;
-
-      if (
-        p.completedDeals !== completedCount ||
-        p.totalDeals !== totalCount ||
-        p.cancelledDeals !== cancelledCount
-      ) {
-        updateUser(p.uid, {
-          completedDeals: completedCount,
-          totalDeals: totalCount,
-          cancelledDeals: cancelledCount,
-        }).catch(() => {});
-      }
+      // Server recomputes the consumer's deal counts from the inquiries
+      // collection and writes them only when the values changed.
+      apiSyncTransactionStats().catch(() => {});
     }
   }, [inquiries]);
 

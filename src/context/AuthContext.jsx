@@ -7,17 +7,13 @@ import {
 
 import { onAuthStateChanged, signOut, reload } from "firebase/auth";
 import {
-  collection,
   doc,
-  getDocs,
   onSnapshot,
-  query,
-  updateDoc,
-  where,
 } from "firebase/firestore";
 
 import { auth } from "../firebase/auth";
 import { db } from "../firebase/firestore";
+import { apiSyncTransactionStats } from "../services/user.service";
 
 const AuthContext = createContext();
 
@@ -98,35 +94,7 @@ export function AuthProvider({ children }) {
 
             // Auto-sync consumer transaction stats into their profile document
             if (userData.role === "consumer") {
-              getDocs(
-                query(
-                  collection(db, "inquiries"),
-                  where("consumerId", "==", firebaseUser.uid),
-                ),
-              )
-                .then((snap) => {
-                  const total = snap.docs.length;
-                  const completed = snap.docs.filter((d) => {
-                    const st = d.data().status;
-                    return st === "completed" || st === "resolved";
-                  }).length;
-                  const cancelled = snap.docs.filter(
-                    (d) => d.data().status === "cancelled",
-                  ).length;
-
-                  if (
-                    userData.completedDeals !== completed ||
-                    userData.totalDeals !== total ||
-                    userData.cancelledDeals !== cancelled
-                  ) {
-                    updateDoc(userRef, {
-                      completedDeals: completed,
-                      totalDeals: total,
-                      cancelledDeals: cancelled,
-                    }).catch(() => {});
-                  }
-                })
-                .catch(() => {});
+              apiSyncTransactionStats().catch(() => {});
             }
 
             // Only farmers need the farmer listener.

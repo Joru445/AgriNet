@@ -1,11 +1,25 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   subscribeMessages,
-  fetchOlderMessages,
+  apiGetMessages,
   DEFAULT_MESSAGE_LIMIT,
 } from "../../services/message.service";
-import { markConversationRead } from "../../services/conversation.service";
+import { apiMarkConversationRead } from "../../services/conversation.service";
 import { sortByCreatedAt } from "../../utils/messaging/sortMessages";
+
+function toCreatedAtMs(value) {
+  if (!value) return null;
+  if (typeof value.toMillis === "function") return value.toMillis();
+  if (typeof value === "number") return value;
+  if (value.seconds != null) return value.seconds * 1000;
+  return null;
+}
+
+function encodeCursor(createdAtMs, docId) {
+  const json = JSON.stringify({ c: createdAtMs, d: docId });
+  const base64 = btoa(unescape(encodeURIComponent(json)));
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
 
 export default function useMessageSubscription(uid, conversationId) {
   const [messages, setMessages] = useState([]);
@@ -13,7 +27,6 @@ export default function useMessageSubscription(uid, conversationId) {
   const [hasMoreOlder, setHasMoreOlder] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
 
-  const oldestDocSnapRef = useRef(null);
   const messagesMapRef = useRef(new Map());
 
   useEffect(() => {
@@ -22,7 +35,6 @@ export default function useMessageSubscription(uid, conversationId) {
       setLoadingMessages(false);
       setHasMoreOlder(false);
       setLoadingOlder(false);
-      oldestDocSnapRef.current = null;
       messagesMapRef.current.clear();
       return;
     }
@@ -31,18 +43,13 @@ export default function useMessageSubscription(uid, conversationId) {
     setLoadingMessages(true);
     setHasMoreOlder(false);
     setLoadingOlder(false);
-    oldestDocSnapRef.current = null;
     messagesMapRef.current.clear();
 
     const unsubscribe = subscribeMessages(
       conversationId,
       (incomingMessages, meta) => {
         setLoadingMessages(false);
-
-        if (!oldestDocSnapRef.current && meta?.oldestDocSnapshot) {
-          oldestDocSnapRef.current = meta.oldestDocSnapshot;
-          setHasMoreOlder(meta.hasMore);
-        }
+        setHasMoreOlder(meta.hasMore);
 
         incomingMessages.forEach((msg) => {
           messagesMapRef.current.set(msg.id, msg);
@@ -60,7 +67,7 @@ export default function useMessageSubscription(uid, conversationId) {
           );
 
           if (hasUnreadFromOther) {
-            markConversationRead(conversationId, uid).catch((error) => {
+            apiMarkConversationRead(conversationId).catch((error) => {
               console.error(
                 "Failed to mark conversation as read:",
                 error,
@@ -74,7 +81,7 @@ export default function useMessageSubscription(uid, conversationId) {
 
     function handleVisibilityOrFocus() {
       if (document.visibilityState === "visible") {
-        markConversationRead(conversationId, uid).catch((error) => {
+        apiMarkConversationRead(conversationId).catch((error) => {
           console.error(
             "Failed to mark conversation as read on focus:",
             error,
@@ -94,30 +101,51 @@ export default function useMessageSubscription(uid, conversationId) {
   }, [uid, conversationId]);
 
   const loadOlderMessages = useCallback(async () => {
-    if (
-      loadingOlder ||
-      !hasMoreOlder ||
-      !oldestDocSnapRef.current ||
-      !conversationId
-    ) {
+    if (loadingOlder || !hasMoreOlder || !conversationId) {
+      return;
+    }
+
+    let oldest = null;
+    let oldestMs = null;
+
+    for (const msg of messagesMapRef.current.values()) {
+      const ms = toCreatedAtMs(msg.createdAt);
+      if (ms == null) continue;
+
+      if (
+        oldest === null ||
+        ms < oldestMs ||
+        (ms === oldestMs && msg.id < oldest.id)
+      ) {
+        oldest = msg;
+        oldestMs = ms;
+      }
+    }
+
+    if (!oldest) {
+      setHasMoreOlder(false);
       return;
     }
 
     setLoadingOlder(true);
 
     try {
-      const result = await fetchOlderMessages(
-        conversationId,
-        oldestDocSnapRef.current,
-        DEFAULT_MESSAGE_LIMIT,
-      );
+      const cursor = encodeCursor(oldestMs, oldest.id);
+
+      const result = await apiGetMessages(conversationId, {
+        cursor,
+        limit: DEFAULT_MESSAGE_LIMIT,
+      });
 
       if (result.messages && result.messages.length > 0) {
-        result.messages.forEach((msg) => {
-          messagesMapRef.current.set(msg.id, msg);
-        });
+        // API returns newest-first; reverse for chronological order
+        result.messages
+          .slice()
+          .reverse()
+          .forEach((msg) => {
+            messagesMapRef.current.set(msg.id, msg);
+          });
 
-        oldestDocSnapRef.current = result.oldestDocSnapshot;
         setHasMoreOlder(result.hasMore);
 
         const sorted = Array.from(

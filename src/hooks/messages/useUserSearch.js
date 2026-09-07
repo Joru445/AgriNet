@@ -17,7 +17,7 @@ export default function useUserSearch(uid, conversations) {
       }
 
       try {
-        const users = await searchUsers(search, uid);
+        const users = await searchUsers(search);
 
         const conversationUserIds = new Set(
           conversations
