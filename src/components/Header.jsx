@@ -23,7 +23,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
   const { unreadCount: msgCount } = useUnreadMessages();
 
   return (
-    <header className="shrink-0 sticky top-0 right-0 z-9996 dark:lg:rounded-2xl flex h-[calc(3.75rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] items-center justify-between bg-(--agri-surface)/95 border-b border-(--agri-border) dark:border-(--agri-surface) px-3 md:px-5 dark:m-2 backdrop-blur-sm transition-all duration-300 ease-in-out">
+    <header className="shrink-0 sticky top-0 right-0 z-9996 dark:lg:rounded-2xl flex h-[calc(3.75rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] items-center justify-between bg-(--agri-surface)/95 border-b border-(--agri-border) dark:border-(--agri-surface) px-3 md:px-5 dark:lg:m-2 backdrop-blur-sm transition-all duration-300 ease-in-out">
       {/* ── Left ──────────────────────────────────────── */}
       <div className="flex items-center gap-1 min-w-0">
         {hideBackButton ? (
@@ -78,7 +78,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
         <Link
           to={mePath}
           data-onboarding="header-profile"
-          className="flex items-center gap-2 border-l border-[var(--agri-border)] pl-2 min-w-0 max-w-[100px] sm:max-w-[180px] md:max-w-[240px] rounded-lg transition-colors hover:bg-[var(--agri-hover)]"
+          className="flex items-center gap-2 px-2.5 py-1 min-w-0 max-w-[100px] sm:max-w-[180px] md:max-w-[240px] rounded-lg transition-colors hover:bg-[var(--agri-hover)]"
         >
           <UserIdentity user={user} showUsername={false} showRole={true} />
         </Link>

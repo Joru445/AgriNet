@@ -62,7 +62,7 @@ export default function MessageRow({
   const groupSpacing = isGrouped
     ? mine
       ? "-mt-3 pt-0.5"
-      : "-mt-4.5 pt-0.5"
+      : "-mt-3.5 pt-0.5"
     : "";
 
   const swipeStyle = {
