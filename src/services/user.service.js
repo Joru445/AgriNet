@@ -2,19 +2,16 @@ import {
   collection,
   doc,
   getDoc,
-  getDocs,
   limit,
   onSnapshot,
+  orderBy,
   query,
   serverTimestamp,
   setDoc,
-  updateDoc,
-  deleteDoc,
-  where,
-  orderBy,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
+import { apiRequest } from "./api/api.client";
 
 const usersRef = collection(db, "users");
 
@@ -49,21 +46,6 @@ export async function createUser(data) {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
-}
-
-/*
- * ============================================================
- * GET USERS
- * ============================================================
- */
-
-export async function getUsers() {
-  const snapshot = await getDocs(usersRef);
-
-  return snapshot.docs.map((userDoc) => ({
-    uid: userDoc.id,
-    ...userDoc.data(),
-  }));
 }
 
 /*
@@ -149,140 +131,43 @@ export async function getUserProfile(uid) {
 
 /*
  * ============================================================
- * UPDATE USER PROFILE
+ * UPDATE MY PROFILE (BACKEND)
  * ============================================================
  *
- * Used by the normal profile system.
- *
- * Automatically updates updatedAt.
+ * The server derives the user identity from the token and updates the
+ * user profile (and farmer profile fields when the user is a farmer).
+ * Protected fields (role, status, uid, rating, ...) are ignored server-side.
  */
 
-export async function updateUser(uid, data) {
-  await updateDoc(
-    doc(db, "users", uid),
-    removeUndefined({
-      ...data,
-      updatedAt: serverTimestamp(),
-    }),
-  );
-}
-
-/*
- * ============================================================
- * UPDATE USER ROLE
- * ============================================================
- *
- * Used by Admin User Management.
- */
-
-export async function updateUserRole(uid, role) {
-  if (!uid) {
-    throw new Error("User UID is required.");
-  }
-
-  const allowedRoles = ["consumer", "farmer", "admin"];
-
-  if (!allowedRoles.includes(role)) {
-    throw new Error("Invalid user role.");
-  }
-
-  await updateDoc(doc(db, "users", uid), {
-    role,
-    updatedAt: serverTimestamp(),
+export async function updateMyProfile(data) {
+  const result = await apiRequest("/users/me/profile", {
+    method: "PATCH",
+    body: JSON.stringify(data),
   });
+
+  return result.user;
 }
 
 /*
  * ============================================================
- * UPDATE USER STATUS
+ * SYNC CONSUMER TRANSACTION STATS (BACKEND)
  * ============================================================
  *
- * Used by Admin User Management.
+ * The server recomputes completedDeals / totalDeals / cancelledDeals
+ * from the consumer's inquiries and writes them only when changed.
+ * Replaces the old client-side getDocs + updateDoc fan-out.
  */
 
-export async function updateUserStatus(uid, status) {
-  if (!uid) {
-    throw new Error("User UID is required.");
-  }
-
-  const allowedStatuses = ["active", "suspended"];
-
-  if (!allowedStatuses.includes(status)) {
-    throw new Error("Invalid user status.");
-  }
-
-  await updateDoc(doc(db, "users", uid), {
-    status,
-    updatedAt: serverTimestamp(),
+export async function apiSyncTransactionStats() {
+  const result = await apiRequest("/users/me/transaction-stats", {
+    method: "PATCH",
   });
-}
 
-/*
- * ============================================================
- * UPDATE ADMIN-MANAGED USER FIELDS
- * ============================================================
- *
- * Keeps admin operations limited to fields that should
- * actually be managed from User Management.
- */
-
-export async function updateManagedUser(uid, data) {
-  if (!uid) {
-    throw new Error("User UID is required.");
-  }
-
-  const allowedFields = ["role", "status"];
-
-  const updates = {};
-
-  for (const field of allowedFields) {
-    if (data[field] !== undefined) {
-      updates[field] = data[field];
-    }
-  }
-
-  if (updates.role !== undefined) {
-    const allowedRoles = ["consumer", "farmer", "admin"];
-
-    if (!allowedRoles.includes(updates.role)) {
-      throw new Error("Invalid user role.");
-    }
-  }
-
-  if (updates.status !== undefined) {
-    const allowedStatuses = ["active", "suspended"];
-
-    if (!allowedStatuses.includes(updates.status)) {
-      throw new Error("Invalid user status.");
-    }
-  }
-
-  if (Object.keys(updates).length === 0) {
-    throw new Error("No valid user fields to update.");
-  }
-
-  await updateDoc(doc(db, "users", uid), {
-    ...updates,
-    updatedAt: serverTimestamp(),
-  });
-}
-
-/*
- * ============================================================
- * DELETE USER PROFILE
- * ============================================================
- *
- * IMPORTANT:
- * This deletes only users/{uid}.
- * It does NOT delete the Firebase Authentication account.
- */
-
-export async function deleteUserProfile(uid) {
-  if (!uid) {
-    throw new Error("User UID is required.");
-  }
-
-  await deleteDoc(doc(db, "users", uid));
+  return {
+    completedDeals: result.completedDeals,
+    totalDeals: result.totalDeals,
+    cancelledDeals: result.cancelledDeals,
+  };
 }
 
 /*
@@ -326,93 +211,24 @@ export function subscribeUsers(callback, onError) {
  * ============================================================
  * SEARCH USERS
  * ============================================================
+ *
+ * Migrated to the Express backend (GET /users/search). The server
+ * ranges over fullnameLower/username and batch-enriches farmer docs,
+ * replacing the old per-result getDoc fan-out. The caller is excluded
+ * server-side.
  */
 
-export async function searchUsers(search, currentUserId) {
-  const keyword = search.trim().toLowerCase();
+export async function searchUsers(search) {
+  const keyword = String(search || "").trim();
 
-  if (!keyword) return [];
+  if (!keyword) {
+    return [];
+  }
 
-  const fullnameQuery = query(
-    usersRef,
-    where("fullnameLower", ">=", keyword),
-    where("fullnameLower", "<=", keyword + "\uf8ff"),
-    limit(10),
-  );
+  const params = new URLSearchParams();
+  params.set("q", keyword);
 
-  const usernameQuery = query(
-    usersRef,
-    where("username", ">=", keyword),
-    where("username", "<=", keyword + "\uf8ff"),
-    limit(10),
-  );
+  const result = await apiRequest(`/users/search?${params.toString()}`);
 
-  const [fullnameSnapshot, usernameSnapshot] = await Promise.all([
-    getDocs(fullnameQuery),
-    getDocs(usernameQuery),
-  ]);
-
-  const users = new Map();
-
-  [...fullnameSnapshot.docs, ...usernameSnapshot.docs].forEach((userDoc) => {
-    if (userDoc.id === currentUserId) {
-      return;
-    }
-
-    users.set(userDoc.id, {
-      uid: userDoc.id,
-      ...userDoc.data(),
-    });
-  });
-
-  const list = [...users.values()];
-
-  const enriched = await Promise.all(
-    list.map(async (u) => {
-      let verified = u.verified === true;
-      let profilePicture = u.profilePicture || "";
-      let profilePictureId = u.profilePictureId || "";
-
-      if (u.role === "farmer" || !profilePicture) {
-        try {
-          const farmerSnap = await getDoc(doc(db, "farmers", u.uid));
-          if (farmerSnap.exists()) {
-            const farmerData = farmerSnap.data();
-            if (farmerData?.verified === true) {
-              verified = true;
-            }
-            if (!profilePicture && farmerData?.profilePicture) {
-              profilePicture = farmerData.profilePicture;
-            }
-            if (!profilePictureId && farmerData?.profilePictureId) {
-              profilePictureId = farmerData.profilePictureId;
-            }
-          }
-        } catch {
-          /* noop */
-        }
-      }
-
-      return {
-        ...u,
-        profilePicture,
-        profilePictureId,
-        verified,
-      };
-    }),
-  );
-
-  return enriched;
-}
-
-/*
- * ============================================================
- * HELPERS
- * ============================================================
- */
-
-function removeUndefined(obj) {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([, value]) => value !== undefined),
-  );
+  return result.users ?? [];
 }

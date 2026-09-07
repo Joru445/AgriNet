@@ -1,18 +1,16 @@
 import {
   collection,
-  doc,
   getCountFromServer,
   getDocs,
   limit,
   orderBy,
   query,
-  serverTimestamp,
-  updateDoc,
   where,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
 import * as pageCache from "../utils/pageCache";
+import { apiRequest } from "./api/api.client";
 
 const usersRef = collection(db, "users");
 const productsRef = collection(db, "products");
@@ -27,7 +25,7 @@ const RECENT_LIMIT = 5;
  */
 
 /**
- * Suspend or activate a user.
+ * Suspend or activate a user via the backend API.
  *
  * This only changes the Firestore account status.
  *
@@ -37,50 +35,29 @@ const RECENT_LIMIT = 5;
  *
  * Firebase Authentication is NOT disabled.
  */
-export async function setUserSuspension(uid, status) {
-  const userRef = doc(db, "users", uid);
-
-  await updateDoc(userRef, {
-    status,
+export async function apiSetUserSuspension(uid, status) {
+  const result = await apiRequest(`/admin/users/${uid}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
   });
 
   // Invalidate admin dashboard cache
   pageCache.invalidate("adminDashboard");
+
+  return result.user;
 }
 
 /**
- * Change a user's role.
- *
- * Supported roles:
- * - consumer
- * - farmer
- * - admin
- *
- * Access is enforced by Firestore Security Rules.
+ * Toggle a product's availability via the backend API.
+ * Admin-only; allows moderators to unpublish any product.
  */
-export async function setUserRole(uid, role) {
-  if (!uid) {
-    throw new Error("User UID is required.");
-  }
-
-  const allowedRoles = ["consumer", "farmer", "admin"];
-
-  if (!allowedRoles.includes(role)) {
-    throw new Error("Invalid user role.");
-  }
-
-  await updateDoc(doc(db, "users", uid), {
-    role,
-    updatedAt: serverTimestamp(),
+export async function apiSetProductAvailability(productId, available) {
+  const result = await apiRequest(`/admin/products/${productId}/availability`, {
+    method: "PATCH",
+    body: JSON.stringify({ available }),
   });
 
-  // Invalidate admin dashboard cache
-  pageCache.invalidate("adminDashboard");
-
-  return {
-    uid,
-    role,
-  };
+  return result.product;
 }
 
 /*

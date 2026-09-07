@@ -32,29 +32,6 @@ export function getConversationId(uid1, uid2) {
 }
 
 /**
- * Mark a conversation as read for a specific user.
- * Skips write if unreadCount is already 0.
- */
-export async function markConversationRead(conversationId, uid, currentUnreadCount = null) {
-  if (!conversationId || !uid) return;
-
-  // Skip redundant write if unreadCount is already known to be 0
-  if (currentUnreadCount === 0) {
-    return;
-  }
-
-  try {
-    const conversationRef = doc(db, "conversations", conversationId);
-    await updateDoc(conversationRef, {
-      [`lastRead.${uid}`]: serverTimestamp(),
-      [`unreadCount.${uid}`]: 0,
-    });
-  } catch (error) {
-    console.error("Failed to mark conversation read:", error);
-  }
-}
-
-/**
  * Find a one-to-one conversation between two users.
  * Uses deterministic document ID directly (1 getDoc call).
  */
@@ -130,24 +107,6 @@ export async function createConversation(currentUser, otherUser) {
 }
 
 /**
- * Get a conversation by ID.
- */
-export async function getConversation(conversationId) {
-  const conversationRef = doc(db, "conversations", conversationId);
-
-  const snapshot = await getDoc(conversationRef);
-
-  if (!snapshot.exists()) {
-    return null;
-  }
-
-  return {
-    id: snapshot.id,
-    ...snapshot.data(),
-  };
-}
-
-/**
  * Subscribe to all conversations belonging to a user.
  */
 export function subscribeUserConversations(uid, callback) {
@@ -196,19 +155,11 @@ export async function updateConversation(conversationId, data) {
  */
 
 /**
- * Get conversations from the backend API.
- */
-export async function apiGetConversations() {
-  const response = await apiRequest("/api/conversations");
-  return response.data;
-}
-
-/**
  * Get a conversation by ID from the backend API.
  * Verifies the authenticated user is a participant.
  */
 export async function apiGetConversationById(conversationId) {
-  const response = await apiRequest(`/api/conversations/${conversationId}`);
+  const response = await apiRequest(`/conversations/${conversationId}`);
   return response.data;
 }
 
@@ -227,7 +178,7 @@ export async function apiGetConversationById(conversationId) {
  *   of creating a conversation when none exists.
  */
 export async function apiFindOrCreateConversation(otherUserId, { findOnly = false } = {}) {
-  const response = await apiRequest("/api/conversations", {
+  const response = await apiRequest("/conversations", {
     method: "POST",
     body: JSON.stringify({ otherUserId, findOnly }),
   });
@@ -239,9 +190,8 @@ export async function apiFindOrCreateConversation(otherUserId, { findOnly = fals
  * Only updates the authenticated user's read/unread fields.
  */
 export async function apiMarkConversationRead(conversationId) {
-  const response = await apiRequest(
-    `/api/conversations/${conversationId}/read`,
-    { method: "PATCH" },
-  );
+  const response = await apiRequest(`/conversations/${conversationId}/read`, {
+    method: "PATCH",
+  });
   return response.data;
 }

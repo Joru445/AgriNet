@@ -1,9 +1,7 @@
 import { useMemo, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
 
 import useReports from "../../hooks/useReports";
-import { setUserSuspension } from "../../services/admin.service";
-import { updateProduct } from "../../services/product.service";
+import { apiSetUserSuspension, apiSetProductAvailability } from "../../services/admin.service";
 
 import ReportHeader from "../../components/admin/reports/ReportHeader";
 import ReportStats from "../../components/admin/reports/ReportStats";
@@ -16,7 +14,6 @@ import { showToast } from "../../utils/toast";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function Reports() {
-  const { profile } = useAuth();
   const { t } = useLanguage();
   const {
     reports,
@@ -68,7 +65,7 @@ export default function Reports() {
 
   const handleResolve = async (reportId, adminNotes = "") => {
     try {
-      await markResolved(reportId, profile?.uid || "admin", adminNotes);
+      await markResolved(reportId, adminNotes);
       showToast.success(t("adminReport.toastResolved"));
     } catch (err) {
       showToast.error(err?.message || t("adminReport.toastFailedResolve"));
@@ -77,7 +74,7 @@ export default function Reports() {
 
   const handleDismiss = async (reportId, adminNotes = "") => {
     try {
-      await markDismissed(reportId, profile?.uid || "admin", adminNotes);
+      await markDismissed(reportId, adminNotes);
       showToast.success(t("adminReport.toastDismissed"));
     } catch (err) {
       showToast.error(err?.message || t("adminReport.toastFailedDismiss"));
@@ -86,7 +83,7 @@ export default function Reports() {
 
   const handleToggleUserSuspension = async (uid, nextStatus) => {
     try {
-      await setUserSuspension(uid, nextStatus);
+      await apiSetUserSuspension(uid, nextStatus);
       showToast.success(nextStatus === "suspended" ? t("adminReport.toastUserSuspended") : t("adminReport.toastUserReactivated"));
     } catch (err) {
       showToast.error(err?.message || t("adminReport.toastFailedUserStatus"));
@@ -96,7 +93,7 @@ export default function Reports() {
 
   const handleToggleProductAvailability = async (productId, nextAvailable) => {
     try {
-      await updateProduct(productId, { available: nextAvailable });
+      await apiSetProductAvailability(productId, nextAvailable);
       showToast.success(nextAvailable ? t("adminReport.toastProductReactivated") : t("adminReport.toastProductUnpublished"));
     } catch (err) {
       showToast.error(err?.message || t("adminReport.toastFailedProduct"));

@@ -350,26 +350,16 @@ export async function apiDeleteProduct(id) {
 }
 
 export async function apiToggleProductAvailability(id) {
-  try {
-    const data = await apiRequest(`/products/${encodeURIComponent(id)}/availability`, {
-      method: "PATCH",
-    });
-    return data.data ?? null;
-  } catch (err) {
-    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
-    return toggleProductAvailability(id);
-  }
+  const data = await apiRequest(`/products/${encodeURIComponent(id)}/availability`, {
+    method: "PATCH",
+  });
+  return data.data ?? null;
 }
 
 export async function apiUpdateProductStock(id, stock) {
-  try {
-    const data = await apiRequest(`/products/${encodeURIComponent(id)}/stock`, {
-      method: "PATCH",
-      body: JSON.stringify({ stock }),
-    });
-    return data.data ?? null;
-  } catch (err) {
-    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
-    return updateProductStock(id, stock);
-  }
+  const data = await apiRequest(`/products/${encodeURIComponent(id)}/stock`, {
+    method: "PATCH",
+    body: JSON.stringify({ stock }),
+  });
+  return data.data ?? null;
 }

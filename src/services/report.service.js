@@ -9,11 +9,11 @@ import {
   orderBy,
   query,
   serverTimestamp,
-  updateDoc,
   where,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
+import { apiRequest } from "./api/api.client";
 
 const reportsRef = collection(db, "reports");
 
@@ -235,32 +235,58 @@ export async function getReport(reportId) {
 
 /*
  * ============================================================
- * GET USER REPORTS
+ * UPDATE REPORT STATUS (BACKEND)
  * ============================================================
  *
- * Gets reports submitted by a specific user.
- *
- * Firestore rules only allow the authenticated user to read
- * their own reports unless they are an admin.
+ * Admin-only operation. The server derives the admin identity
+ * from the token and enforces the allowed status values.
  */
 
-export async function getUserReports(reporterId) {
-  if (!reporterId) {
-    throw new Error("Reporter UID is required.");
+export async function updateReportStatus(reportId, status, adminNotes = "") {
+  if (!reportId) {
+    throw new Error("Report ID is required.");
   }
 
-  const reportsQuery = query(
-    reportsRef,
-    where("reporterId", "==", reporterId),
-    orderBy("createdAt", "desc"),
-  );
+  if (!REPORT_STATUSES.includes(status)) {
+    throw new Error("Invalid report status.");
+  }
 
-  const snapshot = await getDocs(reportsQuery);
+  const result = await apiRequest(`/admin/reports/${reportId}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status, adminNotes }),
+  });
 
-  return snapshot.docs.map((reportDoc) => ({
-    id: reportDoc.id,
-    ...reportDoc.data(),
-  }));
+  return result.report;
+}
+
+/*
+ * ============================================================
+ * START REVIEW
+ * ============================================================
+ */
+
+export async function startReportReview(reportId) {
+  return updateReportStatus(reportId, "reviewing");
+}
+
+/*
+ * ============================================================
+ * RESOLVE REPORT
+ * ============================================================
+ */
+
+export async function resolveReport(reportId, adminNotes = "") {
+  return updateReportStatus(reportId, "resolved", adminNotes);
+}
+
+/*
+ * ============================================================
+ * DISMISS REPORT
+ * ============================================================
+ */
+
+export async function dismissReport(reportId, adminNotes = "") {
+  return updateReportStatus(reportId, "dismissed", adminNotes);
 }
 
 /*
@@ -370,111 +396,9 @@ export function subscribeReports(callback, onError, maxLimit = 100) {
 
 /*
  * ============================================================
- * GET REPORTS BY STATUS
+ * UPDATE REPORT STATUS (BACKEND)
  * ============================================================
  *
- * Useful for the admin filters.
+ * Admin-only operation. The server derives the admin identity
+ * from the token and enforces the allowed status values.
  */
-
-export async function getReportsByStatus(status) {
-  if (!REPORT_STATUSES.includes(status)) {
-    throw new Error("Invalid report status.");
-  }
-
-  const reportsQuery = query(
-    reportsRef,
-    where("status", "==", status),
-    orderBy("createdAt", "desc"),
-  );
-
-  const snapshot = await getDocs(reportsQuery);
-
-  return snapshot.docs.map((reportDoc) => ({
-    id: reportDoc.id,
-    ...reportDoc.data(),
-  }));
-}
-
-/*
- * ============================================================
- * UPDATE REPORT STATUS
- * ============================================================
- *
- * Admin-only operation.
- *
- * The Firestore rules are responsible for actually enforcing
- * that only admins can update reports.
- */
-
-export async function updateReportStatus(reportId, status, adminUid, adminNotes = "") {
-  if (!reportId) {
-    throw new Error("Report ID is required.");
-  }
-
-  if (!REPORT_STATUSES.includes(status)) {
-    throw new Error("Invalid report status.");
-  }
-
-  if (!adminUid) {
-    throw new Error("Admin UID is required.");
-  }
-
-  const reportRef = doc(db, "reports", reportId);
-  await getDoc(reportRef);
-
-  const updateData = {
-    status,
-    updatedAt: serverTimestamp(),
-  };
-
-  if (adminNotes && typeof adminNotes === "string") {
-    updateData.adminNotes = adminNotes.trim();
-  }
-
-  if (status === "resolved" || status === "dismissed") {
-    updateData.resolvedAt = serverTimestamp();
-    updateData.resolvedBy = adminUid;
-  } else {
-    updateData.resolvedAt = null;
-    updateData.resolvedBy = null;
-  }
-
-  await updateDoc(reportRef, updateData);
-}
-
-/*
- * ============================================================
- * START REVIEW
- * ============================================================
- */
-
-export async function startReportReview(reportId) {
-  if (!reportId) {
-    throw new Error("Report ID is required.");
-  }
-
-  await updateDoc(doc(db, "reports", reportId), {
-    status: "reviewing",
-    updatedAt: serverTimestamp(),
-  });
-}
-
-/*
- * ============================================================
- * RESOLVE REPORT
- * ============================================================
- */
-
-export async function resolveReport(reportId, adminUid, adminNotes = "") {
-  return updateReportStatus(reportId, "resolved", adminUid, adminNotes);
-}
-
-/*
- * ============================================================
- * DISMISS REPORT
- * ============================================================
- */
-
-export async function dismissReport(reportId, adminUid, adminNotes = "") {
-  return updateReportStatus(reportId, "dismissed", adminUid, adminNotes);
-}

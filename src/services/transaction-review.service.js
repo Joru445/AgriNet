@@ -6,6 +6,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
+import { apiRequest } from "./api/api.client";
 
 const inquiriesRef = "inquiries";
 const farmerReviewsRef = "reviews";
@@ -87,4 +88,19 @@ export async function submitTransactionReview({
     farmerReviewId: inquiryId,
     productReviewId: inquiryId,
   };
+}
+
+/**
+ * Submit a transaction review through the Express backend.
+ *
+ * The server derives the reviewer identity from the verified ID token,
+ * validates the inquiry server-side, and persists aggregated ratings.
+ */
+export async function apiSubmitTransactionReview(data) {
+  const result = await apiRequest("/reviews", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+  return result.data;
 }

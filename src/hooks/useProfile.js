@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { uploadProfilePicture } from "../services/cloudinary.service";
-import { updateUser, getUserProfile } from "../services/user.service";
-import { updateFarmer, getFarmerById } from "../services/farmer.service";
+import { updateMyProfile, getUserProfile } from "../services/user.service";
+import { getFarmerById } from "../services/farmer.service";
 import { getFarmerProducts } from "../services/product.service";
 import {
   getFarmerReviewCount,
@@ -122,7 +122,7 @@ export default function useProfile(profile) {
     setSaving(true);
 
     try {
-      await updateUser(profile.uid, {
+      await updateMyProfile({
         username: trimmedUsername.toLowerCase(),
         fullname: trimmedFullname,
         fullnameLower: trimmedFullname.toLowerCase(),
@@ -131,21 +131,14 @@ export default function useProfile(profile) {
         location: form.location,
         profilePicture: form.profilePicture,
         profilePictureId: form.profilePictureId,
-      });
 
-      if (profile.role === "farmer") {
-        await updateFarmer(profile.uid, {
-          username: trimmedUsername.toLowerCase(),
-          fullname: trimmedFullname,
-          fullnameLower: trimmedFullname.toLowerCase(),
-          phone: form.phone,
-          location: form.location,
-          profilePicture: form.profilePicture,
-          profilePictureId: form.profilePictureId,
-          storeName: form.storeName,
-          description: form.description,
-        });
-      }
+        ...(profile.role === "farmer"
+          ? {
+              storeName: form.storeName,
+              description: form.description,
+            }
+          : {}),
+      });
 
       // Update tracked originals after successful save
       originalPictureRef.current = form.profilePicture;
