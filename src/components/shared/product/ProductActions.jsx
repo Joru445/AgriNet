@@ -22,11 +22,11 @@ export default function ProductActions({ product, farmer, isOwner }) {
   }
 
   return (
-    <section className="sticky bottom-0 z-10 pt-2 pb-2 sm:pb-0">
+    <section className="px-4 sm:px-6 mt-4 sm:mt-5 pb-2">
       {isOwner ? (
         <button
           onClick={handleProduct}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2D6A4F] py-3.5 sm:py-4 text-sm sm:text-base font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
         >
           <i className="ri-settings-3-line text-lg" />
           {t("productDetails.manageProduct")}
@@ -34,7 +34,7 @@ export default function ProductActions({ product, farmer, isOwner }) {
       ) : (
         <button
           onClick={handleInquiry}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2D6A4F] py-3.5 sm:py-4 text-sm sm:text-base font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
         >
           <i className="ri-chat-1-line text-lg" />
           {t("productDetails.sendInquiry")}

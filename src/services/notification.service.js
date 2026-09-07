@@ -17,7 +17,9 @@ export const NOTIFICATIONS_PAGE_SIZE = 6;
 
 // Cap for the unread badge counter. Only unread docs are read, keeping this
 // listener cheap while preserving accurate badge counts in real time.
-const UNREAD_COUNT_LIMIT = 50;
+// Firestore onSnapshot only transfers metadata (not full doc bodies) when only
+// snapshot.size is used, so a high limit is cheap.
+const UNREAD_COUNT_LIMIT = 999;
 
 // ============================================================
 // PAGINATION CURSOR

@@ -1,8 +1,6 @@
 import { auth } from "../../firebase/auth";
 
-const API_URL = import.meta.env.DEV
-  ? "/api"
-  : import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "";
+const API_URL = import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "";
 
 const DEFAULT_TIMEOUT = 15_000;
 const MAX_RETRIES = 2;

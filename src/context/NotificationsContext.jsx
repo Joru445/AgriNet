@@ -134,12 +134,45 @@ export function NotificationsProvider({ children }) {
 
   const markAsRead = useCallback(async (notification) => {
     if (!notification || notification.read) return;
-    await apiMarkNotificationRead(notification.id);
+
+    // Optimistic update: mark as read immediately in local state
+    setNotifications((current) =>
+      current.map((n) =>
+        n.id === notification.id ? { ...n, read: true } : n,
+      ),
+    );
+
+    try {
+      await apiMarkNotificationRead(notification.id);
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+      // Revert on failure — the realtime listener will correct the state
+      setNotifications((current) =>
+        current.map((n) =>
+          n.id === notification.id ? { ...n, read: false } : n,
+        ),
+      );
+    }
   }, []);
 
   const markAllAsRead = useCallback(async () => {
     if (!profile?.uid) return;
-    await apiMarkAllNotificationsRead();
+
+    // Optimistic update: mark all local notifications as read
+    setNotifications((current) =>
+      current.map((n) => (n.read ? n : { ...n, read: true })),
+    );
+    setUnreadCount(0);
+
+    try {
+      await apiMarkAllNotificationsRead();
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+      // Revert on failure — the realtime listener will correct the state
+      setNotifications((current) =>
+        current.map((n) => (n.read ? n : { ...n, read: false })),
+      );
+    }
   }, [profile?.uid]);
 
   const value = useMemo(

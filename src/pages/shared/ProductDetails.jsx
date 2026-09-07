@@ -22,15 +22,20 @@ export default function ProductDetails() {
   const { t } = useLanguage();
   const [showReportModal, setShowReportModal] = useState(false);
 
-  const { loading, product, farmer, reviewCount, averageRating } =
-    useProductDetails();
+  const { loading, product, farmer } = useProductDetails();
   const { reviews, loading: reviewsLoading } = useProductReviews();
+
+  const reviewCount = reviews.length;
+  const averageRating =
+    reviewCount > 0
+      ? reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / reviewCount
+      : 0;
 
   const isOwner = product?.farmerId === profile?.uid;
 
   if (!loading && (!product || (isProductExpired(product) && !isOwner))) {
     return (
-      <main className="mx-auto max-w-7xl px-2 py-8 pb-18 md:pb-4">
+      <main className="mx-auto max-w-7xl px-4 py-8 pb-24 md:pb-4">
         <EmptyState
           icon="ri-error-warning-line"
           title={t("productDetails.unavailable")}
@@ -41,17 +46,20 @@ export default function ProductDetails() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl pb-8 md:pt-2">
+    <main className="mx-auto max-w-7xl pb-4">
       {loading ? (
         <ProductDetailsSkeleton />
       ) : (
         <>
-          <div className="grid gap-2 sm:gap-5 lg:grid-cols-2 lg:gap-8 lg:items-start">
+          {/* Product Hero: two-column on desktop, equal height */}
+          <div className="grid gap-0 lg:grid-cols-2 lg:gap-8">
+            {/* LEFT: Gallery — aspect-square on wrapper sets row height on lg */}
             <div className="lg:sticky lg:top-0">
               <ProductGallery product={product} />
             </div>
 
-            <div className="space-y-2 sm:space-y-4 lg:space-y-5">
+            {/* RIGHT: grid auto-stretches to match gallery height */}
+            <div className="flex flex-col">
               <ProductInfo
                 product={product}
                 reviewCount={reviewCount}
@@ -61,6 +69,8 @@ export default function ProductDetails() {
               />
 
               <ProductDescription product={product} />
+
+              <div className="flex-1" />
 
               <ProductSeller farmer={farmer} isOwner={isOwner} />
 
@@ -72,8 +82,8 @@ export default function ProductDetails() {
             </div>
           </div>
 
-          {/* Reviews - loads independently */}
-          <div className="mt-4 sm:mt-6 lg:mt-10">
+          {/* Reviews — below description */}
+          <div className="mt-4 sm:mt-6 lg:mt-8 p-4 sm:p-0">
             <ReviewSection
               title={t("reviews.productTitle")}
               reviews={reviews}

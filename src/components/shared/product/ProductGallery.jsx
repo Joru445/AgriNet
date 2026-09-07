@@ -16,7 +16,7 @@ function ProductGalleryImages({ product }) {
 
   if (!images.length) {
     return (
-      <div className="aspect-square rounded-2xl md:rounded-3xl border border-[var(--agri-border)] bg-[var(--agri-card)] flex items-center justify-center text-[var(--agri-text-muted)] text-sm">
+      <div className="aspect-square w-full bg-[var(--agri-hover)] flex items-center justify-center text-[var(--agri-text-muted)] text-sm">
         {t("productDetails.noImages")}
       </div>
     );
@@ -48,10 +48,9 @@ function ProductGalleryImages({ product }) {
   const currentImageUrl = images[selected]?.url || images[selected];
 
   return (
-    <div className="space-y-2 md:space-y-4">
-      {/* Main Image / Swipeable Carousel */}
-      <div className="relative aspect-square w-full sm:rounded-2xl md:rounded-3xl sm:border sm:border-[var(--agri-border)] bg-black/5 overflow-hidden shadow-xs group">
-        {/* Horizontal scroll snap container */}
+    <>
+      {/* Mobile: scrollable square carousel */}
+      <div className="lg:hidden relative aspect-square w-full bg-black/5 overflow-hidden group">
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
@@ -87,70 +86,149 @@ function ProductGalleryImages({ product }) {
             );
           })}
         </div>
-
-        {/* Hover zoom hint badge */}
-        <button
-          type="button"
-          onClick={() =>
-            setFullscreenImage({
-              src: currentImageUrl,
-              title: `${product.name} (${selected + 1}/${images.length})`,
-            })
-          }
-          className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-xs text-white shadow-md hover:bg-black/80 cursor-pointer"
-          title={t("productDetails.viewFullscreen")}
-        >
-          <i className="ri-zoom-in-line text-base" />
-        </button>
-
-        {/* Shopee-style bottom-right page indicator (e.g. 1/5) */}
-        {images.length > 1 && (
-          <div className="absolute bottom-3 right-3 z-10 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-xs text-white text-xs font-semibold tracking-wider select-none shadow-md pointer-events-none">
-            {selected + 1}/{images.length}
-          </div>
-        )}
+        <MobileOverlay
+          images={images}
+          selected={selected}
+          product={product}
+          currentImageUrl={currentImageUrl}
+          onFullscreen={setFullscreenImage}
+          t={t}
+        />
       </div>
 
-      {/* Thumbnail selector on both mobile and desktop */}
-      {images.length > 1 && (
-        <div className="flex gap-2 sm:gap-3 overflow-x-auto px-2 py-1 scrollbar-none md:grid md:grid-cols-5 md:overflow-visible">
+      {/* Desktop: image + thumbnails in a square */}
+      <div className="hidden lg:flex aspect-square w-full bg-black/5 flex-col overflow-hidden">
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex flex-1 min-h-0 overflow-x-auto snap-x snap-mandatory scrollbar-none touch-pan-x"
+          style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
+        >
           {images.map((image, index) => {
             const rawSrc = image.url || image;
-            const thumbSrc = isCloudinaryUrl(rawSrc)
-              ? applyTransform(rawSrc, PRODUCT_THUMB_TF)
+            const imgSrc = isCloudinaryUrl(rawSrc)
+              ? applyTransform(rawSrc, PRODUCT_GALLERY_TF)
               : rawSrc;
             return (
-              <button
+              <div
                 key={image.publicId || index}
-                type="button"
-                onClick={() => handleThumbnailClick(index)}
-                className={`shrink-0 w-20 h-20 md:w-auto md:h-auto overflow-hidden rounded sm:rounded-xl transition-all duration-200 aspect-square cursor-pointer ${
-                  selected === index
-                    ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 scale-[1.02] opacity-100"
-                    : "border-[var(--agri-border)] opacity-80 hover:opacity-100 hover:border-[var(--agri-border)]"
-                }`}
+                className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center bg-[var(--agri-hover)] cursor-pointer"
+                onClick={() =>
+                  setFullscreenImage({
+                    src: imgSrc,
+                    title: `${product.name} (${index + 1}/${images.length})`,
+                  })
+                }
               >
                 <img
-                  src={thumbSrc}
-                  alt=""
-                  width={80}
-                  height={80}
+                  src={imgSrc}
+                  alt={`${product.name} ${index + 1}`}
+                  width={600}
+                  height={600}
                   loading="lazy"
-                  className="aspect-square w-full h-full object-cover"
+                  className="w-full h-full object-cover select-none"
+                  draggable={false}
                 />
-              </button>
+              </div>
             );
           })}
         </div>
-      )}
+        <DesktopOverlay
+          images={images}
+          selected={selected}
+          product={product}
+          currentImageUrl={currentImageUrl}
+          onFullscreen={setFullscreenImage}
+          onThumbnailClick={handleThumbnailClick}
+          t={t}
+        />
+      </div>
 
-      {/* Fullscreen Zoomable Image Modal */}
       <ImageViewerModal
         isOpen={Boolean(fullscreenImage)}
         src={fullscreenImage?.src}
         title={fullscreenImage?.title}
         onClose={() => setFullscreenImage(null)}
       />
+    </>
+  );
+}
+
+function MobileOverlay({ images, selected, product, currentImageUrl, onFullscreen, t }) {
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() =>
+          onFullscreen({
+            src: currentImageUrl,
+            title: `${product.name} (${selected + 1}/${images.length})`,
+          })
+        }
+        className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-xs text-white shadow-md hover:bg-black/80 cursor-pointer"
+        title={t("productDetails.viewFullscreen")}
+      >
+        <i className="ri-zoom-in-line text-base" />
+      </button>
+      {images.length > 1 && (
+        <div className="absolute bottom-3 right-3 z-10 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-xs text-white text-xs font-semibold tracking-wider select-none shadow-md pointer-events-none">
+          {selected + 1}/{images.length}
+        </div>
+      )}
+    </>
+  );
+}
+
+function DesktopOverlay({ images, selected, product, currentImageUrl, onFullscreen, onThumbnailClick, t }) {
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 shrink-0">
+      {images.map((image, index) => {
+        const rawSrc = image.url || image;
+        const thumbSrc = isCloudinaryUrl(rawSrc)
+          ? applyTransform(rawSrc, PRODUCT_THUMB_TF)
+          : rawSrc;
+        return (
+          <button
+            key={image.publicId || index}
+            type="button"
+            onClick={() => onThumbnailClick(index)}
+            className={`shrink-0 w-12 h-12 overflow-hidden rounded-lg transition-all duration-200 cursor-pointer ${
+              selected === index
+                ? "border-2 border-[#2D6A4F] ring-1 ring-[#2D6A4F]/20 opacity-100"
+                : "border border-[var(--agri-border)] opacity-60 hover:opacity-100"
+            }`}
+          >
+            <img
+              src={thumbSrc}
+              alt=""
+              width={48}
+              height={48}
+              loading="lazy"
+              className="w-full h-full object-cover"
+            />
+          </button>
+        );
+      })}
+      <div className="ml-auto flex items-center gap-2">
+        {images.length > 1 && (
+          <span className="text-xs font-semibold text-[var(--agri-text-muted)]">
+            {selected + 1}/{images.length}
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={() =>
+            onFullscreen({
+              src: currentImageUrl,
+              title: `${product.name} (${selected + 1}/${images.length})`,
+            })
+          }
+          className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--agri-hover)] text-[var(--agri-text-muted)] hover:bg-[var(--agri-border)] hover:text-[var(--agri-text)] transition-colors cursor-pointer"
+          title={t("productDetails.viewFullscreen")}
+        >
+          <i className="ri-zoom-in-line text-sm" />
+        </button>
+      </div>
     </div>
   );
 }
