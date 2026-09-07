@@ -54,11 +54,16 @@ export default function MessageList({
     );
     if (!target) return;
     target.scrollIntoView({ block: "center", behavior: "smooth" });
-    setHighlightedMessageId(messageId);
+
+    // Reset and trigger highlight so repeated clicks on the same reply retrigger the 2 flashes
+    setHighlightedMessageId(null);
     clearTimeout(highlightTimerRef.current);
-    highlightTimerRef.current = setTimeout(() => {
-      setHighlightedMessageId(null);
-    }, 2200);
+    requestAnimationFrame(() => {
+      setHighlightedMessageId(messageId);
+      highlightTimerRef.current = setTimeout(() => {
+        setHighlightedMessageId(null);
+      }, 1500);
+    });
   }, []);
 
   useEffect(() => {
@@ -294,9 +299,17 @@ export default function MessageList({
           const previous = messages[index - 1];
           const next = messages[index + 1];
           const isHighlighted = highlightedMessageId === message.id;
+          const isLastMessage = index === messages.length - 1;
+          const isLastMine = index === lastMineIndex;
+          const showStatus = isLastMessage && isLastMine && !lastMineFailed;
+          const statusText = showStatus
+            ? lastMineSeen
+              ? t("messages.seen")
+              : t("messages.sent")
+            : null;
 
           return (
-            <div key={message.id}>
+            <div key={message.id} data-message-id={message.id}>
               {shouldShowSeparator(message, previous) && (
                 <MessageSeparator timestamp={message.createdAt} />
               )}
@@ -306,6 +319,8 @@ export default function MessageList({
                   user={user}
                   message={message}
                   product={inquiryProducts?.[message.productId]}
+                  isHighlighted={isHighlighted}
+                  statusText={statusText}
                   onAccept={onAcceptInquiry}
                 />
               ) : (
@@ -321,6 +336,7 @@ export default function MessageList({
                   user={user}
                   profile={profile}
                   isHighlighted={isHighlighted}
+                  statusText={statusText}
                   onReply={onSetReply}
                   onJumpToMessage={scrollToMessage}
                   onRetry={onRetry}
@@ -331,21 +347,7 @@ export default function MessageList({
           );
         })}
 
-        {lastMineMessage && isLatestMine && !lastMineFailed && (
-          <div ref={bottomRef} className="shrink-0 flex justify-end items-center gap-1 px-4 pb-1 pt-0.5 text-[11px] font-semibold text-(--agri-text-muted) select-none">
-            {lastMineSeen ? (
-              <>
-                <i className="ri-check-double-line text-sm text-[#2D6A4F] dark:text-(--agri-brand)" />
-                <span>{t("messages.seen")}</span>
-              </>
-            ) : (
-              <>
-                <i className="ri-check-line text-sm text-(--agri-text-muted)" />
-                <span>{t("messages.sent")}</span>
-              </>
-            )}
-          </div>
-        )}
+        <div ref={bottomRef} className="h-0 w-0 shrink-0" />
       </div>
 
       {/* New messages indicator */}

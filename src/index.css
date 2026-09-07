@@ -419,6 +419,48 @@ body {
   pointer-events: auto;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Message Reply Highlight Animation (2 flashes like Messenger)
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes replyFlashTwice {
+  0%, 45%, 90%, 100% {
+    filter: brightness(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  22% {
+    filter: brightness(1.25);
+    box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.45), 0 0 16px rgba(45, 106, 79, 0.3);
+  }
+  68% {
+    filter: brightness(1.25);
+    box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.45), 0 0 16px rgba(45, 106, 79, 0.3);
+  }
+}
+
+@keyframes replyFlashTwiceDark {
+  0%, 45%, 90%, 100% {
+    filter: brightness(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  22% {
+    filter: brightness(1.3);
+    box-shadow: 0 0 0 4px rgba(82, 183, 136, 0.5), 0 0 16px rgba(82, 183, 136, 0.35);
+  }
+  68% {
+    filter: brightness(1.3);
+    box-shadow: 0 0 0 4px rgba(82, 183, 136, 0.5), 0 0 16px rgba(82, 183, 136, 0.35);
+  }
+}
+
+.animate-reply-flash {
+  animation: replyFlashTwice 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+[data-theme="dark"] .animate-reply-flash {
+  animation-name: replyFlashTwiceDark;
+}
+
 /* ── Reduced Motion ── */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -436,5 +478,9 @@ body {
 
   [data-theme="dark"] .skeleton-shimmer {
     background: #1a2b22;
+  }
+
+  .animate-reply-flash {
+    animation: none !important;
   }
 }

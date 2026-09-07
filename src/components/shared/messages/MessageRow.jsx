@@ -30,6 +30,7 @@ export default function MessageRow({
   user,
   profile,
   isHighlighted = false,
+  statusText = null,
   onReply,
   onJumpToMessage,
   onRetry,
@@ -77,7 +78,8 @@ export default function MessageRow({
 
   return (
     <div
-      className={`group/swipe relative flex w-full min-w-0 ${mine ? "justify-end" : "justify-start"} ${groupSpacing}`}
+      data-message-id={message.id}
+      className={`group/swipe relative flex w-full min-w-0 scroll-mt-6 scroll-mb-6 ${mine ? "justify-end" : "justify-start"} ${groupSpacing}`}
     >
       <div
         className={`relative flex min-w-0 max-w-[85%] sm:max-w-[75%] md:max-w-[68%] lg:max-w-[62%] ${
@@ -111,16 +113,25 @@ export default function MessageRow({
               />
             )}
 
-            <MessageBubble
-              message={message}
-              mine={mine}
-              user={user}
-              profile={profile}
-              groupPosition={groupPosition}
-              onRetry={onRetry}
-              onDeleteFailed={onDeleteFailed}
-              onJumpToMessage={onJumpToMessage}
-            />
+            <div className={`flex flex-col min-w-0 max-w-full ${mine ? "items-end" : "items-start"}`}>
+              <MessageBubble
+                message={message}
+                mine={mine}
+                user={user}
+                profile={profile}
+                groupPosition={groupPosition}
+                isHighlighted={isHighlighted}
+                onRetry={onRetry}
+                onDeleteFailed={onDeleteFailed}
+                onJumpToMessage={onJumpToMessage}
+              />
+
+              {statusText && (
+                <span className="text-[11px] text-[var(--agri-text-muted)] font-normal px-1 mt-1 select-none leading-none">
+                  {statusText}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

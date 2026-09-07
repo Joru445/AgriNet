@@ -10,6 +10,8 @@ export default function ProductInquiryMessage({
   user,
   message,
   product,
+  isHighlighted = false,
+  statusText = null,
   onAccept,
 }) {
   const { profile } = useAuth();
@@ -79,7 +81,10 @@ export default function ProductInquiryMessage({
   const quantity = Number(message.quantity);
 
   return (
-    <div className={`flex flex-col ${isOwn ? "items-end" : "items-start"} min-w-0`}>
+    <div
+      data-message-id={message.id}
+      className={`flex flex-col ${isOwn ? "items-end" : "items-start"} min-w-0 scroll-mt-6 scroll-mb-6`}
+    >
       <div className={`flex gap-2 ${isOwn ? "justify-end" : "justify-start"} min-w-0 w-full`}>
         <img
           src={user?.profilePicture || defaultAvatar}
@@ -90,7 +95,7 @@ export default function ProductInquiryMessage({
           }`}
         />
 
-        <div className="w-60 sm:w-72 max-w-[76vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-[var(--agri-card)] shadow-sm border border-[var(--agri-border-subtle)]">
+        <div className={`w-60 sm:w-72 max-w-[76vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-[var(--agri-card)] shadow-sm border border-[var(--agri-border-subtle)] ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-[var(--agri-brand)]/40" : ""}`}>
           <MessageImage
             src={productImage}
             alt={product.name}
@@ -169,6 +174,12 @@ export default function ProductInquiryMessage({
           </div>
         </div>
       </div>
+
+      {statusText && isOwn && (
+        <span className="text-[11px] text-[var(--agri-text-muted)] font-normal px-1 mt-1 select-none leading-none">
+          {statusText}
+        </span>
+      )}
     </div>
   );
 }

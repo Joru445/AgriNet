@@ -17,6 +17,7 @@ export default function MessageBubble({
   user,
   profile,
   groupPosition = "single",
+  isHighlighted = false,
   onRetry,
   onDeleteFailed,
   onJumpToMessage,
@@ -51,10 +52,15 @@ export default function MessageBubble({
       },
     }[mine ? "mine" : "other"][groupPosition] || "rounded-2xl";
 
-  const otherUserName = user?.fullname || user?.username;
-  const isSelfReply =
-    replyTo?.senderId === profile?.uid ||
-    (profile?.fullname && replyTo?.senderName === profile?.fullname);
+  const otherUserName = user?.fullname || user?.username || message.senderName || "";
+  const isSelfReply = mine
+    ? replyTo?.senderId === profile?.uid ||
+      Boolean(profile?.fullname && replyTo?.senderName === profile?.fullname)
+    : Boolean(
+        (user?.uid && replyTo?.senderId === user.uid) ||
+        (user?.id && replyTo?.senderId === user.id) ||
+        (otherUserName && replyTo?.senderName === otherUserName),
+      );
 
   // Reply indication header should ONLY be shown when replying to the other user ("the user who chat me")
   const showReplyHeader = Boolean(replyTo && !isSelfReply);
@@ -78,22 +84,27 @@ export default function MessageBubble({
       {/* Reply quote */}
       {replyTo && (
         <div className={`flex flex-col ${mine ? "items-end" : "items-start"} max-w-full mb-1`}>
-          {/* Subtle header: ↩ You replied to Name (only shown when replying to the other user) */}
+          {/* Subtle header: ↩ You replied to Name (when mine) / ↩ Name replied to you (when other) */}
           {showReplyHeader && (
-            <div className="flex items-center gap-1 text-[11px] text-[var(--agri-text-muted)] font-medium mb-1 px-1 select-none">
+            <button
+              type="button"
+              onClick={() => onJumpToMessage?.(replyTo.messageId || replyTo.id)}
+              className="flex items-center gap-1 text-[11px] text-[var(--agri-text-muted)] hover:text-[var(--agri-text)] font-medium mb-1 px-1 select-none cursor-pointer transition"
+              aria-label={t("messages.replyToLabel")}
+            >
               <i className="ri-reply-line text-xs" />
               <span>
                 {mine
                   ? t("messages.youRepliedTo", { name: targetReplyName })
-                  : t("messages.repliedTo", { name: targetReplyName })}
+                  : t("messages.repliedToYou", { name: otherUserName || targetReplyName })}
               </span>
-            </div>
+            </button>
           )}
 
           {/* Quote bubble: clean pill, NO icon, NO name inside, just quoted text */}
           <button
             type="button"
-            onClick={() => onJumpToMessage?.(replyTo.messageId)}
+            onClick={() => onJumpToMessage?.(replyTo.messageId || replyTo.id)}
             className={`flex items-center gap-2 rounded-2xl px-3 py-1.5 text-xs text-left cursor-pointer transition hover:opacity-85 max-w-full w-fit shadow-xs
               ${
                 mine
@@ -112,6 +123,7 @@ export default function MessageBubble({
         <p
           className={`w-fit max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-2 shadow-md ${textRadius}
             ${isImage ? "text-sm font-medium" : ""}
+            ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-[var(--agri-brand)]/40" : ""}
             ${
               mine
                 ? "bg-[#2D6A4F] text-white shadow-green-900/20"
@@ -131,7 +143,7 @@ export default function MessageBubble({
 
       {/* Image Attachment */}
       {isImage && message.imageUrl && (
-        <div className="rounded-xl overflow-hidden mb-0 group relative">
+        <div className={`rounded-xl overflow-hidden mb-0 group relative ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-[var(--agri-brand)]/40" : ""}`}>
           <MessageImage
             src={
               isCloudinaryUrl(message.imageUrl)

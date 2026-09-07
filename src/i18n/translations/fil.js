@@ -805,6 +805,7 @@ export default {
     replyingTo: "I-reply kay {name}",
     youRepliedTo: "Sumagot ka kay {name}",
     repliedTo: "Sumagot si {name}",
+    repliedToYou: "Sumagot si {name} sa iyo",
     cancelReply: "Kanselahin ang reply",
     replyToMessage: "Mensahe",
     replyToLabel: "Pumunta sa orihinal na mensahe",

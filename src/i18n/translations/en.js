@@ -793,6 +793,7 @@ export default {
     replyingTo: "Replying to {name}",
     youRepliedTo: "You replied to {name}",
     repliedTo: "{name} replied",
+    repliedToYou: "{name} replied to you",
     cancelReply: "Cancel reply",
     replyToMessage: "Message",
     replyToLabel: "Go to original message",
