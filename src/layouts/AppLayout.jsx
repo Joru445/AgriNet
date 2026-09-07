@@ -27,7 +27,7 @@ export default function AppLayout() {
       )}
 
       <div
-        className={`flex-1 flex flex-col h-full overflow-hidden transition-[margin] duration-300 ${
+        className={`flex-1 flex flex-col h-full overflow-hidden transition-[margin] duration-200 ease-out will-change-[margin] ${
           collapsed ? "lg:ml-20" : "lg:ml-60"
         }`}
       >

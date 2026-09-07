@@ -81,7 +81,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside
-      className={`hidden lg:flex h-full shrink-0 fixed top-0 left-0 bg-(--agri-brand-dark) dark:bg-transparent flex-col z-9996 pt-1 transition-all border-r border-white/8 duration-300 ease-in-out ${
+      className={`hidden lg:flex h-full shrink-0 fixed top-0 left-0 bg-(--agri-brand-dark) dark:bg-transparent flex-col z-9996 pt-1 transition-[width] border-r border-white/8 duration-200 ease-out will-change-[width] ${
         collapsed ? "w-20" : "w-60"
       }`}
     >
@@ -104,7 +104,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </div>
 
       {/* ── Profile ──────────────────────────────────────── */}
-      <div className={` border-b border-white/8 ${collapsed ? "flex justify-center items-center w-full h-14 mx-auto" : "px-3 py-3"}`}>
+      <div className={`border-b border-white/8 ${collapsed ? "flex justify-center items-center w-full h-14" : "px-3 py-3"}`}>
         {collapsed ? (
           <div className="flex justify-center">
             {profile?.profilePicture ? (
@@ -136,7 +136,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         {navGroups.map((group, gi) => (
           <div key={group.key}>
             {!collapsed && (
-              <div className="px-2.5 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/30">
+              <div className="px-2.5 mb-1.5 text-xs font-semibold uppercase tracking-wider text-white/40">
                 {t(group.labelKey)}
               </div>
             )}
@@ -158,10 +158,10 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                       data-onboarding={getOnboardingNavKey(item.to)}
                       title={collapsed ? t(item.labelKey) : undefined}
                       className={({ isActive }) =>
-                        `relative flex items-center rounded-lg transition-all duration-150 dark:bg-[var(--agri-surface)] ${
+                        `relative flex items-center rounded-lg transition-colors duration-150 dark:bg-[var(--agri-surface)] ${
                           collapsed
-                            ? "justify-center w-16 h-12 mx-auto"
-                            : "gap-2.5 px-2.5 py-2"
+                            ? "justify-center h-10 w-full"
+                            : "gap-2.5 px-2.5 h-10 w-full"
                         } ${
                           isActive
                             ? "bg-white/15 text-white shadow-sm shadow-black/10"
@@ -179,7 +179,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                           >
                             <i
                               className={`${item.icon} ${
-                                isActive ? "text-base" : "text-[15px]"
+                                isActive ? "text-[17px]" : "text-base"
                               }`}
                             />
                           </span>
@@ -187,7 +187,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                           {/* Label */}
                           {!collapsed && (
                             <span
-                              className={`flex-1 text-[13px] truncate leading-tight transition-colors duration-150 ${
+                              className={`flex-1 text-[15px] truncate leading-tight transition-colors duration-150 ${
                                 isActive
                                   ? "font-semibold"
                                   : "font-medium"
@@ -249,8 +249,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           onClick={() => setCollapsed(!collapsed)}
           className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-white/80 hover:bg-white/[0.07] transition-colors duration-150 cursor-pointer ${
             collapsed
-              ? "justify-center w-16 h-12 mx-auto"
-              : "gap-2.5 px-2.5 py-2 w-full"
+              ? "justify-center h-10 w-full"
+              : "gap-2.5 px-2.5 h-10 w-full"
           }`}
           title={
             collapsed ? t("sidebar.expandSidebar") : t("sidebar.collapseSidebar")
@@ -264,7 +264,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             />
           </span>
           {!collapsed && (
-            <span className="text-[13px] font-medium">
+            <span className="text-[15px] font-medium">
               {collapsed ? t("sidebar.expand") : t("sidebar.collapse")}
             </span>
           )}
@@ -275,15 +275,15 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           onClick={() => setShowLogoutModal(true)}
           className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-150 cursor-pointer ${
             collapsed
-              ? "justify-center w-16 h-12 mx-auto"
-              : "gap-2.5 px-2.5 py-2 w-full"
+              ? "justify-center h-10 w-full"
+              : "gap-2.5 px-2.5 h-10 w-full"
           }`}
         >
           <span className="flex items-center justify-center size-5 shrink-0">
             <i className="ri-logout-box-line text-[15px]" />
           </span>
           {!collapsed && (
-            <span className="text-[13px] font-medium">
+            <span className="text-[15px] font-medium">
               {t("common.logout")}
             </span>
           )}
