@@ -78,6 +78,19 @@ export default {
     goToHome: "Pumunta sa Home",
   },
 
+  guest: {
+    loginRequired: "Kailangan ng Login",
+    loginToAction: "Mangyaring mag-log in o mag-register para sa {action}.",
+    loginToSendInquiry: "magpadala ng inquiry",
+    loginToMessage: "magmensahe sa farmer na ito",
+    loginToSave: "mag-save ng produkto",
+    loginToReview: "magsumite ng review",
+    browseAsGuest: "Mag-browse bilang Guest",
+    login: "Mag-log In",
+    register: "Mag-register",
+    marketplaceSubtitle: "Mag-sign in para magmensahe sa mga farmer, magpadala ng inquiry, at mag-save ng produkto.",
+  },
+
   offline: {
     message: "Offline ka. Maaaring hindi gumana ang ilang features.",
     reconnecting: "Nag-co-connect muli... Synco-sync ang data mo.",
@@ -846,6 +859,7 @@ export default {
     couldntSend: "Hindi maipadala.",
     tapToRetry: "I-tap para subukan muli",
     deleteFailedMessage: "Tanggalin ang nabigong mensahe",
+    decryptionFailed: "Hindi ma-decrypt ang mensaheng ito",
     photo: "Photo",
     selectConversation: "Pumili ng chat",
     selectConversationSubtitle:
@@ -1262,6 +1276,7 @@ export default {
     myProducts: "Aking mga Produkto",
     reviews: "Mga Review",
     reports: "Mga Ulat",
+    favorites: "Mga Paborito",
   },
 
   sidebar: {
@@ -1716,5 +1731,28 @@ export default {
         body: "Pamahalaan ang admin account at mga setting mula sa profile mo sa itaas na kanang sulok.",
       },
     },
+  },
+
+  favorites: {
+    title: "Aking mga Paborito",
+    products: "Mga Produkto",
+    farmers: "Mga Magsasaka",
+    save: "I-save",
+    saved: "Na-save",
+    add: "Idagdag sa paborito",
+    remove: "Alisin sa paborito",
+    noProducts: "Walang paboritong produkto",
+    noProductsDesc: "Ang mga produktong i-save mo ay makikita dito.",
+    noFarmers: "Walang paboritong magsasaka",
+    noFarmersDesc: "Ang mga magsasaka na i-save mo ay makikita dito.",
+    loadError: "Nabigo ang pag-load ng mga paborito.",
+    loginRequired: "Kailangan ng Pag-login",
+    loginToView: "Mag-login para makita ang iyong mga na-save na produkto at magsasaka.",
+  },
+
+  loginRequired: {
+    title: "Mag-sign in upang magpatuloy",
+    description: "Mag-login sa iyong AgriNet account para ma-access ang feature na ito.",
+    register: "Gumawa ng account",
   },
 };

@@ -98,6 +98,16 @@ export function getMePath(role) {
   }
 }
 
+export function getFavoritesPath(role) {
+  switch (role) {
+    case "farmer":
+      return "/farmer/favorites";
+
+    default:
+      return "/favorites";
+  }
+}
+
 export function getSettingsPath(role) {
   switch (role) {
     case "admin":

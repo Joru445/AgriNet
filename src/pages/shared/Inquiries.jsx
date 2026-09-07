@@ -7,9 +7,10 @@ import useInquiries from "../../hooks/useInquiries";
 import InquirySkeleton from "../../components/shared/inquiries/InquirySkeleton";
 import InquiryTabs from "../../components/shared/inquiries/InquiryTabs";
 import InquiryTable from "../../components/shared/inquiries/InquiryTable";
+import LoginRequired from "../../components/ui/LoginRequired";
 
 export default function Inquiries() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const { t } = useLanguage();
   const [view, setView] = useState("grid");
 
@@ -24,6 +25,10 @@ export default function Inquiries() {
 
     changeStatus,
   } = useInquiries();
+
+  if (!user) {
+    return <LoginRequired title={t("nav.transactions")} />;
+  }
 
   return (
     <main className="flex-1 p-4 md:p-6 pb-18 md:pb-4">

@@ -1,11 +1,14 @@
+import { useAuth } from "../../context/AuthContext";
 import useMessages from "../../hooks/useMessages";
 
 import ConversationList from "../../components/shared/messages/ConversationList";
 import ChatWindow from "../../components/shared/messages/ChatWindow";
 import EmptyConversation from "../../components/shared/messages/EmptyConversation";
+import LoginRequired from "../../components/ui/LoginRequired";
 
 
 export default function Messages() {
+  const { user } = useAuth();
   const {
     loading,
 
@@ -53,6 +56,10 @@ export default function Messages() {
     retryMessage,
     deleteFailedMessage,
   } = useMessages();
+
+  if (!user) {
+    return <LoginRequired title="Messages" />;
+  }
 
   const hasChat = Boolean(activeConversation || activeUser);
 

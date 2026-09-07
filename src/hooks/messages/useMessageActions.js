@@ -5,6 +5,8 @@ import { uploadMessageImage } from "../../services/cloudinary.service";
 import { buildFailedMessage } from "../../utils/messaging/buildFailedMessage";
 import { buildOptimisticConversation } from "../../utils/messaging/buildOptimisticConversation";
 import { showToast } from "../../utils/toast";
+import { encrypt } from "../../services/encryption";
+import { getConversationKey } from "../../services/encryption";
 import useOfflineQueue from "./useOfflineQueue";
 
 export default function useMessageActions({
@@ -107,15 +109,29 @@ export default function useMessageActions({
 
         stage = "send-message";
 
-        await apiSendMessage({
+        // --- E2E: encrypt message text ---
+        const messagePayload = {
           conversationId,
-          text,
           type: activeImg ? "image" : "text",
           imageUrl,
           imageId,
           replyTo: replyTo?.messageId || replyTo || null,
-          replyToSnapshot: replyTo && typeof replyTo === "object" ? replyTo : null,
-        });
+        };
+
+        if (text) {
+          const otherUid = activeConversation?.otherUser?.uid || activeUser?.uid;
+          if (otherUid) {
+            const conversationKey = await getConversationKey(profile.uid, otherUid, conversationId);
+            const encrypted = await encrypt(text, conversationKey);
+            messagePayload.ciphertext = encrypted.ciphertext;
+            messagePayload.iv = encrypted.iv;
+            messagePayload.encryptionVersion = 1;
+          } else {
+            throw new Error("Recipient is not ready for encrypted messaging yet.");
+          }
+        }
+
+        await apiSendMessage(messagePayload);
 
         if (!activeConversation?.id) {
           setActiveConversation(
@@ -136,10 +152,12 @@ export default function useMessageActions({
         const failedMessage = buildFailedMessage({
           conversationId,
           senderId: profile.uid,
+          receiverId: activeConversation?.otherUser?.uid || activeUser?.uid || null,
           text,
           image: activeImg,
           error: error.message,
           stage,
+          replyTo: replyTo?.messageId || replyTo || null,
         });
 
         setFailedMessages((prev) => [...prev, failedMessage]);
@@ -216,7 +234,8 @@ export default function useMessageActions({
 
         stage = "send-message";
 
-        await apiSendMessage({
+        // --- E2E: encrypt retry message text ---
+        const retryPayload = {
           conversationId,
           text: failedMessage.text || "",
           type: failedMessage.type || "text",
@@ -224,7 +243,35 @@ export default function useMessageActions({
             ? null
             : failedMessage.imageUrl || null,
           imageId: failedMessage.imageId || null,
-        });
+          replyTo: failedMessage.replyTo || null,
+        };
+
+        if (retryPayload.text) {
+          const otherUid =
+            failedMessage.receiverId ||
+            activeConversation?.otherUser?.uid ||
+            activeUser?.uid ||
+            (() => {
+              const parts = conversationId.split("_");
+              return parts.length === 2
+                ? parts.find((id) => id !== profile.uid) || null
+                : null;
+            })();
+
+          if (!otherUid) {
+            throw new Error("Recipient is not ready for encrypted messaging yet.");
+          }
+
+          const convId = failedMessage.conversationId || conversationId;
+          const conversationKey = await getConversationKey(profile.uid, otherUid, convId);
+          const encrypted = await encrypt(retryPayload.text, conversationKey);
+          retryPayload.ciphertext = encrypted.ciphertext;
+          retryPayload.iv = encrypted.iv;
+          retryPayload.encryptionVersion = 1;
+          delete retryPayload.text;
+        }
+
+        await apiSendMessage(retryPayload);
 
         if (!activeConversation?.id) {
           setSearchParams(
@@ -256,7 +303,7 @@ export default function useMessageActions({
         }
       }
     },
-    [activeConversation, activeUser, setSearchParams, removeMessage, enqueueMessage],
+    [activeConversation, activeUser, profile?.uid, setSearchParams, removeMessage, enqueueMessage],
   );
 
   const deleteFailedMessage = useCallback(

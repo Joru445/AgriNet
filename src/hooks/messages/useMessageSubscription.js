@@ -77,6 +77,7 @@ export default function useMessageSubscription(uid, conversationId) {
         }
       },
       DEFAULT_MESSAGE_LIMIT,
+      uid,
     );
 
     function handleVisibilityOrFocus() {

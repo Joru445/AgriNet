@@ -8,6 +8,11 @@ export default function useStartConversation() {
   const { profile } = useAuth();
 
   return function startConversation(otherUser) {
+    if (!profile) {
+      navigate("/login");
+      return;
+    }
+
     if (otherUser && (otherUser.uid || otherUser.id)) {
       const uid = otherUser.uid || otherUser.id;
       setCachedUserProfile(uid, {
@@ -16,7 +21,7 @@ export default function useStartConversation() {
         profilePicture: otherUser.profilePicture || "",
       });
 
-      const messagesPath = getMessagesPath(profile?.role);
+      const messagesPath = getMessagesPath(profile.role);
       navigate(`${messagesPath}?user=${uid}`);
     }
   };

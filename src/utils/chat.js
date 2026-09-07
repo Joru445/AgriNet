@@ -39,12 +39,13 @@ const GROUP_MAX_GAP_MS = 60 * 1000; // < 1 minute = same visual group
 
 /**
  * A message is a reply when it carries a quoted reference to another message.
+ * E2E: replyTo can be a string (message ID) or an object (legacy snapshot).
  */
 export function isReplyMessage(message) {
   if (!message) return false;
   return Boolean(
     message.replyToSnapshot ||
-      (message.replyTo && typeof message.replyTo === "object"),
+      message.replyTo
   );
 }
 

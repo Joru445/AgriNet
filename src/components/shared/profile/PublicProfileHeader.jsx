@@ -6,6 +6,8 @@ import ReportModal from "../../common/ReportModal";
 import { getInitials } from "../../../utils/getInitials";
 import { applyTransform, COVER_TF, PROFILE_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
 import { useLanguage } from "../../../context/LanguageContext";
+import { useAuth } from "../../../context/AuthContext";
+import { useFavorites } from "../../../context/FavoritesContext";
 
 export default function PublicProfileHeader({
   profile,
@@ -16,6 +18,8 @@ export default function PublicProfileHeader({
   onMessage,
 }) {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [showReportModal, setShowReportModal] = useState(false);
 
   const isFarmer = role === "farmer";
@@ -135,6 +139,22 @@ export default function PublicProfileHeader({
               >
                 <i className="ri-chat-1-line" />
                 {t("storeProfile.message")}
+              </button>
+            )}
+
+            {user && (
+              <button
+                type="button"
+                onClick={() => toggleFavorite("farmer", targetUid)}
+                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition cursor-pointer
+                  ${isFavorite("farmer", targetUid)
+                    ? "bg-[#E63946] text-white hover:bg-[#C1121F]"
+                    : "border border-[var(--agri-border)] bg-transparent text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]"
+                  }
+                `}
+              >
+                <i className={`${isFavorite("farmer", targetUid) ? "ri-heart-fill" : "ri-heart-line"}`} />
+                {isFavorite("farmer", targetUid) ? t("favorites.saved") : t("favorites.save")}
               </button>
             )}
 

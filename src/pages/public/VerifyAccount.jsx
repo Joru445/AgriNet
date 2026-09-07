@@ -304,7 +304,7 @@ export default function VerifyAccount() {
         <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md border border-white/60 shadow-2xl rounded-2xl p-5 sm:p-7 md:p-9 lg:bg-white lg:border-transparent lg:shadow-xl lg:backdrop-blur-none my-auto">
           {/* Mobile Logo */}
           <div className="border-b-2 border-[#1B4332]/20 pb-3 mb-3.5 sm:pb-4 sm:mb-5 lg:hidden">
-            <Link className="flex items-center gap-2.5 no-underline hover:no-underline" to="/">
+            <Link className="flex items-center gap-2.5 no-underline hover:no-underline" to="/landing">
               <img
                 src={logo}
                 alt="AgriNet Logo"

@@ -46,7 +46,9 @@ export default function AppLayout() {
           </PageTransition>
         </div>
 
-        {!isDesktop && <BottomTab showBottomTab={isTabRoutes} />}
+        {!isDesktop && (
+          <BottomTab showBottomTab={isTabRoutes} />
+        )}
       </div>
     </div>
   );

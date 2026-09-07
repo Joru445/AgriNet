@@ -227,29 +227,31 @@ export async function apiFindOrCreateConversation(otherUserId, { findOnly = fals
     });
     return response.data?.id || response.data;
   } catch (err) {
+    if (findOnly) {
+      return null;
+    }
+
     console.warn("[Conversations] Backend API apiFindOrCreateConversation failed, falling back to deterministic ID:", err.message);
     const currentUid = auth.currentUser?.uid;
     if (!currentUid || !otherUserId) {
       throw new Error("Missing participant IDs to create conversation.");
     }
     const conversationId = getConversationId(currentUid, otherUserId);
-    if (!findOnly) {
-      const convRef = doc(db, "conversations", conversationId);
-      await setDoc(
-        convRef,
-        {
-          participants: [currentUid, otherUserId],
-          participantInfo: {
-            [currentUid]: { joinedAt: serverTimestamp() },
-            [otherUserId]: { joinedAt: serverTimestamp() },
-          },
-          lastMessage: null,
-          unreadCount: { [currentUid]: 0, [otherUserId]: 0 },
-          updatedAt: serverTimestamp(),
+    const convRef = doc(db, "conversations", conversationId);
+    await setDoc(
+      convRef,
+      {
+        participants: [currentUid, otherUserId],
+        participantInfo: {
+          [currentUid]: { joinedAt: serverTimestamp() },
+          [otherUserId]: { joinedAt: serverTimestamp() },
         },
-        { merge: true },
-      );
-    }
+        lastMessage: null,
+        unreadCount: { [currentUid]: 0, [otherUserId]: 0 },
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
     return conversationId;
   }
 }

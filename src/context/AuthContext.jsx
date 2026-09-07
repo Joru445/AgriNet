@@ -14,6 +14,8 @@ import {
 import { auth } from "../firebase/auth";
 import { db } from "../firebase/firestore";
 import { apiSyncTransactionStats } from "../services/user.service";
+import { ensureKeyPair } from "../services/encryption";
+import { clearConversationKeyCache } from "../services/encryption";
 
 const AuthContext = createContext();
 
@@ -26,6 +28,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   async function logout() {
+    clearConversationKeyCache();
     await signOut(auth);
   }
 
@@ -97,45 +100,53 @@ export function AuthProvider({ children }) {
               apiSyncTransactionStats().catch(() => {});
             }
 
-            // Only farmers need the farmer listener.
-            if (userData.role !== "farmer") {
-              setFarmer(null);
-              setLoading(false);
-              return;
-            }
+            // E2E: Ensure encryption key pair exists and is published before app is usable.
+            // This prevents race conditions where messages arrive before the public key is in Firestore.
+            ensureKeyPair(userData.uid, userData.role)
+              .catch((err) => {
+                console.error("[E2E] Failed to ensure key pair:", err);
+              })
+              .finally(() => {
+                // Only farmers need the farmer listener.
+                if (userData.role !== "farmer") {
+                  setFarmer(null);
+                  setLoading(false);
+                  return;
+                }
 
-            const farmerRef = doc(
-              db,
-              "farmers",
-              firebaseUser.uid,
-            );
-
-            unsubscribeFarmer?.();
-
-            unsubscribeFarmer = onSnapshot(
-              farmerRef,
-              (farmerSnapshot) => {
-                setFarmer(
-                  farmerSnapshot.exists()
-                    ? {
-                        uid: farmerSnapshot.id,
-                        ...farmerSnapshot.data(),
-                      }
-                    : null,
+                const farmerRef = doc(
+                  db,
+                  "farmers",
+                  firebaseUser.uid,
                 );
 
-                setLoading(false);
-              },
-              (error) => {
-                console.error(
-                  "Failed to load farmer profile:",
-                  error,
-                );
+                unsubscribeFarmer?.();
 
-                setFarmer(null);
-                setLoading(false);
-              },
-            );
+                unsubscribeFarmer = onSnapshot(
+                  farmerRef,
+                  (farmerSnapshot) => {
+                    setFarmer(
+                      farmerSnapshot.exists()
+                        ? {
+                            uid: farmerSnapshot.id,
+                            ...farmerSnapshot.data(),
+                          }
+                        : null,
+                    );
+
+                    setLoading(false);
+                  },
+                  (error) => {
+                    console.error(
+                      "Failed to load farmer profile:",
+                      error,
+                    );
+
+                    setFarmer(null);
+                    setLoading(false);
+                  },
+                );
+              });
           },
           (error) => {
             console.error(

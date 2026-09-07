@@ -18,6 +18,7 @@ export default function MessageBubble({
   profile,
   groupPosition = "single",
   isHighlighted = false,
+  resolvedReplyTo = null,
   onRetry,
   onDeleteFailed,
   onJumpToMessage,
@@ -28,7 +29,9 @@ export default function MessageBubble({
   const isFailed = message.status === "failed";
   const isImage = message.type === "image" || Boolean(message.imageUrl);
 
+  // E2E: Use resolved reply from parent, fallback to legacy replyToSnapshot
   const replyTo =
+    resolvedReplyTo ||
     message.replyToSnapshot ||
     (message.replyTo && typeof message.replyTo === "object"
       ? message.replyTo
@@ -132,6 +135,21 @@ export default function MessageBubble({
           `}
         >
           {message.text}
+        </p>
+      )}
+
+      {/* E2E: Decryption failure fallback */}
+      {message.decryptionFailed && (
+        <p
+          className={`w-fit max-w-full break-words px-4 py-2 shadow-md text-sm italic ${textRadius}
+            ${
+              mine
+                ? "bg-[#2D6A4F]/70 text-white/80"
+                : "bg-(--agri-elevated) text-(--agri-text-muted) border border-(--agri-border)"
+            }
+          `}
+        >
+          {t("messages.decryptionFailed")}
         </p>
       )}
 

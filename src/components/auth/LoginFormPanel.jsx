@@ -40,7 +40,7 @@ export default function LoginFormPanel({
 
       <div className="relative z-10 w-full max-w-md bg-white/90 backdrop-blur-md border border-white/60 shadow-2xl rounded-2xl p-5 sm:p-7 md:p-9 lg:bg-white lg:border-transparent lg:shadow-xl lg:backdrop-blur-none my-auto">
         <div className="border-b-2 border-[#1B4332]/20 pb-3 mb-4 sm:pb-4 sm:mb-6 lg:hidden">
-          <Link className="flex items-center gap-2 no-underline hover:no-underline" to="/">
+          <Link className="flex items-center gap-2 no-underline hover:no-underline" to="/landing">
             <img
               src={logo}
               alt="AgriNet Logo"
@@ -175,7 +175,7 @@ export default function LoginFormPanel({
 
         <p className="text-center text-xs text-gray-500 mt-2 sm:mt-4">
           <Link
-            to="/"
+            to="/landing"
             className="hover:text-[#2D6A4F] flex items-center justify-center gap-1"
           >
             <i className="ri-arrow-left-line"></i>

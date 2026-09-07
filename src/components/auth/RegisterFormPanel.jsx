@@ -53,7 +53,7 @@ export default function RegisterForm({
           <div className="border-b-2 border-[#1B4332]/20 pb-3 mb-4 sm:pb-4 sm:mb-6 lg:hidden">
             <Link
               className="flex items-center gap-2 no-underline hover:no-underline"
-              to="/"
+              to="/landing"
             >
               <img
                 src={logo}
@@ -181,7 +181,7 @@ export default function RegisterForm({
           {/* Back Home */}
           <p className="text-center text-xs text-gray-500 mt-2 sm:mt-4">
             <Link
-              to="/"
+              to="/landing"
               className="inline-flex items-center justify-center gap-1 hover:text-[#2D6A4F]"
             >
               <i className="ri-arrow-left-line" />

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
+import { useFavorites } from "../../context/FavoritesContext";
 
 import { getProductPath } from "../../utils/routes";
 import {
@@ -25,6 +26,7 @@ export default function ProductCard({
 }) {
   const { profile } = useAuth();
   const { t } = useLanguage();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [imgError, setImgError] = useState(false);
   const rawImage = product.images?.[0]?.url ?? product.images?.[0];
   const image = imgError || !rawImage
@@ -105,6 +107,26 @@ export default function ProductCard({
             <span>{remainingTime}</span>
           </div>
         )}
+
+        {/* Favorite Button - Bottom Right of Image */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (profile) toggleFavorite("product", product.id);
+          }}
+          className={`absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-md transition-all duration-200 shadow-sm
+            ${isFavorite("product", product.id)
+              ? "bg-[#E63946] text-white"
+              : "bg-[var(--agri-card)]/90 text-[var(--agri-text-muted)] border border-[var(--agri-border-subtle)] hover:text-[#E63946]"
+            }
+            ${!profile ? "cursor-default opacity-60" : "cursor-pointer"}
+          `}
+          aria-label={isFavorite("product", product.id) ? t("favorites.remove") : t("favorites.add")}
+        >
+          <i className={`${isFavorite("product", product.id) ? "ri-heart-fill" : "ri-heart-line"} text-sm`} />
+        </button>
       </div>
 
       {/* Card Content Body */}

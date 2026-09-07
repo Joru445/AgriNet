@@ -45,6 +45,7 @@ const Messages = lazy(() => import("../pages/shared/Messages"));
 const Profile = lazy(() => import("../pages/shared/Profile"));
 const Settings = lazy(() => import("../pages/shared/Settings"));
 const Notifications = lazy(() => import("../pages/shared/Notifications"));
+const Favorites = lazy(() => import("../pages/shared/Favorites"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 export default function AppRoutes() {
@@ -61,7 +62,7 @@ export default function AppRoutes() {
 
         <Route path="/verify-account" element={<VerifyAccount />} />
 
-        {/* PUBLIC */}
+        {/* PUBLIC (login/register/landing) */}
 
         <Route element={<PublicRoute />}>
           <Route element={<PublicLayout />}>
@@ -72,47 +73,37 @@ export default function AppRoutes() {
           </Route>
         </Route>
 
-        {/* VERIFICATION GATE FOR PROTECTED ROUTES */}
+        {/* ── CONSUMER ─────────────────────────────────────── */}
+        {/* All consumer routes use AppLayout (consumer layout for everyone). */}
+        {/* Public routes are accessible to all; protected pages gate internally. */}
 
+        <Route element={<AppLayout />}>
+          {/* Public — accessible to everyone including anonymous */}
+          <Route path="/marketplace" element={<MarketPlace />} />
+          <Route path="/nearby" element={<Nearby />} />
+          <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/profile/:uid" element={<PublicProfile />} />
+
+          {/* Protected — pages check auth internally and show LoginRequired */}
+          <Route path="/home" element={<ConsumerHome />} />
+          <Route path="/transactions" element={<Inquiries />} />
+          <Route
+            path="/transactions/:inquiryId/proof"
+            element={<TransactionProof />}
+          />
+          <Route
+            path="/transactions/:inquiryId/review"
+            element={<TransactionReview />}
+          />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/me" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/favorites" element={<Favorites />} />
+        </Route>
+
+        {/* ── FARMER ──────────────────────────────────────── */}
         <Route element={<VerificationRoute />}>
-          {/* CONSUMER */}
-
-          <Route element={<RoleRoute allowedRole="consumer" />}>
-            <Route element={<AppLayout />}>
-              <Route path="/home" element={<ConsumerHome />} />
-
-              <Route path="/marketplace" element={<MarketPlace />} />
-
-              <Route path="/nearby" element={<Nearby />} />
-
-              <Route path="/product/:id" element={<ProductDetails />} />
-
-              <Route path="/profile/:uid" element={<PublicProfile />} />
-
-              <Route path="/transactions" element={<Inquiries />} />
-
-              <Route
-                path="/transactions/:inquiryId/proof"
-                element={<TransactionProof />}
-              />
-
-              <Route
-                path="/transactions/:inquiryId/review"
-                element={<TransactionReview />}
-              />
-
-              <Route path="/messages" element={<Messages />} />
-
-              <Route path="/me" element={<Profile />} />
-
-              <Route path="/settings" element={<Settings />} />
-
-              <Route path="/notifications" element={<Notifications />} />
-            </Route>
-          </Route>
-
-          {/* FARMER */}
-
           <Route element={<RoleRoute allowedRole="farmer" />}>
             <Route element={<AppLayout />}>
               <Route path="/farmer" element={<FarmerDashboard />} />
@@ -144,11 +135,14 @@ export default function AppRoutes() {
               <Route path="/farmer/settings" element={<Settings />} />
 
               <Route path="/farmer/notifications" element={<Notifications />} />
+
+              <Route path="/farmer/favorites" element={<Favorites />} />
             </Route>
           </Route>
+        </Route>
 
-          {/* ADMIN */}
-
+        {/* ── ADMIN ───────────────────────────────────────── */}
+        <Route element={<VerificationRoute />}>
           <Route element={<RoleRoute allowedRole="admin" />}>
             <Route element={<AppLayout />}>
               <Route path="/admin" element={<AdminDashboard />} />

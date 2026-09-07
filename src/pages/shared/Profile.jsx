@@ -11,9 +11,10 @@ import { useLanguage } from "../../context/LanguageContext";
 import useProfile from "../../hooks/useProfile";
 
 import { getSettingsPath } from "../../utils/routes";
+import LoginRequired from "../../components/ui/LoginRequired";
 
 export default function Profile() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const { startTour } = useOnboarding();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -35,6 +36,10 @@ export default function Profile() {
     handleCancel,
     handleAvatar,
   } = useProfile(profile);
+
+  if (!user) {
+    return <LoginRequired title={t("nav.profile")} />;
+  }
 
   if (loading || !profile) {
     return <ProfileSkeleton />;

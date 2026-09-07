@@ -3,9 +3,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
-import { navigationByRole } from "../constants/navigation";
+import { consumerNavigation, navigationByRole } from "../constants/navigation";
 import { getOnboardingNavKey } from "../constants/onboardingSteps";
-import { showToast } from "../utils/toast";
 
 import logo from "../assets/favicon.ico";
 import UserIdentity from "./common/UserIdentity";
@@ -33,29 +32,29 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     useUnreadReports();
   const navigate = useNavigate();
 
+  const isAnonymous = !profile;
+
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
   const role = profile?.role;
-  const items = navigationByRole[role] ?? [];
+  const items = role ? (navigationByRole[role] ?? []) : consumerNavigation;
 
   async function handleLogout() {
     try {
       setLoggingOut(true);
       await logout();
-      showToast.success(t("common.loggedOut"));
+      navigate("/marketplace");
       setShowLogoutModal(false);
-      navigate("/login");
     } catch (error) {
       console.error(error);
-      showToast.error(error.message);
     } finally {
       setLoggingOut(false);
     }
   }
 
   function getBadgeCount(item) {
-    // Message indicator is only shown in the header beside profile
+    if (isAnonymous) return 0;
     if (item.to.includes("messages")) return 0;
     if (item.to.includes("transactions")) return inquiryActionCount;
     if (item.to.includes("reports")) return pendingReportsCount;
@@ -63,6 +62,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   }
 
   function getPopupInfo(item) {
+    if (isAnonymous) return null;
     if (item.to.includes("transactions") && showInquiryPopup) {
       return inquiryPopupMessage;
     }
@@ -101,33 +101,35 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         )}
       </div>
 
-      {/* ── Profile ──────────────────────────────────────── */}
-      <div className={` border-b border-white/8 ${collapsed ? "flex justify-center items-center w-full h-14 mx-auto" : "px-3 py-3"}`}>
-        {collapsed ? (
-          <div className="flex justify-center">
-            {profile?.profilePicture ? (
-              <img
-                src={profile.profilePicture}
-                alt={profile.fullname}
-                className="h-8 w-8 rounded-full object-cover"
-              />
-            ) : (
-              <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-semibold text-white/70">
-                {(profile?.fullname || "?")[0]}
-              </div>
-            )}
-          </div>
-        ) : (
-          <UserIdentity
-            user={profile}
-            showUsername={false}
-            showRole={true}
-            showVerified={false}
-            colorWhite={true}
-            size="sm"
-          />
-        )}
-      </div>
+      {/* ── Profile (authenticated only) ──────────────────── */}
+      {!isAnonymous && (
+        <div className={` border-b border-white/8 ${collapsed ? "flex justify-center items-center w-full h-14 mx-auto" : "px-3 py-3"}`}>
+          {collapsed ? (
+            <div className="flex justify-center">
+              {profile?.profilePicture ? (
+                <img
+                  src={profile.profilePicture}
+                  alt={profile.fullname}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-semibold text-white/70">
+                  {(profile?.fullname || "?")[0]}
+                </div>
+              )}
+            </div>
+          ) : (
+            <UserIdentity
+              user={profile}
+              showUsername={false}
+              showRole={true}
+              showVerified={false}
+              colorWhite={true}
+              size="sm"
+            />
+          )}
+        </div>
+      )}
 
       {/* ── Navigation ───────────────────────────────────── */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-3 scrollbar-none">
@@ -268,32 +270,54 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           )}
         </button>
 
-        {/* Logout */}
-        <button
-          onClick={() => setShowLogoutModal(true)}
-          className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-150 cursor-pointer ${
-            collapsed
-              ? "justify-center w-16 h-12 mx-auto"
-              : "gap-2.5 px-2.5 py-2 w-full"
-          }`}
-        >
-          <span className="flex items-center justify-center size-5 shrink-0">
-            <i className="ri-logout-box-line text-[15px]" />
-          </span>
-          {!collapsed && (
-            <span className="text-[15px] font-medium">
-              {t("common.logout")}
+        {/* Logout / Back Home */}
+        {isAnonymous ? (
+          <NavLink
+            to="/landing"
+            className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-white/80 hover:bg-white/[0.07] transition-colors duration-150 ${
+              collapsed
+                ? "justify-center w-16 h-12 mx-auto"
+                : "gap-2.5 px-2.5 py-2 w-full"
+            }`}
+          >
+            <span className="flex items-center justify-center size-5 shrink-0">
+              <i className="ri-home-4-line text-[15px]" />
             </span>
-          )}
-        </button>
+            {!collapsed && (
+              <span className="text-[15px] font-medium">
+                {t("auth.backHome")}
+              </span>
+            )}
+          </NavLink>
+        ) : (
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-150 cursor-pointer ${
+              collapsed
+                ? "justify-center w-16 h-12 mx-auto"
+                : "gap-2.5 px-2.5 py-2 w-full"
+            }`}
+          >
+            <span className="flex items-center justify-center size-5 shrink-0">
+              <i className="ri-logout-box-line text-[15px]" />
+            </span>
+            {!collapsed && (
+              <span className="text-[15px] font-medium">
+                {t("common.logout")}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
-      <LogoutConfirmModal
-        open={showLogoutModal}
-        loggingOut={loggingOut}
-        onCancel={() => setShowLogoutModal(false)}
-        onConfirm={handleLogout}
-      />
+      {!isAnonymous && (
+        <LogoutConfirmModal
+          open={showLogoutModal}
+          loggingOut={loggingOut}
+          onCancel={() => setShowLogoutModal(false)}
+          onConfirm={handleLogout}
+        />
+      )}
     </aside>
   );
 }

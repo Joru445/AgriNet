@@ -29,6 +29,7 @@ export default function MessageRow({
   groupPosition = "single",
   user,
   profile,
+  messages = [],
   isHighlighted = false,
   statusText = null,
   onReply,
@@ -76,6 +77,33 @@ export default function MessageRow({
         : "transform 200ms cubic-bezier(0.2, 0, 0, 1)",
   };
 
+  // --- E2E: Resolve reply content from loaded messages ---
+  const resolvedReplyTo = (() => {
+    // Legacy: replyToSnapshot stored plaintext (backward compat)
+    if (message.replyToSnapshot) return message.replyToSnapshot;
+
+    // E2E: replyTo is a message ID — resolve from loaded messages
+    if (message.replyTo && typeof message.replyTo === "string") {
+      const referencedMsg = messages.find((m) => m.id === message.replyTo);
+      if (referencedMsg) {
+        return {
+          messageId: referencedMsg.id,
+          senderId: referencedMsg.senderId,
+          type: referencedMsg.type || "text",
+          textSnapshot: referencedMsg.text || "",
+          imageUrl: referencedMsg.imageUrl || null,
+          productId: referencedMsg.productId || null,
+          quantity: referencedMsg.quantity ?? null,
+          inquiryStatus: referencedMsg.inquiryStatus || null,
+        };
+      }
+      // Referenced message not loaded — show fallback
+      return { messageId: message.replyTo, type: "text", textSnapshot: null };
+    }
+
+    return null;
+  })();
+
   return (
     <div
       data-message-id={message.id}
@@ -121,6 +149,7 @@ export default function MessageRow({
                 profile={profile}
                 groupPosition={groupPosition}
                 isHighlighted={isHighlighted}
+                resolvedReplyTo={resolvedReplyTo}
                 onRetry={onRetry}
                 onDeleteFailed={onDeleteFailed}
                 onJumpToMessage={onJumpToMessage}

@@ -78,6 +78,19 @@ export default {
     goToHome: "Go to Home",
   },
 
+  guest: {
+    loginRequired: "Login Required",
+    loginToAction: "Please log in or register to {action}.",
+    loginToSendInquiry: "send an inquiry",
+    loginToMessage: "message this farmer",
+    loginToSave: "save products",
+    loginToReview: "submit a review",
+    browseAsGuest: "Browse as Guest",
+    login: "Log In",
+    register: "Register",
+    marketplaceSubtitle: "Sign in to message farmers, send inquiries, and save products.",
+  },
+
   offline: {
     message: "You are offline. Some features may be unavailable.",
     reconnecting: "Reconnecting... Syncing your data.",
@@ -834,6 +847,7 @@ export default {
     couldntSend: "Couldn't send.",
     tapToRetry: "Tap to retry",
     deleteFailedMessage: "Delete failed message",
+    decryptionFailed: "Unable to decrypt this message",
     photo: "Photo",
     selectConversation: "Select a conversation",
     selectConversationSubtitle: "Choose a conversation to start messaging.",
@@ -1237,6 +1251,7 @@ export default {
     myProducts: "My Products",
     reviews: "Reviews",
     reports: "Reports",
+    favorites: "Favorites",
   },
 
   sidebar: {
@@ -1675,5 +1690,28 @@ export default {
         body: "Manage your admin account details and settings from your profile in the top-right corner.",
       },
     },
+  },
+
+  favorites: {
+    title: "My Favorites",
+    products: "Products",
+    farmers: "Farmers",
+    save: "Save",
+    saved: "Saved",
+    add: "Add to favorites",
+    remove: "Remove from favorites",
+    noProducts: "No favorite products",
+    noProductsDesc: "Products you save will appear here.",
+    noFarmers: "No favorite farmers",
+    noFarmersDesc: "Farmers you save will appear here.",
+    loadError: "Failed to load favorites.",
+    loginRequired: "Login Required",
+    loginToView: "Log in to view your saved products and farmers.",
+  },
+
+  loginRequired: {
+    title: "Sign in to continue",
+    description: "Log in to your AgriNet account to access this feature.",
+    register: "Create an account",
   },
 };

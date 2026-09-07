@@ -8,6 +8,7 @@ import { apiFindOrCreateConversation } from "../../services/conversation.service
 import { apiAcceptInquiry } from "../../services/inquiry.service";
 import { buildOptimisticConversation } from "../../utils/messaging/buildOptimisticConversation";
 import { showToast } from "../../utils/toast";
+import { encrypt, getConversationKey } from "../../services/encryption";
 
 export default function useInquiryFlow({
   profile,
@@ -134,16 +135,33 @@ export default function useInquiryFlow({
           conversationId = await apiFindOrCreateConversation(activeUser.uid);
         }
 
-        await apiSendMessage({
+        const inquiryText = `I'm interested in ${inquiryProduct.name}.`;
+
+        // --- E2E: encrypt inquiry text ---
+        const inquiryPayload = {
           conversationId,
           senderId: profile.uid,
           receiverId: activeUser.uid,
-          text: `I'm interested in ${inquiryProduct.name}.`,
           type: "product_inquiry",
           productId: inquiryProduct.id,
           quantity: parsedQuantity,
           inquiryStatus: "pending",
-        });
+        };
+
+        try {
+          const conversationKey = await getConversationKey(profile.uid, activeUser.uid, conversationId);
+          const encrypted = await encrypt(inquiryText, conversationKey);
+          inquiryPayload.ciphertext = encrypted.ciphertext;
+          inquiryPayload.iv = encrypted.iv;
+          inquiryPayload.encryptionVersion = 1;
+        } catch (encError) {
+          console.error("[E2E] Inquiry encryption failed:", encError.message);
+          const err = new Error("Recipient is not ready for encrypted messaging yet.");
+          err.cause = encError;
+          throw err;
+        }
+
+        await apiSendMessage(inquiryPayload);
 
         if (!activeConversation?.id) {
           setActiveConversation(

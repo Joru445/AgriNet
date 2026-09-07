@@ -1,12 +1,12 @@
 import BottomNavigation from "./BottomNavigation";
 
 import { useAuth } from "../context/AuthContext";
-import { navigationByRole } from "../constants/navigation";
+import { consumerNavigation, navigationByRole } from "../constants/navigation";
 
 export default function BottomTab({ showBottomTab }) {
   const { profile } = useAuth();
 
-  const items = (navigationByRole[profile?.role] ?? []).filter(
+  const items = (profile ? navigationByRole[profile.role] : consumerNavigation).filter(
     (item) => item.bottom,
   );
 

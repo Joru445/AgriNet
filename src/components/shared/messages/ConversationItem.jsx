@@ -137,7 +137,7 @@ export default function ConversationItem({
           <div className="flex items-center justify-between gap-1.5 min-w-0">
             <p className="text-sm text-[var(--agri-text-muted)] truncate flex-1 min-w-0">
               <span className="text-[var(--agri-text-secondary)] font-medium">{t("common.you")}: </span>
-              {item.lastMessage || t("messages.sentMessage")}
+              {item.lastMessageDecrypted || item.lastMessage || t("messages.sentMessage")}
             </p>
             <span className="shrink-0 flex items-center gap-0.5 text-[11px] font-bold">
               {isSeen ? (
@@ -163,7 +163,7 @@ export default function ConversationItem({
               item.unreadCount > 0 ? "font-bold text-[var(--agri-text)]" : "text-[var(--agri-text-muted)]"
             }`}
           >
-            {item.lastMessage || t("messages.startConversation")}
+            {item.lastMessageDecrypted || item.lastMessage || t("messages.startConversation")}
           </p>
         )}
       </div>
