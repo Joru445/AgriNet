@@ -41,6 +41,7 @@ export default function Messages() {
     selectedImage,
     setSelectedImage,
     uploadingImage,
+    isSending,
 
     drafts,
     isOnline,
@@ -99,6 +100,7 @@ export default function Messages() {
             onSelectImage={setSelectedImage}
             onRemoveImage={() => setSelectedImage(null)}
             uploadingImage={uploadingImage}
+            isSending={isSending}
           />
         ) : (
           <EmptyConversation hasChat/>

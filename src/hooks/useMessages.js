@@ -57,6 +57,7 @@ export default function useMessages() {
   const {
     failedMessages,
     uploadingImage,
+    isSending,
     sendMessage: sendAction,
     retryMessage,
     deleteFailedMessage,
@@ -393,6 +394,7 @@ export default function useMessages() {
     selectedImage,
     setSelectedImage,
     uploadingImage,
+    isSending,
     drafts,
     isOnline,
     selectConversation,

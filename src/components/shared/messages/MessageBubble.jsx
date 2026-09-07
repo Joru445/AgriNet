@@ -14,6 +14,8 @@ import {
 export default function MessageBubble({
   message,
   mine = false,
+  user,
+  profile,
   groupPosition = "single",
   onRetry,
   onDeleteFailed,
@@ -49,9 +51,23 @@ export default function MessageBubble({
       },
     }[mine ? "mine" : "other"][groupPosition] || "rounded-2xl";
 
+  const otherUserName = user?.fullname || user?.username;
+  const isSelfReply =
+    replyTo?.senderId === profile?.uid ||
+    (profile?.fullname && replyTo?.senderName === profile?.fullname);
+
+  // Reply indication header should ONLY be shown when replying to the other user ("the user who chat me")
+  const showReplyHeader = Boolean(replyTo && !isSelfReply);
+
+  const targetReplyName =
+    (mine ? otherUserName : null) ||
+    replyTo?.senderName ||
+    otherUserName ||
+    t("messages.replyToMessage");
+
   return (
     <div
-      className={`min-w-0 rounded-2xl select-none flex flex-col
+      className={`min-w-0 select-none flex flex-col ${mine ? "items-end" : "items-start"}
         ${isImage ? "overflow-hidden" : ""}
         ${
           isFailed
@@ -61,31 +77,41 @@ export default function MessageBubble({
     >
       {/* Reply quote */}
       {replyTo && (
-        <button
-          type="button"
-          onClick={() => onJumpToMessage?.(replyTo.messageId)}
-          className={`block w-full text-left pt-2.5 pb-1 cursor-pointer ${mine ? "pl-4" : "pr-4"}`}
-          aria-label={t("messages.replyToLabel")}
-        >
-          <span
-            className={`flex min-w-0 items-center rounded-2xl px-3 py-2 shadow-black/10
+        <div className={`flex flex-col ${mine ? "items-end" : "items-start"} max-w-full mb-1`}>
+          {/* Subtle header: ↩ You replied to Name (only shown when replying to the other user) */}
+          {showReplyHeader && (
+            <div className="flex items-center gap-1 text-[11px] text-[var(--agri-text-muted)] font-medium mb-1 px-1 select-none">
+              <i className="ri-reply-line text-xs" />
+              <span>
+                {mine
+                  ? t("messages.youRepliedTo", { name: targetReplyName })
+                  : t("messages.repliedTo", { name: targetReplyName })}
+              </span>
+            </div>
+          )}
+
+          {/* Quote bubble: clean pill, NO icon, NO name inside, just quoted text */}
+          <button
+            type="button"
+            onClick={() => onJumpToMessage?.(replyTo.messageId)}
+            className={`flex items-center gap-2 rounded-2xl px-3 py-1.5 text-xs text-left cursor-pointer transition hover:opacity-85 max-w-full w-fit shadow-xs
               ${
                 mine
-                  ? "bg-(--agri-elevated) dark:bg-(--agri-elevated) text-(--agri-text) border border-(--agri-border)"
-                  : "bg-(--agri-hover) border-[#2D6A4F] dark:border-(--agri-brand)"
+                  ? "bg-black/10 dark:bg-white/10 text-[var(--agri-text)] border border-black/5 dark:border-white/5"
+                  : "bg-[var(--agri-hover)] text-[var(--agri-text-muted)] border border-[var(--agri-border)]"
               }
             `}
+            aria-label={t("messages.replyToLabel")}
           >
             <MessageReplyContent replyTo={replyTo} />
-          </span>
-        </button>
+          </button>
+        </div>
       )}
 
       {message.text && (
         <p
-          className={`break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-1 shadow-md ${textRadius}
+          className={`w-fit max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-2 shadow-md ${textRadius}
             ${isImage ? "text-sm font-medium" : ""}
-            ${replyTo ? "pt-1" : ""}
             ${
               mine
                 ? "bg-[#2D6A4F] text-white shadow-green-900/20"

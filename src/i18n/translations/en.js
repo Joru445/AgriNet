@@ -433,7 +433,6 @@ export default {
     subtitle: "Stay updated with your account activity.",
     markAllRead: "Mark all as read",
     loading: "Loading notifications...",
-    loadingMore: "Loading more...",
     emptyTitle: "No notifications yet",
     emptySubtitle: "You're all caught up.",
   },
@@ -792,6 +791,8 @@ export default {
     moreOptions: "More options",
     reply: "Reply",
     replyingTo: "Replying to {name}",
+    youRepliedTo: "You replied to {name}",
+    repliedTo: "{name} replied",
     cancelReply: "Cancel reply",
     replyToMessage: "Message",
     replyToLabel: "Go to original message",
@@ -1290,12 +1291,6 @@ export default {
     updateFailed: "Failed to update. Please try again.",
     upToDate: "You're up to date",
     upToDateDescription: "Your app is running the latest version.",
-    signInMethods: "Sign-in methods",
-    google: "Google",
-    facebook: "Facebook",
-    connected: "Connected",
-    notConnected: "Not connected",
-    connect: "Connect",
   },
 
   profile: {
@@ -1355,9 +1350,6 @@ export default {
       registerHere: "Register here",
       orContinueWith: "or continue with",
       continueWithGoogle: "Continue with Google",
-      continueWithFacebook: "Continue with Facebook",
-      waitingForProvider:
-        "Please complete the sign-in that is already open in the other tab.",
     },
 
     register: {
@@ -1401,10 +1393,6 @@ export default {
       createAccount: "Create Account",
       createdToast:
         "Account created! Please check your inbox or spam folder to verify your account.",
-      createdToastGoogle: "Your Google profile is complete!",
-      createdToastFacebook: "Your Facebook profile is complete!",
-      openingGoogle: "Opening Google sign-in...",
-      openingFacebook: "Opening Facebook sign-in...",
     },
 
     forgot: {
@@ -1449,22 +1437,6 @@ export default {
       accountExistsDifferentCredential:
         "An account already exists with this email address using another sign-in method. Please sign in with your email and password.",
       googleSignInFailed: "Failed to sign in with Google. Please try again.",
-      googleCancelled: "Google sign-in was cancelled. Please try again.",
-      facebookSignInFailed: "Failed to sign in with Facebook. Please try again.",
-      facebookCancelled: "Facebook sign-in was cancelled. Please try again.",
-      googleProviderConflict:
-        "This Google account is already linked to a different AgriNet account. No changes were made.",
-      facebookProviderConflict:
-        "This Facebook account is already linked to a different AgriNet account. No changes were made.",
-      providerAlreadyLinked:
-        "This sign-in method is already connected to your account.",
-      googleLinkFailed: "Failed to connect Google. Please try again.",
-      facebookLinkFailed: "Failed to connect Facebook. Please try again.",
-      linkCancelled: "Connection cancelled.",
-      googleConnected: "Google connected successfully!",
-      facebookConnected: "Facebook connected successfully!",
-      allowPopups:
-        "Sign-in opens in a new tab. Please allow pop-ups for this site, then try again.",
       networkError:
         "Network error. Please check your internet connection and try again.",
       verifyPhone:
@@ -1507,18 +1479,6 @@ export default {
       emailTooMany: "Too many email requests. Please wait a minute.",
       emailSendFailed: "Failed to send email link.",
       logoutFailed: "Failed to sign out.",
-    },
-
-    handler: {
-      signingInGoogle: "Signing you in with Google...",
-      signingInFacebook: "Signing you in with Facebook...",
-      signedIn: "Successfully signed in!",
-      cancelled: "Sign-in was cancelled.",
-      failure: "Sign-in failed. Please try again.",
-      retry: "Try Again",
-      startHint: "A secure sign-in window will open. Click the button to continue.",
-      popupBlocked: "Your browser blocked the sign-in window. Click the button below to try again.",
-      closeHint: "You can close this tab now.",
     },
 
     verify: {

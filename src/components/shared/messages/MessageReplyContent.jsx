@@ -9,7 +9,6 @@ export default function MessageReplyContent({ replyTo }) {
   if (!replyTo) return null;
 
   const type = replyTo.type || "text";
-  const label = replyTo.senderName || t("messages.replyingTo", { name: t("messages.replyToMessage") });
 
   if (replyTo.imageUrl) {
     const src = isCloudinaryUrl(replyTo.imageUrl)
@@ -17,18 +16,15 @@ export default function MessageReplyContent({ replyTo }) {
       : replyTo.imageUrl;
 
     return (
-      <span className="flex items-center gap-2 min-w-0">
+      <span className="flex items-center gap-1.5 min-w-0">
         <img
           src={src}
           alt=""
           onError={(e) => { e.currentTarget.src = defaultAvatar; }}
-          className="h-8 w-8 shrink-0 rounded-lg object-cover"
+          className="h-6 w-6 shrink-0 rounded object-cover"
         />
-        <span className="flex min-w-0 flex-col">
-          <span className="font-bold truncate">{label}</span>
-          <span className="truncate text-xs opacity-80">
-            {replyTo.textSnapshot || t("messages.replyPreviewMedia")}
-          </span>
+        <span className="truncate text-xs">
+          {replyTo.textSnapshot || t("messages.photo")}
         </span>
       </span>
     );
@@ -36,18 +32,10 @@ export default function MessageReplyContent({ replyTo }) {
 
   if (type === "product_inquiry") {
     return (
-      <span className="flex items-center gap-2 min-w-0">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
-          <i className="ri-file-list-3-line text-base" />
-        </span>
-        <span className="flex min-w-0 flex-col">
-          <span className="font-bold truncate">{t("productInquiryMsg.title")}</span>
-          <span className="truncate text-xs opacity-80">
-            {replyTo.quantity != null
-              ? `${t("messages.quantityRequested")}: ${replyTo.quantity}`
-              : replyTo.textSnapshot || t("productInquiryMsg.title")}
-          </span>
-        </span>
+      <span className="truncate text-xs">
+        {replyTo.quantity != null
+          ? `${t("messages.quantityRequested")}: ${replyTo.quantity}`
+          : replyTo.textSnapshot || t("productInquiryMsg.title")}
       </span>
     );
   }
@@ -55,29 +43,15 @@ export default function MessageReplyContent({ replyTo }) {
   if (type === "link") {
     const domain = replyTo.url ? extractDomain(replyTo.url) : null;
     return (
-      <span className="flex items-center gap-2 min-w-0">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
-          <i className="ri-link text-base" />
-        </span>
-        <span className="flex min-w-0 flex-col">
-          <span className="font-bold truncate">{domain || label}</span>
-          <span className="truncate text-xs opacity-80">{replyTo.url}</span>
-        </span>
+      <span className="truncate text-xs">
+        {replyTo.textSnapshot || domain || replyTo.url}
       </span>
     );
   }
 
   return (
-    <span className="flex items-center gap-2 min-w-0">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
-        <i className="ri-chat-1-line text-base" />
-      </span>
-      <span className="flex min-w-0 flex-col">
-        <span className="font-bold truncate">{label}</span>
-        <span className="truncate text-xs opacity-80">
-          {replyTo.textSnapshot || t("messages.replyPreviewMedia")}
-        </span>
-      </span>
+    <span className="truncate text-xs">
+      {replyTo.textSnapshot || t("messages.replyPreviewMedia")}
     </span>
   );
 }

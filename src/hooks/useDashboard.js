@@ -103,11 +103,15 @@ export default function useDashboard() {
 
     setRecentConversations(conversations.slice(0, 5));
 
-    const unreadMessages = conversations.reduce(
-      (total, conversation) =>
-        total + (conversation.unreadCount?.[profile.uid] ?? 0),
-      0,
-    );
+    const unreadMessages = conversations.reduce((total, conversation) => {
+      const count =
+        typeof conversation.unreadCount === "number"
+          ? conversation.unreadCount
+          : (conversation.unreadCount?.[profile.uid] ??
+              conversation.rawUnreadCount?.[profile.uid] ??
+              0);
+      return total + count;
+    }, 0);
 
     setStats((prev) => ({
       ...prev,

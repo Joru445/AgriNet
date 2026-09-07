@@ -1,11 +1,22 @@
-export default function Badge({ count, className = "" }) {
+export default function Badge({ count, className = "", variant = "danger" }) {
   if (!count) return null;
 
   const display = count > 99 ? "99+" : count;
+  const defaultBg =
+    variant === "success" || variant === "green"
+      ? "bg-[#2D6A4F]"
+      : "bg-red-500";
+
+  const defaultPos =
+    className.includes("right-") || className.includes("left-")
+      ? ""
+      : "-top-1.5 -right-2";
 
   return (
     <span
-      className={`absolute -top-1.5 -right-2 min-w-[1rem] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none ${className}`}
+      className={`absolute ${defaultPos} min-w-[1rem] h-4 px-1 rounded-full ${
+        className.includes("bg-") ? "" : defaultBg
+      } text-white text-[10px] font-bold flex items-center justify-center leading-none shrink-0 box-border pointer-events-none select-none ${className}`}
     >
       {display}
     </span>

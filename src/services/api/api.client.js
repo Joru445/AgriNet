@@ -1,6 +1,8 @@
 import { auth } from "../../firebase/auth";
 
-const API_URL = import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "";
+const API_URL = import.meta.env.DEV
+  ? "/api"
+  : import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "";
 
 const DEFAULT_TIMEOUT = 15_000;
 const MAX_RETRIES = 2;
@@ -59,8 +61,12 @@ export async function apiRequest(endpoint, options = {}) {
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      const cleanEndpoint = endpoint.startsWith("/api/")
+        ? endpoint.slice(4)
+        : endpoint;
+      const url = `${API_URL}${cleanEndpoint.startsWith("/") ? "" : "/"}${cleanEndpoint}`;
       const response = await fetchWithTimeout(
-        `${API_URL}${endpoint}`,
+        url,
         { ...fetchOptions, headers },
         timeout,
       );

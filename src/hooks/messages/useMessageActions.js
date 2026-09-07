@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { apiSendMessage } from "../../services/message.service";
 import { apiFindOrCreateConversation } from "../../services/conversation.service";
 import { uploadMessageImage } from "../../services/cloudinary.service";
@@ -19,6 +19,8 @@ export default function useMessageActions({
 }) {
   const [failedMessages, setFailedMessages] = useState([]);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const isSendingRef = useRef(false);
 
   const {
     queuedMessages,
@@ -42,6 +44,9 @@ export default function useMessageActions({
 
   const sendMessage = useCallback(
     async (activeImg = null, replyTo = null) => {
+      // Prevent duplicate sends when user multiple clicks or network is slow
+      if (isSendingRef.current) return;
+
       const text = message.trim();
 
       if (!text && !activeImg) return;
@@ -50,6 +55,12 @@ export default function useMessageActions({
         showToast.error("You must be logged in to send a message.");
         return;
       }
+
+      isSendingRef.current = true;
+      setIsSending(true);
+
+      // Immediately clear draft so duplicate clicks cannot resend the message
+      clearCurrentDraft();
 
       let conversationId = activeConversation?.id;
       let stage = "prepare";
@@ -144,6 +155,8 @@ export default function useMessageActions({
         }
       } finally {
         setUploadingImage(false);
+        isSendingRef.current = false;
+        setIsSending(false);
       }
     },
     [
@@ -275,6 +288,7 @@ export default function useMessageActions({
     failedMessages,
     setFailedMessages,
     uploadingImage,
+    isSending,
     sendMessage,
     retryMessage,
     deleteFailedMessage,

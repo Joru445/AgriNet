@@ -39,9 +39,11 @@ export default function MessageRow({
   const isTouch = useIsTouch();
   const reducedMotion = prefersReducedMotion();
 
-  const swipeDirection = mine ? "left" : "right";
+  // Allow replying only to the other user ("the user who chat me")
+  const canReply = !mine;
+  const swipeDirection = "right";
   const swipe = useSwipeToReply({
-    enabled: isTouch,
+    enabled: isTouch && canReply,
     direction: swipeDirection,
     onReply: () => triggerReply(),
   });
@@ -49,7 +51,7 @@ export default function MessageRow({
   const revealProgress = Math.min(Math.abs(swipe.offset) / REVEAL_WIDTH, 1);
 
   const triggerReply = () => {
-    if (onReply) onReply(buildReplySnapshot({ message, user, currentUserId: profile?.uid }));
+    if (onReply && canReply) onReply(buildReplySnapshot({ message, user, currentUserId: profile?.uid }));
   };
 
   const showAvatar = !mine && (groupPosition === "single" || groupPosition === "last");
@@ -63,32 +65,40 @@ export default function MessageRow({
     : "";
 
   const swipeStyle = {
-    transform: swipe.offset ? `translate3d(${swipe.offset}px,0,0)` : undefined,
-    touchAction: "pan-y",
-    transition: swipe.dragging || reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)",
+    transform:
+      swipe.offset !== 0
+        ? `translateX(${swipe.offset}px)`
+        : undefined,
+    transition:
+      swipe.dragging || reducedMotion
+        ? "none"
+        : "transform 200ms cubic-bezier(0.2, 0, 0, 1)",
   };
 
   return (
     <div
-      data-message-id={message.id}
-      className={`flex flex-col min-w-0 rounded-2xl transition-colors ${groupSpacing} ${
-        isHighlighted ? "bg-gray-200/60 dark:bg-gray-500/20" : ""
-      }`}
+      className={`group/swipe relative flex w-full min-w-0 ${mine ? "justify-end" : "justify-start"} ${groupSpacing}`}
     >
       <div
-        className={`relative flex items-center ${mine ? "justify-end" : "justify-start"} min-w-0 w-full group`}
+        className={`relative flex min-w-0 max-w-[85%] sm:max-w-[75%] md:max-w-[68%] lg:max-w-[62%] ${
+          mine ? "flex-row-reverse" : "flex-row"
+        }`}
       >
-        <div className="group/swipe relative z-9995 flex min-w-0 max-w-[85%] sm:max-w-[75%] w-fit items-center">
+        {/* Reply Action Affordance - only for messages from the other user */}
+        {canReply && (
           <ReplyAffordance
             mine={mine}
             isTouch={isTouch}
             revealProgress={revealProgress}
             onReply={triggerReply}
           />
+        )}
 
+        {/* Message Content Container */}
+        <div className="relative min-w-0 flex-1">
           {/* Swipe-translated portion: avatar + bubble. */}
           <div
-            className="flex min-w-0 items-start gap-2"
+            className="flex min-w-0 items-end gap-2"
             {...swipe.bind}
             style={swipeStyle}
           >
@@ -97,13 +107,15 @@ export default function MessageRow({
                 src={user?.profilePicture}
                 name={user?.fullname}
                 size="sm"
-                className={`flex shrink-0 ${message.replyTo ? "mt-16" : ""} ${avatarVisibility}`}
+                className={`flex shrink-0 mb-1 ${avatarVisibility}`}
               />
             )}
 
             <MessageBubble
               message={message}
               mine={mine}
+              user={user}
+              profile={profile}
               groupPosition={groupPosition}
               onRetry={onRetry}
               onDeleteFailed={onDeleteFailed}

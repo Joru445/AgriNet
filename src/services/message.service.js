@@ -105,12 +105,15 @@ export async function sendMessage({
         : "📷 Sent a photo"
       : text || "Sent a message";
 
-  batch.update(conversationRef, {
+  const conversationUpdates = {
+    participants: [actualSenderId, receiverId],
     lastMessage: lastMessageText,
     lastMessageSender: actualSenderId,
     lastMessageAt: serverTimestamp(),
     [`unreadCount.${receiverId}`]: increment(1),
-  });
+  };
+
+  batch.set(conversationRef, conversationUpdates, { merge: true });
 
   await batch.commit();
 
@@ -252,27 +255,49 @@ export async function updateMessage(messageId, data) {
 // ============================================================
 
 export async function apiSendMessage(data) {
-  const result = await apiRequest("/messages", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  try {
+    const result = await apiRequest("/messages", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
 
-  return result.data.id;
+    return result?.data?.id || result?.data;
+  } catch (err) {
+    console.warn("[Messages] Backend API apiSendMessage failed, falling back to Firestore:", err.message);
+    return await sendMessage({
+      conversationId: data.conversationId,
+      senderId: data.senderId,
+      receiverId: data.receiverId,
+      text: data.text,
+      type: data.type,
+      imageUrl: data.imageUrl,
+      imageId: data.imageId,
+      productId: data.productId,
+      quantity: data.quantity,
+      inquiryStatus: data.inquiryStatus,
+      replyTo: data.replyToSnapshot || data.replyTo,
+    });
+  }
 }
 
 export async function apiGetMessages(conversationId, { cursor = null, limit: pageSize = 40 } = {}) {
-  const params = new URLSearchParams();
-  if (cursor) params.set("cursor", cursor);
-  if (pageSize !== 40) params.set("limit", String(pageSize));
+  try {
+    const params = new URLSearchParams();
+    if (cursor) params.set("cursor", cursor);
+    if (pageSize !== 40) params.set("limit", String(pageSize));
 
-  const qs = params.toString();
-  const endpoint = `/messages/${conversationId}${qs ? `?${qs}` : ""}`;
+    const qs = params.toString();
+    const endpoint = `/messages/${conversationId}${qs ? `?${qs}` : ""}`;
 
-  const result = await apiRequest(endpoint);
+    const result = await apiRequest(endpoint);
 
-  return {
-    messages: result.data,
-    cursor: result.cursor,
-    hasMore: result.hasMore,
-  };
+    return {
+      messages: result.data,
+      cursor: result.cursor,
+      hasMore: result.hasMore,
+    };
+  } catch (err) {
+    console.warn("[Messages] Backend API apiGetMessages failed, falling back to Firestore:", err.message);
+    return await fetchOlderMessages(conversationId, cursor, pageSize);
+  }
 }

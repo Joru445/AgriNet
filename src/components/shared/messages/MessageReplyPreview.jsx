@@ -6,11 +6,15 @@ export default function MessageReplyPreview({ replyTo, onClear }) {
 
   if (!replyTo) return null;
 
+  const targetName = replyTo.senderName || t("messages.replyToMessage");
+
   return (
-    <div className="relative flex items-center gap-3 pl-3 rounded-xl bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] border-l-4 border-[#2D6A4F] dark:border-[var(--agri-brand)] pr-2">
-      <div className="flex items-center gap-2 min-w-0 flex-1 py-2">
-        <i className="ri-corner-up-left-line text-[#2D6A4F] dark:text-[var(--agri-brand)] shrink-0" />
-        <div className="min-w-0 flex-1">
+    <div className="relative flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-[var(--agri-hover)]/80 dark:bg-[var(--agri-elevated)] border border-[var(--agri-border-subtle)]">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--agri-text)]">
+          <span>{t("messages.replyingTo", { name: targetName })}</span>
+        </div>
+        <div className="mt-0.5 text-xs text-[var(--agri-text-muted)] truncate">
           <MessageReplyContent replyTo={replyTo} />
         </div>
       </div>
@@ -21,9 +25,9 @@ export default function MessageReplyPreview({ replyTo, onClear }) {
           onClick={onClear}
           aria-label={t("messages.cancelReply")}
           title={t("messages.cancelReply")}
-          className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full text-[var(--agri-text-muted)] hover:text-[var(--agri-text)] hover:bg-black/5 transition cursor-pointer"
+          className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-[var(--agri-text-muted)] hover:text-[var(--agri-text)] hover:bg-black/10 transition cursor-pointer"
         >
-          <i className="ri-close-line text-lg" />
+          <i className="ri-close-line text-base" />
         </button>
       )}
     </div>

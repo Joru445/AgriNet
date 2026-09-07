@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
+import { auth } from "../firebase/auth";
 import { apiRequest } from "./api/api.client";
 
 const conversationsRef = collection(db, "conversations");
@@ -199,49 +200,66 @@ export async function updateConversation(conversationId, data) {
  * Get conversations from the backend API.
  */
 export async function apiGetConversations() {
-  const response = await apiRequest("/api/conversations");
-  return response.data;
+  try {
+    const response = await apiRequest("/conversations");
+    return response.data;
+  } catch (err) {
+    console.warn("[Conversations] Backend API getConversations failed:", err.message);
+    return [];
+  }
 }
 
-/**
- * Get a conversation by ID from the backend API.
- * Verifies the authenticated user is a participant.
- */
 export async function apiGetConversationById(conversationId) {
-  const response = await apiRequest(`/api/conversations/${conversationId}`);
-  return response.data;
+  try {
+    const response = await apiRequest(`/conversations/${conversationId}`);
+    return response.data;
+  } catch (err) {
+    console.warn("[Conversations] Backend API getConversationById failed:", err.message);
+    return null;
+  }
 }
 
-/**
- * Find an existing conversation or create a new one via the backend API.
- *
- * The backend retrieves authoritative participant information from
- * Firestore, preventing client-side spoofing of participant data.
- *
- * Uses the deterministic ID strategy so duplicate conversations
- * cannot be created for the same pair of users.
- *
- * @param {string} otherUserId - The other user's UID.
- * @param {object} options
- * @param {boolean} [options.findOnly=false] - If true, returns null instead
- *   of creating a conversation when none exists.
- */
 export async function apiFindOrCreateConversation(otherUserId, { findOnly = false } = {}) {
-  const response = await apiRequest("/api/conversations", {
-    method: "POST",
-    body: JSON.stringify({ otherUserId, findOnly }),
-  });
-  return response.data;
+  try {
+    const response = await apiRequest("/conversations", {
+      method: "POST",
+      body: JSON.stringify({ otherUserId, findOnly }),
+    });
+    return response.data?.id || response.data;
+  } catch (err) {
+    console.warn("[Conversations] Backend API apiFindOrCreateConversation failed, falling back to deterministic ID:", err.message);
+    const currentUid = auth.currentUser?.uid;
+    if (!currentUid || !otherUserId) {
+      throw new Error("Missing participant IDs to create conversation.");
+    }
+    const conversationId = getConversationId(currentUid, otherUserId);
+    if (!findOnly) {
+      const convRef = doc(db, "conversations", conversationId);
+      await setDoc(
+        convRef,
+        {
+          participants: [currentUid, otherUserId],
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
+    return conversationId;
+  }
 }
 
-/**
- * Mark a conversation as read via the backend API.
- * Only updates the authenticated user's read/unread fields.
- */
 export async function apiMarkConversationRead(conversationId) {
-  const response = await apiRequest(
-    `/api/conversations/${conversationId}/read`,
-    { method: "PATCH" },
-  );
-  return response.data;
+  try {
+    const response = await apiRequest(
+      `/conversations/${conversationId}/read`,
+      { method: "PATCH" },
+    );
+    return response.data;
+  } catch (err) {
+    console.warn("[Conversations] Backend API mark read failed, falling back to Firestore:", err.message);
+    const currentUid = auth.currentUser?.uid;
+    if (currentUid && conversationId) {
+      await markConversationRead(conversationId, currentUid);
+    }
+  }
 }

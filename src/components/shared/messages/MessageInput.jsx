@@ -15,6 +15,7 @@ export default function MessageInput({
   onSelectImage,
   onRemoveImage,
   uploadingImage = false,
+  isSending = false,
   replyTo,
   onClearReply,
 }) {
@@ -75,7 +76,7 @@ export default function MessageInput({
   function handleKeyDown(e) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (!uploadingImage && (value.trim() || selectedImage)) {
+      if (canSend) {
         onSend();
         requestAnimationFrame(() => {
           textareaRef.current?.focus();
@@ -227,7 +228,7 @@ export default function MessageInput({
 
   const isMaxQuantity = hasStock && Number(quantity) >= stock;
 
-  const canSend = Boolean(value.trim() || selectedImage) && !uploadingImage;
+  const canSend = Boolean(value.trim() || selectedImage) && !uploadingImage && !isSending;
 
   return (
     <div className="shrink-0 w-full bg-transparent p-3 sm:border-t border-(--agri-border-subtle) z-10">
@@ -544,7 +545,7 @@ export default function MessageInput({
                 : "text-[var(--agri-border)] cursor-not-allowed"
             }`}
           >
-            {uploadingImage ? (
+            {uploadingImage || isSending ? (
               <i className="ri-loader-4-line text-xl animate-spin text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
             ) : (
               <i className="ri-send-plane-fill text-xl" />

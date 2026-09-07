@@ -55,16 +55,14 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   }
 
   function getBadgeCount(item) {
-    if (item.to.includes("messages")) return unreadCount;
+    // Message indicator is only shown in the header beside profile
+    if (item.to.includes("messages")) return 0;
     if (item.to.includes("transactions")) return inquiryActionCount;
     if (item.to.includes("reports")) return pendingReportsCount;
     return 0;
   }
 
   function getPopupInfo(item) {
-    if (item.to.includes("messages") && showPopup) {
-      return t("sidebar.newMessages");
-    }
     if (item.to.includes("transactions") && showInquiryPopup) {
       return inquiryPopupMessage;
     }
@@ -81,7 +79,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside
-      className={`hidden lg:flex h-full shrink-0 fixed top-0 left-0 bg-(--agri-brand-dark) dark:bg-transparent flex-col z-9996 pt-1 transition-[width] border-r border-white/8 duration-200 ease-out will-change-[width] ${
+      className={`hidden lg:flex h-full shrink-0 fixed top-0 left-0 bg-(--agri-brand-dark) dark:bg-transparent flex-col z-9996 pt-1 transition-all border-r border-white/8 duration-300 ease-in-out ${
         collapsed ? "w-20" : "w-60"
       }`}
     >
@@ -104,7 +102,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </div>
 
       {/* ── Profile ──────────────────────────────────────── */}
-      <div className={`border-b border-white/8 ${collapsed ? "flex justify-center items-center w-full h-14" : "px-3 py-3"}`}>
+      <div className={` border-b border-white/8 ${collapsed ? "flex justify-center items-center w-full h-14 mx-auto" : "px-3 py-3"}`}>
         {collapsed ? (
           <div className="flex justify-center">
             {profile?.profilePicture ? (
@@ -158,10 +156,10 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                       data-onboarding={getOnboardingNavKey(item.to)}
                       title={collapsed ? t(item.labelKey) : undefined}
                       className={({ isActive }) =>
-                        `relative flex items-center rounded-lg transition-colors duration-150 dark:bg-[var(--agri-surface)] ${
+                        `relative flex items-center rounded-lg transition-all duration-150 dark:bg-[var(--agri-surface)] ${
                           collapsed
-                            ? "justify-center h-10 w-full"
-                            : "gap-2.5 px-2.5 h-10 w-full"
+                            ? "justify-center w-16 h-12 mx-auto"
+                            : "gap-2.5 px-2.5 py-2"
                         } ${
                           isActive
                             ? "bg-white/15 text-white shadow-sm shadow-black/10"
@@ -249,8 +247,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           onClick={() => setCollapsed(!collapsed)}
           className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-white/80 hover:bg-white/[0.07] transition-colors duration-150 cursor-pointer ${
             collapsed
-              ? "justify-center h-10 w-full"
-              : "gap-2.5 px-2.5 h-10 w-full"
+              ? "justify-center w-16 h-12 mx-auto"
+              : "gap-2.5 px-2.5 py-2 w-full"
           }`}
           title={
             collapsed ? t("sidebar.expandSidebar") : t("sidebar.collapseSidebar")
@@ -275,8 +273,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           onClick={() => setShowLogoutModal(true)}
           className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-150 cursor-pointer ${
             collapsed
-              ? "justify-center h-10 w-full"
-              : "gap-2.5 px-2.5 h-10 w-full"
+              ? "justify-center w-16 h-12 mx-auto"
+              : "gap-2.5 px-2.5 py-2 w-full"
           }`}
         >
           <span className="flex items-center justify-center size-5 shrink-0">

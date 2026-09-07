@@ -48,7 +48,12 @@ export function UnreadMessagesProvider({ children }) {
           (activeUserId && conv.participants?.includes(activeUserId)));
 
       if (!isCurrentActive) {
-        const count = conv.unreadCount?.[profile.uid] ?? 0;
+        const count =
+          typeof conv.unreadCount === "number"
+            ? conv.unreadCount
+            : (conv.unreadCount?.[profile.uid] ??
+                conv.rawUnreadCount?.[profile.uid] ??
+                0);
         if (count > 0) {
           totalUnread += 1;
           unreads.push(conv);

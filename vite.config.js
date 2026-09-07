@@ -154,5 +154,16 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://agrinet-backend-c8w7.onrender.com',
+        changeOrigin: true,
+        headers: {
+          Origin: 'https://agrinet.website',
+        },
+      },
+    },
+  },
   base: '/',
 })

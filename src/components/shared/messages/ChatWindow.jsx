@@ -27,6 +27,7 @@ export default function ChatWindow({
   onSelectImage,
   onRemoveImage,
   uploadingImage,
+  isSending = false,
   replyTo,
   onSetReply,
   onClearReply,
@@ -76,6 +77,7 @@ export default function ChatWindow({
         onSelectImage={onSelectImage}
         onRemoveImage={onRemoveImage}
         uploadingImage={uploadingImage}
+        isSending={isSending}
         replyTo={replyTo}
         onClearReply={onClearReply}
       />

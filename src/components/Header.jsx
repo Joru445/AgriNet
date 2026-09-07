@@ -23,8 +23,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
   const { unreadCount: msgCount } = useUnreadMessages();
 
   return (
-    <header className="shrink-0 sticky top-0 right-0 z-9996 flex h-[calc(3.75rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] items-center justify-between bg-(--agri-surface)/95 border-b border-(--agri-border)
-      dark:border-(--agri-surface) dark:lg:rounded-2xl dark:lg:m-2 px-3 md:px-5 backdrop-blur-sm transition-all duration-300 ease-in-out">
+    <header className="shrink-0 sticky top-0 right-0 z-9996 dark:lg:rounded-2xl flex h-[calc(3.75rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] items-center justify-between bg-(--agri-surface)/95 border-b border-(--agri-border) dark:border-(--agri-surface) px-3 md:px-5 dark:m-2 backdrop-blur-sm transition-all duration-300 ease-in-out">
       {/* ── Left ──────────────────────────────────────── */}
       <div className="flex items-center gap-1 min-w-0">
         {hideBackButton ? (
@@ -57,25 +56,29 @@ export default function Header({ user, collapsed, hideBackButton }) {
           aria-label={t("header.notifications")}
         >
           <i className="ri-notification-3-line text-lg" />
-          {notifCount > 0 && <Badge count={notifCount} />}
+          {notifCount > 0 && (
+            <Badge count={notifCount} className="-top-1.5 right-0.5" />
+          )}
         </Link>
 
         {/* Messages */}
         <Link
           to={messagesPath}
           data-onboarding="header-messages"
-          className="relative flex size-9 shrink-0 items-center justify-center rounded-lg text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand)"
+          className="relative flex size-9 shrink-0 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]"
           aria-label={t("header.messages")}
         >
           <i className="ri-message-3-line text-lg" />
-          {msgCount > 0 && <Badge count={msgCount} />}
+          {msgCount > 0 && (
+            <Badge count={msgCount} variant="green" className="-top-1.5 right-0.5" />
+          )}
         </Link>
 
         {/* Profile */}
         <Link
           to={mePath}
           data-onboarding="header-profile"
-          className="flex items-center gap-2 pl-2 min-w-0 max-w-25 sm:max-w-45 md:max-w-60 rounded-lg transition-colors hover:bg-(--agri-hover)"
+          className="flex items-center gap-2 border-l border-[var(--agri-border)] pl-2 min-w-0 max-w-[100px] sm:max-w-[180px] md:max-w-[240px] rounded-lg transition-colors hover:bg-[var(--agri-hover)]"
         >
           <UserIdentity user={user} showUsername={false} showRole={true} />
         </Link>

@@ -136,6 +136,8 @@ export default function useInquiryFlow({
 
         await apiSendMessage({
           conversationId,
+          senderId: profile.uid,
+          receiverId: activeUser.uid,
           text: `I'm interested in ${inquiryProduct.name}.`,
           type: "product_inquiry",
           productId: inquiryProduct.id,
