@@ -2,10 +2,6 @@ import { auth } from "../../firebase/auth";
 
 const API_URL = import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "";
 
-if (!API_URL) {
-  throw new Error("VITE_API_URL is not configured.");
-}
-
 const DEFAULT_TIMEOUT = 15_000;
 const MAX_RETRIES = 2;
 
@@ -38,6 +34,10 @@ async function fetchWithTimeout(url, options, timeout) {
 }
 
 export async function apiRequest(endpoint, options = {}) {
+  if (!API_URL) {
+    throw new Error("VITE_API_URL is not configured.");
+  }
+
   const {
     timeout = DEFAULT_TIMEOUT,
     retries = MAX_RETRIES,

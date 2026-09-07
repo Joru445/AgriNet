@@ -7,6 +7,7 @@ import PushNotificationManager from "../../components/common/PushNotificationMan
 import NotificationPreferences from "../../components/common/NotificationPreferences";
 import LogoutConfirmModal from "../../components/common/LogoutConfirmModal";
 import ConnectedAccounts from "../../components/common/ConnectedAccounts";
+import UserIdentity from "../../components/common/UserIdentity";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -77,14 +78,17 @@ export default function Settings() {
           {t("settings.account")}
         </h2>
 
-        <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden">
+        <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden shadow-sm">
           <Link
             to={mePath}
             className="flex items-center gap-3 px-4 py-3.5 transition hover:bg-[var(--agri-hover)]"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
-              <i className="ri-user-line text-lg" />
-            </div>
+            <UserIdentity
+              user={profile}
+              onlyPic={true}
+              size="md"
+              className="shrink-0"
+            />
             <span className="min-w-0">
               <span className="block text-sm font-semibold text-[var(--agri-text)]">
                 {t("settings.myProfile")}
@@ -150,7 +154,7 @@ export default function Settings() {
           <h2 className="text-sm font-bold text-[var(--agri-text)] mb-3">
             {t("settings.notifications")}
           </h2>
-          <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4 space-y-4">
+          <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4 space-y-4 shadow-sm">
             <PushNotificationManager onSubscriptionChange={setPushSubscribed} />
 
             <div className="border-t border-[var(--agri-border-subtle)] pt-4">
@@ -173,7 +177,7 @@ export default function Settings() {
           {t("settings.appUpdate")}
         </h2>
 
-        <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden">
+        <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden shadow-sm">
           {needRefresh ? (
             <div className="flex items-center gap-3 px-4 py-3.5">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-brand-bg)] text-[var(--agri-brand)]">

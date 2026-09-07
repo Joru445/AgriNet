@@ -273,63 +273,103 @@ async function getFarmersByIds(ids) {
  */
 
 export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor } = {}) {
-  const params = new URLSearchParams();
-  params.set("limit", String(pageSize));
-  if (cursor) params.set("cursor", String(cursor));
+  try {
+    const params = new URLSearchParams();
+    params.set("limit", String(pageSize));
+    if (cursor) params.set("cursor", String(cursor));
 
-  const data = await apiRequest(`/products/marketplace?${params}`);
+    const data = await apiRequest(`/products/marketplace?${params}`);
 
-  return {
-    products: data.data ?? [],
-    cursor: data.cursor ?? null,
-    hasMore: data.hasMore ?? false,
-  };
+    return {
+      products: data.data ?? [],
+      cursor: data.cursor ?? null,
+      hasMore: data.hasMore ?? false,
+    };
+  } catch (err) {
+    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
+    return getMarketplaceProductsPage({ pageSize, cursor });
+  }
 }
 
 export async function apiGetProductById(id) {
-  const data = await apiRequest(`/products/${encodeURIComponent(id)}`);
-  return data.data ?? null;
+  try {
+    const data = await apiRequest(`/products/${encodeURIComponent(id)}`);
+    return data.data ?? null;
+  } catch (err) {
+    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
+    return getProductById(id);
+  }
 }
 
 export async function apiGetFarmerProducts(farmerId) {
-  const data = await apiRequest(`/products/farmer/${encodeURIComponent(farmerId)}`);
-  return data.data ?? [];
+  try {
+    const data = await apiRequest(`/products/farmer/${encodeURIComponent(farmerId)}`);
+    return data.data ?? [];
+  } catch (err) {
+    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
+    return getFarmerProducts(farmerId);
+  }
 }
 
 export async function apiCreateProduct(productData) {
-  const data = await apiRequest("/products", {
-    method: "POST",
-    body: JSON.stringify(productData),
-  });
-  return data.data ?? null;
+  try {
+    const data = await apiRequest("/products", {
+      method: "POST",
+      body: JSON.stringify(productData),
+    });
+    return data.data ?? null;
+  } catch (err) {
+    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
+    return createProduct(productData);
+  }
 }
 
 export async function apiUpdateProduct(id, productData) {
-  const data = await apiRequest(`/products/${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    body: JSON.stringify(productData),
-  });
-  return data.data ?? null;
+  try {
+    const data = await apiRequest(`/products/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(productData),
+    });
+    return data.data ?? null;
+  } catch (err) {
+    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
+    return updateProduct(id, productData);
+  }
 }
 
 export async function apiDeleteProduct(id) {
-  const data = await apiRequest(`/products/${encodeURIComponent(id)}`, {
-    method: "DELETE",
-  });
-  return data.data ?? null;
+  try {
+    const data = await apiRequest(`/products/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    return data.data ?? null;
+  } catch (err) {
+    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
+    return deleteProduct(id);
+  }
 }
 
 export async function apiToggleProductAvailability(id) {
-  const data = await apiRequest(`/products/${encodeURIComponent(id)}/availability`, {
-    method: "PATCH",
-  });
-  return data.data ?? null;
+  try {
+    const data = await apiRequest(`/products/${encodeURIComponent(id)}/availability`, {
+      method: "PATCH",
+    });
+    return data.data ?? null;
+  } catch (err) {
+    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
+    return toggleProductAvailability(id);
+  }
 }
 
 export async function apiUpdateProductStock(id, stock) {
-  const data = await apiRequest(`/products/${encodeURIComponent(id)}/stock`, {
-    method: "PATCH",
-    body: JSON.stringify({ stock }),
-  });
-  return data.data ?? null;
+  try {
+    const data = await apiRequest(`/products/${encodeURIComponent(id)}/stock`, {
+      method: "PATCH",
+      body: JSON.stringify({ stock }),
+    });
+    return data.data ?? null;
+  } catch (err) {
+    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
+    return updateProductStock(id, stock);
+  }
 }

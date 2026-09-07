@@ -12,7 +12,7 @@ export default function ThemeToggle() {
   const { t } = useLanguage();
 
   return (
-    <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
+    <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4 shadow-sm">
       <div className="flex items-center gap-3 mb-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-secondary)]">
           <i className="ri-palette-line text-lg" />
