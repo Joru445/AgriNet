@@ -1,3 +1,12 @@
+import {
+  authFieldErrorClass,
+  authInputBaseClass,
+  authInputErrorClass,
+  authInputIconClass,
+  authInputNormalClass,
+  authLabelClass,
+} from "./authStyles";
+
 export default function FormInput({
   label,
   name,
@@ -11,13 +20,11 @@ export default function FormInput({
 }) {
   return (
     <div>
-      <label className="block mb-2 font-medium text-[#16352A]">{label}</label>
+      <label className={authLabelClass}>{label}</label>
 
       <div className="relative">
         {icon && (
-          <i
-            className={`${icon} absolute left-4 top-1/2 -translate-y-1/2 text-[#16352A]/50 text-sm`}
-          ></i>
+          <i className={`${icon} ${authInputIconClass}`}></i>
         )}
 
         <input
@@ -29,14 +36,19 @@ export default function FormInput({
           autoComplete={autoComplete}
           required
           className={`
-            w-full rounded-xl border py-3 ${icon ? "pl-11 pr-4" : "px-4"}
-            focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] text-gray-950
-            ${error ? "border-red-500" : "border-gray-300"}
+            ${authInputBaseClass}
+            ${icon ? "pl-10 pr-3" : "px-3"}
+            ${error ? authInputErrorClass : authInputNormalClass}
           `}
         />
       </div>
 
-      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+      {error && (
+        <p className={authFieldErrorClass}>
+          <i className="ri-error-warning-line text-xs" />
+          <span>{error}</span>
+        </p>
+      )}
     </div>
   );
 }

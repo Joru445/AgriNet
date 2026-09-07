@@ -1,15 +1,17 @@
+import { authPrimaryButtonClass, authSocialButtonClass } from "./authStyles";
 import { useLanguage } from "../../context/LanguageContext";
 
-export default function MethodStep({ onSelectMethod }) {
+export default function MethodStep({ onSelectMethod, socialAuthInFlight = false }) {
   const { t } = useLanguage();
 
   return (
-    <div className="space-y-3.5 w-full">
-      {/* Google Option (Future Provider Placeholder) */}
+    <div className="space-y-4 w-full">
+      {/* Google Option */}
       <button
         type="button"
         onClick={() => onSelectMethod?.("google")}
-        className="group relative w-full py-2.5 sm:py-3 px-4 bg-white hover:bg-gray-50/90 border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-semibold rounded-full transition-all duration-200 text-sm flex items-center justify-between shadow-xs cursor-pointer"
+        disabled={socialAuthInFlight}
+        className={`group relative w-full justify-center ${authSocialButtonClass}`}
         aria-label={t("auth.register.continueWithGoogle")}
       >
         <div className="flex items-center gap-3">
@@ -35,17 +37,14 @@ export default function MethodStep({ onSelectMethod }) {
             {t("auth.register.continueWithGoogle")}
           </span>
         </div>
-
-        <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/80">
-          {t("auth.register.comingSoon")}
-        </span>
       </button>
 
-      {/* Facebook Option (Future Provider Placeholder) */}
+      {/* Facebook Option */}
       <button
         type="button"
         onClick={() => onSelectMethod?.("facebook")}
-        className="group relative w-full py-2.5 sm:py-3 px-4 bg-white hover:bg-gray-50/90 border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-semibold rounded-full transition-all duration-200 text-sm flex items-center justify-between shadow-xs cursor-pointer"
+        disabled={socialAuthInFlight}
+        className={`group relative w-full justify-center ${authSocialButtonClass}`}
         aria-label={t("auth.register.continueWithFacebook")}
       >
         <div className="flex items-center gap-3">
@@ -54,14 +53,10 @@ export default function MethodStep({ onSelectMethod }) {
             {t("auth.register.continueWithFacebook")}
           </span>
         </div>
-
-        <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/80">
-          {t("auth.register.comingSoon")}
-        </span>
       </button>
 
       {/* Divider */}
-      <div className="relative py-2">
+      <div className="relative py-1.5">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-gray-200" />
         </div>
@@ -76,7 +71,7 @@ export default function MethodStep({ onSelectMethod }) {
       <button
         type="button"
         onClick={() => onSelectMethod?.("email")}
-        className="w-full py-3 bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold rounded-full transition-all duration-200 text-sm flex items-center justify-center gap-2.5 whitespace-nowrap cursor-pointer shadow-sm hover:shadow-md"
+        className={`w-full ${authPrimaryButtonClass}`}
       >
         <i className="ri-mail-line text-base" />
         <span>{t("auth.register.continueWithEmail")}</span>

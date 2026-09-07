@@ -6,6 +6,7 @@ import LanguageSelector from "../../components/common/LanguageSelector";
 import PushNotificationManager from "../../components/common/PushNotificationManager";
 import NotificationPreferences from "../../components/common/NotificationPreferences";
 import LogoutConfirmModal from "../../components/common/LogoutConfirmModal";
+import ConnectedAccounts from "../../components/common/ConnectedAccounts";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -112,6 +113,17 @@ export default function Settings() {
               <i className="ri-arrow-right-s-line ml-auto text-[var(--agri-text-muted)]" />
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* Sign-in methods */}
+      <section className="mb-6">
+        <h2 className="text-sm font-bold text-[var(--agri-text)] mb-3">
+          {t("settings.signInMethods")}
+        </h2>
+
+        <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden">
+          <ConnectedAccounts />
         </div>
       </section>
 

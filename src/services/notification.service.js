@@ -12,14 +12,52 @@ import { apiRequest } from "./api/api.client";
 
 const notificationsRef = collection(db, "notifications");
 
+// Pagination batch size for the notification list.
+export const NOTIFICATIONS_PAGE_SIZE = 6;
+
+// Cap for the unread badge counter. Only unread docs are read, keeping this
+// listener cheap while preserving accurate badge counts in real time.
+const UNREAD_COUNT_LIMIT = 50;
+
 // ============================================================
-// REALTIME SUBSCRIBE (kept for live UI updates)
+// PAGINATION CURSOR
+// ============================================================
+
+function encodeBase64Url(json) {
+  const b64 = btoa(json);
+  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/**
+ * Builds a pagination cursor from a notification using the same `{ ts, id }`
+ * base64url format the backend expects for `GET /notifications?cursor=`.
+ * Mirrors the backend's `startAfter(new Date(ts), id)` ordering.
+ */
+export function buildNotificationsCursor(notification) {
+  if (!notification?.id || !notification.createdAt) return null;
+
+  const createdAt = notification.createdAt;
+  const ts =
+    typeof createdAt.toMillis === "function"
+      ? createdAt.toMillis()
+      : typeof createdAt === "number" || typeof createdAt === "string"
+        ? new Date(createdAt).getTime()
+        : null;
+
+  if (ts == null || Number.isNaN(ts)) return null;
+
+  return encodeBase64Url(JSON.stringify({ ts, id: notification.id }));
+}
+
+// ============================================================
+// REALTIME SUBSCRIBES (live UI updates)
 // ============================================================
 
 export function subscribeUserNotifications(
   userId,
   callback,
   onError,
+  pageSize = NOTIFICATIONS_PAGE_SIZE,
 ) {
   if (!userId) {
     return () => {};
@@ -29,7 +67,7 @@ export function subscribeUserNotifications(
     notificationsRef,
     where("recipientId", "==", userId),
     orderBy("createdAt", "desc"),
-    limit(50),
+    limit(pageSize),
   );
 
   return onSnapshot(
@@ -41,6 +79,36 @@ export function subscribeUserNotifications(
       }));
 
       callback(notifications);
+    },
+    onError,
+  );
+}
+
+/**
+ * Realtime listener scoped to unread notifications only. Used to keep the
+ * badge counter accurate without loading the user's whole collection.
+ * Firestore evaluates the provided callback with the current unread count.
+ */
+export function subscribeUnreadNotifications(
+  userId,
+  callback,
+  onError,
+) {
+  if (!userId) {
+    return () => {};
+  }
+
+  const q = query(
+    notificationsRef,
+    where("recipientId", "==", userId),
+    where("read", "==", false),
+    limit(UNREAD_COUNT_LIMIT),
+  );
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      callback(snapshot.size);
     },
     onError,
   );

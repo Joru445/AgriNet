@@ -1,4 +1,8 @@
 import PasswordInput from "./PasswordInput";
+import {
+  authPrimaryButtonClass,
+  authSecondaryButtonClass,
+} from "./authStyles";
 import { getPasswordChecks } from "../../utils/registerValidation";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -54,7 +58,7 @@ export default function PasswordStep({
   const level = strength();
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Password Field */}
       <div>
         <PasswordInput
@@ -120,7 +124,7 @@ export default function PasswordStep({
         <button
           type="button"
           onClick={onBack}
-          className="flex-1 border-2 border-gray-300 hover:border-gray-400 py-3 text-gray-700 font-bold rounded-full transition-all duration-200 text-sm flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
+          className={`flex-1 ${authSecondaryButtonClass}`}
         >
           {t("common.back")}
         </button>
@@ -128,7 +132,7 @@ export default function PasswordStep({
         <button
           type="button"
           onClick={onContinue}
-          className="flex-1 py-3 bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold rounded-full transition-all duration-200 text-sm flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer shadow-sm"
+          className={`flex-1 ${authPrimaryButtonClass}`}
         >
           {t("auth.continue")}
         </button>

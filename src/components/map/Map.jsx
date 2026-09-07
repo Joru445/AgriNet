@@ -17,6 +17,7 @@ export default function Map({
   children,
   zoom = 13,
   className = "w-full h-full border border-gray-200",
+  actionButton,
 }) {
   const isValidCenter =
     center &&
@@ -129,6 +130,10 @@ export default function Map({
           }
         />
       </button>
+
+      {actionButton && (
+        <div className="absolute top-3 right-16 z-9995">{actionButton}</div>
+      )}
     </div>
   );
 }

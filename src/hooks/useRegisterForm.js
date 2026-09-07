@@ -1,8 +1,18 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
 
-import { register } from "../services/register.service";
-import { checkEmailAvailability } from "../services/auth.service";
+import { auth } from "../firebase/auth";
+import { useAuth } from "../context/AuthContext";
+
+import { register, createFacebookProfile, createGoogleProfile } from "../services/register.service";
+import {
+  SOCIAL_AUTH_TAB_SOURCE,
+  checkEmailAvailability,
+  getCurrentUser,
+  getSocialSignInErrorMessage,
+  openSocialAuthTab,
+} from "../services/auth.service";
 import {
   validateStep1,
   validateStep2,
@@ -34,8 +44,44 @@ const INITIAL_FORM = {
   },
 };
 
+// How long the social submit waits for Firebase auth state to propagate from
+// the handler tab into this registration tab before giving up.
+const SOCIAL_USER_WAIT_TIMEOUT_MS = 2000;
+
+/**
+ * Resolves with the currently authenticated Firebase user, waiting briefly for
+ * Firebase cross-tab auth persistence to propagate right after a successful
+ * provider sign-in. Prefers onAuthStateChanged over a fixed sleep and never
+ * hangs the form: after the timeout it rejects.
+ */
+function waitForCurrentUser(timeoutMs = SOCIAL_USER_WAIT_TIMEOUT_MS) {
+  const current = getCurrentUser();
+  if (current) return Promise.resolve(current);
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let unsub = () => {};
+
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      unsub();
+      reject(new Error("Social sign-in session expired. Please sign in again."));
+    }, timeoutMs);
+
+    unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      if (!firebaseUser || settled) return;
+      settled = true;
+      clearTimeout(timer);
+      unsub();
+      resolve(firebaseUser);
+    });
+  });
+}
+
 export default function useRegisterForm() {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
 
   const [registrationMethod, setRegistrationMethod] = useState(null);
   const [authProviderData, setAuthProviderData] = useState(null);
@@ -43,6 +89,12 @@ export default function useRegisterForm() {
   const [loading, setLoading] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [checkedEmail, setCheckedEmail] = useState("");
+  const [socialAuthInFlight, setSocialAuthInFlight] = useState(false);
+
+  // Tracks the currently open Google/Facebook authentication attempt so only
+  // its handler tab's result is consumed by this registration tab.
+  const nextAuthAttemptIdRef = useRef(0);
+  const pendingAuthAttemptRef = useRef(null);
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -64,6 +116,103 @@ export default function useRegisterForm() {
       }));
     }
   }, []);
+
+  /**
+   * Resumes social profile setup for an authenticated Firebase user that has
+   * no AgriNet profile yet (e.g. right after the handler tab completed a Google
+   * or Facebook sign-in, or a refresh mid-setup). Social providers register
+   * through Account -> Profile, skipping the Password step entirely.
+   */
+  useEffect(() => {
+    if (!user || profile || registrationMethod) return;
+
+    const providerId = user.providerData?.[0]?.providerId;
+    const method =
+      providerId === "facebook.com"
+        ? "facebook"
+        : providerId === "google.com"
+          ? "google"
+          : null;
+    if (!method) return;
+
+    setRegistrationMethod(method);
+    setStep(1);
+    setProviderData({
+      displayName: user.displayName || user.email?.split("@")[0] || "",
+      email: user.email || "",
+      username: null,
+      photoURL: user.photoURL || "",
+    });
+  }, [user, profile, registrationMethod, setProviderData]);
+
+  /**
+   * Receives the result reported by the Google/Facebook handler tab
+   * (/auth/google, /auth/facebook) that this registration tab opened.
+   * On success it transitions straight into the provider Account step; errors
+   * and cancellations surface as toasts while the method screen stays put.
+   * Firebase Auth's cross-tab persistence also syncs the sign-in on its own,
+   * making this listener redundant-safe.
+   */
+  useEffect(() => {
+    function handleSocialAuthMessage(event) {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data;
+      if (!data || data.source !== SOCIAL_AUTH_TAB_SOURCE) return;
+
+      // Only the registration flow that opened this attempt consumes its
+      // result. This keeps an unrelated /register tab (or a direct visit to
+      // /auth/google) from silently consuming another tab's authentication.
+      if (
+        data.socialAttempt == null ||
+        data.socialAttempt !== pendingAuthAttemptRef.current
+      ) {
+        return;
+      }
+
+      if (data.type === "auth-error" && data.code === "auth/popup-blocked") {
+        // The handler tab stays open offering Retry. Keep this attempt in
+        // flight until the retry resolves or the tab is closed (which reports
+        // auth-cancelled).
+        showToast.error(
+          getSocialSignInErrorMessage({ code: data.code }, data.method),
+        );
+        return;
+      }
+
+      pendingAuthAttemptRef.current = null;
+      setSocialAuthInFlight(false);
+
+      if (data.type === "auth-success") {
+        // If the user started another method while the tab was open (e.g.
+        // email), do not hijack their in-progress registration.
+        if (registrationMethod) return;
+
+        const method =
+          data.method === "facebook" ? "facebook" : "google";
+        setRegistrationMethod(method);
+        setStep(1);
+        setProviderData({
+          displayName: data.displayName || data.email?.split("@")[0] || "",
+          email: data.email || "",
+          username: null,
+          photoURL: data.photoURL || "",
+        });
+      } else if (data.type === "auth-error") {
+        showToast.error(
+          getSocialSignInErrorMessage(
+            { code: data.code },
+            data.method,
+          ),
+        );
+      } else if (data.type === "auth-cancelled") {
+        showToast.info(t(`auth.errors.${data.method}Cancelled`));
+      }
+    }
+
+    window.addEventListener("message", handleSocialAuthMessage);
+    return () =>
+      window.removeEventListener("message", handleSocialAuthMessage);
+  }, [registrationMethod, setProviderData]);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
@@ -119,7 +268,7 @@ export default function useRegisterForm() {
 
       return updated;
     });
-  }, []);
+  }, [registrationMethod]);
 
   /**
    * Marks a field as touched on blur
@@ -169,6 +318,19 @@ export default function useRegisterForm() {
 
     const cleanEmail = form.email.trim().toLowerCase();
     const nextStepNumber = requiresPasswordStep(registrationMethod) ? 2 : 3;
+
+    // Social users whose provider supplied an email already authenticated with
+    // that email, so it must not be re-checked. Social accounts without a
+    // provider email (e.g. Facebook users without a public email) enter one
+    // manually and go through the normal availability check below.
+    if (
+      (registrationMethod === "google" || registrationMethod === "facebook") &&
+      isEmailReadOnly
+    ) {
+      setCheckedEmail(cleanEmail);
+      setStep(nextStepNumber);
+      return;
+    }
 
     // 3. If email was already checked and hasn't changed, advance immediately
     if (checkedEmail && checkedEmail === cleanEmail) {
@@ -251,16 +413,37 @@ export default function useRegisterForm() {
   /**
    * Handles selection of registration method
    */
-  const selectRegistrationMethod = useCallback((method) => {
-    if (method === "email") {
-      setRegistrationMethod("email");
-      setStep(1);
-    } else if (method === "google") {
-      showToast.info(t("auth.register.googleComingSoon"));
-    } else if (method === "facebook") {
-      showToast.info(t("auth.register.facebookComingSoon"));
-    }
-  }, []);
+  const selectRegistrationMethod = useCallback(
+    (method) => {
+      if (method === "email") {
+        setRegistrationMethod("email");
+        setStep(1);
+        return;
+      }
+
+      // Google/Facebook authenticate in a dedicated handler tab opened directly
+      // from this click (window.open). This registration tab is never redirected
+      // or refreshed; the result arrives via the "message" listener.
+      if (method === "google" || method === "facebook") {
+        // Ignore clicks while a provider tab is already being handled so
+        // repeated clicks cannot open multiple authentication tabs.
+        if (socialAuthInFlight) return;
+
+        nextAuthAttemptIdRef.current += 1;
+        const attemptId = String(nextAuthAttemptIdRef.current);
+        pendingAuthAttemptRef.current = attemptId;
+
+        if (!openSocialAuthTab(method, attemptId)) {
+          pendingAuthAttemptRef.current = null;
+          showToast.error(t("auth.errors.allowPopups"));
+          return;
+        }
+
+        setSocialAuthInFlight(true);
+      }
+    },
+    [socialAuthInFlight],
+  );
 
   /**
    * Resets registration back to method selection
@@ -328,6 +511,28 @@ export default function useRegisterForm() {
     try {
       setLoading(true);
 
+      // Google/Facebook users authenticate in the handler tab, so profile
+      // creation uses the already-authenticated Firebase user. Cross-tab auth
+      // persistence can lag briefly after the auth-success message, so wait
+      // for Firebase auth state before continuing.
+      if (registrationMethod === "google" || registrationMethod === "facebook") {
+        const firebaseUser = await waitForCurrentUser();
+        if (!firebaseUser) {
+          throw new Error("Social sign-in session expired. Please sign in again.");
+        }
+
+        if (registrationMethod === "google") {
+          await createGoogleProfile(firebaseUser, form);
+          showToast.success(t("auth.register.createdToastGoogle"));
+        } else {
+          await createFacebookProfile(firebaseUser, form);
+          showToast.success(t("auth.register.createdToastFacebook"));
+        }
+
+        navigate("/verify-account", { replace: true });
+        return;
+      }
+
       await register({ ...form, registrationMethod });
 
       showToast.success(t("auth.register.createdToast"));
@@ -335,6 +540,12 @@ export default function useRegisterForm() {
       navigate("/verify-account", { replace: true });
     } catch (error) {
       console.error("Registration error:", error);
+
+      // Social users authenticate outside this form; show a friendly message.
+      if (registrationMethod === "google" || registrationMethod === "facebook") {
+        showToast.error(getSocialSignInErrorMessage(error, registrationMethod));
+        return;
+      }
 
       // Handle race condition or duplicate email error from Firebase
       if (
@@ -374,6 +585,7 @@ export default function useRegisterForm() {
     setRegistrationMethod,
     resetRegistrationMethod,
 
+    socialAuthInFlight,
     authProviderData,
     setProviderData,
     isEmailReadOnly,

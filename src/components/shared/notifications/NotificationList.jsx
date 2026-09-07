@@ -1,11 +1,34 @@
+import { useEffect, useRef } from "react";
+
 import { useLanguage } from "../../../context/LanguageContext";
 import NotificationItem from "./NotificationItem";
 
 export default function NotificationList({
   notifications = [],
   loading = false,
+  loadingMore = false,
+  hasMore = false,
+  onLoadMore,
 }) {
   const { t } = useLanguage();
+  const sentinelRef = useRef(null);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasMore) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && !loadingMore) {
+          onLoadMore?.();
+        }
+      },
+      { rootMargin: "200px 0px" },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, onLoadMore]);
 
   if (loading) {
     return (
@@ -36,6 +59,20 @@ export default function NotificationList({
       {notifications.map((notification) => (
         <NotificationItem key={notification.id} notification={notification} />
       ))}
+
+      {hasMore && (
+        <div
+          ref={sentinelRef}
+          className="flex justify-center py-6 text-sm text-[var(--agri-text-muted)]"
+        >
+          {loadingMore && (
+            <span className="inline-flex items-center gap-2">
+              <i className="ri-loader-4-line animate-spin" />
+              {t("notifications.loadingMore")}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

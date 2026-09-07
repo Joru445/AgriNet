@@ -1,16 +1,23 @@
 import { useState } from "react";
 
+import {
+  authFieldErrorClass,
+  authInputBaseClass,
+  authInputErrorClass,
+  authInputIconClass,
+  authInputNormalClass,
+  authLabelClass,
+} from "./authStyles";
+
 export default function PasswordInput({ label, name, value, onChange, error }) {
   const [show, setShow] = useState(false);
 
   return (
     <div>
-      <label className="block mb-2 font-medium text-gray-700">{label}</label>
+      <label className={authLabelClass}>{label}</label>
 
       <div className="relative">
-        <i
-          className="ri-lock-line absolute left-4 top-1/2 -translate-y-1/2 text-[#16352A]/50 text-sm"
-        ></i>
+        <i className={`ri-lock-line ${authInputIconClass}`}></i>
         <input
           type={show ? "text" : "password"}
           name={name}
@@ -18,9 +25,9 @@ export default function PasswordInput({ label, name, value, onChange, error }) {
           onChange={onChange}
           placeholder="••••••••"
           className={`
-            w-full rounded-xl border px-4 py-3 pr-12 pl-11
-            focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] text-gray-950
-            ${error ? "border-red-500" : "border-gray-300"}
+            ${authInputBaseClass}
+            pl-10 pr-12
+            ${error ? authInputErrorClass : authInputNormalClass}
           `}
         />
 
@@ -33,7 +40,12 @@ export default function PasswordInput({ label, name, value, onChange, error }) {
         </button>
       </div>
 
-      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+      {error && (
+        <p className={authFieldErrorClass}>
+          <i className="ri-error-warning-line text-xs" />
+          <span>{error}</span>
+        </p>
+      )}
     </div>
   );
 }

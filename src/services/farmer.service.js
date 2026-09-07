@@ -21,7 +21,7 @@ export async function createFarmerProfile(data) {
     username: data.username,
     email: data.email,
 
-    profilePicture: "",
+    profilePicture: data.profilePicture || "",
     profilePictureId: "",
 
     description: "",

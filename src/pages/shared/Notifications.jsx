@@ -4,8 +4,15 @@ import { useLanguage } from "../../context/LanguageContext";
 import NotificationList from "../../components/shared/notifications/NotificationList";
 
 export default function Notifications() {
-  const { notifications, loading, unreadCount, markAllAsRead } =
-    useNotificationsContext();
+  const {
+    notifications,
+    loading,
+    loadingMore,
+    hasMore,
+    loadMoreNotifications,
+    unreadCount,
+    markAllAsRead,
+  } = useNotificationsContext();
   const { t } = useLanguage();
 
   return (
@@ -35,6 +42,9 @@ export default function Notifications() {
       <NotificationList
         notifications={notifications}
         loading={loading}
+        loadingMore={loadingMore}
+        hasMore={hasMore}
+        onLoadMore={loadMoreNotifications}
       />
     </div>
   );

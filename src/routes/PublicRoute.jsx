@@ -16,6 +16,13 @@ export default function PublicRoute() {
     return <Navigate to="/suspended" replace />;
   }
 
+  // An authenticated Firebase user without an AgriNet profile (e.g. a new
+  // Google user) must complete AgriNet profile setup before anything else.
+  if (!profile) {
+    if (location.pathname === "/register") return <Outlet />;
+    return <Navigate to="/register" replace />;
+  }
+
   if (!phoneVerified) {
     return <Navigate to="/verify-account" replace />;
   }

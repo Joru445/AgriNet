@@ -11,8 +11,9 @@ import {
   linkWithCredential,
   PhoneAuthProvider,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  FacebookAuthProvider,
+  signInWithPopup,
+  linkWithPopup,
 } from "firebase/auth";
 import {
   collection,
@@ -26,6 +27,7 @@ import {
 
 import { auth } from "../firebase/auth";
 import { db } from "../firebase/firestore";
+import { t } from "../i18n";
 
 /**
  * Checks whether an email is already associated with an account
@@ -90,20 +92,223 @@ googleProvider.setCustomParameters({
 });
 
 /**
- * Initiates Google authentication using redirect.
- * Recommended by Firebase for mobile browsers and PWAs.
+ * Initiates Google authentication using a popup that opens from the dedicated
+ * /auth/google tab. popup is deterministic (resolves with a UserCredential or
+ * rejects with a specific code) and never leaves the registration tab.
  */
-export async function signInWithGoogle() {
-  return signInWithRedirect(auth, googleProvider);
+export async function signInWithGooglePopup() {
+  return signInWithPopup(auth, googleProvider);
+}
+
+const facebookProvider = new FacebookAuthProvider();
+facebookProvider.addScope("email");
+
+/**
+ * Initiates Facebook authentication using a popup that opens from the dedicated
+ * /auth/facebook tab. popup is deterministic (resolves with a UserCredential or
+ * rejects with a specific code) and never leaves the registration tab.
+ */
+export async function signInWithFacebookPopup() {
+  return signInWithPopup(auth, facebookProvider);
 }
 
 /**
- * Retrieves the result of a Google redirect sign-in.
- * Should be called once during application startup.
- * @returns {Promise<import("firebase/auth").UserCredential | null>}
+ * Message envelope used by the social-auth handler tab to report back to the
+ * registration tab that opened it. Both windows are same-origin.
  */
-export async function processRedirectResult() {
-  return getRedirectResult(auth);
+export const SOCIAL_AUTH_TAB_SOURCE = "agrinet-social-auth";
+export const SOCIAL_AUTH_TAB_NAME = "agrinet-social-auth";
+export const SOCIAL_AUTH_ROUTES = {
+  google: "/auth/google",
+  facebook: "/auth/facebook",
+};
+
+/**
+ * Opens the dedicated provider authentication tab (Google/Facebook).
+ * Must be called synchronously from the user's click to avoid popup blocking.
+ * Opening a tab (rather than the current registration page redirecting) keeps
+ * the registration flow intact.
+ *
+ * @param {string} method "google" | "facebook"
+ * @param {string|null} [attemptId] Registration-flow attempt identifier the
+ *   handler tab echoes back so only the registration tab that started this
+ *   attempt consumes its result.
+ * @returns {boolean} true if the tab was opened
+ */
+export function openSocialAuthTab(method, attemptId = null) {
+  const route = SOCIAL_AUTH_ROUTES[method];
+  if (!route || typeof window === "undefined") return false;
+
+  const url = attemptId
+    ? `${route}?socialAttempt=${encodeURIComponent(attemptId)}`
+    : route;
+
+  return Boolean(window.open(url, SOCIAL_AUTH_TAB_NAME));
+}
+
+/**
+ * Reports an authentication result from the handler tab back to the
+ * registration tab that opened it.
+ *
+ * @param {Object} payload { type: "auth-success" | "auth-error" | "auth-cancelled", method, ... }
+ */
+export function notifySocialAuthResult(payload) {
+  try {
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage(
+        { source: SOCIAL_AUTH_TAB_SOURCE, ...payload },
+        window.location.origin,
+      );
+    }
+  } catch {
+    /* ignore cross-origin/closed opener */
+  }
+}
+
+/**
+ * Maps social authentication (Google/Facebook) errors to user-facing messages
+ * using the centralized translation system. Raw Firebase error codes are never
+ * shown directly to users.
+ */
+export function getSocialSignInErrorMessage(error, method = "google") {
+  const isGoogle = method === "google";
+  const key = (suffix) =>
+    isGoogle
+      ? `auth.errors.google${suffix}`
+      : `auth.errors.facebook${suffix}`;
+
+  switch (error?.code) {
+    case "auth/popup-closed-by-user":
+    case "auth/cancelled-popup-request":
+    case "auth/cancelled-popup":
+    case "auth/user-cancelled":
+      return t(key("Cancelled"));
+    case "auth/popup-blocked":
+      return t("auth.errors.allowPopups");
+    case "auth/account-exists-with-different-credential":
+      return t("auth.errors.accountExistsDifferentCredential");
+    case "auth/network-request-failed":
+    case "auth/timeout":
+      return t("auth.errors.networkError");
+    default:
+      return t(key("SignInFailed"));
+  }
+}
+
+/**
+ * Maps Google authentication errors to user-facing messages using the
+ * centralized translation system. Raw Firebase error codes are never
+ * shown directly to users.
+ */
+export function getGoogleSignInErrorMessage(error) {
+  return getSocialSignInErrorMessage(error, "google");
+}
+
+/**
+ * Firebase providerIds used to identify sign-in methods linked to a user's
+ * Firebase Auth account (exposed via user.providerData[].providerId).
+ */
+export const PROVIDER_IDS = {
+  google: "google.com",
+  facebook: "facebook.com",
+  password: "password",
+  phone: "phone",
+};
+
+/**
+ * Returns the Firebase providerIds currently linked to an account.
+ * providerData comes only from the authenticated Firebase session, never from
+ * client-supplied data.
+ */
+export function getLinkedProviderIds(user = null) {
+  const currentUser = user || auth.currentUser;
+  if (!currentUser) return [];
+  return (currentUser.providerData || []).map((p) => p.providerId);
+}
+
+/**
+ * Whether the given provider (PROVIDER_IDS.google / PROVIDER_IDS.facebook) is
+ * already linked to the account.
+ */
+export function isProviderLinked(providerId, user = null) {
+  return getLinkedProviderIds(user).includes(providerId);
+}
+
+/**
+ * Explicitly links an additional sign-in provider to the CURRENTLY
+ * authenticated user (the account the user signed in as).
+ *
+ * Security properties:
+ *  - Always bound to auth.currentUser; the provider credential comes from the
+ *    provider's own consent popup, never from the client.
+ *  - LINK-ONLY: never auto-links because emails match and never merges two
+ *    Firebase accounts. It never mutates AgriNet's Firestore profile.
+ *
+ * @param {string} providerId PROVIDER_IDS.google | PROVIDER_IDS.facebook
+ * @param {User} [user] Optional user instance (defaults to auth.currentUser)
+ * @returns {Promise<User>}
+ */
+export async function linkProvider(providerId, user = null) {
+  const currentUser = user || auth.currentUser;
+  if (!currentUser) {
+    throw new Error("No authenticated user found to link a sign-in method.");
+  }
+
+  const provider =
+    providerId === PROVIDER_IDS.google
+      ? googleProvider
+      : providerId === PROVIDER_IDS.facebook
+        ? facebookProvider
+        : null;
+
+  if (!provider) {
+    throw new Error("Unsupported provider for linking.");
+  }
+
+  await linkWithPopup(currentUser, provider);
+
+  // Reload so providerData is fresh in memory for the UI.
+  await reload(currentUser);
+
+  return currentUser;
+}
+
+/**
+ * Maps social provider LINKING errors to user-facing messages using the
+ * centralized translation system. Raw Firebase error codes are never shown
+ * directly to users. Linking is additive: when the provider's credential
+ * conflicts with a different account, no changes are made and the conflict is
+ * reported.
+ */
+export function getSocialLinkErrorMessage(error, method = "google") {
+  const isGoogle = method === "google";
+  const key = (suffix) =>
+    isGoogle
+      ? `auth.errors.google${suffix}`
+      : `auth.errors.facebook${suffix}`;
+
+  switch (error?.code) {
+    case "auth/credential-already-in-use":
+    case "auth/account-exists-with-different-credential":
+      return t(
+        `auth.errors.${isGoogle ? "googleProviderConflict" : "facebookProviderConflict"}`
+      );
+    case "auth/provider-already-linked":
+    case "auth/provider-already-linked-before":
+      return t("auth.errors.providerAlreadyLinked");
+    case "auth/popup-closed-by-user":
+    case "auth/cancelled-popup-request":
+    case "auth/cancelled-popup":
+    case "auth/user-cancelled":
+      return t("auth.errors.linkCancelled");
+    case "auth/popup-blocked":
+      return t("auth.errors.allowPopups");
+    case "auth/network-request-failed":
+    case "auth/timeout":
+      return t("auth.errors.networkError");
+    default:
+      return t(key("LinkFailed"));
+  }
 }
 
 export async function resetPassword(email) {
