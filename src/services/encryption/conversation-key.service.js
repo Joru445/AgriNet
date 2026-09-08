@@ -111,7 +111,7 @@ export async function getConversationKey(myUid, otherUid, conversationId = null)
   if (conversationId) {
     conversationKeyCache.set(conversationId, {
       key: sharedKey,
-      remoteUid,
+      remoteUid: otherUid,
       remotePublicKeyFingerprint,
     });
   }
