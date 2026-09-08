@@ -84,7 +84,7 @@ export default function InquiryRow({
     Boolean(inquiry.productReviewId);
 
   // --- Determine banner config ---
-  const banner = getBanner(status, userRole, t);
+  const banner = getBanner(status, userRole, t, inquiry);
 
   // --- Determine which buttons get red dots ---
   const dots = getRedDots(status, userRole, isReviewed);
@@ -155,7 +155,7 @@ export default function InquiryRow({
           onClick={openConversation}
         />
 
-        {/* Farmer starts transaction */}
+        {/* Farmer starts transaction (standard products only) */}
         {userRole === "farmer" && status === "accepted" && (
           <Action
             updating={updating}
@@ -169,6 +169,23 @@ export default function InquiryRow({
             }}
           />
         )}
+
+        {/* Consumer starts transaction (pre-order products when available) */}
+        {userRole === "consumer" &&
+          status === "reserved" &&
+          product?.sellingMode === "available" && (
+            <Action
+              updating={updating}
+              label={t("transactions.startTransaction")}
+              icon="ri-play-circle-line"
+              showDot={dots.startTransaction}
+              className="bg-[#2D6A4F] text-white hover:bg-[#24583F]"
+              onClick={() => {
+                acknowledgeInquiry(inquiry.id, inquiry.status);
+                onStatusChange(inquiry.id, "ongoing");
+              }}
+            />
+          )}
 
         {/* Consumer submits completion proof */}
         {userRole === "consumer" && status === "ongoing" && (
@@ -207,7 +224,7 @@ export default function InquiryRow({
         )}
 
         {/* Cancel */}
-        {["accepted", "ongoing"].includes(status) && (
+        {["reserved", "accepted", "ongoing"].includes(status) && (
           <Action
             updating={updating}
             label={t("transactions.cancel")}
@@ -328,13 +345,20 @@ function Action({ updating, label, icon, showDot, className, onClick, disabled =
 /**
  * Returns banner config for the current status + role combo.
  */
-function getBanner(status, userRole, t) {
+function getBanner(status, userRole, t, inquiry) {
   if (userRole === "consumer") {
     if (status === "pending") {
       return {
         message: t("transactions.banner.consumerPending"),
         icon: "ri-time-line",
         className: "bg-[var(--agri-hover)] text-[var(--agri-text-muted)] border border-[var(--agri-border)]",
+      };
+    }
+    if (status === "reserved") {
+      return {
+        message: t("transactions.banner.preOrderReserved"),
+        icon: "ri-calendar-schedule-line",
+        className: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20",
       };
     }
     if (status === "accepted") {
@@ -382,6 +406,13 @@ function getBanner(status, userRole, t) {
   }
 
   if (userRole === "farmer") {
+    if (status === "reserved") {
+      return {
+        message: t("transactions.banner.farmerPreOrderReserved"),
+        icon: "ri-calendar-schedule-line",
+        className: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 font-medium",
+      };
+    }
     if (status === "accepted") {
       return {
         message: t("transactions.banner.farmerAccepted"),
@@ -436,6 +467,7 @@ function getRedDots(status, userRole, isReviewed) {
   };
 
   if (userRole === "consumer") {
+    if (status === "reserved") dots.viewConversation = true;
     if (status === "accepted") dots.viewConversation = true;
     if (status === "ongoing") dots.markComplete = true;
     if (status === "awaiting_proof") dots.uploadProof = true;
@@ -474,5 +506,5 @@ function getInquiryDisplayTime(inquiry) {
       inquiry.createdAt
     );
   }
-  return inquiry.acceptedAt || inquiry.createdAt;
+  return inquiry.reservedAt || inquiry.acceptedAt || inquiry.statusUpdatedAt || inquiry.createdAt;
 }

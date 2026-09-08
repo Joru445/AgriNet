@@ -20,12 +20,12 @@ export default function Dashboard() {
   } = useDashboard();
 
   return (
-    <main className="flex flex-col flex-1 overflow-y-auto py-2 px-2 gap-6">
+    <main className="flex flex-col flex-1 py-2 px-2 gap-6 lg:h-full lg:min-h-0">
         <DashboardHero profile={profile} stats={stats} loading={loading} />
 
         <DashboardStats stats={stats} loading={loading} />
 
-        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr] lg:flex-1 lg:min-h-0 lg:overflow-y-auto scrollbar-none">
           <RecentProducts products={recentProducts} loading={loading} />
 
           <RecentReviews reviews={recentReviews} loading={loading} />

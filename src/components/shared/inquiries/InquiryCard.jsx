@@ -40,18 +40,17 @@ export default function InquiryCard({
 
   // Red dot flags
   let showDot = false;
-  if (userRole === "consumer" && ["accepted", "ongoing", "awaiting_proof"].includes(status)) showDot = true;
+  if (userRole === "consumer" && ["reserved", "accepted", "ongoing", "awaiting_proof"].includes(status)) showDot = true;
   if (userRole === "consumer" && status === "completed" && !isReviewed) showDot = true;
   if (userRole === "farmer" && ["accepted", "proof_submitted"].includes(status)) showDot = true;
 
   function handlePrimaryAction() {
-    if (status === "accepted" || status === "ongoing") {
-      if (userRole === "farmer" && status === "accepted") {
-        acknowledgeInquiry(inquiry.id, inquiry.status);
-        onStatusChange(inquiry.id, "ongoing");
-      } else {
-        navigate(`${getInquiriesPath(userRole)}/${inquiry.id}/proof`);
-      }
+    const isConsumerReserved = userRole === "consumer" && status === "reserved";
+    if (isConsumerReserved || (status === "accepted" && userRole === "farmer")) {
+      acknowledgeInquiry(inquiry.id, inquiry.status);
+      onStatusChange(inquiry.id, "ongoing");
+    } else if (status === "accepted" || status === "ongoing") {
+      navigate(`${getInquiriesPath(userRole)}/${inquiry.id}/proof`);
     } else if (status === "awaiting_proof" || status === "proof_submitted") {
       navigate(`${getInquiriesPath(userRole)}/${inquiry.id}/proof`);
     } else if (status === "completed") {
@@ -178,7 +177,7 @@ export default function InquiryCard({
           title={t("transactions.viewConversation")}
         >
           <i className="ri-message-3-line text-base" />
-          {userRole === "consumer" && status === "accepted" && (
+          {userRole === "consumer" && (status === "reserved" || status === "accepted") && (
             <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />
           )}
         </button>
@@ -207,6 +206,7 @@ export default function InquiryCard({
 
 function getPrimaryLabel(status, userRole, isReviewed, t) {
   if (userRole === "consumer") {
+    if (status === "reserved") return t("transactions.startTransaction");
     if (status === "accepted") return t("transactions.viewConversation");
     if (status === "ongoing") return t("transactions.markComplete");
     if (status === "awaiting_proof") return t("transactions.uploadProof");
@@ -246,5 +246,5 @@ function getInquiryDisplayTime(inquiry) {
       inquiry.createdAt
     );
   }
-  return inquiry.acceptedAt || inquiry.createdAt;
+  return inquiry.reservedAt || inquiry.acceptedAt || inquiry.createdAt;
 }

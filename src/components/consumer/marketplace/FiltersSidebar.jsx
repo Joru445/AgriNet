@@ -14,7 +14,8 @@ export default function FiltersSidebar({
     filters.minPrice > 0 ||
     filters.maxPrice > 0 ||
     filters.rating > 0 ||
-    Boolean(filters.showUnavailable);
+    Boolean(filters.showUnavailable) ||
+    (filters.sellingMode && filters.sellingMode !== "all");
 
   const content = (
     <div className="space-y-6">
@@ -34,6 +35,35 @@ export default function FiltersSidebar({
             {t("nearby.resetAll")}
           </button>
         )}
+      </div>
+
+      {/* Selling Mode Filter */}
+      <div>
+        <label className="block mb-2 text-xs font-bold text-[var(--agri-text)] flex items-center gap-1.5">
+          <i className="ri-store-2-line text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+          {t("nearby.sellingMode")}
+        </label>
+
+        <div className="flex gap-2">
+          {[
+            { value: "all", label: t("nearby.all") },
+            { value: "available", label: t("nearby.availableNow") },
+            { value: "preorder", label: t("nearby.preOrder") },
+          ].map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onChange("sellingMode", option.value)}
+              className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                (filters.sellingMode || "all") === option.value
+                  ? "bg-[#2D6A4F]/10 border-[#2D6A4F]/40 text-[#2D6A4F] dark:bg-[var(--agri-brand)]/10 dark:border-[var(--agri-brand)]/40 dark:text-[var(--agri-brand)]"
+                  : "border-[var(--agri-border)] text-[var(--agri-text-secondary)] hover:border-gray-400 dark:hover:border-gray-500 bg-[var(--agri-card)]"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Distance Filter */}

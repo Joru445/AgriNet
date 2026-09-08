@@ -228,6 +228,7 @@ export default {
     units: "units",
     acceptInquiry: "Accept Inquiry",
     inquiryAccepted: "Inquiry Accepted",
+    preOrderReserved: "Pre-order Reserved",
     goToInquiry: "Go to Inquiry",
     inquiryRejected: "Inquiry Rejected",
     seen: "Seen",
@@ -288,6 +289,7 @@ export default {
     increaseQuantity: "Increase quantity",
     unavailable: "Unavailable",
     sendInquiry: "Send Inquiry",
+    sendPreOrderInquiry: "Send Pre-order",
     photoSelected: "Photo selected",
     uploadingPhoto: "Uploading photo...",
     typeCaption: "Type an optional caption or press send",
@@ -301,6 +303,7 @@ export default {
     sendMessage: "Send message",
     selectedPreview: "Selected preview",
     available: "{count} {unit} available",
+    preOrderAvailable: "{count} {unit} available to reserve",
   },
 
   deleteProduct: {
@@ -470,6 +473,10 @@ export default {
     stockCount: "{count} stocks",
     noReviews: "No reviews",
     produce: "Produce",
+    preOrder: "Pre-order",
+    orderUntil: "Order until",
+    availableDate: "Available",
+    reserved: "reserved",
   },
 
   transactions: {
@@ -514,6 +521,7 @@ export default {
     status: {
       all: "All",
       accepted: "Accepted",
+      reserved: "Reserved",
       ongoing: "Ongoing",
       completed: "Completed",
       cancelled: "Cancelled",
@@ -536,11 +544,14 @@ export default {
       consumerProofSubmitted: "Proof submitted. Waiting for farmer confirmation.",
       consumerCompleted: "Transaction complete.",
       consumerCancelled: "Transaction cancelled.",
+      preOrderReserved: "Pre-order reserved! View the conversation.",
+      preOrderCancelled: "Pre-order cancelled.",
       farmerAccepted: "You accepted this transaction. Start the transaction when ready.",
       farmerOngoing: "Transaction is ongoing.",
       farmerProofSubmitted: "Consumer submitted proof of product received. Please review it.",
       farmerCompleted: "Transaction complete.",
       farmerCancelled: "Transaction cancelled.",
+      farmerPreOrderReserved: "Pre-order reserved. Waiting for product availability.",
     },
   },
 
@@ -586,6 +597,7 @@ export default {
     status: {
       all: "All",
       accepted: "Accepted",
+      reserved: "Reserved",
       ongoing: "Ongoing",
       completed: "Completed",
       cancelled: "Cancelled",
@@ -636,11 +648,16 @@ export default {
     noImages: "No images available",
     viewFullscreen: "Click to view full screen & zoom",
     sendInquiry: "Send Inquiry",
+    sendPreOrderInquiry: "Send Pre-order Inquiry",
+    markAsAvailable: "Mark as Available",
     manageProduct: "Manage Product",
     farmerFallback: "Farmer",
     produce: "Produce",
     unit: "units",
     description: "Description",
+    expectedAvailable: "Expected availability:",
+    orderUntil: "Order until:",
+    reserved: "reserved",
   },
 
   transaction: {
@@ -988,6 +1005,14 @@ export default {
     expired: "Expired",
     noDisplay: "No display in selling",
     stockUnit: "stocks",
+    sellingMode: "Selling Mode",
+    availableNow: "Available Now",
+    preOrder: "Pre-order",
+    preOrderSettings: "Pre-order Settings",
+    expectedAvailableDate: "Expected Availability Date",
+    preOrderDeadline: "Pre-order Deadline",
+    preOrderLimit: "Maximum Pre-order Quantity",
+    preOrderLimitHint: "Maximum total units customers can reserve",
   },
 
   farmerReviews: {
@@ -1057,6 +1082,10 @@ export default {
     resetAll: "Reset All",
     filters: "Filters",
     applyFilters: "Apply Filters",
+    sellingMode: "Selling Mode",
+    all: "All",
+    availableNow: "Available Now",
+    preOrder: "Pre-order",
     nearestFarmer: "Nearest farmer:",
     noNearbyFarmers: "No nearby farmers.",
     youAreHere: "You are here",

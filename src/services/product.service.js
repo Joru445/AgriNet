@@ -103,6 +103,22 @@ export async function createProduct(data) {
       count: 0,
     },
 
+    // Pre-order fields
+    sellingMode: data.sellingMode === "preorder" ? "preorder" : "available",
+    expectedAvailableDate:
+      data.sellingMode === "preorder" && data.expectedAvailableDate
+        ? new Date(data.expectedAvailableDate)
+        : null,
+    preOrderDeadline:
+      data.sellingMode === "preorder" && data.preOrderDeadline
+        ? new Date(data.preOrderDeadline)
+        : null,
+    preOrderLimit:
+      data.sellingMode === "preorder" && data.preOrderLimit
+        ? Number(data.preOrderLimit)
+        : null,
+    reservedQuantity: data.sellingMode === "preorder" ? 0 : null,
+
     createdAt: serverTimestamp(),
   });
 
@@ -385,6 +401,13 @@ export async function apiUpdateProductStock(id, stock) {
   const data = await apiRequest(`/products/${encodeURIComponent(id)}/stock`, {
     method: "PATCH",
     body: JSON.stringify({ stock }),
+  });
+  return data.data ?? null;
+}
+
+export async function apiMarkProductAsAvailable(id) {
+  const data = await apiRequest(`/products/${encodeURIComponent(id)}/mark-available`, {
+    method: "PATCH",
   });
   return data.data ?? null;
 }

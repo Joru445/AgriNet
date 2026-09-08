@@ -5,6 +5,8 @@ export default function InquiryStatusBadge({ status }) {
   const styles = {
     accepted: "bg-amber-500/10 text-amber-700 dark:text-amber-300 font-semibold",
 
+    reserved: "bg-amber-500/10 text-amber-700 dark:text-amber-300 font-semibold",
+
     ongoing: "bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold",
 
     awaiting_proof: "bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold",
@@ -18,6 +20,7 @@ export default function InquiryStatusBadge({ status }) {
 
   const labels = {
     accepted: t("transactions.status.accepted"),
+    reserved: t("transactions.status.reserved"),
     ongoing: t("transactions.status.ongoing"),
     awaiting_proof: t("transactions.status.awaitingProof"),
     proof_submitted: t("transactions.status.proofSubmitted"),

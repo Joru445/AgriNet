@@ -43,7 +43,15 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
     !isNaN(Number(form.stock)) &&
     Number(form.stock) >= 0 &&
     form.images &&
-    form.images.length > 0
+    form.images.length > 0 &&
+    // Pre-order validation
+    (form.sellingMode !== "preorder" || (
+      form.expectedAvailableDate &&
+      form.preOrderDeadline &&
+      form.preOrderLimit &&
+      Number(form.preOrderLimit) > 0 &&
+      new Date(form.preOrderDeadline) < new Date(form.expectedAvailableDate)
+    ))
   );
 
   function handleChange(e) {
@@ -159,4 +167,8 @@ const initialForm = {
   available: true,
   durationHours: "",
   images: [],
+  sellingMode: "available",
+  expectedAvailableDate: "",
+  preOrderDeadline: "",
+  preOrderLimit: "",
 };

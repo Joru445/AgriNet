@@ -58,8 +58,15 @@ export default function useInquiries() {
         (inquiry) => !inquiry.productSnapshot || !inquiry.consumerSnapshot,
       );
 
+      const reservedPreorders = inquiries.filter(
+        (inquiry) =>
+          inquiry.type === "preorder" &&
+          normalizeStatus(inquiry.status) === "reserved" &&
+          inquiry.productId,
+      );
+
       try {
-        const [farmerProfiles, legacyResults] = await Promise.all([
+        const [farmerProfiles, legacyResults, liveProducts] = await Promise.all([
           Promise.all(
             farmerIds.map(async (fId) => {
               if (farmerCacheRef.current.has(fId)) {
@@ -91,20 +98,32 @@ export default function useInquiries() {
               }
             }),
           ),
+          Promise.all(
+            reservedPreorders.map(async (inquiry) => {
+              try {
+                const product = await getProductById(inquiry.productId);
+                return { id: inquiry.id, product, consumer: null };
+              } catch {
+                return { id: inquiry.id, product: null, consumer: null };
+              }
+            }),
+          ),
         ]);
 
         if (cancelled) return;
 
         const farmerMap = new Map(farmerProfiles.filter(([, f]) => f != null));
         const legacyMap = new Map(legacyResults.map((r) => [r.id, r]));
+        const liveProductMap = new Map(liveProducts.map((r) => [r.id, r]));
 
         const mapped = {};
         inquiries.forEach((inquiry) => {
           const legacy = legacyMap.get(inquiry.id);
+          const live = liveProductMap.get(inquiry.id);
           const farmer = farmerMap.get(inquiry.farmerId);
 
           mapped[inquiry.id] = {
-            product: legacy?.product ?? null,
+            product: live?.product ?? legacy?.product ?? null,
             consumer: legacy?.consumer ?? null,
             farmer: farmer
               ? {

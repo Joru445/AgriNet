@@ -22,7 +22,7 @@ export default function ProductDetails() {
   const { t } = useLanguage();
   const [showReportModal, setShowReportModal] = useState(false);
 
-  const { loading, product, farmer } = useProductDetails();
+  const { loading, product, farmer, refresh } = useProductDetails();
   const { reviews, loading: reviewsLoading } = useProductReviews();
 
   const reviewCount = reviews.length;
@@ -78,6 +78,7 @@ export default function ProductDetails() {
                 product={product}
                 farmer={farmer}
                 isOwner={isOwner}
+                onProductUpdate={refresh}
               />
             </div>
           </div>

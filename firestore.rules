@@ -200,7 +200,21 @@ service cloud.firestore {
         && isFarmer()
 
         && request.resource.data.farmerId
-           == request.auth.uid;
+           == request.auth.uid
+
+        // Pre-order fields: reservedQuantity must be 0 or null on create
+        && (
+          !request.resource.data.keys()
+            .hasAny(["reservedQuantity"])
+
+          ||
+
+          request.resource.data.reservedQuantity == 0
+
+          ||
+
+          request.resource.data.reservedQuantity == null
+        );
 
 
       allow update: if
@@ -212,6 +226,10 @@ service cloud.firestore {
 
           && request.resource.data.farmerId
              == resource.data.farmerId
+
+          // Client cannot modify reservedQuantity (backend-only)
+          && request.resource.data.reservedQuantity
+             == resource.data.reservedQuantity
         )
         || isAdmin();
 
@@ -710,6 +728,22 @@ service cloud.firestore {
            is number
 
         && request.resource.data.quantity > 0
+
+        // Type field: must be "standard" or "preorder"
+        && (
+          !request.resource.data.keys()
+            .hasAny(["type"])
+
+          ||
+
+          request.resource.data.type
+             == "standard"
+
+          ||
+
+          request.resource.data.type
+             == "preorder"
+        )
 
         && isParticipant(
           request.resource.data.conversationId

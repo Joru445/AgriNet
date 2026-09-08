@@ -33,7 +33,7 @@ export default function ProductGrid({ products, hasActiveFilter }) {
       )}
 
       {/* Products */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 lg:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 lg:gap-6">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

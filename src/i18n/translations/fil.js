@@ -228,6 +228,7 @@ export default {
     units: "units",
     acceptInquiry: "Tanggapin ang Inquiry",
     inquiryAccepted: "Tinanggap ang Inquiry",
+    preOrderReserved: "Naka-reserve na ang Pre-order",
     goToInquiry: "Pumunta sa Inquiry",
     inquiryRejected: "Tinanggihan ang Inquiry",
     seen: "Seen",
@@ -288,6 +289,7 @@ export default {
     increaseQuantity: "Dagdagan ang quantity",
     unavailable: "Hindi available",
     sendInquiry: "Magpadala ng Inquiry",
+    sendPreOrderInquiry: "Magpadala ng Pre-order",
     photoSelected: "Napili na ang larawan",
     uploadingPhoto: "Nag-uupload ng larawan...",
     typeCaption: "Mag-type ng caption (opsyonal) o i-send",
@@ -301,6 +303,7 @@ export default {
     sendMessage: "Magpadala ng mensahe",
     selectedPreview: "Napiling preview",
     available: "{count} {unit} available",
+    preOrderAvailable: "{count} {unit} available para i-reserve",
   },
 
   deleteProduct: {
@@ -470,6 +473,10 @@ export default {
     stockCount: "{count} na stock",
     noReviews: "Walang review",
     produce: "Produkto",
+    preOrder: "Pre-order",
+    orderUntil: "Hanggang sa",
+    availableDate: "Available",
+    reserved: "naka-reserve",
   },
 
   transactions: {
@@ -514,6 +521,7 @@ export default {
     status: {
       all: "Lahat",
       accepted: "Tinanggap",
+      reserved: "Naka-reserve",
       ongoing: "Ongoing",
       completed: "Tapos na",
       cancelled: "Kinansela",
@@ -539,6 +547,8 @@ export default {
         "Na-submit na ang patunay. Naghihintay sa kumpirmasyon ng magsasaka.",
       consumerCompleted: "Tapos na ang transaction!",
       consumerCancelled: "Kinansela ang transaction.",
+      preOrderReserved: "Na-reserve na ang pre-order! Tingnan ang chat.",
+      preOrderCancelled: "Kinansela ang pre-order.",
       farmerAccepted:
         "Tinanggap mo na ang transaction na ito. Simulan kapag handa ka na.",
       farmerOngoing: "Ongoing ang transaction.",
@@ -546,6 +556,7 @@ export default {
         "Nag-submit ang consumer ng patunay. Suriin mo lang.",
       farmerCompleted: "Tapos na ang transaction!",
       farmerCancelled: "Kinansela ang transaction.",
+      farmerPreOrderReserved: "Na-reserve na ang pre-order. Naghihintay sa availability ng produkto.",
     },
   },
 
@@ -591,6 +602,7 @@ export default {
     status: {
       all: "Lahat",
       accepted: "Tinanggap",
+      reserved: "Naka-reserve",
       ongoing: "Ongoing",
       completed: "Tapos na",
       cancelled: "Kinansela",
@@ -645,11 +657,16 @@ export default {
     noImages: "Walang larawan",
     viewFullscreen: "I-click para i-full screen at i-zoom",
     sendInquiry: "Magpadala ng Inquiry",
+    sendPreOrderInquiry: "Magpadala ng Pre-order Inquiry",
+    markAsAvailable: "Gawing Available",
     manageProduct: "Pamahalaan ang Produkto",
     farmerFallback: "Magsasaka",
     produce: "Produkto",
     unit: "units",
     description: "Description",
+    expectedAvailable: "Inaasahang availability:",
+    orderUntil: "Hanggang sa:",
+    reserved: "naka-reserve",
   },
 
   transaction: {
@@ -1002,6 +1019,14 @@ export default {
     expired: "Nag-expire na",
     noDisplay: "Hindi na ipapakita sa pagbebenta",
     stockUnit: "stock",
+    sellingMode: "Mode ng Pagbebenta",
+    availableNow: "Available Na",
+    preOrder: "Pre-order",
+    preOrderSettings: "Mga Setting ng Pre-order",
+    expectedAvailableDate: "Inaasahang Petsa ng Availability",
+    preOrderDeadline: "Deadline ng Pre-order",
+    preOrderLimit: "Maximum na Kantidad ng Pre-order",
+    preOrderLimitHint: "Maximum na total na units na maaaring i-reserve ng mga customer",
   },
 
   farmerReviews: {
@@ -1072,6 +1097,10 @@ export default {
     resetAll: "I-reset Lahat",
     filters: "Mga Filter",
     applyFilters: "I-apply ang mga Filter",
+    sellingMode: "Mode ng Pagbebenta",
+    all: "Lahat",
+    availableNow: "Available Na",
+    preOrder: "Pre-order",
     nearestFarmer: "Pinakamalapit na magsasaka:",
     noNearbyFarmers: "Walang malapit na magsasaka.",
     youAreHere: "Nandito ka",

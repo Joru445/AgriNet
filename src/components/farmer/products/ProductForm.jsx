@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 
 import { useLanguage } from "../../../context/LanguageContext";
 
+const tomorrowDate = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+
 const categories = [
   "Vegetables",
   "Fruits",
@@ -196,6 +198,8 @@ export default function ProductForm({ form, onChange }) {
   const discountPercent = hasDiscount
     ? Math.round(((originalPriceNum - priceNum) / originalPriceNum) * 100)
     : 0;
+
+  const isPreorder = form.sellingMode === "preorder";
 
   // Determine duration preset selection
   const currentDurationStr =
@@ -519,6 +523,108 @@ export default function ProductForm({ form, onChange }) {
           </div>
         </label>
       </div>
+
+      {/* 9. Selling Mode */}
+      <div className="col-span-1 sm:col-span-2 order-9 sm:order-9">
+        <label className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wider block mb-2">
+          {t("products.sellingMode")} <span className="text-red-500">*</span>
+        </label>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() =>
+              onChange({ target: { name: "sellingMode", value: "available" } })
+            }
+            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 text-sm font-semibold transition-all cursor-pointer ${
+              !isPreorder
+                ? "border-[#2D6A4F] bg-[#2D6A4F]/10 text-[#2D6A4F] dark:border-[var(--agri-brand)] dark:bg-[var(--agri-brand)]/10 dark:text-[var(--agri-brand)]"
+                : "border-gray-300 dark:border-gray-600 bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:border-gray-400 dark:hover:border-gray-500"
+            }`}
+          >
+            <i className="ri-store-2-line text-base" />
+            {t("products.availableNow")}
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onChange({ target: { name: "sellingMode", value: "preorder" } })
+            }
+            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 text-sm font-semibold transition-all cursor-pointer ${
+              isPreorder
+                ? "border-[#2D6A4F] bg-[#2D6A4F]/10 text-[#2D6A4F] dark:border-[var(--agri-brand)] dark:bg-[var(--agri-brand)]/10 dark:text-[var(--agri-brand)]"
+                : "border-gray-300 dark:border-gray-600 bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:border-gray-400 dark:hover:border-gray-500"
+            }`}
+          >
+            <i className="ri-calendar-schedule-line text-base" />
+            {t("products.preOrder")}
+          </button>
+        </div>
+      </div>
+
+      {/* 10. Pre-order Fields (conditional) */}
+      {isPreorder && (
+        <div className="col-span-1 sm:col-span-2 order-10 sm:order-10 space-y-4 p-4 rounded-xl border border-[#2D6A4F]/20 dark:border-[var(--agri-brand)]/20 bg-[#2D6A4F]/5 dark:bg-[var(--agri-brand)]/5">
+          <div className="flex items-center gap-2 mb-2">
+            <i className="ri-calendar-schedule-line text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+            <span className="text-sm font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+              {t("products.preOrderSettings")}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Expected Availability Date */}
+            <div>
+              <label className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wider block mb-1.5">
+                {t("products.expectedAvailableDate")} <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="expectedAvailableDate"
+                value={form.expectedAvailableDate || ""}
+                onChange={onChange}
+                min={tomorrowDate}
+                className="w-full bg-[var(--agri-card)] border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 sm:py-3 text-sm font-medium text-[var(--agri-text)] hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:border-[#2D6A4F] dark:focus:border-[var(--agri-brand)] focus:ring-3 focus:ring-[#2D6A4F]/15 dark:focus:ring-[var(--agri-brand)]/20 shadow-2xs transition-all"
+              />
+            </div>
+
+            {/* Pre-order Deadline */}
+            <div>
+              <label className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wider block mb-1.5">
+                {t("products.preOrderDeadline")} <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="preOrderDeadline"
+                value={form.preOrderDeadline || ""}
+                onChange={onChange}
+                max={form.expectedAvailableDate || ""}
+                min={tomorrowDate}
+                className="w-full bg-[var(--agri-card)] border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 sm:py-3 text-sm font-medium text-[var(--agri-text)] hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:border-[#2D6A4F] dark:focus:border-[var(--agri-brand)] focus:ring-3 focus:ring-[#2D6A4F]/15 dark:focus:ring-[var(--agri-brand)]/20 shadow-2xs transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Pre-order Limit */}
+          <div>
+            <label className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wider block mb-1.5">
+              {t("products.preOrderLimit")} <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              name="preOrderLimit"
+              min="1"
+              step="1"
+              value={form.preOrderLimit || ""}
+              onChange={onChange}
+              placeholder="e.g. 100"
+              className="w-full bg-[var(--agri-card)] border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 sm:py-3 text-sm font-medium text-[var(--agri-text)] placeholder:text-[var(--agri-text-muted)] hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:border-[#2D6A4F] dark:focus:border-[var(--agri-brand)] focus:ring-3 focus:ring-[#2D6A4F]/15 dark:focus:ring-[var(--agri-brand)]/20 shadow-2xs transition-all"
+            />
+            <p className="mt-1 text-xs text-[var(--agri-text-muted)]">
+              {t("products.preOrderLimitHint")}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

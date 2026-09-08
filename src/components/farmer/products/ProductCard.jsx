@@ -21,7 +21,8 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
 
   const { remainingTime, isExpired } = useLiveRemainingTime(product);
   const stockNum = Number(product.stock ?? 0);
-  const isAvailable = product.available !== false && stockNum > 0 && !isExpired;
+  const isPreorder = product.sellingMode === "preorder";
+  const isAvailable = product.available !== false && (isPreorder || stockNum > 0) && !isExpired;
   const isLowStock = isAvailable && stockNum <= 5;
 
   const originalPriceNum = Number(product.originalPrice);
@@ -69,6 +70,11 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
                   {t("products.noDisplay")}
                 </span>
               </>
+            ) : isPreorder ? (
+              <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 flex items-center gap-0.5">
+                <i className="ri-calendar-schedule-line text-[9px]" />
+                {t("product.preOrder")}
+              </span>
             ) : !isAvailable ? (
               <span className="rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
                 {t("product.outOfStock")}
@@ -113,9 +119,11 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
               </span>
             )}
 
-            <span className="text-[var(--agri-text-muted)] text-[11px]">
-              • {product.stock} {product.unit || t("products.stockUnit")}
-            </span>
+            {!isPreorder && (
+              <span className="text-[var(--agri-text-muted)] text-[11px]">
+                • {product.stock} {product.unit || t("products.stockUnit")}
+              </span>
+            )}
           </div>
         </div>
 
@@ -166,6 +174,10 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
         {isExpired ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-gray-700 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
             {t("products.expired")}
+          </div>
+        ) : isPreorder ? (
+          <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-amber-500 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
+            {t("product.preOrder")}
           </div>
         ) : !isAvailable ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-red-600 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
@@ -229,9 +241,29 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
               )}
             </div>
 
-            <span className="text-[10px] sm:text-[11px] font-semibold text-[var(--agri-text-muted)] shrink-0">
-              {stockNum} {t("products.stockUnit")}
-            </span>
+            {isPreorder && product.preOrderLimit != null ? (
+              <div className="mt-2 space-y-1">
+                {product.preOrderDeadline && (
+                  <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                    <i className="ri-time-line" />
+                    {t("product.orderUntil")} {new Date(product.preOrderDeadline).toLocaleDateString()}
+                  </p>
+                )}
+                {product.expectedAvailableDate && (
+                  <p className="text-[10px] sm:text-xs text-[var(--agri-text-muted)] font-medium flex items-center gap-1">
+                    <i className="ri-calendar-line" />
+                    {t("product.availableDate")} {new Date(product.expectedAvailableDate).toLocaleDateString()}
+                  </p>
+                )}
+                <p className="text-[10px] sm:text-xs text-[var(--agri-text-muted)] font-medium">
+                  {product.reservedQuantity ?? 0} / {product.preOrderLimit} {product.unit || "units"} {t("product.reserved")}
+                </p>
+              </div>
+            ) : !isPreorder && (
+              <span className="text-[10px] sm:text-[11px] font-semibold text-[var(--agri-text-muted)] shrink-0">
+                {stockNum} {t("products.stockUnit")}
+              </span>
+            )}
           </div>
         </div>
 

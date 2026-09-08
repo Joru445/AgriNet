@@ -19,6 +19,7 @@ const DEFAULT_FILTERS = {
   rating: 0,
   sort: "relevant",
   showUnavailable: false,
+  sellingMode: "all",
 };
 
 export default function useMarketplace() {
@@ -59,6 +60,7 @@ export default function useMarketplace() {
       rating: Number(searchParams.get("rating") ?? DEFAULT_FILTERS.rating),
       sort: searchParams.get("sort") ?? DEFAULT_FILTERS.sort,
       showUnavailable: searchParams.get("showUnavailable") === "true",
+      sellingMode: searchParams.get("sellingMode") ?? DEFAULT_FILTERS.sellingMode,
     }),
     [searchParams],
   );
@@ -125,7 +127,8 @@ export default function useMarketplace() {
     filters.minPrice > 0 ||
     filters.maxPrice > 0 ||
     filters.rating > 0 ||
-    filters.showUnavailable;
+    filters.showUnavailable ||
+    filters.sellingMode !== "all";
 
   useEffect(() => {
     loadProducts({ reset: true });
@@ -171,6 +174,14 @@ export default function useMarketplace() {
       );
     }
 
+    // Selling mode filter
+    if (filters.sellingMode && filters.sellingMode !== "all") {
+      data = data.filter((product) => {
+        const mode = product.sellingMode === "preorder" ? "preorder" : "available";
+        return mode === filters.sellingMode;
+      });
+    }
+
     data = data.filter((product) => {
       const stockNum = Number(product.stock ?? 0);
       const isExpired = isProductExpired(product);
@@ -180,7 +191,8 @@ export default function useMarketplace() {
         return false;
       }
 
-      const isAvailable = product.available !== false && stockNum > 0;
+      const isPreorder = product.sellingMode === "preorder";
+      const isAvailable = product.available !== false && (isPreorder || stockNum > 0);
 
       if (!filters.showUnavailable && !isAvailable) {
         return false;
@@ -277,6 +289,8 @@ export default function useMarketplace() {
       value ? params.set(key, value) : params.delete(key);
     } else if (key === "showUnavailable") {
       value ? params.set(key, "true") : params.delete(key);
+    } else if (key === "sellingMode") {
+      value && value !== "all" ? params.set(key, value) : params.delete(key);
     } else if (key === "rating" || key === "minPrice" || key === "maxPrice") {
       Number(value) > 0 ? params.set(key, value) : params.delete(key);
     } else if (value !== defaultValue && Number(value) !== defaultValue) {

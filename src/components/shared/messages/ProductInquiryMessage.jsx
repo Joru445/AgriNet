@@ -150,11 +150,21 @@ export default function ProductInquiryMessage({
               </button>
             )}
 
-            {message.inquiryStatus === "accepted" && (
+            {(message.inquiryStatus === "accepted" || message.inquiryStatus === "reserved") && (
               <div className="mt-3 space-y-2">
-                <div className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-center text-xs font-semibold text-emerald-700 dark:text-emerald-300 flex items-center justify-center gap-1.5 border border-emerald-500/20">
-                  <i className="ri-checkbox-circle-fill text-emerald-600" />
-                  <span>{t("productInquiryMsg.inquiryAccepted")}</span>
+                <div
+                  className={`rounded-lg px-3 py-1.5 text-center text-xs font-semibold flex items-center justify-center gap-1.5 border ${
+                    message.inquiryStatus === "reserved"
+                      ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20"
+                      : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
+                  }`}
+                >
+                  <i className={message.inquiryStatus === "reserved" ? "ri-calendar-schedule-line" : "ri-checkbox-circle-fill"} />
+                  <span>
+                    {message.inquiryStatus === "reserved"
+                      ? t("productInquiryMsg.preOrderReserved")
+                      : t("productInquiryMsg.inquiryAccepted")}
+                  </span>
                 </div>
                 <Link
                   to={isFarmer ? `/farmer/transactions` : `/transactions`}

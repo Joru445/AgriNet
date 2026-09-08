@@ -8,6 +8,10 @@ export default function InquiryTabs({ activeTab, onChange }) {
       label: t("transactions.status.all"),
     },
     {
+      id: "reserved",
+      label: t("transactions.status.reserved"),
+    },
+    {
       id: "accepted",
       label: t("transactions.status.accepted"),
     },

@@ -37,8 +37,9 @@ export default function ProductCard({
 
   const { remainingTime, isExpired } = useLiveRemainingTime(product);
   const stockNum = Number(product.stock ?? 0);
-  const isAvailable = product.available !== false && stockNum > 0 && !isExpired;
-  const isLowStock = isAvailable && stockNum <= 5;
+  const isPreorder = product.sellingMode === "preorder";
+  const isAvailable = product.available !== false && (isPreorder || stockNum > 0) && !isExpired;
+  const isLowStock = isAvailable && stockNum <= 5 && !isPreorder;
 
   // Auto delete / vanish completely from consumer view once duration is done
   if (isExpired) {
@@ -87,7 +88,11 @@ export default function ProductCard({
         </div>
 
         {/* Stock Badge - Stuck to Top Right Corner */}
-        {!isAvailable ? (
+        {isPreorder ? (
+          <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-amber-500 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
+            {t("product.preOrder")}
+          </div>
+        ) : !isAvailable ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
             {t("product.outOfStock")}
           </div>
@@ -172,12 +177,35 @@ export default function ProductCard({
               )}
             </div>
 
-            {isAvailable && (
+            {!isPreorder && isAvailable && (
             <span className="text-[10px] sm:text-xs font-semibold text-[var(--agri-text-muted)] shrink-0">
                 {t("product.stockCount", { count: stockNum })}
               </span>
             )}
           </div>
+
+          {/* Pre-order info */}
+          {isPreorder && (
+            <div className="mt-2 space-y-1">
+              {product.preOrderDeadline && (
+                <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                  <i className="ri-time-line" />
+                  {t("product.orderUntil")} {new Date(product.preOrderDeadline).toLocaleDateString()}
+                </p>
+              )}
+              {product.expectedAvailableDate && (
+                <p className="text-[10px] sm:text-xs text-[var(--agri-text-muted)] font-medium flex items-center gap-1">
+                  <i className="ri-calendar-line" />
+                  {t("product.availableDate")} {new Date(product.expectedAvailableDate).toLocaleDateString()}
+                </p>
+              )}
+              {product.preOrderLimit != null && (
+                <p className="text-[10px] sm:text-xs text-[var(--agri-text-muted)] font-medium">
+                  {product.reservedQuantity ?? 0} / {product.preOrderLimit} {product.unit || "units"} {t("product.reserved")}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Card Footer: Rating & Distance */}

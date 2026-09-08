@@ -121,6 +121,7 @@ export default function useProducts() {
 
       await apiCreateProduct({
         ...form,
+        farmerId: profile.uid,
         images: uploadedImages,
       });
 
@@ -144,6 +145,7 @@ export default function useProducts() {
 
       await apiUpdateProduct(form.id, {
         ...form,
+        farmerId: profile.uid,
         images: uploadedImages,
       });
 

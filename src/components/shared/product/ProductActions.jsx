@@ -3,12 +3,16 @@ import { getMessagesPath } from "../../../utils/routes";
 import { useLanguage } from "../../../context/LanguageContext";
 import { useAuth } from "../../../context/AuthContext";
 import { useFavorites } from "../../../context/FavoritesContext";
+import { apiMarkProductAsAvailable } from "../../../services/product.service";
+import { showToast } from "../../../utils/toast";
 
-export default function ProductActions({ product, farmer, isOwner }) {
+export default function ProductActions({ product, farmer, isOwner, onProductUpdate }) {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { profile } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
+
+  const isPreorder = product.sellingMode === "preorder";
 
   function handleInquiry() {
     if (!profile) {
@@ -28,6 +32,16 @@ export default function ProductActions({ product, farmer, isOwner }) {
 
   function handleProduct() {
     navigate(`/farmer/products`);
+  }
+
+  async function handleMarkAvailable() {
+    try {
+      await apiMarkProductAsAvailable(product.id);
+      showToast.success("Product is now available for immediate purchase.");
+      onProductUpdate?.();
+    } catch (error) {
+      showToast.error(error.message || "Failed to mark product as available.");
+    }
   }
 
   return (
@@ -50,20 +64,35 @@ export default function ProductActions({ product, farmer, isOwner }) {
       )}
 
       {isOwner ? (
-        <button
-          onClick={handleProduct}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
-        >
-          <i className="ri-settings-3-line text-lg" />
-          {t("productDetails.manageProduct")}
-        </button>
+        <div className="space-y-2">
+          {isPreorder && (
+            <button
+              onClick={handleMarkAvailable}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-amber-500/20 transition hover:bg-amber-600 active:scale-[0.99] cursor-pointer"
+            >
+              <i className="ri-store-2-line text-lg" />
+              {t("productDetails.markAsAvailable")}
+            </button>
+          )}
+          <button
+            onClick={handleProduct}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
+          >
+            <i className="ri-settings-3-line text-lg" />
+            {t("productDetails.manageProduct")}
+          </button>
+        </div>
       ) : (
         <button
           onClick={handleInquiry}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
         >
           <i className="ri-chat-1-line text-lg" />
-          {profile ? t("productDetails.sendInquiry") : t("guest.loginToSendInquiry")}
+          {profile
+            ? isPreorder
+              ? t("productDetails.sendPreOrderInquiry")
+              : t("productDetails.sendInquiry")
+            : t("guest.loginToSendInquiry")}
         </button>
       )}
     </section>

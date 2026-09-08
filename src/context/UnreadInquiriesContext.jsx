@@ -29,6 +29,7 @@ function getActionMessage(inq, role) {
     Boolean(inq.productReviewId);
 
   if (role === "consumer") {
+    if (status === "reserved") return "Your pre-order is reserved!";
     if (status === "accepted") return "Farmer accepted your inquiry!";
     if (status === "ongoing") return "Transaction is ongoing";
     if (status === "awaiting_proof") return "Please upload transaction proof";
@@ -56,6 +57,7 @@ function hasActionBadge(inq, role) {
     Boolean(inq.productReviewId);
 
   if (role === "consumer") {
+    if (status === "reserved") return true;
     if (status === "accepted") return true;
     if (status === "ongoing") return true;
     if (status === "awaiting_proof") return true;

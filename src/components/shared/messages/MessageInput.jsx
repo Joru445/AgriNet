@@ -224,9 +224,17 @@ export default function MessageInput({
 
   const isAvailable = inquiryProduct?.available === true;
 
-  const hasStock = Number.isInteger(stock) && stock > 0;
+  const isPreorder = inquiryProduct?.sellingMode === "preorder";
 
-  const isMaxQuantity = hasStock && Number(quantity) >= stock;
+  const hasStock = isPreorder
+    ? true // Pre-order products are always "available" for reservation
+    : Number.isInteger(stock) && stock > 0;
+
+  const maxQuantity = isPreorder
+    ? Math.max(1, Number(inquiryProduct?.preOrderLimit ?? 0) - Number(inquiryProduct?.reservedQuantity ?? 0))
+    : stock;
+
+  const isMaxQuantity = hasStock && Number(quantity) >= maxQuantity;
 
   const canSend = Boolean(value.trim() || selectedImage) && !uploadingImage && !isSending;
 
@@ -250,7 +258,7 @@ export default function MessageInput({
       />
 
       {inquiryProduct && (
-        <div className="relative mb-3 rounded-2xl border border-agri-border bg-agri-bg-surface p-3">
+        <div className="relative mb-3 rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-3">
           {onCancelInquiry && (
             <button
               type="button"
@@ -287,9 +295,14 @@ export default function MessageInput({
                 </p>
               )}
 
-              {isAvailable && hasStock && (
+              {isAvailable && hasStock && !isPreorder && (
                 <p className="mt-0.5 text-xs text-(--agri-text-muted)">
                   {t("messageInput.available", { count: stock, unit: inquiryProduct.unit || "units" })}
+                </p>
+              )}
+              {isPreorder && (
+                <p className="mt-0.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                  {t("messageInput.preOrderAvailable", { count: maxQuantity, unit: inquiryProduct.unit || "units" })}
                 </p>
               )}
             </div>
@@ -297,12 +310,7 @@ export default function MessageInput({
 
           {/* Quantity + Send */}
           <div className="mt-3 flex items-center justify-between gap-3">
-            <div>
-              <p className="mb-1.5 text-xs font-medium text-(--agri-text-secondary)">
-                {t("messageInput.quantity")}
-              </p>
-
-              <div className="flex h-10 items-center rounded-xl border border-(--agri-input-border)] bg-(--agri-input-bg)">
+            <div className="flex h-10 items-center rounded-xl border border-(--agri-input-border)] bg-(--agri-input-bg)">
                 <button
                   type="button"
                   onClick={decreaseQuantity}
@@ -324,7 +332,7 @@ export default function MessageInput({
                 <input
                   type="number"
                   min="1"
-                  max={hasStock ? stock : undefined}
+                  max={hasStock ? maxQuantity : undefined}
                   value={quantity}
                   onChange={handleQuantityChange}
                   className="
@@ -356,7 +364,6 @@ export default function MessageInput({
                   <i className="ri-add-line" />
                 </button>
               </div>
-            </div>
 
             <button
               type="button"
@@ -378,7 +385,7 @@ export default function MessageInput({
                 disabled:opacity-50
               "
             >
-              {!isAvailable ? t("messageInput.unavailable") : t("messageInput.sendInquiry")}
+              {!isAvailable ? t("messageInput.unavailable") : isPreorder ? t("messageInput.sendPreOrderInquiry") : t("messageInput.sendInquiry")}
             </button>
           </div>
         </div>

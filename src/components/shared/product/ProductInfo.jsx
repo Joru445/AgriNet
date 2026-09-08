@@ -35,6 +35,7 @@ export default function ProductInfo({
 
   const { remainingTime, isExpired } = useLiveRemainingTime(product);
   const isAvailable = product.available !== false && !isExpired;
+  const isPreorder = product.sellingMode === "preorder";
   const priceFormatted = getFormatPrice(priceNum);
   const originalPriceFormatted = getFormatPrice(originalPriceNum);
   const categoryIcon =
@@ -105,25 +106,34 @@ export default function ProductInfo({
 
       {/* Badges: Category · Stock · Duration */}
       <div className="mt-3 flex items-center gap-2 flex-wrap">
+        {isPreorder && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-700 dark:text-amber-300">
+            <i className="ri-calendar-schedule-line text-amber-500 text-sm" />
+            <span>{t("product.preOrder")}</span>
+          </span>
+        )}
+
         <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2D6A4F]/10 border border-[#2D6A4F]/20 px-2.5 py-1 text-xs font-bold text-[var(--agri-text)]">
           <i className={`${categoryIcon} text-[#2D6A4F] dark:text-[var(--agri-brand)] text-sm`} />
           <span>{product.category || t("productDetails.produce")}</span>
         </span>
 
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold border ${
-            isAvailable
-              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
-              : "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20"
-          }`}
-        >
+        {!isPreorder && (
           <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              isAvailable ? "bg-emerald-600" : "bg-red-600"
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold border ${
+              isAvailable
+                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
+                : "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20"
             }`}
-          />
-          {isAvailable ? t("product.inStock") : t("product.outOfStock")}
-        </span>
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                isAvailable ? "bg-emerald-600" : "bg-red-600"
+              }`}
+            />
+            {isAvailable ? t("product.inStock") : t("product.outOfStock")}
+          </span>
+        )}
 
         {remainingTime && isAvailable && (
           <span className="inline-flex items-center rounded-full bg-[var(--agri-hover)] border border-[var(--agri-border)] px-2 py-0.5 text-xs font-bold text-[var(--agri-text-secondary)]">
@@ -131,6 +141,51 @@ export default function ProductInfo({
           </span>
         )}
       </div>
+
+      {/* Pre-order Details */}
+      {isPreorder && (
+        <div className="mt-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-2">
+          {product.expectedAvailableDate && (
+            <div className="flex items-center gap-2 text-sm">
+              <i className="ri-calendar-check-line text-amber-500" />
+              <span className="text-[var(--agri-text-secondary)]">
+                {t("productDetails.expectedAvailable")}{" "}
+                <span className="font-semibold text-[var(--agri-text)]">
+                  {new Date(product.expectedAvailableDate).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </span>
+              </span>
+            </div>
+          )}
+          {product.preOrderDeadline && (
+            <div className="flex items-center gap-2 text-sm">
+              <i className="ri-timer-line text-amber-500" />
+              <span className="text-[var(--agri-text-secondary)]">
+                {t("productDetails.orderUntil")}{" "}
+                <span className="font-semibold text-[var(--agri-text)]">
+                  {new Date(product.preOrderDeadline).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </span>
+              </span>
+            </div>
+          )}
+          {product.preOrderLimit != null && (
+            <div className="flex items-center gap-2 text-sm">
+              <i className="ri-stack-line text-amber-500" />
+              <span className="text-[var(--agri-text-secondary)]">
+                {product.reservedQuantity ?? 0} / {product.preOrderLimit} {product.unit || t("productDetails.unit")}{" "}
+                {t("productDetails.reserved")}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Rating + Stock divider */}
       <div className="mt-4 pt-3 border-t border-[var(--agri-border-subtle)] flex items-center gap-3 flex-wrap">

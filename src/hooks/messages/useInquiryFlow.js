@@ -100,26 +100,54 @@ export default function useInquiryFlow({
 
       const parsedQuantity = Number(quantity);
       const stock = Number(inquiryProduct.stock);
+      const isPreorder = inquiryProduct.sellingMode === "preorder";
 
       if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1) {
         showToast.error("Please enter a valid quantity.");
         return;
       }
 
-      if (
-        inquiryProduct.available !== true ||
-        !Number.isInteger(stock) ||
-        stock < 1
-      ) {
-        showToast.error("This product is currently unavailable.");
-        return;
-      }
+      if (isPreorder) {
+        // Pre-order validation: check deadline and limit
+        const now = new Date();
+        const deadline = inquiryProduct.preOrderDeadline
+          ? new Date(inquiryProduct.preOrderDeadline)
+          : null;
+        if (deadline && now > deadline) {
+          showToast.error("The pre-order deadline has passed.");
+          return;
+        }
 
-      if (parsedQuantity > stock) {
-        showToast.error(
-          `Only ${stock} ${inquiryProduct.unit || "units"} available.`,
-        );
-        return;
+        const preOrderLimit = Number(inquiryProduct.preOrderLimit ?? 0);
+        const reservedQuantity = Number(inquiryProduct.reservedQuantity ?? 0);
+        const remaining = preOrderLimit - reservedQuantity;
+
+        if (remaining <= 0) {
+          showToast.error("This pre-order product has reached its reservation limit.");
+          return;
+        }
+
+        if (parsedQuantity > remaining) {
+          showToast.error(`Only ${remaining} units can be reserved.`);
+          return;
+        }
+      } else {
+        // Normal product validation
+        if (
+          inquiryProduct.available !== true ||
+          !Number.isInteger(stock) ||
+          stock < 1
+        ) {
+          showToast.error("This product is currently unavailable.");
+          return;
+        }
+
+        if (parsedQuantity > stock) {
+          showToast.error(
+            `Only ${stock} ${inquiryProduct.unit || "units"} available.`,
+          );
+          return;
+        }
       }
 
       try {

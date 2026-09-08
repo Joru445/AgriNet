@@ -575,6 +575,9 @@ export async function cancelInquiry({ inquiryId, actor }) {
 
 /**
  * Validate an inquiry status transition.
+ *
+ * Standard products: farmer starts (accepted → ongoing)
+ * Pre-order products: consumer starts (reserved → ongoing)
  */
 function assertTransition({ inquiry, currentStatus, status, actor }) {
   const isFarmer = actor.role === "farmer" && inquiry.farmerId === actor.uid;
@@ -586,11 +589,17 @@ function assertTransition({ inquiry, currentStatus, status, actor }) {
     throw new Error("You cannot update this inquiry.");
   }
 
+  const isPreorder = inquiry.type === "preorder";
+
   const isAllowed =
     /*
-     * Farmer starts the transaction.
+     * Standard: farmer starts the transaction.
      */
-    (isFarmer && currentStatus === "accepted" && status === "ongoing") ||
+    (!isPreorder && isFarmer && currentStatus === "accepted" && status === "ongoing") ||
+    /*
+     * Pre-order: consumer starts the transaction when product is available.
+     */
+    (isPreorder && isConsumer && currentStatus === "reserved" && status === "ongoing") ||
     /*
      * Consumer requests completion.
      */
@@ -598,13 +607,13 @@ function assertTransition({ inquiry, currentStatus, status, actor }) {
       currentStatus === "ongoing" &&
       status === "awaiting_proof") ||
     /*
-     * Cancellation.
+     * Cancellation from accepted (standard), reserved (preorder), or ongoing.
      */
     (isFarmer &&
-      ["accepted", "ongoing"].includes(currentStatus) &&
+      ["accepted", "reserved", "ongoing"].includes(currentStatus) &&
       status === "cancelled") ||
     (isConsumer &&
-      ["accepted", "ongoing"].includes(currentStatus) &&
+      ["accepted", "reserved", "ongoing"].includes(currentStatus) &&
       status === "cancelled");
 
   if (!isAllowed) {
