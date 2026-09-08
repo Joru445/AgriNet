@@ -49,7 +49,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
       </div>
 
       {/* ── Right actions ─────────────────────────────── */}
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
         {isAnonymous ? (
           <>
             <Link
@@ -67,34 +67,37 @@ export default function Header({ user, collapsed, hideBackButton }) {
           </>
         ) : (
           <>
-            {/* Notifications */}
-            <Link
-              to={notificationPath}
-              data-onboarding="bell"
-              className="relative flex size-9 shrink-0 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]"
-              aria-label={t("header.notifications")}
-            >
-              <i className="ri-notification-3-line text-lg" />
-              {notifCount > 0 && (
-                <Badge count={notifCount} className="-top-1.5 right-0.5" />
-              )}
-            </Link>
+            {/* Notifications & Favorites grouped beside each other */}
+            <div className="flex items-center gap-0.5 sm:gap-1">
+              <Link
+                to={notificationPath}
+                data-onboarding="bell"
+                className="relative flex size-9 shrink-0 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]"
+                aria-label={t("header.notifications")}
+              >
+                <i className="ri-notification-3-line text-lg" />
+                {notifCount > 0 && (
+                  <Badge count={notifCount} className="-top-1.5 right-0.5" />
+                )}
+              </Link>
 
-            {/* Favorites */}
-            <Link
-              to={favoritesPath}
-              data-onboarding="header-favorites"
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]"
-              aria-label={t("nav.favorites")}
-            >
-              <i className="ri-heart-line text-lg" />
-            </Link>
+              {user?.role !== "farmer" && (
+                <Link
+                  to={favoritesPath}
+                  data-onboarding="header-favorites"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]"
+                  aria-label={t("nav.favorites")}
+                >
+                  <i className="ri-heart-line text-lg" />
+                </Link>
+              )}
+            </div>
 
             {/* Profile */}
             <Link
               to={mePath}
               data-onboarding="header-profile"
-              className="flex items-center gap-2 px-2.5 py-1 max-w-45 md:max-w-60 rounded-lg transition-colors hover:bg-[var(--agri-hover)]"
+              className="flex items-center gap-2 px-1.5 sm:px-2.5 py-1 max-w-36 sm:max-w-45 md:max-w-60 rounded-lg transition-colors hover:bg-[var(--agri-hover)]"
             >
               <UserIdentity user={user} showUsername={false} showRole={true} />
             </Link>

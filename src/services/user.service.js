@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   limit,
   onSnapshot,
   orderBy,
@@ -50,7 +51,7 @@ export async function createUser(data) {
 
 /*
  * ============================================================
- * GET USER PROFILE (via backend API)
+ * GET USER PROFILE (via backend API with Firestore fallback)
  * ============================================================
  */
 
@@ -60,7 +61,7 @@ export async function getUserProfile(uid, requesterUid) {
   }
 
   const cached = getCachedUserProfile(uid, requesterUid);
-  if (cached) {
+  if (cached && cached.role) {
     return cached;
   }
 
@@ -72,14 +73,26 @@ export async function getUserProfile(uid, requesterUid) {
     const result = await apiRequest(endpoint);
     const profile = result.user;
 
-    if (profile) {
+    if (profile && profile.role) {
       setCachedUserProfile(uid, profile);
+      return profile;
     }
-
-    return profile || null;
   } catch {
-    return null;
+    // API failed or unavailable; fallback to direct Firestore document read
   }
+
+  try {
+    const userDoc = await getDoc(doc(db, "users", uid));
+    if (userDoc.exists()) {
+      const userData = { uid: userDoc.id, ...userDoc.data() };
+      setCachedUserProfile(uid, userData);
+      return userData;
+    }
+  } catch (firestoreErr) {
+    console.error("Firestore fallback getUserProfile failed:", firestoreErr);
+  }
+
+  return cached || null;
 }
 
 /*

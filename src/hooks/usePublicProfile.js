@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
 import { getUserProfile } from "../services/user.service";
@@ -37,31 +37,76 @@ export default function usePublicProfile() {
     totalDeals: 0,
   });
 
-  const loadConsumerStats = useCallback(async (targetUid) => {
+  const loadConsumerStats = useCallback(async (targetUid, userData = null) => {
     try {
-      let completed = 0;
-      let total = 0;
+      // 1. Direct check on user profile document synced stats
+      const userCompleted = Number(
+        userData?.completedDeals ??
+          userData?.transactionStats?.completedDeals ??
+          userData?.dealsCompleted ??
+          -1,
+      );
+      const userTotal = Number(
+        userData?.totalDeals ??
+          userData?.transactionStats?.totalDeals ??
+          userData?.dealsTotal ??
+          -1,
+      );
 
-      // Direct inquiry query fallback
-      const inqRef = collection(db, "inquiries");
-      const q = query(inqRef, where("consumerId", "==", targetUid));
-      const inqSnap = await getDocs(q);
-      if (!inqSnap.empty) {
-        total = inqSnap.size;
-        completed = inqSnap.docs.filter(
-          (d) => d.data().status === "completed",
-        ).length;
+      if (userCompleted >= 0 && userTotal >= 0) {
+        return {
+          completedDeals: userCompleted,
+          totalDeals: Math.max(userTotal, userCompleted),
+        };
       }
 
-      // Reviews fallback
-      if (completed === 0 && total === 0) {
+      let completed = userCompleted >= 0 ? userCompleted : 0;
+      let total = userTotal >= 0 ? userTotal : 0;
+
+      // 2. Direct inquiry query (works when viewer is the consumer or authorized)
+      try {
+        const inqRef = collection(db, "inquiries");
+        const q = query(inqRef, where("consumerId", "==", targetUid));
+        const inqSnap = await getDocs(q);
+        if (!inqSnap.empty) {
+          const docs = inqSnap.docs.map((d) => d.data());
+          const comp = docs.filter(
+            (d) => d.status === "completed" || d.status === "resolved",
+          ).length;
+          const tot = docs.length;
+          return {
+            completedDeals: comp,
+            totalDeals: Math.max(tot, comp),
+          };
+        }
+      } catch {
+        // Expected for other users due to inquiry privacy rules
+      }
+
+      // 3. Public reviews collection fallback (readable by all users)
+      try {
         const revRef = collection(db, "reviews");
         const qRev = query(revRef, where("reviewerId", "==", targetUid));
         const revSnap = await getDocs(qRev);
         if (!revSnap.empty) {
-          completed = revSnap.size;
-          total = revSnap.size;
+          completed = Math.max(completed, revSnap.size);
+          total = Math.max(total, revSnap.size);
         }
+      } catch (revErr) {
+        console.warn("Reviews fallback error:", revErr);
+      }
+
+      // 4. Public product-reviews collection fallback (readable by all users)
+      try {
+        const prodRevRef = collection(db, "product-reviews");
+        const qProdRev = query(prodRevRef, where("reviewerId", "==", targetUid));
+        const prodRevSnap = await getDocs(qProdRev);
+        if (!prodRevSnap.empty) {
+          completed = Math.max(completed, prodRevSnap.size);
+          total = Math.max(total, prodRevSnap.size);
+        }
+      } catch (prodRevErr) {
+        console.warn("Product reviews fallback error:", prodRevErr);
       }
 
       return {
@@ -70,7 +115,10 @@ export default function usePublicProfile() {
       };
     } catch (error) {
       console.error("Failed to load consumer stats:", error);
-      return { completedDeals: 0, totalDeals: 0 };
+      return {
+        completedDeals: Number(userData?.completedDeals || 0),
+        totalDeals: Number(userData?.totalDeals || userData?.completedDeals || 0),
+      };
     }
   }, []);
 
@@ -86,14 +134,14 @@ export default function usePublicProfile() {
       // Check cache first
       const cacheKey = CACHE_KEY(uid);
       const cached = pageCache.get(cacheKey);
-      if (cached) {
+      if (cached && cached.profile && cached.role) {
         setProfile(cached.profile);
         setRole(cached.role);
-        setProducts(cached.products);
-        setReviews(cached.reviews);
-        setReviewCount(cached.reviewCount);
-        setAverageRating(cached.averageRating);
-        setStats(cached.stats);
+        setProducts(cached.products || []);
+        setReviews(cached.reviews || []);
+        setReviewCount(cached.reviewCount || 0);
+        setAverageRating(cached.averageRating || 0);
+        setStats(cached.stats || { loading: false, completedDeals: 0, totalDeals: 0 });
         setLoading(false);
         setLoadingProducts(false);
         setLoadingReviews(false);
@@ -101,10 +149,25 @@ export default function usePublicProfile() {
       }
 
       const isOwnProfile = authProfile?.uid === uid;
-      const [user, farmerData] = await Promise.all([
-        getUserProfile(uid, authProfile?.uid).catch(() => null),
-        getFarmerById(uid).catch(() => null),
+
+      // 1. Fetch user doc and farmer doc directly from Firestore in parallel
+      const [userSnap, farmerSnap] = await Promise.all([
+        getDoc(doc(db, "users", uid)).catch(() => null),
+        getDoc(doc(db, "farmers", uid)).catch(() => null),
       ]);
+
+      let user = userSnap?.exists() ? { uid: userSnap.id, ...userSnap.data() } : null;
+      let farmerData = farmerSnap?.exists() ? { uid: farmerSnap.id, ...farmerSnap.data() } : null;
+
+      // 2. If neither exists directly, fallback to services
+      if (!user && !farmerData) {
+        const [fallbackUser, fallbackFarmer] = await Promise.all([
+          getUserProfile(uid, authProfile?.uid).catch(() => null),
+          getFarmerById(uid).catch(() => null),
+        ]);
+        user = fallbackUser;
+        farmerData = fallbackFarmer;
+      }
 
       if (!user && !farmerData) {
         setProfile(null);
@@ -114,11 +177,15 @@ export default function usePublicProfile() {
         return;
       }
 
+      // 3. Determine the target user's role:
+      // A user is a FARMER if:
+      // - farmerData document exists, OR
+      // - user.role === "farmer"
+      // Otherwise, the user is a CONSUMER.
       const detectedRole =
-        (farmerData ? "farmer" : null) ||
-        user?.role ||
-        (isOwnProfile && authProfile?.role ? authProfile.role : null) ||
-        "consumer";
+        farmerData || user?.role === "farmer"
+          ? "farmer"
+          : (user?.role || (isOwnProfile ? authProfile?.role : null) || "consumer");
 
       const userResult = {
         ...(user || {}),
@@ -142,12 +209,12 @@ export default function usePublicProfile() {
 
         try {
           const [productsData, reviewsData] = await Promise.all([
-            getFarmerProducts(uid),
-            getFarmerReviews(uid),
+            getFarmerProducts(uid).catch(() => []),
+            getFarmerReviews(uid).catch(() => []),
           ]);
 
           const productIds = productsData.map((p) => p.id);
-          const reviewSummaries = await getProductReviewSummaries(productIds);
+          const reviewSummaries = await getProductReviewSummaries(productIds).catch(() => new Map());
 
           loadedProducts = productsData.map((p) => {
             const summary = reviewSummaries.get(p.id);
@@ -168,7 +235,7 @@ export default function usePublicProfile() {
                     0,
                   ) / loadedReviewCount
                 )
-              : 0;
+              : Number(farmerData?.rating || user?.rating || 0);
 
           setProducts(loadedProducts);
           setReviews(loadedReviews);
@@ -178,9 +245,7 @@ export default function usePublicProfile() {
           // Enrich reviews in the background
           enrichFarmerReviews(loadedReviews)
             .then((enriched) => setReviews(enriched))
-            .catch(() => {
-              /* noop */
-            });
+            .catch(() => {});
         } catch (error) {
           console.error("Failed to load public profile data:", error);
         } finally {
@@ -192,7 +257,7 @@ export default function usePublicProfile() {
         setLoadingReviews(false);
 
         setStats({ loading: true, completedDeals: 0, totalDeals: 0 });
-        loadedStats = await loadConsumerStats(uid);
+        loadedStats = await loadConsumerStats(uid, userResult);
         setStats({ loading: false, ...loadedStats });
       }
 

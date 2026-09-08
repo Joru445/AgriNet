@@ -1,5 +1,6 @@
 import {
   doc,
+  getDoc,
   setDoc,
   serverTimestamp,
 } from "firebase/firestore";
@@ -37,16 +38,34 @@ export async function getFarmers() {
 }
 
 export async function getFarmerById(uid) {
-  const result = await apiRequest(`/farmers/${uid}`);
-  const farmer = result.data;
-
-  if (!farmer) {
-    throw new Error("Farmer not found.");
+  if (!uid) {
+    throw new Error("Farmer UID is required.");
   }
 
-  setCachedUserProfile(uid, farmer);
+  try {
+    const result = await apiRequest(`/farmers/${uid}`);
+    const farmer = result.data;
 
-  return farmer;
+    if (farmer) {
+      setCachedUserProfile(uid, { ...farmer, role: "farmer" });
+      return farmer;
+    }
+  } catch {
+    // API request failed; fallback to direct Firestore read
+  }
+
+  try {
+    const farmerDoc = await getDoc(doc(db, "farmers", uid));
+    if (farmerDoc.exists()) {
+      const farmerData = { uid: farmerDoc.id, role: "farmer", ...farmerDoc.data() };
+      setCachedUserProfile(uid, farmerData);
+      return farmerData;
+    }
+  } catch (firestoreErr) {
+    console.error("Firestore fallback getFarmerById failed:", firestoreErr);
+  }
+
+  return null;
 }
 
 /**

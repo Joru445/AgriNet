@@ -4,6 +4,8 @@ import {
   useEffect,
   useState,
 } from "react";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../firebase/firestore";
 import { useAuth } from "./AuthContext";
 import { subscribeUserInquiries } from "../services/inquiry.service";
 
@@ -43,6 +45,29 @@ export function InquiriesProvider({ children }) {
       (data) => {
         setInquiries(data);
         setLoading(false);
+
+        // Keep the consumer's completedDeals and totalDeals synced in Firestore
+        // so farmers viewing their profile see real-time transaction stats
+        if (profile.role === "consumer" && Array.isArray(data)) {
+          const completed = data.filter(
+            (i) => i.status === "completed" || i.status === "resolved",
+          ).length;
+          const total = data.length;
+          const cancelled = data.filter(
+            (i) => i.status === "cancelled",
+          ).length;
+
+          if (
+            profile.completedDeals !== completed ||
+            profile.totalDeals !== total
+          ) {
+            updateDoc(doc(db, "users", profile.uid), {
+              completedDeals: completed,
+              totalDeals: total,
+              cancelledDeals: cancelled,
+            }).catch(() => {});
+          }
+        }
       },
       (err) => {
         console.error("Failed to subscribe to inquiries:", err);
@@ -53,7 +78,7 @@ export function InquiriesProvider({ children }) {
     );
 
     return unsubscribe;
-  }, [profile?.uid, profile?.role]);
+  }, [profile?.uid, profile?.role, profile?.completedDeals, profile?.totalDeals]);
 
   return (
     <InquiriesContext.Provider value={{ inquiries, loading, error }}>

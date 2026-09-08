@@ -7,6 +7,7 @@ import ProductCard from "../../common/ProductCard";
 export default function StoreProducts({ farmer, products = [] }) {
   const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [showAll, setShowAll] = useState(false);
 
   const CATEGORIES = [
     { id: "All", label: t("storeProfile.all"), icon: "ri-apps-2-line" },
@@ -25,6 +26,16 @@ export default function StoreProducts({ farmer, products = [] }) {
     return products.filter((p) => p.category === selectedCategory);
   }, [products, selectedCategory]);
 
+  const isLimited = filteredProducts.length > 4 && !showAll;
+  const displayedProducts = isLimited
+    ? filteredProducts.slice(0, 4)
+    : filteredProducts;
+
+  const handleSelectCategory = (catId) => {
+    setSelectedCategory(catId);
+    setShowAll(false);
+  };
+
   return (
     <section className="px-4 sm:px-6 py-8">
       {/* Products Header */}
@@ -33,11 +44,33 @@ export default function StoreProducts({ farmer, products = [] }) {
           <h2 className="text-2xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">{t("storeProfile.products")}</h2>
 
           <p className="text-sm text-[var(--agri-text-muted)]">
-            {filteredProducts.length === 1
-              ? t("storeProfile.productAvailableSingular", { count: filteredProducts.length })
-              : t("storeProfile.productsAvailable", { count: filteredProducts.length })}
+            {filteredProducts.length === 0
+              ? t("storeProfile.noProductsYet")
+              : isLimited
+                ? t("storeProfile.showingOutOfProducts", {
+                    shown: 4,
+                    total: filteredProducts.length,
+                  })
+                : filteredProducts.length === 1
+                  ? t("storeProfile.productAvailableSingular", { count: filteredProducts.length })
+                  : t("storeProfile.productsAvailable", { count: filteredProducts.length })}
           </p>
         </div>
+
+        {filteredProducts.length > 4 && (
+          <button
+            type="button"
+            onClick={() => setShowAll((prev) => !prev)}
+            className="self-start sm:self-auto inline-flex items-center gap-1.5 text-sm font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:underline cursor-pointer"
+          >
+            <span>
+              {showAll
+                ? t("storeProfile.showLess")
+                : t("storeProfile.viewAllProducts")}
+            </span>
+            <i className={showAll ? "ri-arrow-up-s-line" : "ri-arrow-right-s-line"} />
+          </button>
+        )}
       </div>
 
       {/* Category Chips - In bottom of Products text */}
@@ -49,7 +82,7 @@ export default function StoreProducts({ farmer, products = [] }) {
             <button
               key={cat.id}
               type="button"
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => handleSelectCategory(cat.id)}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer shadow-2xs ${
                 active
                   ? "bg-[#1B4332] text-white shadow-sm ring-2 ring-[#2D6A4F]/30 scale-[1.02]"
@@ -85,11 +118,30 @@ export default function StoreProducts({ farmer, products = [] }) {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
+            {displayedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {filteredProducts.length > 4 && (
+            <div className="mt-6 sm:mt-8 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowAll((prev) => !prev)}
+                className="inline-flex items-center gap-2 rounded-xl border border-[#2D6A4F]/30 bg-[var(--agri-card)] px-5 py-2.5 text-sm font-bold text-[#1B4332] dark:text-[var(--agri-brand)] shadow-2xs hover:bg-[#2D6A4F] hover:text-white dark:hover:bg-[#2D6A4F] dark:hover:text-white transition-all cursor-pointer active:scale-95"
+              >
+                <span>
+                  {showAll
+                    ? t("storeProfile.showLess")
+                    : t("storeProfile.viewAllProducts")}
+                </span>
+                <i className={showAll ? "ri-arrow-up-s-line text-lg" : "ri-arrow-down-s-line text-lg"} />
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
