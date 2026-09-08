@@ -7,7 +7,11 @@ import Button from "../../ui/Button";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import StarRating from "./StarRating";
 import { useLanguage } from "../../../context/LanguageContext";
-import { applyTransform, COVER_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
+import {
+  applyTransform,
+  COVER_TF,
+  isCloudinaryUrl,
+} from "../../../utils/cloudinaryTransform";
 
 export default function ProfileHeader({
   profile,
@@ -42,42 +46,40 @@ export default function ProfileHeader({
   return (
     <div className="relative">
       {/* ── Cover Photo ─────────────────────────────────────────── */}
-      {/* Mobile: full-bleed, sticky so it stays behind as card scrolls. */}
-      {/* Desktop: inline inside the padded card, scrolls normally. */}
-<div className="relative h-56 sm:h-60 md:h-72 lg:h-80 sm:rounded-t-3xl sm:bg-[var(--agri-card)] sm:border sm:border-b-0 sm:border-[var(--agri-border)]">
-          <div className="absolute inset-0 sm:rounded-t-3xl sm:overflow-hidden">
-            <button
-              type="button"
-              onClick={() =>
-                setFullscreenImage({
-                  src: coverSrc,
-                  title: t("profile.coverOf", { name: displayName }),
-                })
-              }
-              className="block h-full w-full cursor-pointer"
-              title={t("profile.viewCover")}
-              aria-label={t("profile.viewCover")}
-            >
-              <img
-                src={coverSrc}
-                alt="Cover"
-                loading="lazy"
-                width={1600}
-                height={380}
-                className="h-full w-full object-cover"
-              />
-            </button>
-          </div>
-
-          {/* Gradient overlay */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/10"
-          />
+      <div className="relative h-56 sm:h-60 md:h-72 lg:h-80 sm:rounded-t-3xl sm:bg-(--agri-surface) sm:border sm:border-b-0 sm:border-(--agri-border)">
+        <div className="absolute inset-0 sm:rounded-t-3xl sm:overflow-hidden">
+          <button
+            type="button"
+            onClick={() =>
+              setFullscreenImage({
+                src: coverSrc,
+                title: t("profile.coverOf", { name: displayName }),
+              })
+            }
+            className="block h-full w-full cursor-pointer"
+            title={t("profile.viewCover")}
+            aria-label={t("profile.viewCover")}
+          >
+            <img
+              src={coverSrc}
+              alt="Cover"
+              loading="lazy"
+              width={1600}
+              height={380}
+              className="h-full w-full object-cover"
+            />
+          </button>
         </div>
 
+        {/* Gradient overlay */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/10"
+        />
+      </div>
+
       {/* ── Card (sits on top of the cover on mobile) ──────────── */}
-      <section className="relative -mt-8 sm:mt-0 sm:rounded-b-3xl sm:border sm:border-t-0 sm:border-[var(--agri-border)] bg-[var(--agri-card)] shadow-md z-10">
+      <section className="relative -mt-8 sm:mt-0 sm:rounded-b-3xl sm:border sm:border-t-0 sm:border-(--agri-border) bg-(--agri-surface) sm:shadow-md z-10">
         {/* Avatar + Identity */}
         <div className="px-4 pb-6 sm:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -86,7 +88,7 @@ export default function ProfileHeader({
               <button
                 type="button"
                 onClick={openAvatarViewer}
-                className="block rounded-full border-4 border-[var(--agri-card)] shadow-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:ring-offset-2"
+                className="block rounded-full border-4 border-(--agri-card) shadow-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:ring-offset-2"
                 title={t("profile.viewFullPhoto")}
                 aria-label={t("profile.viewProfilePic")}
               >

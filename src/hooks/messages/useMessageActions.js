@@ -5,8 +5,6 @@ import { uploadMessageImage } from "../../services/cloudinary.service";
 import { buildFailedMessage } from "../../utils/messaging/buildFailedMessage";
 import { buildOptimisticConversation } from "../../utils/messaging/buildOptimisticConversation";
 import { showToast } from "../../utils/toast";
-import { encrypt } from "../../services/encryption";
-import { getConversationKey } from "../../services/encryption";
 import useOfflineQueue from "./useOfflineQueue";
 
 export default function useMessageActions({
@@ -45,7 +43,7 @@ export default function useMessageActions({
   }, []);
 
   const sendMessage = useCallback(
-    async (activeImg = null, replyTo = null, options = {}) => {
+    async (activeImg = null, replyTo = null) => {
       // Prevent duplicate sends when user multiple clicks or network is slow
       if (isSendingRef.current) return;
 
@@ -81,7 +79,6 @@ export default function useMessageActions({
           image: activeImg,
           error: "No internet connection",
           stage: "offline",
-          encrypted: Boolean(options?.encrypted),
         });
 
         setFailedMessages((prev) => [...prev, failedMessage]);
@@ -111,9 +108,8 @@ export default function useMessageActions({
 
         stage = "send-message";
 
-        // --- Normal message: Plain text by default in Firestore ---
+        // --- Normal message: Plain text in Firestore ---
         const otherUid = activeConversation?.otherUser?.uid || activeUser?.uid;
-        const isEncrypted = Boolean(options?.encrypted);
 
         const messagePayload = {
           conversationId,
@@ -123,22 +119,7 @@ export default function useMessageActions({
           imageUrl,
           imageId,
           replyTo: replyTo?.messageId || replyTo || null,
-          encrypted: isEncrypted,
         };
-
-        // If explicitly requested, perform E2E encryption
-        if (isEncrypted && text) {
-          if (otherUid) {
-            const conversationKey = await getConversationKey(profile.uid, otherUid, conversationId);
-            const encrypted = await encrypt(text, conversationKey);
-            messagePayload.ciphertext = encrypted.ciphertext;
-            messagePayload.iv = encrypted.iv;
-            messagePayload.encryptionVersion = 1;
-            delete messagePayload.text;
-          } else {
-            throw new Error("Recipient is not ready for encrypted messaging yet.");
-          }
-        }
 
         await apiSendMessage(messagePayload);
 
@@ -167,7 +148,6 @@ export default function useMessageActions({
           error: error.message,
           stage,
           replyTo: replyTo?.messageId || replyTo || null,
-          encrypted: Boolean(options?.encrypted),
         });
 
         setFailedMessages((prev) => [...prev, failedMessage]);
@@ -244,8 +224,7 @@ export default function useMessageActions({
 
         stage = "send-message";
 
-        // --- Retry message: Plain text by default, encrypt only if original was encrypted ---
-        const isEncrypted = Boolean(failedMessage.encrypted);
+        // --- Retry message: Plain text in Firestore ---
         const otherUid =
           failedMessage.receiverId ||
           activeConversation?.otherUser?.uid ||
@@ -267,21 +246,7 @@ export default function useMessageActions({
             : failedMessage.imageUrl || null,
           imageId: failedMessage.imageId || null,
           replyTo: failedMessage.replyTo || null,
-          encrypted: isEncrypted,
         };
-
-        if (isEncrypted && retryPayload.text) {
-          if (!otherUid) {
-            throw new Error("Recipient is not ready for encrypted messaging yet.");
-          }
-          const convId = failedMessage.conversationId || conversationId;
-          const conversationKey = await getConversationKey(profile.uid, otherUid, convId);
-          const encrypted = await encrypt(retryPayload.text, conversationKey);
-          retryPayload.ciphertext = encrypted.ciphertext;
-          retryPayload.iv = encrypted.iv;
-          retryPayload.encryptionVersion = 1;
-          delete retryPayload.text;
-        }
 
         await apiSendMessage(retryPayload);
 

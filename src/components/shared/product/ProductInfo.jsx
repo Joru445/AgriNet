@@ -5,6 +5,7 @@ import {
 } from "../../../utils/price";
 import { useLiveRemainingTime } from "../../../utils/productExpiration";
 import { useLanguage } from "../../../context/LanguageContext";
+import { showToast } from "../../../utils/toast";
 
 const CATEGORY_ICONS = {
   Vegetables: "ri-plant-line",
@@ -39,6 +40,20 @@ export default function ProductInfo({
   const categoryIcon =
     CATEGORY_ICONS[product.category] || "ri-shopping-basket-2-line";
 
+  async function handleShare() {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        showToast.success(t("common.linkCopied"));
+      }
+    } catch {
+      // User cancelled share or clipboard failed — ignore
+    }
+  }
+
   return (
     <section className="px-4 pt-5 sm:px-6 lg:pt-6">
       {/* Product Name + Report */}
@@ -46,16 +61,26 @@ export default function ProductInfo({
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--agri-text)] leading-tight">
           {product.name}
         </h1>
-        {!isOwner && onReport && (
+        <div className="shrink-0 flex items-center gap-1">
           <button
             type="button"
-            onClick={onReport}
-            className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-[var(--agri-text-muted)] hover:text-red-600 hover:bg-red-500/10 px-2 py-1 rounded-lg transition cursor-pointer"
-            title={t("productDetails.reportThisProduct")}
+            onClick={handleShare}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--agri-text-muted)] hover:text-[#2D6A4F] hover:bg-[#2D6A4F]/10 px-2 py-1 rounded-lg transition cursor-pointer"
+            title={t("productDetails.share")}
           >
-            <i className="ri-flag-line text-sm" />
+            <i className="ri-share-line text-sm" />
           </button>
-        )}
+          {!isOwner && onReport && (
+            <button
+              type="button"
+              onClick={onReport}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--agri-text-muted)] hover:text-red-600 hover:bg-red-500/10 px-2 py-1 rounded-lg transition cursor-pointer"
+              title={t("productDetails.reportThisProduct")}
+            >
+              <i className="ri-flag-line text-sm" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Price + Discount */}

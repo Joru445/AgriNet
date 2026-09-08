@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import { useInquiriesContext } from "../context/InquiriesContext";
 
 import {
   apiGetInquiryById,
@@ -16,6 +17,7 @@ import { uploadTransactionProof } from "../services/cloudinary.service";
 export default function useTransactionProof() {
   const { inquiryId } = useParams();
   const { profile } = useAuth();
+  const { inquiries } = useInquiriesContext();
 
   const [inquiry, setInquiry] = useState(null);
 
@@ -25,6 +27,13 @@ export default function useTransactionProof() {
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
+
+  const inquiriesRef = useRef(inquiries);
+
+  // Sync ref outside of render to satisfy react-hooks/refs rule
+  useEffect(() => {
+    inquiriesRef.current = inquiries;
+  });
 
   const loadInquiry = useCallback(async () => {
     if (!inquiryId) {
@@ -37,7 +46,17 @@ export default function useTransactionProof() {
       setLoading(true);
       setError("");
 
-      const data = await apiGetInquiryById(inquiryId);
+      // Check context first to avoid redundant backend read
+      const fromContext = inquiriesRef.current.find(
+        (inq) => inq.id === inquiryId,
+      );
+
+      let data;
+      if (fromContext) {
+        data = fromContext;
+      } else {
+        data = await apiGetInquiryById(inquiryId);
+      }
 
       if (!data) {
         throw new Error("Transaction not found.");
@@ -56,6 +75,18 @@ export default function useTransactionProof() {
   useEffect(() => {
     loadInquiry();
   }, [loadInquiry]);
+
+  // Keep inquiry in sync when context updates (e.g. after status changes
+  // or realtime listener fires). This avoids redundant apiGetInquiryById
+  // calls after actions since the context listener receives updates first.
+  useEffect(() => {
+    if (!inquiryId || !inquiries.length) return;
+
+    const latest = inquiries.find((inq) => inq.id === inquiryId);
+    if (latest) {
+      setInquiry(latest);
+    }
+  }, [inquiries, inquiryId]);
 
   useEffect(() => {
     return () => {
@@ -121,8 +152,7 @@ export default function useTransactionProof() {
       setError("");
 
       await apiRequestCompletion(inquiryId);
-
-      await loadInquiry();
+      // Context listener will update inquiry state via the useEffect above
     } catch (error) {
       console.error("Failed to request transaction completion:", error);
 
@@ -155,8 +185,7 @@ export default function useTransactionProof() {
       await apiSubmitProof(inquiryId, proof);
 
       removeFile();
-
-      await loadInquiry();
+      // Context listener will update inquiry state via the useEffect above
     } catch (error) {
       console.error("Failed to submit transaction proof:", error);
 
@@ -178,8 +207,7 @@ export default function useTransactionProof() {
       setError("");
 
       await apiConfirmProof(inquiryId);
-
-      await loadInquiry();
+      // Context listener will update inquiry state via the useEffect above
     } catch (error) {
       console.error("Failed to confirm transaction proof:", error);
 
@@ -201,8 +229,7 @@ export default function useTransactionProof() {
       setError("");
 
       await apiRejectProof(inquiryId);
-
-      await loadInquiry();
+      // Context listener will update inquiry state via the useEffect above
     } catch (error) {
       console.error("Failed to reject transaction proof:", error);
 

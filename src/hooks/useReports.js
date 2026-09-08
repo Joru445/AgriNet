@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useUnreadReports } from "../context/UnreadReportsContext";
 
@@ -20,6 +20,12 @@ export default function useReports({ userId = null, admin = false } = {}) {
   const effectiveUserId = userId || profile?.uid;
 
   const { allReports: contextReports } = useUnreadReports();
+  const contextReportsRef = useRef(contextReports);
+
+  // Sync ref outside of render to satisfy react-hooks/refs rule
+  useEffect(() => {
+    contextReportsRef.current = contextReports;
+  });
 
   const [reports, setReports] = useState([]);
 
@@ -39,11 +45,14 @@ export default function useReports({ userId = null, admin = false } = {}) {
    *
    * Normal user:
    *   Subscribe only to their own reports.
+   *
+   * contextReports is accessed via ref to avoid recreating the
+   * listener when the reports array reference changes.
    */
 
   useEffect(() => {
     if (isAdmin) {
-      setReports(contextReports);
+      setReports(contextReportsRef.current);
       setLoading(false);
       return;
     }
@@ -75,7 +84,16 @@ export default function useReports({ userId = null, admin = false } = {}) {
     return () => {
       unsubscribe?.();
     };
-  }, [effectiveUserId, isAdmin, contextReports]);
+  }, [effectiveUserId, isAdmin]);
+
+  // Keep admin reports in sync when context data changes.
+  // This runs only for admins; non-admin users receive updates
+  // through their own subscribeUserReports listener.
+  useEffect(() => {
+    if (isAdmin) {
+      setReports(contextReports);
+    }
+  }, [isAdmin, contextReports]);
 
   /*
    * ============================================================

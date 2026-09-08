@@ -300,14 +300,6 @@ export async function updateInquiryStatus({ inquiryId, status, actor }) {
 
   const inquiryRef = doc(db, "inquiries", inquiryId);
 
-  // Fetch current status before update
-  const currentSnap = await getDoc(inquiryRef);
-  if (!currentSnap.exists()) {
-    throw new Error("Inquiry not found.");
-  }
-  const currentInquiry = currentSnap.data();
-  const currentStatus = normalizeStatus(currentInquiry.status);
-
   await runTransaction(db, async (transaction) => {
     const snapshot = await transaction.get(inquiryRef);
 
@@ -316,6 +308,7 @@ export async function updateInquiryStatus({ inquiryId, status, actor }) {
     }
 
     const inquiry = snapshot.data();
+    const currentStatus = normalizeStatus(inquiry.status);
 
     assertTransition({
       inquiry,

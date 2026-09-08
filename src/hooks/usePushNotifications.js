@@ -32,6 +32,7 @@ export default function usePushNotifications() {
   const registrationRef = useRef(null);
   const fcmTokenRef = useRef(null);
   const installationIdRef = useRef(null);
+  const registeredRef = useRef(false);
 
   // Check support on mount
   useEffect(() => {
@@ -50,14 +51,12 @@ export default function usePushNotifications() {
 
     async function initFCM() {
       try {
-        // Register the FCM service worker
         const reg = await registerMessagingSW();
         if (cancelled) return;
 
         registrationRef.current = reg;
         installationIdRef.current = getInstallationId();
 
-        // If permission is already granted, try to get existing token
         if (Notification.permission === "granted") {
           const token = await getFCMToken(reg);
           if (cancelled) return;
@@ -65,13 +64,15 @@ export default function usePushNotifications() {
           if (token) {
             fcmTokenRef.current = token;
 
-            // Re-register with backend to sync token (handles rotation)
-            if (profile?.uid) {
+            // Only call backend if not already registered this session.
+            // Prevents redundant writes on every profile snapshot update.
+            if (profile?.uid && !registeredRef.current) {
               try {
                 await registerPushInstallation({
                   fcmToken: token,
                   installationId: installationIdRef.current || getInstallationId(),
                 });
+                registeredRef.current = true;
               } catch (err) {
                 console.error("[Push] Failed to re-register installation:", err);
               }
@@ -168,9 +169,9 @@ export default function usePushNotifications() {
   useEffect(() => {
     if (profile !== null || !supported) return;
 
-    // User logged out — clear local state
     fcmTokenRef.current = null;
     installationIdRef.current = null;
+    registeredRef.current = false;
     setSubscribed(false);
   }, [profile, supported]);
 

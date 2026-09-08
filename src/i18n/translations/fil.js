@@ -32,6 +32,7 @@ export default {
     delete: "Tanggalin",
     error: "May Mali",
     locationFallback: "Iyong Lugar",
+    linkCopied: "Na-copy na ang link",
   },
 
   location: {
@@ -638,6 +639,7 @@ export default {
     stockAvailable: "{count} {unit} ang available",
     report: "I-report",
     reportThisProduct: "I-report ang produktong ito",
+    share: "I-share",
     seeMore: "Tingnan pa",
     seeLess: "Bawasan",
     noImages: "Walang larawan",
@@ -729,6 +731,7 @@ export default {
     noProductsListed: "Hindi pa naglilista ng produkto si {farmer}.",
     noItemsCategory: "Walang available na item sa {category}.",
     message: "Mensahe",
+    share: "I-share",
     report: "I-report",
     visitProfile: "Tingnan ang profile ni {name}",
     joined: "Sumali noong {date}",
@@ -863,7 +866,6 @@ export default {
     couldntSend: "Hindi maipadala.",
     tapToRetry: "I-tap para subukan muli",
     deleteFailedMessage: "Tanggalin ang nabigong mensahe",
-    decryptionFailed: "Hindi ma-decrypt ang mensaheng ito",
     photo: "Photo",
     messagePhoto: "Larawan",
     selectConversation: "Pumili ng chat",

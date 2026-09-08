@@ -29,7 +29,7 @@ export default function MessageBubble({
   const isFailed = message.status === "failed";
   const isImage = message.type === "image" || Boolean(message.imageUrl);
 
-  // E2E: Use resolved reply from parent, fallback to legacy replyToSnapshot
+  // Use resolved reply from parent, fallback to legacy replyToSnapshot
   const replyTo =
     resolvedReplyTo ||
     message.replyToSnapshot ||
@@ -92,7 +92,7 @@ export default function MessageBubble({
             <button
               type="button"
               onClick={() => onJumpToMessage?.(replyTo.messageId || replyTo.id)}
-              className="flex items-center gap-1 text-[11px] text-[var(--agri-text-muted)] hover:text-[var(--agri-text)] font-medium mb-1 px-1 select-none cursor-pointer transition"
+              className="flex items-center gap-1 text-[11px] text-(--agri-text-muted) hover:text-(--agri-text) font-medium mb-1 px-1 select-none cursor-pointer transition"
               aria-label={t("messages.replyToLabel")}
             >
               <i className="ri-reply-line text-xs" />
@@ -111,8 +111,8 @@ export default function MessageBubble({
             className={`flex items-center gap-2 rounded-2xl px-3 py-1.5 text-xs text-left cursor-pointer transition hover:opacity-85 max-w-full w-fit shadow-xs
               ${
                 mine
-                  ? "bg-black/10 dark:bg-white/10 text-[var(--agri-text)] border border-black/5 dark:border-white/5"
-                  : "bg-[var(--agri-hover)] text-[var(--agri-text-muted)] border border-[var(--agri-border)]"
+                  ? "bg-black/10 dark:bg-white/10 text-(--agri-text) border border-black/5 dark:border-white/5"
+                  : "bg-(--agri-hover) text-(--agri-text-muted) border border-(--agri-border)"
               }
             `}
             aria-label={t("messages.replyToLabel")}
@@ -126,7 +126,7 @@ export default function MessageBubble({
         <p
           className={`w-fit max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-2 shadow-md ${textRadius}
             ${isImage ? "text-sm font-medium" : ""}
-            ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-[var(--agri-brand)]/40" : ""}
+            ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-(--agri-brand)/40" : ""}
             ${
               mine
                 ? "bg-[#2D6A4F] text-white shadow-green-900/20"
@@ -138,21 +138,6 @@ export default function MessageBubble({
         </p>
       )}
 
-      {/* E2E: Decryption failure fallback */}
-      {message.decryptionFailed && (
-        <p
-          className={`w-fit max-w-full break-words px-4 py-2 shadow-md text-sm italic ${textRadius}
-            ${
-              mine
-                ? "bg-[#2D6A4F]/70 text-white/80"
-                : "bg-(--agri-elevated) text-(--agri-text-muted) border border-(--agri-border)"
-            }
-          `}
-        >
-          {t("messages.decryptionFailed")}
-        </p>
-      )}
-
       {showLinkPreview && (
         <div className="px-1.5 pb-1 first:pt-1">
           <MessageLinkPreview url={messageUrl} metadata={message.linkPreview} />
@@ -161,7 +146,7 @@ export default function MessageBubble({
 
       {/* Image Attachment */}
       {isImage && message.imageUrl && (
-        <div className={`rounded-xl overflow-hidden mb-0 group relative ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-[var(--agri-brand)]/40" : ""}`}>
+        <div className={`rounded-xl overflow-hidden mb-0 group relative ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-(--agri-brand)/40" : ""}`}>
           <MessageImage
             src={
               isCloudinaryUrl(message.imageUrl)

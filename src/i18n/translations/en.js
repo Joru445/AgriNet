@@ -32,6 +32,7 @@ export default {
     delete: "Delete",
     error: "Error",
     locationFallback: "Your Area",
+    linkCopied: "Link copied to clipboard",
   },
 
   location: {
@@ -629,6 +630,7 @@ export default {
     stockAvailable: "{count} {unit} available",
     report: "Report",
     reportThisProduct: "Report this product",
+    share: "Share",
     seeMore: "See more",
     seeLess: "See less",
     noImages: "No images available",
@@ -719,6 +721,7 @@ export default {
       "{farmer} hasn't listed any products.",
     noItemsCategory: "No items available in the {category} category.",
     message: "Message",
+    share: "Share",
     report: "Report",
     visitProfile: "Visit {name}'s profile",
     joined: "Joined {date}",
@@ -851,7 +854,6 @@ export default {
     couldntSend: "Couldn't send.",
     tapToRetry: "Tap to retry",
     deleteFailedMessage: "Delete failed message",
-    decryptionFailed: "Unable to decrypt this message",
     photo: "Photo",
     messagePhoto: "Photo",
     selectConversation: "Select a conversation",

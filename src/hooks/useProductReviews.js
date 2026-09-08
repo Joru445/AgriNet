@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 
 import { getReviewsByProduct } from "../services/product-review.service";
 import { getUserProfile } from "../services/user.service";
-import { getInquiry } from "../services/inquiry.service";
+import { apiGetInquiryById } from "../services/inquiry.service";
 import { getCachedUserProfile } from "../utils/userProfileCache";
 
 const MAX_CONCURRENCY = 4;
@@ -121,12 +121,21 @@ export default function useProductReviews() {
           ),
         ];
 
+        // Deduplicate: track in-flight requests so the same inquiry
+        // is fetched once even if referenced by multiple reviews.
+        const inflightMap = new Map();
+
         const inquiryDocs = await mapWithConcurrency(
           neededInquiryIds,
           MAX_CONCURRENCY,
           async (inqId) => {
             try {
-              return [inqId, await getInquiry(inqId)];
+              if (inflightMap.has(inqId)) {
+                return [inqId, await inflightMap.get(inqId)];
+              }
+              const promise = apiGetInquiryById(inqId);
+              inflightMap.set(inqId, promise);
+              return [inqId, await promise];
             } catch {
               return [inqId, null];
             }

@@ -8,6 +8,7 @@ import { applyTransform, COVER_TF, PROFILE_TF, isCloudinaryUrl } from "../../../
 import { useLanguage } from "../../../context/LanguageContext";
 import { useAuth } from "../../../context/AuthContext";
 import { useFavorites } from "../../../context/FavoritesContext";
+import { showToast } from "../../../utils/toast";
 
 export default function PublicProfileHeader({
   profile,
@@ -44,8 +45,22 @@ export default function PublicProfileHeader({
 
   const targetUid = profile.uid || profile.id;
 
+  async function handleShare() {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        showToast.success(t("common.linkCopied"));
+      }
+    } catch {
+      // User cancelled share or clipboard failed — ignore
+    }
+  }
+
   return (
-    <section data-onboarding="store-header" className="bg-[var(--agri-card)]">
+    <section data-onboarding="store-header" className="bg-(--agri-surface)">
       {/* Cover Photo */}
       <div className="mx-auto max-w-7xl">
         <div
@@ -53,10 +68,10 @@ export default function PublicProfileHeader({
             relative
             h-56
             overflow-hidden
-            bg-[var(--agri-hover)]
+            bg-(--agri-hover)
             sm:h-72
             md:h-80
-            lg:h-[380px]
+            lg:h-95
             sm:rounded-b-2xl
           "
         >
@@ -157,6 +172,15 @@ export default function PublicProfileHeader({
                 {isFavorite("farmer", targetUid) ? t("favorites.saved") : t("favorites.save")}
               </button>
             )}
+
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--agri-border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer"
+            >
+              <i className="ri-share-line" />
+              {t("storeProfile.share")}
+            </button>
 
             <button
               type="button"

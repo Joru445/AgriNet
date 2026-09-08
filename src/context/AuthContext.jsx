@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -14,8 +15,6 @@ import {
 import { auth } from "../firebase/auth";
 import { db } from "../firebase/firestore";
 import { apiSyncTransactionStats } from "../services/user.service";
-import { ensureKeyPair } from "../services/encryption";
-import { clearConversationKeyCache } from "../services/encryption";
 
 const AuthContext = createContext();
 
@@ -27,8 +26,12 @@ export function AuthProvider({ children }) {
 
   const [loading, setLoading] = useState(true);
 
+  // Track one-time operations per auth session to avoid repeated Firestore writes.
+  // apiSyncTransactionStats must run once after login,
+  // not on every profile snapshot emission (which would cause a feedback loop).
+  const statsSyncedRef = useRef(false);
+
   async function logout() {
-    clearConversationKeyCache();
     await signOut(auth);
   }
 
@@ -63,6 +66,7 @@ export function AuthProvider({ children }) {
           setFarmer(null);
           setEmailVerified(false);
           setLoading(false);
+          statsSyncedRef.current = false;
           return;
         }
 
@@ -95,58 +99,53 @@ export function AuthProvider({ children }) {
 
             setProfile(userData);
 
-            // Auto-sync consumer transaction stats into their profile document
-            if (userData.role === "consumer") {
+            // One-time operation after auth — run only once per login,
+            // NOT on every profile snapshot emission. Running this on
+            // every snapshot causes a feedback loop: snapshot → write → snapshot.
+            if (!statsSyncedRef.current && userData.role === "consumer") {
+              statsSyncedRef.current = true;
               apiSyncTransactionStats().catch(() => {});
             }
 
-            // E2E: Ensure encryption key pair exists and is published before app is usable.
-            // This prevents race conditions where messages arrive before the public key is in Firestore.
-            ensureKeyPair(userData.uid, userData.role)
-              .catch((err) => {
-                console.error("[E2E] Failed to ensure key pair:", err);
-              })
-              .finally(() => {
-                // Only farmers need the farmer listener.
-                if (userData.role !== "farmer") {
-                  setFarmer(null);
-                  setLoading(false);
-                  return;
-                }
+            // Only farmers need the farmer listener.
+            if (userData.role !== "farmer") {
+              setFarmer(null);
+              setLoading(false);
+              return;
+            }
 
-                const farmerRef = doc(
-                  db,
-                  "farmers",
-                  firebaseUser.uid,
+            const farmerRef = doc(
+              db,
+              "farmers",
+              firebaseUser.uid,
+            );
+
+            unsubscribeFarmer?.();
+
+            unsubscribeFarmer = onSnapshot(
+              farmerRef,
+              (farmerSnapshot) => {
+                setFarmer(
+                  farmerSnapshot.exists()
+                    ? {
+                        uid: farmerSnapshot.id,
+                        ...farmerSnapshot.data(),
+                      }
+                    : null,
                 );
 
-                unsubscribeFarmer?.();
-
-                unsubscribeFarmer = onSnapshot(
-                  farmerRef,
-                  (farmerSnapshot) => {
-                    setFarmer(
-                      farmerSnapshot.exists()
-                        ? {
-                            uid: farmerSnapshot.id,
-                            ...farmerSnapshot.data(),
-                          }
-                        : null,
-                    );
-
-                    setLoading(false);
-                  },
-                  (error) => {
-                    console.error(
-                      "Failed to load farmer profile:",
-                      error,
-                    );
-
-                    setFarmer(null);
-                    setLoading(false);
-                  },
+                setLoading(false);
+              },
+              (error) => {
+                console.error(
+                  "Failed to load farmer profile:",
+                  error,
                 );
-              });
+
+                setFarmer(null);
+                setLoading(false);
+              },
+            );
           },
           (error) => {
             console.error(

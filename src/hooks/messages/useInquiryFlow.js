@@ -8,7 +8,6 @@ import { apiFindOrCreateConversation } from "../../services/conversation.service
 import { apiAcceptInquiry } from "../../services/inquiry.service";
 import { buildOptimisticConversation } from "../../utils/messaging/buildOptimisticConversation";
 import { showToast } from "../../utils/toast";
-import { encrypt, getConversationKey } from "../../services/encryption";
 
 export default function useInquiryFlow({
   profile,
@@ -147,7 +146,6 @@ export default function useInquiryFlow({
           productId: inquiryProduct.id,
           quantity: parsedQuantity,
           inquiryStatus: "pending",
-          encryptionVersion: null,
         };
 
         await apiSendMessage(inquiryPayload);

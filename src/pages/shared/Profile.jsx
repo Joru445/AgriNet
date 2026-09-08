@@ -63,7 +63,7 @@ export default function Profile() {
   ];
 
   return (
-    <main className="mx-auto w-full max-w-6xl md:px-6 pb-18 md:pb-8">
+    <main className="mx-auto w-full max-w-6xl md:px-6 pb-18 md:pb-8 bg-(--agri-surface) sm:bg-transparent">
       <div className="anim-page-enter space-y-6">
         <ProfileHeader
           profile={form}
@@ -94,15 +94,15 @@ export default function Profile() {
 
           {/* Side column: actions */}
           <div className="space-y-6 px-4 md:px-0">
-            <div className="overflow-hidden rounded-3xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
-              <div className="border-b border-[var(--agri-border-subtle)] px-5 py-4">
-                <h2 className="flex items-center gap-2 text-base font-bold text-[var(--agri-text)]">
-                  <i className="ri-sliders-horizontal-line text-lg text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+            <div className="overflow-hidden rounded-3xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-sm">
+              <div className="border-b border-(--agri-border-subtle) px-5 py-4">
+                <h2 className="flex items-center gap-2 text-base font-bold text-(--agri-text)">
+                  <i className="ri-sliders-horizontal-line text-lg text-[#2D6A4F] dark:text-(--agri-brand)" />
                   {t("profile.preferences")}
                 </h2>
               </div>
 
-              <div className="divide-y divide-[var(--agri-border-subtle)]">
+              <div className="divide-y divide-(--agri-border-subtle)">
                 {actions.map((action) => (
                   <button
                     key={action.id}
