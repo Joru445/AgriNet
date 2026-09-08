@@ -56,15 +56,12 @@ export default function MethodStep({ onSelectMethod, socialAuthInFlight = false 
       </button>
 
       {/* Divider */}
-      <div className="relative py-1.5">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-gray-400 font-medium">
-            {t("auth.register.orContinueWithEmail")}
-          </span>
-        </div>
+      <div className="flex items-center gap-3 py-1.5 text-xs">
+        <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+        <span className="text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">
+          {t("auth.register.orContinueWithEmail")}
+        </span>
+        <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
       </div>
 
       {/* Continue with Email (Existing Flow) */}

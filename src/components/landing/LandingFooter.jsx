@@ -98,8 +98,8 @@ export default function LandingFooter() {
       </div>
 
       <div
-        className="border-t"
-        style={{ backgroundColor: "var(--agri-bg-surface)", borderColor: "var(--agri-border)" }}
+        className="border-t border-gray-300 dark:border-gray-700"
+        style={{ backgroundColor: "var(--agri-bg-surface)" }}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex items-center justify-center text-center">
           <p className="text-gray-500 text-xs text-center">

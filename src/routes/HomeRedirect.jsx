@@ -9,7 +9,7 @@ export default function HomeRedirect() {
 
   if (loading) return <Loading />;
 
-  if (!user) return <Navigate to="/marketplace" replace />;
+  if (!user) return <Navigate to="/landing" replace />;
 
   if (suspended) {
     return <Navigate to="/suspended" replace />;

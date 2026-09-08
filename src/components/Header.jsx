@@ -25,8 +25,8 @@ export default function Header({ user, collapsed, hideBackButton }) {
   return (
     <header className="shrink-0 sticky top-0 right-0 z-9996 dark:lg:rounded-2xl flex h-[calc(3.75rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] items-center justify-between bg-(--agri-surface)/95 border-b border-(--agri-border) dark:border-(--agri-surface) px-3 md:px-5 dark:lg:m-2 backdrop-blur-sm transition-all duration-300 ease-in-out">
       {/* ── Left ──────────────────────────────────────── */}
-      <div className="flex items-center gap-1 min-w-0">
-        {hideBackButton ? (
+      <div className="flex items-center gap-1.5 min-w-0">
+        {hideBackButton && !isAnonymous ? (
           <span
             className={`font-bold text-(--agri-text) text-base sm:text-lg whitespace-nowrap transition-all duration-300 ease-in-out ${
               !collapsed ? "lg:hidden" : "block"
@@ -35,23 +35,32 @@ export default function Header({ user, collapsed, hideBackButton }) {
             AgriNet
           </span>
         ) : (
-          <BackButton />
+          <>
+            <BackButton to={isAnonymous ? "/landing" : undefined} />
+            <span
+              className={`font-bold text-(--agri-text) text-base sm:text-lg whitespace-nowrap transition-all duration-300 ease-in-out ${
+                !collapsed ? "lg:hidden" : "block"
+              }`}
+            >
+              AgriNet
+            </span>
+          </>
         )}
       </div>
 
       {/* ── Right actions ─────────────────────────────── */}
-      <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+      <div className="flex items-center gap-2 min-w-0">
         {isAnonymous ? (
           <>
             <Link
               to="/login"
-              className="px-3.5 py-1.5 rounded-lg text-sm font-semibold text-(--agri-text-secondary) border border-(--agri-border) hover:bg-(--agri-hover) transition-colors"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold text-[#1B4332] dark:text-emerald-300 bg-[#E8F5EE] dark:bg-emerald-950/50 border border-[#2D6A4F]/30 dark:border-emerald-500/30 hover:bg-[#2D6A4F] hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white shadow-2xs hover:shadow-xs transition-all active:scale-95 whitespace-nowrap"
             >
               {t("guest.login")}
             </Link>
             <Link
               to="/register"
-              className="hidden sm:inline-flex px-3.5 py-1.5 rounded-lg text-sm font-semibold text-white bg-[#2D6A4F] hover:bg-[#1B4332] transition-colors"
+              className="inline-flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#2D6A4F] hover:bg-[#1B4332] dark:bg-emerald-600 dark:hover:bg-emerald-500 shadow-xs hover:shadow-sm transition-all active:scale-95 whitespace-nowrap"
             >
               {t("guest.register")}
             </Link>

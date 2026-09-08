@@ -15,8 +15,10 @@ export default function BackButton({
   const handleBack = () => {
     if (to) {
       navigate(to);
-    } else {
+    } else if (window.history.length > 1) {
       navigate(-1);
+    } else {
+      navigate("/home");
     }
   };
 
@@ -24,7 +26,7 @@ export default function BackButton({
     <button
       type="button"
       onClick={handleBack}
-      className={`inline-flex items-center gap-2 font-medium text-[var(--agri-text-secondary)] transition hover:text-(--agri-brand) px-3 pl-2 ${className}`}
+      className={`inline-flex items-center justify-center size-9 rounded-xl font-medium text-[var(--agri-text-secondary)] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] hover:bg-[var(--agri-hover)] transition-colors active:scale-95 cursor-pointer ${className}`}
       aria-label={ariaLabel}
     >
       <i className="ri-arrow-left-line text-2xl" />

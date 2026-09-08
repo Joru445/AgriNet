@@ -53,37 +53,37 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="inline-flex items-center gap-1 rounded-md bg-(--agri-hover) px-1.5 py-0.5 text-[10px] sm:text-xs font-bold text-[#1B4332]">
+          <div className="flex flex-wrap items-center gap-1.5 mb-1">
+            <span className="inline-flex items-center gap-1 rounded-md bg-(--agri-hover) px-1.5 py-0.5 text-[10px] sm:text-xs font-bold text-[#1B4332] whitespace-nowrap shrink-0">
               <i className={`${categoryIcon} text-[#2D6A4F]`} />
               <span>{product.category || t("product.produce")}</span>
             </span>
 
             {isExpired ? (
               <>
-                <span className="rounded-md bg-(--agri-hover) px-1.5 py-0.5 text-[10px] font-bold text-(--agri-text-secondary)">
+                <span className="rounded-md bg-(--agri-hover) px-1.5 py-0.5 text-[10px] font-bold text-(--agri-text-secondary) whitespace-nowrap shrink-0">
                   {t("products.expired")}
                 </span>
-                <span className="rounded-md bg-red-100 text-red-700 px-1.5 py-0.5 text-[10px] font-bold flex items-center gap-1">
+                <span className="rounded-md bg-red-100 text-red-700 px-1.5 py-0.5 text-[10px] font-bold inline-flex items-center gap-1 whitespace-nowrap shrink-0">
                   <i className="ri-eye-off-line text-[9px]" />
-                  {t("products.noDisplay")}
+                  <span>{t("products.noDisplay")}</span>
                 </span>
               </>
             ) : !isAvailable ? (
-              <span className="rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
+              <span className="rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600 whitespace-nowrap shrink-0">
                 {t("product.outOfStock")}
               </span>
             ) : isLowStock ? (
-              <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
+              <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 whitespace-nowrap shrink-0">
                 {t("product.stockLeft", { count: stockNum })}
               </span>
             ) : remainingTime ? (
-              <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 flex items-center gap-0.5">
+              <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 inline-flex items-center gap-0.5 whitespace-nowrap shrink-0">
                 <i className="ri-time-line text-[9px]" />
-                {remainingTime}
+                <span>{remainingTime}</span>
               </span>
             ) : (
-              <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
+              <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 whitespace-nowrap shrink-0">
                 {t("product.inStock")}
               </span>
             )}
@@ -114,7 +114,7 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
             )}
 
             <span className="text-[var(--agri-text-muted)] text-[11px]">
-              • {product.stock} {product.unit || t("products.stockUnit")}
+              • {stockNum} {t("products.stockUnit")}
             </span>
           </div>
         </div>
