@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import ImageViewerModal from "../../common/ImageViewerModal";
-import { getUserProfile } from "../../../services/user.service";
-import { getProductById } from "../../../services/product.service";
 import { formatFullDateTime } from "../../../utils/date";
 import useStartConversation from "../../../hooks/useStartConversation";
 import { useLanguage } from "../../../context/LanguageContext";
@@ -9,15 +7,15 @@ import { useLanguage } from "../../../context/LanguageContext";
 function getStatusClasses(status) {
   switch (status) {
     case "pending":
-      return "bg-yellow-100 text-yellow-700";
+      return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border border-yellow-500/20";
     case "reviewing":
-      return "bg-blue-100 text-blue-700";
+      return "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20";
     case "resolved":
-      return "bg-green-100 text-green-700";
+      return "bg-green-500/10 text-green-700 dark:text-green-300 border border-green-500/20";
     case "dismissed":
-      return "bg-gray-100 text-gray-600";
+      return "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] border border-[var(--agri-border)]";
     default:
-      return "bg-gray-100 text-gray-600";
+      return "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] border border-[var(--agri-border)]";
   }
 }
 
@@ -34,40 +32,24 @@ export default function ReportDetailsModal({
   const startConversation = useStartConversation();
   const [showEvidenceViewer, setShowEvidenceViewer] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
-  const [reportedUserProfile, setReportedUserProfile] = useState(null);
-  const [targetProduct, setTargetProduct] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   const targetType = report?.targetType || report?.type || "user";
 
+  const reportedUser = report?.reportedUser || null;
+  const targetProduct = report?.targetProduct || null;
+
   useEffect(() => {
     if (!report) {
       setAdminNotes("");
-      setReportedUserProfile(null);
-      setTargetProduct(null);
       return;
     }
-
     setAdminNotes(report.adminNotes || "");
-
-    // Fetch reported user live status
-    if (report.reportedUserId) {
-      getUserProfile(report.reportedUserId)
-        .then(setReportedUserProfile)
-        .catch(() => {});
-    }
-
-    // Fetch target product if target is a product
-    if (targetType === "product" && report.targetId) {
-      getProductById(report.targetId)
-        .then(setTargetProduct)
-        .catch(() => {});
-    }
-  }, [report, targetType]);
+  }, [report]);
 
   if (!report) return null;
 
-  const isUserSuspended = reportedUserProfile?.status === "suspended";
+  const isUserSuspended = reportedUser?.status === "suspended";
   const isProductAvailable = targetProduct?.available !== false;
 
   const handleUserSuspension = async () => {
@@ -76,7 +58,6 @@ export default function ReportDetailsModal({
     try {
       const nextStatus = isUserSuspended ? "active" : "suspended";
       await onToggleUserSuspension(report.reportedUserId, nextStatus);
-      setReportedUserProfile((prev) => prev ? { ...prev, status: nextStatus } : prev);
     } finally {
       setActionLoading(false);
     }
@@ -88,7 +69,6 @@ export default function ReportDetailsModal({
     try {
       const nextAvailable = !isProductAvailable;
       await onToggleProductAvailability(report.targetId, nextAvailable);
-      setTargetProduct((prev) => prev ? { ...prev, available: nextAvailable } : prev);
     } finally {
       setActionLoading(false);
     }
@@ -117,7 +97,7 @@ export default function ReportDetailsModal({
         >
           <div className="flex items-center justify-between border-b border-[var(--agri-border-subtle)] px-6 py-4 bg-[var(--agri-hover)]/80">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-600 dark:text-red-400">
                 <i className="ri-alert-line text-xl" />
               </div>
               <div>
@@ -185,6 +165,28 @@ export default function ReportDetailsModal({
                   </span>
                 </div>
               )}
+
+              {report.updatedAt && report.updatedAt !== report.createdAt && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+                    {t("adminReport.lastUpdated")}
+                  </span>
+                  <span className="font-bold text-[var(--agri-text)]">
+                    {formatFullDateTime(report.updatedAt)}
+                  </span>
+                </div>
+              )}
+
+              {report.resolvedAt && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+                    {t("adminReport.resolvedAt")}
+                  </span>
+                  <span className="font-bold text-[var(--agri-text)]">
+                    {formatFullDateTime(report.resolvedAt)}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Description / Explanation Card */}
@@ -230,27 +232,32 @@ export default function ReportDetailsModal({
             {/* Parties Summary & Enforcement Actions */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Reported User & Ban Action */}
-              <div className="rounded-2xl border border-red-200/80 bg-red-50/40 p-4 shadow-xs flex flex-col justify-between space-y-3">
+              <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-xs flex flex-col justify-between space-y-3">
                 <div>
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-red-700">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-red-700 dark:text-red-400">
                       {t("adminReport.reportedUser")}
                     </p>
-                    {reportedUserProfile && (
+                    {reportedUser && (
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize shadow-2xs ${
-                        isUserSuspended ? "bg-red-200 text-red-900 border border-red-300" : "bg-green-100 text-green-900 border border-green-200"
+                        isUserSuspended ? "bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/30"
                       }`}>
-                        {reportedUserProfile.status || "active"}
+                        {reportedUser.status || "active"}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm font-bold text-gray-900 mt-1.5">
-                    {report.reportedUserName || "User"}
+                  <p className="text-sm font-bold text-[var(--agri-text)] mt-1.5">
+                    {reportedUser?.fullname || report.reportedUserName || "User"}
                   </p>
-                  {report.reportedUserUsername && (
-                  <p className="text-xs text-[var(--agri-text-secondary)] font-medium">
-                       @{report.reportedUserUsername}
+                  {reportedUser?.username || report.reportedUserUsername ? (
+                    <p className="text-xs text-[var(--agri-text-secondary)] font-medium">
+                      @{reportedUser?.username || report.reportedUserUsername}
                     </p>
+                  ) : null}
+                  {reportedUser?.role && (
+                    <span className="inline-block mt-1.5 rounded-md bg-[var(--agri-hover)] px-2 py-0.5 text-[10px] font-bold text-[var(--agri-text-secondary)] capitalize border border-[var(--agri-border)]">
+                      {reportedUser.role}
+                    </span>
                   )}
                 </div>
 
@@ -282,7 +289,7 @@ export default function ReportDetailsModal({
                   </p>
                   {report.reporterUsername && (
                     <p className="text-xs text-[var(--agri-text-secondary)] font-medium">
-                       @{report.reporterUsername}
+                      @{report.reporterUsername}
                     </p>
                   )}
                   {report.reporterRole && (
@@ -312,8 +319,8 @@ export default function ReportDetailsModal({
                       disabled={actionLoading}
                       className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 ${
                         isProductAvailable
-                          ? "border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"
-                          : "border border-green-300 bg-green-50 text-green-900 hover:bg-green-100"
+                          ? "border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
+                          : "border border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-300 hover:bg-green-500/20"
                       }`}
                     >
                       <i className={isProductAvailable ? "ri-eye-off-line" : "ri-eye-line"} />
@@ -323,6 +330,47 @@ export default function ReportDetailsModal({
                 </div>
               </div>
             </div>
+
+            {/* Target Product Details (for product reports) */}
+            {targetType === "product" && targetProduct && (
+              <div className="rounded-2xl bg-[var(--agri-card)] p-4 border border-[var(--agri-border-subtle)] shadow-xs space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+                  {t("adminReport.productDetails")}
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-[var(--agri-text-muted)]">{t("adminReport.productName")}:</span>
+                    <span className="ml-1 font-bold text-[var(--agri-text)]">{targetProduct.title || "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--agri-text-muted)]">{t("adminReport.category")}:</span>
+                    <span className="ml-1 font-bold text-[var(--agri-text)]">{targetProduct.category || "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--agri-text-muted)]">{t("adminReport.sellingMode")}:</span>
+                    <span className="ml-1 font-bold text-[var(--agri-text)] capitalize">{targetProduct.sellingMode || "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--agri-text-muted)]">{t("adminReport.availability")}:</span>
+                    <span className={`ml-1 font-bold ${targetProduct.available ? "text-green-600" : "text-red-600"}`}>
+                      {targetProduct.available ? t("adminReport.available") : t("adminReport.unavailable")}
+                    </span>
+                  </div>
+                  {targetProduct.sellingMode === "preorder" && (
+                    <>
+                      <div>
+                        <span className="text-[var(--agri-text-muted)]">{t("adminReport.preOrderLimit")}:</span>
+                        <span className="ml-1 font-bold text-[var(--agri-text)]">{targetProduct.preOrderLimit ?? "—"}</span>
+                      </div>
+                      <div>
+                        <span className="text-[var(--agri-text-muted)]">{t("adminReport.reserved")}:</span>
+                        <span className="ml-1 font-bold text-[var(--agri-text)]">{targetProduct.reservedQuantity ?? 0}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Admin Resolution Notes */}
             <div className="rounded-2xl bg-[var(--agri-card)] p-4 border border-[var(--agri-border-subtle)] shadow-xs space-y-1.5">
@@ -346,7 +394,7 @@ export default function ReportDetailsModal({
                   <button
                     type="button"
                     onClick={() => onReview(report.id)}
-                    className="px-3.5 py-2 rounded-xl bg-blue-50 text-xs font-bold text-blue-700 hover:bg-blue-100 transition cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-blue-500/10 text-xs font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-500/20 transition cursor-pointer"
                   >
                     <i className="ri-search-eye-line mr-1.5" />
                     {t("adminReport.markReviewing")}
@@ -388,7 +436,6 @@ export default function ReportDetailsModal({
         </div>
       </div>
 
-      {/* Evidence Fullscreen Zoom Modal */}
       {showEvidenceViewer && report.evidenceUrl && (
         <ImageViewerModal
           isOpen={showEvidenceViewer}

@@ -39,6 +39,7 @@ const DEFAULT_VISIBILITY = "private";
 
 function sanitizeProfile(data) {
   if (!data || typeof data !== "object") return null;
+  const verificationStatus = data.verificationStatus || null;
   return {
     uid: data.uid,
     fullname: data.fullname || "",
@@ -46,7 +47,8 @@ function sanitizeProfile(data) {
     profilePicture: data.profilePicture || "",
     profilePictureId: data.profilePictureId || "",
     role: data.role || "",
-    verified: Boolean(data.verified),
+    verificationStatus: verificationStatus || "not_applied",
+    verified: verificationStatus === "approved" || Boolean(data.verified),
     rating: data.rating,
     reviewCount: data.reviewCount,
     bio: data.bio || "",

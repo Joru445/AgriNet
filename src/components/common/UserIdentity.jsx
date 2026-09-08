@@ -47,7 +47,9 @@ export default function UserIdentity({
   if (!user) return null;
 
   const isCurrentUser = currentUserId && user.uid === currentUserId;
-  const isVerified = showVerified && user.verified === true;
+  const isVerified = showVerified && (
+    user.verificationStatus === "approved" || user.verified === true
+  );
   const currentSize = SIZE_CONFIG[size] || SIZE_CONFIG.md;
 
   const roleLabel = user.role ? t(`roles.${user.role}`) : "";

@@ -103,6 +103,7 @@ export async function createConversation(currentUser, otherUser) {
         username: currentUser.username,
         profilePicture: currentUser.profilePicture || "",
         role: currentUser.role,
+        verificationStatus: currentUser.verificationStatus || (currentUser.verified === true ? "approved" : "not_applied"),
         verified: currentUser.verified === true,
       },
 
@@ -111,6 +112,7 @@ export async function createConversation(currentUser, otherUser) {
         username: otherUser.username,
         profilePicture: otherUser.profilePicture || "",
         role: otherUser.role,
+        verificationStatus: otherUser.verificationStatus || (otherUser.verified === true ? "approved" : "not_applied"),
         verified: otherUser.verified === true,
       },
     },

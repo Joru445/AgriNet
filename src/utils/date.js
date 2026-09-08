@@ -37,6 +37,25 @@ export function formatTimestamp(timestamp) {
   });
 }
 
+export function formatDate(timestamp) {
+  if (!timestamp) return "";
+
+  const date =
+    typeof timestamp?.toDate === "function"
+      ? timestamp.toDate()
+      : timestamp instanceof Date
+      ? timestamp
+      : new Date(timestamp);
+
+  if (isNaN(date.getTime())) return "";
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export function formatFullDateTime(timestamp) {
   if (!timestamp) return "";
 

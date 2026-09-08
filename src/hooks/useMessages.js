@@ -184,7 +184,14 @@ export default function useMessages() {
                               freshUser.profilePicture ||
                               prev.otherUser?.profilePicture ||
                               "",
-                            verified: freshUser.verified === true,
+                            verificationStatus:
+                              freshUser.verificationStatus ||
+                              prev.otherUser?.verificationStatus ||
+                              "not_applied",
+                            verified:
+                              freshUser.verificationStatus === "approved" ||
+                              prev.otherUser?.verificationStatus === "approved" ||
+                              freshUser.verified === true,
                           },
                         }
                       : prev,
@@ -204,9 +211,15 @@ export default function useMessages() {
                 cachedProfile?.profilePicture ||
                 otherUser.profilePicture ||
                 "",
+              verificationStatus:
+                cachedProfile?.verificationStatus ||
+                otherUser.verificationStatus ||
+                "not_applied",
               verified:
-                cachedProfile?.verified ??
-                otherUser.verified === true,
+                cachedProfile?.verificationStatus === "approved" ||
+                otherUser.verificationStatus === "approved" ||
+                (cachedProfile?.verified ??
+                otherUser.verified === true),
             },
           });
 

@@ -3,9 +3,13 @@ import { useLanguage } from "../../../context/LanguageContext";
 export default function InquiryStatusBadge({ status }) {
   const { t } = useLanguage();
   const styles = {
-    accepted: "bg-amber-500/10 text-amber-700 dark:text-amber-300 font-semibold",
+    pending: "bg-gray-500/10 text-gray-700 dark:text-gray-300 font-semibold",
 
-    reserved: "bg-amber-500/10 text-amber-700 dark:text-amber-300 font-semibold",
+    accepted:
+      "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold",
+
+    reserved:
+      "bg-violet-500/10 text-violet-700 dark:text-violet-300 font-semibold",
 
     ongoing: "bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold",
 
@@ -19,6 +23,7 @@ export default function InquiryStatusBadge({ status }) {
   };
 
   const labels = {
+    pending: t("transactions.status.pending"),
     accepted: t("transactions.status.accepted"),
     reserved: t("transactions.status.reserved"),
     ongoing: t("transactions.status.ongoing"),

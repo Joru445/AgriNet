@@ -17,9 +17,7 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(true);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
-  const isMessages = location.pathname.includes("messages");
   const isTabRoutes = tabRoutes.includes(location.pathname);
-  const isDashboard = location.pathname === "/farmer";
 
   return (
     <div className="fixed inset-0 flex overflow-hidden h-full">
@@ -36,13 +34,7 @@ export default function AppLayout() {
         <OfflineIndicator />
 
         <div
-          className={`flex-1 min-h-0 overscroll-none scrollbar-none bg-(--agri-page) ${
-            isMessages
-              ? "flex flex-col overflow-hidden"
-              : isDashboard && isDesktop
-                ? "overflow-hidden"
-                : "overflow-y-auto"
-          }`}
+          className="flex-1 min-h-0 overscroll-none scrollbar-none bg-(--agri-page) overflow-y-auto"
         >
           <PageTransition>
             <Outlet />

@@ -3,13 +3,29 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useConversationsContext } from "../context/ConversationsContext";
 
-import { getFarmerProducts } from "../services/product.service";
-import { getRecentFarmerReviews } from "../services/farmer-review.service";
+import { getFarmerDashboard } from "../services/farmer.service";
 
 import { showToast } from "../utils/toast";
 import * as pageCache from "../utils/pageCache";
 
 const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
+const initialStats = {
+  totalProducts: 0,
+  availableProducts: 0,
+  unavailableProducts: 0,
+  preorderCount: 0,
+  averageRating: 0,
+  reviewCount: 0,
+  unreadMessages: 0,
+  totalInquiries: 0,
+  pendingInquiries: 0,
+  acceptedInquiries: 0,
+  reservedInquiries: 0,
+  ongoingInquiries: 0,
+  completedInquiries: 0,
+  cancelledInquiries: 0,
+};
 
 export default function useDashboard() {
   const { profile } = useAuth();
@@ -17,13 +33,7 @@ export default function useDashboard() {
 
   const [loading, setLoading] = useState(true);
 
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    averageRating: 0,
-    reviewCount: 0,
-    unreadMessages: 0,
-    activeInquiries: 0,
-  });
+  const [stats, setStats] = useState(initialStats);
 
   const [recentProducts, setRecentProducts] = useState([]);
   const [recentReviews, setRecentReviews] = useState([]);
@@ -46,45 +56,40 @@ export default function useDashboard() {
     try {
       setLoading(true);
 
-      const [products, reviews] = await Promise.all([
-        getFarmerProducts(profile.uid),
-        getRecentFarmerReviews(profile.uid, 3),
-      ]);
+      // Dashboard statistics are aggregated server-side (GET /farmers/dashboard)
+      // so the client no longer reads whole collections to compute counts.
+      const data = await getFarmerDashboard();
+      const summary = data?.summary ?? {};
 
-      const averageRating =
-        Number(profile?.rating) ||
-        (reviews.length === 0
-          ? 0
-          : Number(
-              (
-                reviews.reduce(
-                  (sum, review) => sum + Number(review.rating || 0),
-                  0,
-                ) / reviews.length
-              ).toFixed(1),
-            ));
+      const apiStats = {
+        totalProducts: summary.products?.total ?? 0,
+        availableProducts: summary.products?.available ?? 0,
+        unavailableProducts: summary.products?.unavailable ?? 0,
+        preorderCount: summary.products?.preorder ?? 0,
+        averageRating: summary.reviews?.average ?? 0,
+        reviewCount: summary.reviews?.count ?? 0,
+        unreadMessages: summary.unreadMessages ?? 0,
+        totalInquiries: summary.inquiries?.total ?? 0,
+        pendingInquiries: summary.inquiries?.pending ?? 0,
+        acceptedInquiries: summary.inquiries?.accepted ?? 0,
+        reservedInquiries: summary.inquiries?.reserved ?? 0,
+        ongoingInquiries: summary.inquiries?.ongoing ?? 0,
+        completedInquiries: summary.inquiries?.completed ?? 0,
+        cancelledInquiries: summary.inquiries?.cancelled ?? 0,
+      };
 
-      const reviewCount = Number(profile?.reviewCount ?? reviews.length);
+      const apiRecentProducts = data?.recentProducts ?? [];
+      const apiRecentReviews = data?.recentReviews ?? [];
 
-      setRecentProducts(products.slice(0, 4));
-      setRecentReviews(reviews);
-
-      setStats((prev) => ({
-        ...prev,
-        totalProducts: products.length,
-        reviewCount,
-        averageRating,
-      }));
+      setStats((prev) => ({ ...prev, ...apiStats }));
+      setRecentProducts(apiRecentProducts);
+      setRecentReviews(apiRecentReviews);
 
       // Cache the data
       pageCache.set(cacheKey, {
-        stats: {
-          totalProducts: products.length,
-          reviewCount,
-          averageRating,
-        },
-        recentProducts: products.slice(0, 4),
-        recentReviews: reviews,
+        stats: apiStats,
+        recentProducts: apiRecentProducts,
+        recentReviews: apiRecentReviews,
       }, CACHE_TTL);
     } catch (error) {
       console.error(error);
@@ -92,12 +97,14 @@ export default function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [profile?.uid, profile?.rating, profile?.reviewCount]);
+  }, [profile?.uid]);
 
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
 
+  // Unread message count and recent conversations come live from the existing
+  // ConversationsContext subscription (no additional dashboard listener).
   useEffect(() => {
     if (!conversations.length) return;
 

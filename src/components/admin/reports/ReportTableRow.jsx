@@ -4,15 +4,15 @@ import { useLanguage } from "../../../context/LanguageContext";
 function getStatusClasses(status) {
   switch (status) {
     case "pending":
-      return "bg-yellow-100 text-yellow-700";
+      return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border border-yellow-500/20";
     case "reviewing":
-      return "bg-blue-100 text-blue-700";
+      return "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20";
     case "resolved":
-      return "bg-green-100 text-green-700";
+      return "bg-green-500/10 text-green-700 dark:text-green-300 border border-green-500/20";
     case "dismissed":
-      return "bg-gray-100 text-gray-600";
+      return "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] border border-[var(--agri-border)]";
     default:
-      return "bg-gray-100 text-gray-600";
+      return "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] border border-[var(--agri-border)]";
   }
 }
 
@@ -35,24 +35,24 @@ export default function ReportTableRow({ report, onView }) {
   };
 
   return (
-    <tr className="border-b border-gray-100 last:border-0 hover:bg-gray-50/70 transition-colors">
+    <tr className="border-b border-[var(--agri-border-subtle)] last:border-0 hover:bg-[var(--agri-hover)]/60 transition-colors">
       <td className="px-5 py-4">
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-bold text-gray-900 leading-tight">
+            <p className="text-sm font-bold text-[var(--agri-text)] leading-tight">
               {report.reason || t("adminReport.noReason")}
             </p>
             {report.evidenceUrl && (
-              <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700 border border-blue-200" title={t("adminReport.proofImageAttached")}>
+              <span className="inline-flex items-center gap-1 rounded-md bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 border border-blue-500/20" title={t("adminReport.proofImageAttached")}>
                 <i className="ri-image-line" /> {t("adminReport.proofLabel")}
               </span>
             )}
           </div>
 
           {report.targetTitle && (
-            <div className="flex items-center gap-1.5 text-xs text-gray-600">
-              <span className="text-gray-400 font-medium">{t("adminReport.targetLabel")}</span>
-              <span className="font-semibold text-gray-800 truncate max-w-xs">{report.targetTitle}</span>
+            <div className="flex items-center gap-1.5 text-xs text-[var(--agri-text-muted)]">
+              <span className="text-[var(--agri-text-muted)] font-medium">{t("adminReport.targetLabel")}</span>
+              <span className="font-semibold text-[var(--agri-text-secondary)] truncate max-w-xs">{report.targetTitle}</span>
             </div>
           )}
         </div>
@@ -60,18 +60,18 @@ export default function ReportTableRow({ report, onView }) {
 
       <td className="px-5 py-4">
         <div>
-          <p className="text-sm font-semibold text-gray-800">
+          <p className="text-sm font-semibold text-[var(--agri-text)]">
             {report.reporterName || t("adminReport.unknownUser")}
           </p>
 
           {report.reporterUsername && (
-            <p className="text-xs text-gray-500 font-medium">@{report.reporterUsername}</p>
+            <p className="text-xs text-[var(--agri-text-muted)] font-medium">@{report.reporterUsername}</p>
           )}
         </div>
       </td>
 
       <td className="px-5 py-4">
-        <span className="capitalize text-xs font-bold text-gray-700 bg-gray-100 border border-gray-200/80 px-2.5 py-1 rounded-lg">
+        <span className="capitalize text-xs font-bold text-[var(--agri-text-secondary)] bg-[var(--agri-hover)] border border-[var(--agri-border)] px-2.5 py-1 rounded-lg">
           {report.targetType || report.type || "user"}
         </span>
       </td>
@@ -87,7 +87,7 @@ export default function ReportTableRow({ report, onView }) {
       </td>
 
       <td className="px-5 py-4 whitespace-nowrap">
-        <span className="text-xs font-semibold text-gray-700">
+        <span className="text-xs font-semibold text-[var(--agri-text-secondary)]">
           {formatFullDateTime(report.createdAt) || "—"}
         </span>
       </td>
@@ -96,7 +96,7 @@ export default function ReportTableRow({ report, onView }) {
         <button
           type="button"
           onClick={() => onView(report)}
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-600 transition hover:bg-[#2D6A4F] hover:text-white shadow-2xs cursor-pointer active:scale-95"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] transition hover:bg-[#2D6A4F] hover:text-white shadow-2xs cursor-pointer active:scale-95"
           title={t("adminReport.viewReportDetails")}
           aria-label={t("adminReport.viewReportAria")}
         >

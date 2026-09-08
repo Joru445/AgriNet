@@ -654,6 +654,8 @@ function getPersonSnapshot(data, uid) {
 
     profilePicture: data.profilePicture ?? "",
 
+    verificationStatus: data.verificationStatus || (data.verified === true ? "approved" : "not_applied"),
+
     verified: data.verified === true,
   };
 }

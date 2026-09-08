@@ -37,7 +37,7 @@ export default function ProductSeller({ farmer, isOwner }) {
             >
               {farmerName}
             </Link>
-            {farmer.verified && (
+            {(farmer.verificationStatus === "approved" || farmer.verified) && (
               <span
                 title={t("productSeller.verifiedFarmer")}
                 aria-label={t("productSeller.verifiedFarmer")}

@@ -49,7 +49,8 @@ export default function useProfile(profile) {
     storeName: profile?.storeName || "",
     description: profile?.description || "",
     rating: profile?.rating || 0,
-    verified: profile?.verified === true,
+    verificationStatus: profile?.verificationStatus || "not_applied",
+    verified: profile?.verificationStatus === "approved" || profile?.verified === true,
     profilePicture: profile?.profilePicture || "",
     profilePictureId: profile?.profilePictureId || "",
   }));

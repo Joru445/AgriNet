@@ -60,6 +60,7 @@ export async function createAgriNetProfile(user, profileData) {
       location: profileData.location,
       rating: 0,
       verified: false,
+      verificationStatus: "not_applied",
       createdAt: serverTimestamp(),
     });
   }

@@ -81,9 +81,15 @@ export function ConversationsProvider({ children }) {
                 cachedProfile?.profilePicture ||
                 otherInfo.profilePicture ||
                 "",
+              verificationStatus:
+                cachedProfile?.verificationStatus ||
+                otherInfo.verificationStatus ||
+                "not_applied",
               verified:
-                cachedProfile?.verified ??
-                otherInfo.verified === true,
+                cachedProfile?.verificationStatus === "approved" ||
+                otherInfo.verificationStatus === "approved" ||
+                (cachedProfile?.verified ??
+                otherInfo.verified === true),
             },
             unreadCount: conversation.unreadCount?.[profile.uid] ?? 0,
             rawUnreadCount: conversation.unreadCount || {},
@@ -112,7 +118,14 @@ export function ConversationsProvider({ children }) {
                               user.profilePicture ||
                               c.otherUser?.profilePicture ||
                               "",
-                            verified: user.verified === true,
+                            verificationStatus:
+                              user.verificationStatus ||
+                              c.otherUser?.verificationStatus ||
+                              "not_applied",
+                            verified:
+                              user.verificationStatus === "approved" ||
+                              c.otherUser?.verificationStatus === "approved" ||
+                              user.verified === true,
                           },
                         }
                       : c,

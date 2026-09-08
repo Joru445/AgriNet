@@ -90,6 +90,27 @@ export const adminNavigation = [
     group: "main",
   },
   {
+    to: "/admin/products",
+    labelKey: "nav.adminProducts",
+    icon: "ri-store-2-line",
+    bottom: true,
+    group: "main",
+  },
+  {
+    to: "/admin/transactions",
+    labelKey: "nav.adminTransactions",
+    icon: "ri-file-list-3-line",
+    bottom: true,
+    group: "main",
+  },
+  {
+    to: "/admin/farmer-verifications",
+    labelKey: "nav.farmerVerifications",
+    icon: "ri-shield-star-line",
+    bottom: true,
+    group: "main",
+  },
+  {
     to: "/admin/reports",
     labelKey: "nav.reports",
     icon: "ri-alert-line",

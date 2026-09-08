@@ -27,7 +27,7 @@ export default function ReportTableSkeleton() {
             {Array.from({ length: 6 }).map((_, rowIndex) => (
               <tr
                 key={rowIndex}
-                className="border-b border-gray-100 last:border-0"
+                className="border-b border-[var(--agri-border-subtle)] last:border-0"
               >
                 {/* Report */}
                 <td className="px-5 py-4">

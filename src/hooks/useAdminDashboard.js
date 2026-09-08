@@ -11,17 +11,23 @@ const initialStats = {
     total: 0,
     farmers: 0,
     consumers: 0,
+    admins: 0,
+    suspended: 0,
+    active: 0,
   },
 
   products: {
     total: 0,
     available: 0,
     unavailable: 0,
+    preorder: 0,
   },
 
   inquiries: {
     total: 0,
+    pending: 0,
     accepted: 0,
+    reserved: 0,
     ongoing: 0,
     completed: 0,
     cancelled: 0,

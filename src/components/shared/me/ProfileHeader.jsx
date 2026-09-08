@@ -153,7 +153,7 @@ export default function ProfileHeader({
                   {displayName}
                 </h1>
 
-                {profile.verified && (
+                {(profile.verificationStatus === "approved" || profile.verified) && (
                   <i
                     className="ri-verified-badge-fill text-lg text-[#2D6A4F] dark:text-[var(--agri-brand)]"
                     title={t("common.verifiedFarmer")}

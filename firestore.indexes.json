@@ -17,6 +17,22 @@
       ]
     },
     {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "farmerId", "order": "ASCENDING" },
+        { "fieldPath": "category", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "farmerId", "order": "ASCENDING" },
+        { "fieldPath": "sellingMode", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "conversations",
       "queryScope": "COLLECTION",
       "fields": [

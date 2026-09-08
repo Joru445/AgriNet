@@ -71,7 +71,7 @@ export default function ChatHeader({ user }) {
               <h3 className="font-semibold text-[var(--agri-text)] truncate">
                 {user.fullname}
               </h3>
-              {user.verified && (
+              {(user.verificationStatus === "approved" || user.verified) && (
                 <span
                   title={t("common.verifiedFarmer")}
                   aria-label={t("common.verifiedFarmer")}

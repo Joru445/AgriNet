@@ -79,7 +79,7 @@ export default function TransactionSummary({ inquiry }) {
             <p className="truncate text-sm font-bold text-[var(--agri-text)]">
               {farmer.fullname || farmer.username || t("transactionReview.farmer")}
             </p>
-            {farmer.verified && (
+            {(farmer.verificationStatus === "approved" || farmer.verified) && (
               <span
                 title={t("transactionReview.verifiedFarmer")}
                 aria-label={t("transactionReview.verifiedFarmer")}

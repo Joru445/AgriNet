@@ -7,7 +7,7 @@ export default function ConsumerProfileDetails({ profile, stats }) {
 
   const { completedDeals = 0, totalDeals = 0, loading: statsLoading } = stats;
 
-  const isTrusted = completedDeals >= 6 || profile.verified;
+  const isTrusted = completedDeals >= 6 || profile.verificationStatus === "approved" || profile.verified;
 
   const completionRate =
     totalDeals > 0 ? Math.round((completedDeals / totalDeals) * 100) : 100;

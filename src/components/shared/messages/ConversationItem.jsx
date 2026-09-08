@@ -99,7 +99,7 @@ export default function ConversationItem({
             >
               {user?.fullname}
             </h3>
-            {user?.verified && (
+            {(user?.verificationStatus === "approved" || user?.verified) && (
               <span
                 title={t("common.verifiedFarmer")}
                 aria-label={t("common.verifiedFarmer")}

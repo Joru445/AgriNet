@@ -137,7 +137,7 @@ export default function useUsers() {
    * This does NOT affect farmer verification.
    */
 
-  const changeStatus = useCallback(async (uid, status) => {
+  const changeStatus = useCallback(async (uid, status, options = {}) => {
     if (!uid) {
       throw new Error("User UID is required.");
     }
@@ -150,7 +150,7 @@ export default function useUsers() {
       setActionLoading(true);
       setActionError(null);
 
-      const result = await apiSetUserSuspension(uid, status);
+      const result = await apiSetUserSuspension(uid, status, options);
 
       /*
        * Update the local user immediately.
@@ -209,6 +209,7 @@ export default function useUsers() {
           farmer.uid === farmerUid
             ? {
                 ...farmer,
+                verificationStatus: "approved",
                 verified: true,
               }
             : farmer,
@@ -256,6 +257,7 @@ export default function useUsers() {
           farmer.uid === farmerUid
             ? {
                 ...farmer,
+                verificationStatus: "not_applied",
                 verified: false,
               }
             : farmer,
@@ -294,11 +296,11 @@ export default function useUsers() {
     const active = users.length - suspended;
 
     const verifiedFarmers = farmers.filter(
-      (farmer) => farmer.verified === true,
+      (farmer) => farmer.verificationStatus === "approved" || farmer.verified === true,
     ).length;
 
     const unverifiedFarmers = farmers.filter(
-      (farmer) => farmer.verified !== true,
+      (farmer) => farmer.verificationStatus !== "approved" && farmer.verified !== true,
     ).length;
 
     return {

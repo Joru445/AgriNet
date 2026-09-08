@@ -131,6 +131,7 @@ export default function useInquiries() {
                   fullname: farmer.fullname,
                   username: farmer.username,
                   profilePicture: farmer.profilePicture,
+                  verificationStatus: farmer.verificationStatus || (farmer.verified === true ? "approved" : "not_applied"),
                   verified: farmer.verified === true,
                 }
               : null,

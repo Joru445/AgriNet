@@ -15,7 +15,7 @@ export default function FarmerPopup({ farmer, onMessage }) {
             size="sm"
             className="w-11 h-11 ring-2 ring-[#D8F3DC]"
           />
-          {farmer.verified && (
+          {(farmer.verificationStatus === "approved" || farmer.verified) && (
             <span
               title={t("common.verifiedFarmer")}
               aria-label={t("common.verifiedFarmer")}

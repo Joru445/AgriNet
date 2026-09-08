@@ -120,7 +120,7 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
             )}
 
             {!isPreorder && (
-              <span className="text-[var(--agri-text-muted)] text-[11px]">
+              <span className="text-(--agri-text-muted) text-[11px]">
                 • {product.stock} {product.unit || t("products.stockUnit")}
               </span>
             )}
@@ -131,7 +131,7 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
           <button
             type="button"
             onClick={() => onEdit(product)}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[var(--agri-hover)] hover:bg-[#E8F5EE] hover:text-[#2D6A4F] text-[var(--agri-text-secondary)] flex items-center justify-center transition cursor-pointer"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-(--agri-hover) hover:bg-[#E8F5EE] hover:text-[#2D6A4F] text-(--agri-text-secondary) flex items-center justify-center transition cursor-pointer"
             title={t("products.editProduct")}
           >
             <i className="ri-edit-line text-sm sm:text-base" />
@@ -151,7 +151,7 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
   }
 
   return (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-sm hover:shadow-md transition-all">
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-(--agri-border) bg-(--agri-card) shadow-sm hover:shadow-md transition-all">
       {/* Top Image Container */}
       <div className="relative aspect-square w-full overflow-hidden bg-[#F0F5F2]">
         <img
@@ -165,7 +165,7 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
         />
 
         {/* Category Pill - Top Left */}
-        <div className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-full bg-white/95 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-[#1B4332] shadow-xs backdrop-blur-md border border-[var(--agri-border-subtle)] max-w-[55%] truncate">
+        <div className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-full bg-white/95 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-[#1B4332] shadow-xs backdrop-blur-md border border-(--agri-border-subtle) max-w-[55%] truncate">
           <i className={`${categoryIcon} text-[#2D6A4F] text-xs shrink-0`} />
           <span className="truncate">{product.category || t("product.produce")}</span>
         </div>
@@ -211,7 +211,7 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
         <div>
           {/* Produce Name: 2 rows flexible min-height */}
           <h3
-            className="text-xs sm:text-sm font-bold text-[var(--agri-text)] line-clamp-2 leading-snug min-h-[2.4em]"
+            className="text-xs sm:text-sm font-bold text-(--agri-text) line-clamp-2 leading-snug min-h-[2.4em]"
             title={product.name}
           >
             {product.name}
@@ -224,14 +224,14 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
                 <span className="text-sm sm:text-base md:text-lg font-black text-(--agri-brand-dark) dark:text-(--agri-brand) leading-none">
                   ₱{priceFormatted}
                 </span>
-                <span className="text-[10px] sm:text-[11px] font-bold text-[var(--agri-text-secondary)]">
+                <span className="text-[10px] sm:text-[11px] font-bold text-(--agri-text-secondary)">
                   /{product.unit || "kg"}
                 </span>
               </div>
 
               {hasDiscount && (
                 <div className="flex items-center gap-1">
-                  <span className="text-[11px] sm:text-xs font-bold text-[var(--agri-text-muted)] line-through decoration-gray-400">
+                  <span className="text-[11px] sm:text-xs font-bold text-(--agri-text-muted) line-through decoration-gray-400">
                     ₱{originalPriceFormatted}
                   </span>
                   <span className="inline-flex items-center rounded bg-red-50 border border-red-200/80 px-1 py-0.2 text-[8px] sm:text-[9px] font-black text-red-600 leading-tight">
@@ -250,17 +250,17 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
                   </p>
                 )}
                 {product.expectedAvailableDate && (
-                  <p className="text-[10px] sm:text-xs text-[var(--agri-text-muted)] font-medium flex items-center gap-1">
+                  <p className="text-[10px] sm:text-xs text-(--agri-text-muted) font-medium flex items-center gap-1">
                     <i className="ri-calendar-line" />
                     {t("product.availableDate")} {new Date(product.expectedAvailableDate).toLocaleDateString()}
                   </p>
                 )}
-                <p className="text-[10px] sm:text-xs text-[var(--agri-text-muted)] font-medium">
+                <p className="text-[10px] sm:text-xs text-(--agri-text-muted) font-medium">
                   {product.reservedQuantity ?? 0} / {product.preOrderLimit} {product.unit || "units"} {t("product.reserved")}
                 </p>
               </div>
             ) : !isPreorder && (
-              <span className="text-[10px] sm:text-[11px] font-semibold text-[var(--agri-text-muted)] shrink-0">
+              <span className="text-[10px] sm:text-[11px] font-semibold text-(--agri-text-muted) shrink-0">
                 {stockNum} {t("products.stockUnit")}
               </span>
             )}
@@ -268,11 +268,11 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
         </div>
 
         {/* Footer Action Buttons */}
-        <div className="pt-2 border-t border-[var(--agri-border)] flex items-center justify-between gap-1.5">
+        <div className="pt-2 border-t border-(--agri-border) flex items-center justify-between gap-1.5">
           <button
             type="button"
             onClick={() => onEdit(product)}
-            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-[var(--agri-hover)] hover:bg-[#E8F5EE] hover:text-[#2D6A4F] text-[var(--agri-text-secondary)] text-xs font-bold rounded-lg transition cursor-pointer"
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-(--agri-hover) hover:bg-[#E8F5EE] hover:text-[#2D6A4F] text-(--agri-text-secondary) text-xs font-bold rounded-lg transition cursor-pointer"
           >
             <i className="ri-edit-line text-xs" />
             <span>{t("common.edit")}</span>

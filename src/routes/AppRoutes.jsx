@@ -34,6 +34,9 @@ const Reviews = lazy(() => import("../pages/farmer/Reviews"));
 const AdminDashboard = lazy(() => import("../pages/admin/Dashboard"));
 const Users = lazy(() => import("../pages/admin/Users"));
 const Reports = lazy(() => import("../pages/admin/Reports.jsx"));
+const FarmerVerifications = lazy(() => import("../pages/admin/FarmerVerifications"));
+const AdminProducts = lazy(() => import("../pages/admin/Products"));
+const AdminTransactions = lazy(() => import("../pages/admin/Transactions"));
 
 // Shared Pages
 const ProductDetails = lazy(() => import("../pages/shared/ProductDetails"));
@@ -135,8 +138,6 @@ export default function AppRoutes() {
               <Route path="/farmer/settings" element={<Settings />} />
 
               <Route path="/farmer/notifications" element={<Notifications />} />
-
-              <Route path="/farmer/favorites" element={<Favorites />} />
             </Route>
           </Route>
         </Route>
@@ -149,9 +150,13 @@ export default function AppRoutes() {
 
               <Route path="/admin/users" element={<Users />} />
 
+              <Route path="/admin/products" element={<AdminProducts />} />
+
+              <Route path="/admin/farmer-verifications" element={<FarmerVerifications />} />
+
               <Route path="/admin/reports" element={<Reports />} />
 
-              <Route path="/admin/transactions" element={<Inquiries />} />
+              <Route path="/admin/transactions" element={<AdminTransactions />} />
 
               <Route
                 path="/admin/transactions/:inquiryId/proof"

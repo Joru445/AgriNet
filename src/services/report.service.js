@@ -143,6 +143,49 @@ export async function dismissReport(reportId, adminNotes = "") {
 
 /*
  * ============================================================
+ * ADMIN — LIST REPORTS (server-side filtered)
+ * ============================================================
+ */
+
+export async function apiListAdminReports({
+  page = 1,
+  limit = 20,
+  status = null,
+  targetType = null,
+  search = null,
+  startDate = null,
+  endDate = null,
+} = {}) {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", String(limit));
+  if (status && status !== "all") params.set("status", status);
+  if (targetType && targetType !== "all") params.set("targetType", targetType);
+  if (search) params.set("search", search);
+  if (startDate) params.set("startDate", startDate);
+  if (endDate) params.set("endDate", endDate);
+
+  const result = await apiRequest(`/admin/reports?${params.toString()}`);
+  return result;
+}
+
+/*
+ * ============================================================
+ * ADMIN — GET REPORT BY ID (enriched with target data)
+ * ============================================================
+ */
+
+export async function apiGetAdminReport(reportId) {
+  if (!reportId) {
+    throw new Error("Report ID is required.");
+  }
+
+  const result = await apiRequest(`/admin/reports/${reportId}`);
+  return result.data;
+}
+
+/*
+ * ============================================================
  * REALTIME LISTENERS (intentional Firebase)
  * ============================================================
  *

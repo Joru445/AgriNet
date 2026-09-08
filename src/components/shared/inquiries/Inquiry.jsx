@@ -52,7 +52,7 @@ export default function Inquiry({ productData, counterparty }) {
                 : t("common.unknownUser"))}
           </span>
 
-          {counterparty?.verified && (
+          {(counterparty?.verificationStatus === "approved" || counterparty?.verified) && (
             <span
               title={t("common.verifiedFarmer")}
               aria-label={t("common.verifiedFarmer")}

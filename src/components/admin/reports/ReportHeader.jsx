@@ -6,9 +6,9 @@ export default function ReportHeader() {
   return (
     <div className="mb-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-gray-900">{t("adminReport.headerTitle")}</h1>
+        <h1 className="text-2xl font-bold text-(--agri-brand)">{t("adminReport.headerTitle")}</h1>
 
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-(--agri-text-muted)">
           {t("adminReport.headerSubtitle")}
         </p>
       </div>

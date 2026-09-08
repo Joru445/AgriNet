@@ -161,7 +161,7 @@ export default function Users() {
   }
 
   return (
-    <div className="min-h-full bg-gray-50 p-4 md:p-6 lg:p-8">
+    <div className="min-h-full p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl">
         <UserManagementHeader />
 

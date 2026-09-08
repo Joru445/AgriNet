@@ -107,7 +107,7 @@ export default function UserDetailsModal({ user, onClose }) {
               </div>
             )}
 
-            {user.verified && (
+            {(user.verificationStatus === "approved" || user.verified) && (
               <span
                 className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[#2D6A4F] text-white ring-2 ring-white"
                 title={t("adminUser.verifiedAccount")}

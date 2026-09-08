@@ -8,6 +8,7 @@ import NotificationPreferences from "../../components/common/NotificationPrefere
 import LogoutConfirmModal from "../../components/common/LogoutConfirmModal";
 import ConnectedAccounts from "../../components/common/ConnectedAccounts";
 import UserIdentity from "../../components/common/UserIdentity";
+import FarmerVerification from "../../components/farmer/verification/FarmerVerification";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -124,6 +125,9 @@ export default function Settings() {
           </div>
         </div>
       </section>
+
+      {/* Farmer Verification (farmers only) */}
+      {profile?.role === "farmer" && <FarmerVerification />}
 
       {/* Sign-in methods */}
       <section className="mb-6">

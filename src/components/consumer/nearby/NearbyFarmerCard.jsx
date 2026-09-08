@@ -16,7 +16,7 @@ export default function NearbyFarmerCard({ farmer }) {
               size="md"
               className="w-11 h-11 sm:w-12 sm:h-12 ring-2 ring-[#D8F3DC]"
             />
-            {farmer.verified && (
+            {(farmer.verificationStatus === "approved" || farmer.verified) && (
               <span
                 title={t("common.verifiedFarmer")}
                 aria-label={t("common.verifiedFarmer")}

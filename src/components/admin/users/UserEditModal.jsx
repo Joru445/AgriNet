@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 import RoleBadge from "../../common/RoleBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 
+const DURATION_OPTIONS = [
+  { value: "1d", labelKey: "farmerVerification.duration1d" },
+  { value: "3d", labelKey: "farmerVerification.duration3d" },
+  { value: "7d", labelKey: "farmerVerification.duration7d" },
+  { value: "14d", labelKey: "farmerVerification.duration14d" },
+  { value: "30d", labelKey: "farmerVerification.duration30d" },
+  { value: "permanent", labelKey: "farmerVerification.durationPermanent" },
+];
+
 export default function UserEditModal({
   user,
   farmer,
@@ -12,6 +21,8 @@ export default function UserEditModal({
   const { t } = useLanguage();
   const [status, setStatus] = useState("active");
   const [verified, setVerified] = useState(false);
+  const [suspensionDuration, setSuspensionDuration] = useState("7d");
+  const [suspensionReason, setSuspensionReason] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -19,19 +30,23 @@ export default function UserEditModal({
     setStatus(user.status || "active");
 
     if (user.role === "farmer") {
-      setVerified(farmer?.verified === true);
+      setVerified(farmer?.verificationStatus === "approved" || farmer?.verified === true);
     } else {
       setVerified(false);
     }
+
+    setSuspensionReason("");
+    setSuspensionDuration("7d");
   }, [user, farmer]);
 
   if (!user) return null;
 
   const isFarmer = user.role === "farmer";
   const originalStatus = user.status || "active";
-  const originalVerified = farmer?.verified === true;
+  const originalVerified = farmer?.verificationStatus === "approved" || farmer?.verified === true;
   const statusChanged = status !== originalStatus;
   const verificationChanged = isFarmer && verified !== originalVerified;
+  const isSuspending = status === "suspended" && statusChanged;
   const hasChanges = statusChanged || verificationChanged;
 
   async function handleSubmit(e) {
@@ -46,6 +61,11 @@ export default function UserEditModal({
 
     if (statusChanged) {
       updates.status = status;
+
+      if (isSuspending) {
+        updates.durationPreset = suspensionDuration;
+        updates.reason = suspensionReason;
+      }
     }
 
     if (verificationChanged) {
@@ -147,6 +167,49 @@ export default function UserEditModal({
             </select>
           </div>
 
+          {/* Suspension Options */}
+          {isSuspending && (
+            <div className="space-y-3 rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-3">
+              <p className="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider">
+                {t("adminUser.suspensionOptions")}
+              </p>
+
+              {/* Duration */}
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                  {t("adminUser.suspensionDuration")}
+                </label>
+                <select
+                  value={suspensionDuration}
+                  onChange={(e) => setSuspensionDuration(e.target.value)}
+                  disabled={loading}
+                  className="w-full rounded-lg border border-amber-200 dark:border-amber-500/30 bg-white dark:bg-[var(--agri-card)] px-3 py-2 text-sm font-semibold text-[var(--agri-text)] outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 cursor-pointer disabled:opacity-60"
+                >
+                  {DURATION_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {t(opt.labelKey)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Reason */}
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                  {t("adminUser.suspensionReason")} *
+                </label>
+                <textarea
+                  value={suspensionReason}
+                  onChange={(e) => setSuspensionReason(e.target.value)}
+                  placeholder={t("adminUser.suspensionReasonPlaceholder")}
+                  rows={2}
+                  disabled={loading}
+                  className="w-full rounded-lg border border-amber-200 dark:border-amber-500/30 bg-white dark:bg-[var(--agri-card)] px-3 py-2 text-sm text-[var(--agri-text)] outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 resize-none disabled:opacity-60"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Farmer Verification Toggle */}
           {isFarmer && (
             <div>
@@ -208,7 +271,7 @@ export default function UserEditModal({
 
             <button
               type="submit"
-              disabled={loading || !hasChanges}
+              disabled={loading || !hasChanges || (isSuspending && !suspensionReason.trim())}
               className="flex items-center gap-1.5 py-2.5 px-5 rounded-xl bg-[#2D6A4F] text-white text-xs sm:text-sm font-bold hover:bg-[#1B4332] active:scale-[0.99] transition cursor-pointer shadow-xs disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (

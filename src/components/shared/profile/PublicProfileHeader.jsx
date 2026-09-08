@@ -125,7 +125,7 @@ export default function PublicProfileHeader({
                 <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332] dark:text-[var(--agri-brand)] [text-shadow:_0_1px_2px_rgba(255,255,255,0.9),_0_0_8px_rgba(255,255,255,0.8)] dark:[text-shadow:0_1px_3px_rgba(0,0,0,0.8)] truncate">
                   {name}
                 </h1>
-                {profile.verified && (
+                {(profile.verificationStatus === "approved" || profile.verified) && (
                   <span
                     title={t("common.verifiedFarmer")}
                     aria-label={t("common.verifiedFarmer")}

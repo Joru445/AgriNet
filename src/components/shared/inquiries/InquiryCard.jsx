@@ -149,7 +149,7 @@ export default function InquiryCard({
               {counterparty?.fullname ||
                 (counterparty?.username ? `@${counterparty.username}` : t("transactions.unknownUser"))}
             </span>
-            {counterparty?.verified && (
+            {(counterparty?.verificationStatus === "approved" || counterparty?.verified) && (
               <span
                 title={t("common.verifiedFarmer")}
                 aria-label={t("common.verifiedFarmer")}

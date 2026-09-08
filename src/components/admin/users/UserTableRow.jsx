@@ -17,7 +17,8 @@ export default function UserTableRow({
     user.role === "farmer"
       ? {
           ...user,
-          verified: farmer?.verified === true,
+          verificationStatus: farmer?.verificationStatus || (farmer?.verified === true ? "approved" : "not_applied"),
+          verified: farmer?.verificationStatus === "approved" || farmer?.verified === true,
         }
       : user;
 

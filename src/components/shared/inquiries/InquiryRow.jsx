@@ -39,7 +39,13 @@ export default function InquiryRow({
       : {
         ...(inquiry.farmerSnapshot ?? {}),
         ...(farmer ?? {}),
+        verificationStatus:
+          farmer?.verificationStatus ||
+          inquiry.farmerSnapshot?.verificationStatus ||
+          "not_applied",
         verified:
+          farmer?.verificationStatus === "approved" ||
+          inquiry.farmerSnapshot?.verificationStatus === "approved" ||
           farmer?.verified === true ||
           inquiry.farmerSnapshot?.verified === true,
       };
