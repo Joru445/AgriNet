@@ -29,9 +29,9 @@ function choosePlacement(rect, isMobile) {
   const spaceLeft = rect.left;
 
   if (isMobile) {
-    // On mobile, if element is in the bottom area of the screen (e.g. bottom nav), place on top
-    if (spaceBelow < 260 && spaceAbove >= 180) return "top";
-    if (spaceBelow >= 200) return "bottom";
+    // On mobile, if space below is tight (<280px), place on top
+    if (spaceBelow < 280 && spaceAbove >= 200) return "top";
+    if (spaceBelow >= 260) return "bottom";
     if (spaceAbove >= 200) return "top";
     return spaceAbove > spaceBelow ? "top" : "bottom";
   }
@@ -42,14 +42,14 @@ function choosePlacement(rect, isMobile) {
     (rect.left < 80 && rect.right > innerWidth - 80);
 
   if (isFullWidth) {
-    if (spaceBelow >= 160) return "bottom";
+    if (spaceBelow >= 260) return "bottom";
     if (spaceAbove >= 220) return "top";
     return spaceAbove > spaceBelow ? "top" : "bottom";
   }
 
   // Check where there is the best available space
-  if (spaceBelow >= 240) return "bottom";
-  if (spaceAbove >= 240) return "top";
+  if (spaceBelow >= 260) return "bottom";
+  if (spaceAbove >= 260) return "top";
   if (spaceRight >= TIP_MAX_WIDTH + 24) return "right";
   if (spaceLeft >= TIP_MAX_WIDTH + 24) return "left";
 
@@ -75,8 +75,9 @@ function computeTooltipStyle(rect, placement) {
 
   const isWideTarget = rect.width > vw * 0.65;
   const isDesktop = vw >= 640;
+  const cardH = isDesktop ? 260 : 300;
 
-  // On wide target headers (like storefront header), align under the right-side actions (Message/Save/Share/Report) on laptop
+  // On wide target headers (like storefront header), align under the right-side actions on desktop
   const contentRightEdge = Math.min(
     rect.right - 24,
     (vw + Math.min(vw, 1280)) / 2 - 24,
@@ -84,49 +85,63 @@ function computeTooltipStyle(rect, placement) {
   const wideTargetX = isDesktop ? clampX(contentRightEdge - w) : centerX();
   const bottomX = isWideTarget ? wideTargetX : centerX();
 
-  // Move slightly up for wide header so it sits directly under the actions
-  const bottomTop = isWideTarget
-    ? Math.max(12, rect.bottom - 8)
-    : Math.max(12, rect.bottom + 16);
-
   // Auto-flip if placement would cause tooltip to overflow viewport
   let effectivePlacement = placement;
-  if (placement === "bottom" && vh - rect.bottom < 180 && rect.top >= 180) {
+  if (placement === "bottom" && vh - rect.bottom < cardH && rect.top >= cardH + 16) {
     effectivePlacement = "top";
-  } else if (placement === "top" && rect.top < 180 && vh - rect.bottom >= 180) {
+  } else if (placement === "top" && rect.top < cardH + 16 && vh - rect.bottom >= cardH + 16) {
     effectivePlacement = "bottom";
   }
 
   switch (effectivePlacement) {
-    case "top":
+    case "top": {
+      const bottomOffset = Math.max(12, vh - rect.top + 16);
       return {
-        bottom: Math.max(12, vh - rect.top + 16),
+        bottom: bottomOffset,
         left: bottomX,
+        maxHeight: `calc(${vh}px - ${bottomOffset + 12}px)`,
       };
+    }
 
-    case "bottom":
+    case "bottom": {
+      const hasEnoughSpaceBelow = vh - rect.bottom >= cardH + 20;
+      if (!hasEnoughSpaceBelow) {
+        return {
+          bottom: 12,
+          left: bottomX,
+          maxHeight: `calc(${vh}px - 24px)`,
+        };
+      }
+      const topOffset = isWideTarget
+        ? Math.max(12, rect.bottom - 8)
+        : Math.max(12, rect.bottom + 16);
       return {
-        top: bottomTop,
+        top: topOffset,
         left: bottomX,
+        maxHeight: `calc(${vh}px - ${topOffset + 12}px)`,
       };
+    }
 
     case "left":
       return {
-        top: Math.max(12, Math.min(rect.top + rect.height / 2 - TIP_HEIGHT_ESTIMATE / 2, vh - TIP_HEIGHT_ESTIMATE - 12)),
+        top: Math.max(12, Math.min(rect.top + rect.height / 2 - cardH / 2, vh - cardH - 12)),
         left: clampX(rect.left - w - 16),
+        maxHeight: `calc(${vh}px - 24px)`,
       };
 
     case "right":
       return {
-        top: Math.max(12, Math.min(rect.top + rect.height / 2 - TIP_HEIGHT_ESTIMATE / 2, vh - TIP_HEIGHT_ESTIMATE - 12)),
+        top: Math.max(12, Math.min(rect.top + rect.height / 2 - cardH / 2, vh - cardH - 12)),
         left: clampX(rect.right + 16),
+        maxHeight: `calc(${vh}px - 24px)`,
       };
 
     case "center":
     default:
       return {
-        top: bottomTop,
+        bottom: 12,
         left: bottomX,
+        maxHeight: `calc(${vh}px - 24px)`,
       };
   }
 }
@@ -359,35 +374,39 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
         style={centered ? undefined : computeTooltipStyle(targetRect, placement)}
       >
         <div
-          className={`pointer-events-auto w-full ${
+          className={`pointer-events-auto w-full max-h-[calc(100vh-24px)] flex flex-col justify-between overflow-y-auto ${
             centered
               ? "max-w-[24rem] sm:max-w-[28rem] md:max-w-[32rem] lg:max-w-[34rem] p-5 sm:p-6 md:p-7"
               : "max-w-[24rem] sm:max-w-[26rem] md:max-w-[28rem] p-4 sm:p-5"
           } rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-2xl transition-all`}
         >
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2D6A4F]/10 dark:bg-[#2D6A4F]/25 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-[#1B4332] dark:text-(--agri-brand)">
-            <i className="ri-compass-3-line text-xs text-[#2D6A4F] dark:text-(--agri-brand)" />
-            <span>{t("common.fromTo", { count: stepIndex + 1, total: steps.length })}</span>
-          </span>
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2D6A4F]/10 dark:bg-[#2D6A4F]/25 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-[#1B4332] dark:text-(--agri-brand)">
+              <i className="ri-compass-3-line text-xs text-[#2D6A4F] dark:text-(--agri-brand)" />
+              <span>{t("common.fromTo", { count: stepIndex + 1, total: steps.length })}</span>
+            </span>
 
-          <h3 className="mt-2.5 text-base sm:text-lg md:text-xl font-extrabold text-[var(--agri-text)] leading-snug tracking-tight">
-            {t(`${stepCopyKey(step)}.title`)}
-          </h3>
+            <h3 className="mt-2 text-base sm:text-lg md:text-xl font-extrabold text-[var(--agri-text)] leading-snug tracking-tight">
+              {t(`${stepCopyKey(step)}.title`)}
+            </h3>
 
-          <p className="mt-1.5 text-xs sm:text-sm md:text-[15px] leading-relaxed text-[var(--agri-text-secondary)] font-normal">
-            {t(`${stepCopyKey(step)}.body`)}
-          </p>
+            <p className="mt-2 text-sm sm:text-[15px] md:text-base leading-relaxed text-[var(--agri-text-secondary)] font-normal">
+              {t(`${stepCopyKey(step)}.body`)}
+            </p>
+          </div>
 
-          <div className="mt-5 pt-3.5 border-t border-[var(--agri-border)] dark:border-gray-700 flex flex-wrap items-center justify-between gap-3">
+          <div className="mt-5 pt-3.5 border-t border-[var(--agri-border)] dark:border-gray-700 flex items-center justify-between gap-2">
+            {/* Left: Skip */}
             <button
               type="button"
               onClick={() => onSkipRef.current?.()}
-              className="text-xs sm:text-sm font-semibold text-(--agri-text-muted) transition hover:text-(--agri-text) cursor-pointer min-w-0"
+              className="text-xs sm:text-sm font-semibold text-(--agri-text-muted) transition hover:text-(--agri-text) cursor-pointer shrink-0"
             >
               {t("onboarding.skip")}
             </button>
 
-            <div className="flex items-center gap-1.5">
+            {/* Center: Step indicator dots */}
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0" aria-hidden="true">
               {steps.map((s, i) => (
                 <button
                   key={s.id}
@@ -396,19 +415,20 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
                   onClick={() => setStepIndex(i)}
                   className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer ${
                     i === stepIndex
-                      ? "w-6 sm:w-7 bg-[#2D6A4F] dark:bg-(--agri-brand)"
+                      ? "w-5 sm:w-7 bg-[#2D6A4F] dark:bg-(--agri-brand)"
                       : "w-1.5 sm:w-2 bg-[var(--agri-border)] hover:bg-[var(--agri-text-muted)]"
                   }`}
                 />
               ))}
             </div>
 
-            <div className="flex items-center gap-2 min-w-0">
+            {/* Right: Back & Next / Finish action buttons */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {stepIndex > 0 && (
                 <button
                   type="button"
                   onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
-                  className="shrink-0 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)]/70 hover:bg-[var(--agri-hover)] px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold text-[var(--agri-text)] transition cursor-pointer"
+                  className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)]/70 hover:bg-[var(--agri-hover)] px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-[var(--agri-text)] transition cursor-pointer whitespace-nowrap"
                 >
                   {t("common.back")}
                 </button>
@@ -418,7 +438,7 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
                 <button
                   type="button"
                   onClick={onFinish}
-                  className="shrink-0 rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow transition cursor-pointer inline-flex items-center gap-1.5"
+                  className="rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow transition cursor-pointer inline-flex items-center gap-1 whitespace-nowrap"
                 >
                   <i className="ri-check-line text-sm" />
                   <span>{t("onboarding.finish")}</span>
@@ -427,10 +447,10 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
                 <button
                   type="button"
                   onClick={() => setStepIndex((i) => Math.min(steps.length - 1, i + 1))}
-                  className="shrink-0 rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow transition cursor-pointer inline-flex items-center gap-1.5"
+                  className="rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow transition cursor-pointer inline-flex items-center gap-1 whitespace-nowrap"
                 >
                   <span>{t("onboarding.next")}</span>
-                  <i className="ri-arrow-right-line text-sm" />
+                  <i className="ri-arrow-right-line text-xs sm:text-sm" />
                 </button>
               )}
             </div>

@@ -37,14 +37,28 @@ function computeTooltipStyle(rect) {
   const horizontal = () =>
     Math.max(12, Math.min(rect.left + rect.width / 2 - w / 2, vw - w - 12));
 
-  if (vh - rect.bottom > 300) {
-    return { top: rect.bottom + 14, left: horizontal() };
+  const cardH = 260;
+  if (vh - rect.bottom >= cardH + 20) {
+    return {
+      top: rect.bottom + 14,
+      left: horizontal(),
+      maxHeight: `calc(${vh}px - ${rect.bottom + 26}px)`,
+    };
   }
-  if (rect.top > 300) {
-    return { bottom: vh - rect.top + 14, left: horizontal() };
+  if (rect.top >= cardH + 20) {
+    const bottomOffset = Math.max(12, vh - rect.top + 14);
+    return {
+      bottom: bottomOffset,
+      left: horizontal(),
+      maxHeight: `calc(${vh}px - ${bottomOffset + 12}px)`,
+    };
   }
 
-  return { top: rect.bottom + 14, left: horizontal() };
+  return {
+    bottom: 12,
+    left: horizontal(),
+    maxHeight: `calc(${vh}px - 24px)`,
+  };
 }
 
 /**
