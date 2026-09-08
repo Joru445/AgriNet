@@ -45,7 +45,7 @@ export default function useMessageActions({
   }, []);
 
   const sendMessage = useCallback(
-    async (activeImg = null, replyTo = null) => {
+    async (activeImg = null, replyTo = null, options = {}) => {
       // Prevent duplicate sends when user multiple clicks or network is slow
       if (isSendingRef.current) return;
 
@@ -81,6 +81,7 @@ export default function useMessageActions({
           image: activeImg,
           error: "No internet connection",
           stage: "offline",
+          encrypted: Boolean(options?.encrypted),
         });
 
         setFailedMessages((prev) => [...prev, failedMessage]);
@@ -110,24 +111,30 @@ export default function useMessageActions({
 
         stage = "send-message";
 
-        // --- E2E: encrypt message text ---
+        // --- Normal message: Plain text by default in Firestore ---
         const otherUid = activeConversation?.otherUser?.uid || activeUser?.uid;
+        const isEncrypted = Boolean(options?.encrypted);
+
         const messagePayload = {
           conversationId,
           receiverId: otherUid || null,
+          text: text || "",
           type: activeImg ? "image" : "text",
           imageUrl,
           imageId,
           replyTo: replyTo?.messageId || replyTo || null,
+          encrypted: isEncrypted,
         };
 
-        if (text) {
+        // If explicitly requested, perform E2E encryption
+        if (isEncrypted && text) {
           if (otherUid) {
             const conversationKey = await getConversationKey(profile.uid, otherUid, conversationId);
             const encrypted = await encrypt(text, conversationKey);
             messagePayload.ciphertext = encrypted.ciphertext;
             messagePayload.iv = encrypted.iv;
             messagePayload.encryptionVersion = 1;
+            delete messagePayload.text;
           } else {
             throw new Error("Recipient is not ready for encrypted messaging yet.");
           }
@@ -160,6 +167,7 @@ export default function useMessageActions({
           error: error.message,
           stage,
           replyTo: replyTo?.messageId || replyTo || null,
+          encrypted: Boolean(options?.encrypted),
         });
 
         setFailedMessages((prev) => [...prev, failedMessage]);
@@ -236,9 +244,22 @@ export default function useMessageActions({
 
         stage = "send-message";
 
-        // --- E2E: encrypt retry message text ---
+        // --- Retry message: Plain text by default, encrypt only if original was encrypted ---
+        const isEncrypted = Boolean(failedMessage.encrypted);
+        const otherUid =
+          failedMessage.receiverId ||
+          activeConversation?.otherUser?.uid ||
+          activeUser?.uid ||
+          (() => {
+            const parts = conversationId.split("_");
+            return parts.length === 2
+              ? parts.find((id) => id !== profile.uid) || null
+              : null;
+          })();
+
         const retryPayload = {
           conversationId,
+          receiverId: otherUid || null,
           text: failedMessage.text || "",
           type: failedMessage.type || "text",
           imageUrl: failedMessage.imageUrl?.startsWith("blob:")
@@ -246,25 +267,13 @@ export default function useMessageActions({
             : failedMessage.imageUrl || null,
           imageId: failedMessage.imageId || null,
           replyTo: failedMessage.replyTo || null,
+          encrypted: isEncrypted,
         };
 
-        if (retryPayload.text) {
-          const otherUid =
-            failedMessage.receiverId ||
-            activeConversation?.otherUser?.uid ||
-            activeUser?.uid ||
-            (() => {
-              const parts = conversationId.split("_");
-              return parts.length === 2
-                ? parts.find((id) => id !== profile.uid) || null
-                : null;
-            })();
-
+        if (isEncrypted && retryPayload.text) {
           if (!otherUid) {
             throw new Error("Recipient is not ready for encrypted messaging yet.");
           }
-
-          retryPayload.receiverId = otherUid;
           const convId = failedMessage.conversationId || conversationId;
           const conversationKey = await getConversationKey(profile.uid, otherUid, convId);
           const encrypted = await encrypt(retryPayload.text, conversationKey);

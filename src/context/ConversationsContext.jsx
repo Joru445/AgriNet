@@ -196,7 +196,17 @@ export function ConversationsProvider({ children }) {
             if (snap.empty) continue;
 
             const msg = snap.docs[0].data();
-            if (!msg.encryptionVersion) continue;
+            if (!msg.encryptionVersion) {
+              if (msg.text) {
+                const ts =
+                  typeof conv.lastMessageAt === "number"
+                    ? conv.lastMessageAt
+                    : conv.lastMessageAt?.seconds * 1000 || 0;
+                decryptedCacheRef.current.set(conv.id, { text: msg.text, ts });
+                results.set(conv.id, msg.text);
+              }
+              continue;
+            }
 
             const otherParticipantId = conv.participants?.find(
               (p) => p !== profile?.uid,

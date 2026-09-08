@@ -137,29 +137,18 @@ export default function useInquiryFlow({
 
         const inquiryText = `I'm interested in ${inquiryProduct.name}.`;
 
-        // --- E2E: encrypt inquiry text ---
+        // --- Inquiry message: Plain text in Firestore by default ---
         const inquiryPayload = {
           conversationId,
           senderId: profile.uid,
           receiverId: activeUser.uid,
+          text: inquiryText || "",
           type: "product_inquiry",
           productId: inquiryProduct.id,
           quantity: parsedQuantity,
           inquiryStatus: "pending",
+          encryptionVersion: null,
         };
-
-        try {
-          const conversationKey = await getConversationKey(profile.uid, activeUser.uid, conversationId);
-          const encrypted = await encrypt(inquiryText, conversationKey);
-          inquiryPayload.ciphertext = encrypted.ciphertext;
-          inquiryPayload.iv = encrypted.iv;
-          inquiryPayload.encryptionVersion = 1;
-        } catch (encError) {
-          console.error("[E2E] Inquiry encryption failed:", encError.message);
-          const err = new Error("Recipient is not ready for encrypted messaging yet.");
-          err.cause = encError;
-          throw err;
-        }
 
         await apiSendMessage(inquiryPayload);
 

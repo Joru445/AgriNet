@@ -328,20 +328,28 @@ export async function sendMessage({
   };
 
   if (ciphertext && iv) {
-    // Already encrypted — use directly, never re-encrypt
+    // 1. Explicitly pre-encrypted message
     messageData.ciphertext = ciphertext;
     messageData.iv = iv;
     messageData.encryptionVersion = encryptionVersion || ENCRYPTION_VERSION;
-  } else if (text) {
-    const encrypted = await encryptMessageText(text, conversationId, actualSenderId, receiverId);
-    if (encrypted) {
-      messageData.ciphertext = encrypted.ciphertext;
-      messageData.iv = encrypted.iv;
-      messageData.encryptionVersion = encrypted.encryptionVersion;
+    messageData.text = null;
+  } else if (encrypted && text) {
+    // 2. Explicitly requested encryption
+    const encryptedRes = await encryptMessageText(text, conversationId, actualSenderId, receiverId);
+    if (encryptedRes) {
+      messageData.ciphertext = encryptedRes.ciphertext;
+      messageData.iv = encryptedRes.iv;
+      messageData.encryptionVersion = encryptedRes.encryptionVersion;
+      messageData.text = null;
     } else {
-      // Encryption failed — do NOT write plaintext
       throw new Error("Encryption failed. Message not sent.");
     }
+  } else {
+    // 3. Normal / default message: Store readable plain text in Firestore
+    messageData.text = text || "";
+    messageData.ciphertext = null;
+    messageData.iv = null;
+    messageData.encryptionVersion = null;
   }
 
   if (imageUrl) messageData.imageUrl = imageUrl;
@@ -353,8 +361,17 @@ export async function sendMessage({
 
   batch.set(messageRef, messageData);
 
-  // --- Conversation update: never store plaintext lastMessage ---
-  const lastMessagePreview = buildEncryptedLastMessage(type);
+  // --- Conversation update: readable preview for plaintext, indicator for encrypted ---
+  let lastMessagePreview;
+  if (messageData.encryptionVersion) {
+    lastMessagePreview = buildEncryptedLastMessage(type);
+  } else if (type === "image") {
+    lastMessagePreview = "📷 Photo";
+  } else if (type === "product_inquiry") {
+    lastMessagePreview = "📦 Product Inquiry";
+  } else {
+    lastMessagePreview = text || "";
+  }
 
   const conversationUpdates = {
     participants: [actualSenderId, receiverId],
