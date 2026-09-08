@@ -19,23 +19,23 @@ function getRoleLabel(role) {
 function getRoleClasses(role) {
   switch (role) {
     case "admin":
-      return "bg-purple-500/10 text-purple-700 dark:text-purple-300";
+      return "bg-white text-purple-900 border border-purple-300 shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-purple-950 dark:text-purple-200 dark:border-purple-700/60";
 
     case "farmer":
-      return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+      return "bg-white text-emerald-900 border border-emerald-300 shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-700/60";
 
     case "consumer":
-      return "bg-blue-500/10 text-blue-700 dark:text-blue-300";
+      return "bg-white text-blue-900 border border-blue-300 shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-blue-950 dark:text-blue-200 dark:border-blue-700/60";
 
     default:
-      return "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)]";
+      return "bg-white text-[var(--agri-text)] border border-[var(--agri-border)] shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-[var(--agri-card)] dark:text-[var(--agri-text)]";
   }
 }
 
 export default function RoleBadge({ role }) {
   return (
     <span
-      className={`rounded-full px-2.5 py-1 text-xs font-medium ${getRoleClasses(
+      className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-bold tracking-wide ${getRoleClasses(
         role,
       )}`}
     >

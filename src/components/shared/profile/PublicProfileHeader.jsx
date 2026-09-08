@@ -60,7 +60,7 @@ export default function PublicProfileHeader({
   }
 
   return (
-    <section data-onboarding="store-header" className="bg-(--agri-surface)">
+    <section data-onboarding="store-header" className="bg-[var(--agri-card)]">
       {/* Cover Photo */}
       <div className="mx-auto max-w-7xl">
         <div
@@ -68,10 +68,10 @@ export default function PublicProfileHeader({
             relative
             h-56
             overflow-hidden
-            bg-(--agri-hover)
+            bg-[var(--agri-hover)]
             sm:h-72
             md:h-80
-            lg:h-95
+            lg:h-[380px]
             sm:rounded-b-2xl
           "
         >
@@ -122,7 +122,7 @@ export default function PublicProfileHeader({
             {/* Text Info */}
             <div className="min-w-0 pb-1 sm:pb-3">
               <div className="flex items-center gap-1.5 min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-[var(--agri-text)] truncate">
+                <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332] dark:text-[var(--agri-brand)] [text-shadow:_0_1px_2px_rgba(255,255,255,0.9),_0_0_8px_rgba(255,255,255,0.8)] dark:[text-shadow:0_1px_3px_rgba(0,0,0,0.8)] truncate">
                   {name}
                 </h1>
                 {profile.verified && (
@@ -144,96 +144,69 @@ export default function PublicProfileHeader({
             </div>
           </div>
 
-          {/* Right side: Actions */}
-          <div className="flex flex-wrap items-center gap-3 sm:ml-auto pb-1 sm:pb-3">
+          {/* Right side: Actions - fills full width in 2-cols on mobile, inline on desktop */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto sm:ml-auto pb-1 sm:pb-3">
             {onMessage && (
               <button
                 type="button"
                 onClick={onMessage}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#2D6A4F] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1B4332] cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] px-4 sm:px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1B4332] cursor-pointer"
               >
                 <i className="ri-chat-1-line" />
-                {t("storeProfile.message")}
+                <span>{t("storeProfile.message")}</span>
               </button>
             )}
 
-            {user && (
+            {user && isFarmer && user.role !== "farmer" && (
               <button
                 type="button"
                 onClick={() => toggleFavorite("farmer", targetUid)}
-                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition cursor-pointer
+                className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition cursor-pointer
                   ${isFavorite("farmer", targetUid)
                     ? "bg-[#E63946] text-white hover:bg-[#C1121F]"
-                    : "border border-[var(--agri-border)] bg-transparent text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]"
+                    : "border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]"
                   }
                 `}
               >
                 <i className={`${isFavorite("farmer", targetUid) ? "ri-heart-fill" : "ri-heart-line"}`} />
-                {isFavorite("farmer", targetUid) ? t("favorites.saved") : t("favorites.save")}
+                <span>{isFavorite("farmer", targetUid) ? t("favorites.saved") : t("favorites.save")}</span>
               </button>
             )}
 
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--agri-border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer"
             >
               <i className="ri-share-line" />
-              {t("storeProfile.share")}
+              <span>{t("storeProfile.share")}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowReportModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--agri-border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer"
             >
               <i className="ri-flag-line" />
-              {t("storeProfile.report")}
+              <span>{t("storeProfile.report")}</span>
             </button>
           </div>
         </div>
 
         {/* Stats Row */}
         <div className="flex flex-wrap items-center gap-4 sm:gap-6 py-3 sm:py-4 border-t border-[var(--agri-border-subtle)]">
-          {isFarmer ? (
-            <>
-              <div className="flex items-center gap-1.5">
-                <i className="ri-star-fill text-amber-500" />
-                <span className="text-sm font-bold text-[var(--agri-text)]">
-                  {averageRating?.toFixed(1) || "N/A"}
-                </span>
-                <span className="text-xs text-[var(--agri-text-muted)]">
-                  ({reviewCount || 0})
-                </span>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center gap-1.5">
-                <i className="ri-checkbox-circle-fill text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-                <span className="text-sm font-bold text-[var(--agri-text)]">
-                  {stats.completedDeals ?? 0}
-                </span>
-                <span className="text-xs text-[var(--agri-text-muted)]">
-                  {t("userProfileModal.completedDeals")}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <i className="ri-shield-check-line text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-                <span className="text-sm font-bold text-[var(--agri-text)]">
-                  {stats.completedDeals >= 6 || profile.verified
-                    ? "100"
-                    : stats.totalDeals > 0
-                      ? Math.round((stats.completedDeals / stats.totalDeals) * 100)
-                      : 100}
-                  %
-                </span>
-                <span className="text-xs text-[var(--agri-text-muted)]">
-                  {t("userProfileModal.successRate")}
-                </span>
-              </div>
-            </>
+          {isFarmer && (
+            <div className="flex items-center gap-1.5">
+              <i className="ri-star-fill text-amber-500" />
+              <span className="text-sm font-bold text-[var(--agri-text)]">
+                {averageRating != null && !isNaN(Number(averageRating))
+                  ? Number(averageRating).toFixed(1)
+                  : "N/A"}
+              </span>
+              <span className="text-xs text-[var(--agri-text-muted)]">
+                ({reviewCount || 0})
+              </span>
+            </div>
           )}
 
           {fullLocation && (

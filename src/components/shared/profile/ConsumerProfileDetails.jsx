@@ -13,7 +13,7 @@ export default function ConsumerProfileDetails({ profile, stats }) {
     totalDeals > 0 ? Math.round((completedDeals / totalDeals) * 100) : 100;
 
   return (
-    <section className="px-4 sm:px-6 py-6 border-t border-[var(--agri-border-subtle)]">
+    <section className="flex-1 px-4 sm:px-6 py-6 border-t border-[var(--agri-border-subtle)] flex flex-col gap-4">
       {/* About / Bio */}
       <div className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-sm p-5 sm:p-6">
         <h2 className="flex items-center gap-2 text-lg font-bold text-[var(--agri-text)] mb-3">
@@ -35,7 +35,7 @@ export default function ConsumerProfileDetails({ profile, stats }) {
           </span>
 
           {isTrusted && (
-            <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-[var(--agri-card)] px-1.5 py-0.5 rounded border border-emerald-200/60">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700/60">
               {t("userProfileModal.verified")}
             </span>
           )}

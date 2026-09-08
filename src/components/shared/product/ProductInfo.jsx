@@ -191,7 +191,7 @@ export default function ProductInfo({
       <div className="mt-4 pt-3 border-t border-[var(--agri-border-subtle)] flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md text-xs font-bold text-amber-700 dark:text-amber-300">
           <i className="ri-star-fill text-amber-500 text-sm" />
-          <span>{averageRating.toFixed(1)}</span>
+          <span>{Number(averageRating || 0).toFixed(1)}</span>
         </div>
 
         <span className="text-xs sm:text-sm font-semibold text-[var(--agri-text-secondary)]">

@@ -131,7 +131,7 @@ export default function Settings() {
           {t("settings.signInMethods")}
         </h2>
 
-        <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden">
+        <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden shadow-sm">
           <ConnectedAccounts />
         </div>
       </section>

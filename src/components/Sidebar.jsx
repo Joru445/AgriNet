@@ -44,7 +44,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     try {
       setLoggingOut(true);
       await logout();
-      navigate("/marketplace");
+      navigate("/login");
       setShowLogoutModal(false);
     } catch (error) {
       console.error(error);

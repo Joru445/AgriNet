@@ -8,7 +8,7 @@ import { useLanguage } from "../../context/LanguageContext";
 const DONE_KEY_PREFIX = "agrinet_first_product_onboarding_v1_";
 
 const TARGET_SELECTOR = '[data-onboarding="add-product"]';
-const TIP_MAX_WIDTH = 384;
+const TIP_MAX_WIDTH = 448;
 
 function isDone(uid) {
   if (!uid) return true;
@@ -37,14 +37,28 @@ function computeTooltipStyle(rect) {
   const horizontal = () =>
     Math.max(12, Math.min(rect.left + rect.width / 2 - w / 2, vw - w - 12));
 
-  if (vh - rect.bottom > 300) {
-    return { top: rect.bottom + 14, left: horizontal() };
+  const cardH = 260;
+  if (vh - rect.bottom >= cardH + 20) {
+    return {
+      top: rect.bottom + 14,
+      left: horizontal(),
+      maxHeight: `calc(${vh}px - ${rect.bottom + 26}px)`,
+    };
   }
-  if (rect.top > 300) {
-    return { bottom: vh - rect.top + 14, left: horizontal() };
+  if (rect.top >= cardH + 20) {
+    const bottomOffset = Math.max(12, vh - rect.top + 14);
+    return {
+      bottom: bottomOffset,
+      left: horizontal(),
+      maxHeight: `calc(${vh}px - ${bottomOffset + 12}px)`,
+    };
   }
 
-  return { top: rect.bottom + 14, left: horizontal() };
+  return {
+    bottom: 12,
+    left: horizontal(),
+    maxHeight: `calc(${vh}px - 24px)`,
+  };
 }
 
 /**
@@ -102,6 +116,33 @@ export default function FirstProductOnboarding({ hasProducts, loading, onCreate 
     }
   }, [hasProducts, open, uid]);
 
+  // Prevent scrolling while the prompt is active.
+  useEffect(() => {
+    if (!open) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const originalOverscroll = document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+
+    const preventScroll = (e) => {
+      if (!e.target.closest(".onboarding-tip-fixed, .onboarding-tip-center")) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("touchmove", preventScroll, { passive: false });
+    window.addEventListener("wheel", preventScroll, { passive: false });
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.overscrollBehavior = originalOverscroll;
+      window.removeEventListener("touchmove", preventScroll);
+      window.removeEventListener("wheel", preventScroll);
+    };
+  }, [open]);
+
   if (!open) return null;
 
   const target = document.querySelector(TARGET_SELECTOR);
@@ -126,12 +167,27 @@ export default function FirstProductOnboarding({ hasProducts, loading, onCreate 
     <section
       role="region"
       aria-label={t("onboarding.guidedTutorial")}
-      className="fixed inset-0 z-[10010] pointer-events-none"
+      className="fixed inset-0 z-[10010] pointer-events-auto"
     >
-      {!centered && rect && (
+      {/* Full-screen backdrop blocker to prevent clicking on page elements in the background */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 pointer-events-auto cursor-default"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+      />
+
+      {centered || !rect ? (
         <div
           aria-hidden="true"
-          className="onboarding-spotlight"
+          className="fixed inset-0 bg-black/50 transition-opacity duration-300 pointer-events-auto"
+        />
+      ) : (
+        <div
+          aria-hidden="true"
+          className="onboarding-spotlight pointer-events-auto"
           style={{
             top: rect.top,
             left: rect.left,
@@ -145,9 +201,15 @@ export default function FirstProductOnboarding({ hasProducts, loading, onCreate 
         className={centered ? "onboarding-tip-center" : "onboarding-tip-fixed anim-pop-in"}
         style={centered ? undefined : style}
       >
-        <div className="pointer-events-auto w-full max-w-[24rem] rounded-2xl border border-(--agri-border) bg-(--agri-card) p-4 shadow-2xl">
+        <div
+          className={`pointer-events-auto w-full ${
+            centered
+              ? "max-w-[24rem] sm:max-w-[28rem] md:max-w-[32rem] lg:max-w-[34rem] p-5 sm:p-6 md:p-8"
+              : "max-w-[24rem] sm:max-w-[26rem] md:max-w-[28rem] p-4 sm:p-5 md:p-6"
+          } rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-2xl transition-all`}
+        >
           <div className="flex items-start justify-between gap-2">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F] dark:text-(--agri-brand)">
+            <p className="text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wider text-[#2D6A4F] dark:text-(--agri-brand)">
               {t("onboarding.guidedTutorial")}
             </p>
 
@@ -157,23 +219,23 @@ export default function FirstProductOnboarding({ hasProducts, loading, onCreate 
               aria-label={t("onboarding.skip")}
               className="rounded-lg text-(--agri-text-muted) transition hover:text-(--agri-text) hover:bg-(--agri-hover) p-1 -m-1 cursor-pointer"
             >
-              <i className="ri-close-line text-lg" />
+              <i className="ri-close-line text-lg sm:text-xl" />
             </button>
           </div>
 
-          <h3 className="mt-2 text-base font-bold text-(--agri-text)">
+          <h3 className="mt-2 text-base sm:text-lg md:text-xl font-bold text-(--agri-text) leading-snug">
             {t("onboarding.steps.farmer-first-product.title")}
           </h3>
 
-          <p className="mt-1 text-sm leading-relaxed text-(--agri-text-secondary)">
+          <p className="mt-2 text-sm sm:text-base leading-relaxed text-(--agri-text-secondary)">
             {t("onboarding.steps.farmer-first-product.body")}
           </p>
 
-          <div className="mt-4 flex items-center justify-end gap-2">
+          <div className="mt-5 pt-3.5 border-t border-[var(--agri-border)] dark:border-gray-700 flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={finish}
-              className="rounded-xl px-3 py-2 text-sm font-medium text-(--agri-text-muted) transition hover:text-(--agri-text) cursor-pointer"
+              className="rounded-xl px-3.5 py-2 text-sm sm:text-base font-medium text-(--agri-text-muted) transition hover:text-(--agri-text) cursor-pointer"
             >
               {t("onboarding.skip")}
             </button>
@@ -181,7 +243,7 @@ export default function FirstProductOnboarding({ hasProducts, loading, onCreate 
             <button
               type="button"
               onClick={primaryAction}
-              className="rounded-xl bg-[#2D6A4F] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#1B4332] cursor-pointer"
+              className="rounded-xl bg-[#2D6A4F] px-4 sm:px-5 py-2 text-sm sm:text-base font-bold text-white transition hover:bg-[#1B4332] cursor-pointer"
             >
               <i className="ri-add-line mr-1.5" />
               {t("products.addProduct")}

@@ -106,15 +106,12 @@ export default function LoginFormPanel({
           </button>
 
           {/* Divider */}
-          <div className="relative py-1.5">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-3 text-gray-400 font-medium">
-                {t("auth.login.orContinueWith")}
-              </span>
-            </div>
+          <div className="flex items-center gap-3 py-1.5 text-xs">
+            <div className="flex-1 border-t border-gray-200 dark:border-gray-700" />
+            <span className="text-gray-400 font-medium whitespace-nowrap">
+              {t("auth.login.orContinueWith")}
+            </span>
+            <div className="flex-1 border-t border-gray-200 dark:border-gray-700" />
           </div>
         </div>
 

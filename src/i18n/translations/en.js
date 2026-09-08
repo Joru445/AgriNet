@@ -732,6 +732,9 @@ export default {
     products: "Products",
     productsAvailable: "{count} products available",
     productAvailableSingular: "{count} product available",
+    showingOutOfProducts: "{shown} out of {total} products",
+    viewAllProducts: "View all products",
+    showLess: "Show less",
     noProductsYet: "No products yet",
     noProductsCategory: "No {category} products",
     noProductsListed:
