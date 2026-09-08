@@ -14,7 +14,7 @@ export default function LandingFooter() {
   const quickLinks = [
     { href: "#about", label: t("landing.footer.aboutUs") },
     { href: "#how-it-works", label: t("landing.nav.howItWorks") },
-    { href: "/marketplace", label: t("landing.footer.browseProducts") },
+    { href: "/home", label: t("landing.footer.browseProducts") },
     { href: "/nearby", label: t("landing.footer.findFarmers") },
     { href: "#", label: t("landing.footer.contactUs") },
   ];

@@ -47,7 +47,7 @@ export default function LandingHero() {
             </Link>
             <Link
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/15 hover:bg-white/25 backdrop-blur-sm border-2 border-white/60 text-white font-semibold rounded-full transition-all duration-200 whitespace-nowrap text-base"
-              to="/marketplace"
+              to="/home"
             >
               <i className="ri-store-2-line" />
               {t("landing.hero.browseProducts")}

@@ -485,16 +485,16 @@ export default function ProductForm({ form, onChange }) {
 
       {/* 8. Available Switch Row */}
       <div className="col-span-1 sm:col-span-2 order-8 sm:order-8">
-        <label className="flex items-center justify-between p-3.5 sm:p-4 rounded-xl bg-[var(--agri-hover)]/40 hover:bg-[var(--agri-hover)]/70 border border-gray-300 dark:border-gray-600 transition-colors cursor-pointer select-none">
+        <label className="flex items-center justify-between py-2.5 px-3.5 sm:py-3 sm:px-4 rounded-xl bg-[var(--agri-hover)]/40 hover:bg-[var(--agri-hover)]/70 border border-gray-300 dark:border-gray-600 transition-colors cursor-pointer select-none">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] text-[#2D6A4F] dark:text-[var(--agri-brand)] flex items-center justify-center shrink-0">
               <i className="ri-store-3-line text-base" />
             </div>
             <div>
-              <span className="text-sm font-bold text-[var(--agri-text)] block">
+              <span className="text-sm font-bold text-[var(--agri-text)] block leading-tight">
                 {t("products.availableForSale")}
               </span>
-              <span className="text-xs text-[var(--agri-text-muted)]">
+              <span className="text-xs text-[var(--agri-text-muted)] leading-tight block mt-0.5">
                 Visible and ready for purchase in the marketplace
               </span>
             </div>
