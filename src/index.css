@@ -401,7 +401,7 @@ body {
 .onboarding-tip-fixed {
   position: fixed;
   z-index: 10030;
-  width: min(24rem, calc(100vw - 24px));
+  width: min(28rem, calc(100vw - 24px));
 }
 
 .onboarding-tip-center {

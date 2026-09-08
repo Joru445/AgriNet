@@ -100,8 +100,13 @@ export default function usePublicProfile() {
         return;
       }
 
-      const user = await getUserProfile(uid, authProfile?.uid);
-      if (!user) {
+      const isOwnProfile = authProfile?.uid === uid;
+      const [user, farmerData] = await Promise.all([
+        getUserProfile(uid, authProfile?.uid).catch(() => null),
+        getFarmerById(uid).catch(() => null),
+      ]);
+
+      if (!user && !farmerData) {
         setProfile(null);
         setRole(null);
         setStats({ loading: false, completedDeals: 0, totalDeals: 0 });
@@ -109,19 +114,18 @@ export default function usePublicProfile() {
         return;
       }
 
-      const detectedRole = user.role || "consumer";
+      const detectedRole =
+        (farmerData ? "farmer" : null) ||
+        user?.role ||
+        (isOwnProfile && authProfile?.role ? authProfile.role : null) ||
+        "consumer";
 
-      // Farmers keep extra profile data (storeName, description, coverPhoto,
-      // rating, etc.) in the `farmers` collection, so enrich with it.
-      let userResult = user;
-      if (detectedRole === "farmer") {
-        try {
-          const farmerData = await getFarmerById(uid);
-          if (farmerData) userResult = farmerData;
-        } catch {
-          /* keep user doc data */
-        }
-      }
+      const userResult = {
+        ...(user || {}),
+        ...(farmerData || {}),
+        ...(isOwnProfile && authProfile ? authProfile : {}),
+        role: detectedRole,
+      };
 
       setProfile(userResult);
       setRole(detectedRole);
