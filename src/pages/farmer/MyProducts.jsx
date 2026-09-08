@@ -36,7 +36,7 @@ export default function MyProducts() {
   } = useProducts();
 
   return (
-    <main className="flex-1 p-4 md:p-6 pb-16 md:pb-0">
+    <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-6 pb-16 md:pb-0">
       <ProductToolbar
         search={search}
         onSearch={setSearch}

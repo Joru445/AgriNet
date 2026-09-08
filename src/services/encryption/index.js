@@ -12,6 +12,8 @@ export {
   exportPublicKey,
   importPublicKey,
   generateConversationSalt,
+  computePublicKeyFingerprint,
+  runE2ESelfTest,
 } from "./crypto.service";
 
 export {

@@ -198,15 +198,15 @@ export function ConversationsProvider({ children }) {
             const msg = snap.docs[0].data();
             if (!msg.encryptionVersion) continue;
 
-            const senderId = msg.senderId;
-            const receiverId = conv.participants?.find(
-              (p) => p !== senderId,
+            const otherParticipantId = conv.participants?.find(
+              (p) => p !== profile?.uid,
             );
-            if (!senderId || !receiverId) continue;
+            if (!profile?.uid || !otherParticipantId) continue;
+            if (!msg.ciphertext || !msg.iv) continue;
 
             const key = await getConversationKey(
-              receiverId,
-              senderId,
+              profile.uid,
+              otherParticipantId,
               conv.id,
             );
             const text = await decrypt(msg.ciphertext, msg.iv, key);
@@ -217,7 +217,8 @@ export function ConversationsProvider({ children }) {
                 : conv.lastMessageAt?.seconds * 1000 || 0;
             decryptedCacheRef.current.set(conv.id, { text, ts });
             results.set(conv.id, text);
-          } catch {
+          } catch (err) {
+            console.warn(`[ConversationsContext] Failed to decrypt preview for ${conv.id}:`, err);
             // Skip failed decryption
           }
         }

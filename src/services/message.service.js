@@ -62,6 +62,45 @@ async function encryptMessageText(text, conversationId, senderId, receiverId) {
 }
 
 /**
+ * Resolves the remote participant's UID for a given message in a conversation.
+ *
+ * In a 2-party conversation between User A and User B:
+ * - If current user (myUid) is User A:
+ *   - If message was sent by User B: otherUid = User B (message.senderId).
+ *   - If message was sent by User A: otherUid = User B (from message.receiverId or parsed from conversationId "A_B").
+ *
+ * @param {object} message - Message document data
+ * @param {string} myUid - Current authenticated user UID
+ * @param {string} [conversationIdFallback]
+ * @returns {string|null} - The other participant's UID
+ */
+function resolveOtherParticipantUid(message, myUid, conversationIdFallback = null) {
+  if (!myUid) return null;
+
+  // 1. If sent by someone else, that sender is the other participant
+  if (message.senderId && message.senderId !== myUid) {
+    return message.senderId;
+  }
+
+  // 2. If sent by current user, check if receiverId is explicitly stored
+  if (message.receiverId && message.receiverId !== myUid) {
+    return message.receiverId;
+  }
+
+  // 3. Extract other UID from deterministic conversationId: "uid1_uid2"
+  const convId = message.conversationId || conversationIdFallback;
+  if (convId && convId.includes("_")) {
+    const parts = convId.split("_");
+    if (parts.length === 2) {
+      const other = parts.find((id) => id !== myUid);
+      if (other) return other;
+    }
+  }
+
+  return null;
+}
+
+/**
  * Decrypt message text received via E2E.
  *
  * @param {string} ciphertext
@@ -69,25 +108,77 @@ async function encryptMessageText(text, conversationId, senderId, receiverId) {
  * @param {number} encryptionVersion
  * @param {string} conversationId
  * @param {string} senderId
- * @param {string} receiverId
+ * @param {string} otherUid - The other participant in the conversation
+ * @param {string} myUid - The local user running this browser session
  * @returns {Promise<string>} - Decrypted plaintext, or null on failure
  */
-async function decryptMessageText(ciphertext, iv, encryptionVersion, conversationId, senderId, receiverId) {
-  if (!ciphertext || !iv) return null;
-  if (encryptionVersion !== ENCRYPTION_VERSION) return null;
+async function decryptMessageText(ciphertext, iv, encryptionVersion, conversationId, senderId, otherUid, myUid) {
+  if (encryptionVersion !== ENCRYPTION_VERSION) {
+    console.warn("[E2E Diagnostic] ERR_UNKNOWN_ENCRYPTION_VERSION:", {
+      expectedVersion: ENCRYPTION_VERSION,
+      actualVersion: encryptionVersion,
+      conversationId,
+    });
+    return null;
+  }
+
+  if (!ciphertext || !iv) {
+    console.warn("[E2E Diagnostic] ERR_MISSING_PAYLOAD:", {
+      hasCiphertext: Boolean(ciphertext),
+      hasIv: Boolean(iv),
+      conversationId,
+    });
+    return null;
+  }
+
+  if (!myUid || !otherUid) {
+    console.warn("[E2E Diagnostic] ERR_CANNOT_RESOLVE_PARTICIPANT:", {
+      currentUid: myUid,
+      otherUid,
+      senderId,
+      conversationId,
+    });
+    return null;
+  }
 
   try {
-    const key = await getConversationKey(receiverId, senderId, conversationId);
+    const key = await getConversationKey(myUid, otherUid, conversationId);
     return await decrypt(ciphertext, iv, key);
   } catch (error) {
-    console.error(
-      "[E2E] Decryption failed:",
-      error.name || "UnknownError",
-      error.message || "(no message)",
-      `conversation=${conversationId}`,
-      `sender=${senderId}`,
-      `receiver=${receiverId}`,
-    );
+    const errorName = error.name || "Error";
+    const errorMessage = error.message || "";
+
+    let errorCategory = "ERR_DECRYPTION_FAILED";
+    if (errorMessage.includes("No local encryption private key")) {
+      errorCategory = "ERR_MISSING_LOCAL_PRIVATE_KEY";
+    } else if (errorMessage.includes("Recipient has no encryption key")) {
+      errorCategory = "ERR_MISSING_REMOTE_PUBLIC_KEY";
+    } else if (errorMessage.includes("PUBLIC KEY MISMATCH")) {
+      errorCategory = "ERR_PUBLIC_KEY_MISMATCH";
+    } else if (errorMessage.includes("JSON") || errorMessage.includes("importKey") || errorMessage.includes("JWK")) {
+      errorCategory = "ERR_INVALID_JWK";
+    } else if (errorMessage.includes("deriveBits") || errorMessage.includes("ECDH")) {
+      errorCategory = "ERR_ECDH_FAILURE";
+    } else if (errorMessage.includes("deriveKey") || errorMessage.includes("HKDF")) {
+      errorCategory = "ERR_HKDF_FAILURE";
+    } else if (errorMessage.includes("base64") || errorMessage.includes("ciphertext")) {
+      errorCategory = "ERR_INVALID_CIPHERTEXT";
+    } else if (errorMessage.includes("iv") || errorMessage.includes("IV")) {
+      errorCategory = "ERR_INVALID_IV";
+    } else if (errorName === "OperationError") {
+      errorCategory = "ERR_AES_GCM_OPERATION";
+    }
+
+    console.error(`[E2E Diagnostic] Decryption failed [${errorCategory}]:`, {
+      errorCategory,
+      errorName,
+      errorMessage,
+      conversationId,
+      senderId,
+      currentUid: myUid,
+      otherUid,
+      encryptionVersion,
+    });
     return null;
   }
 }
@@ -97,18 +188,21 @@ async function decryptMessageText(ciphertext, iv, encryptionVersion, conversatio
  * Adds `text` field from decrypted ciphertext.
  * For legacy messages (no encryptionVersion), keeps existing `text`.
  */
-async function decryptMessage(message, myUid) {
+async function decryptMessage(message, myUid, conversationIdFallback = null) {
   // Legacy message — no encryption
   if (!message.encryptionVersion) {
     return message;
   }
 
+  const otherUid = resolveOtherParticipantUid(message, myUid, conversationIdFallback);
+
   const decryptedText = await decryptMessageText(
     message.ciphertext,
     message.iv,
     message.encryptionVersion,
-    message.conversationId,
+    message.conversationId || conversationIdFallback,
     message.senderId,
+    otherUid,
     myUid,
   );
 
@@ -129,11 +223,11 @@ async function decryptMessage(message, myUid) {
 /**
  * Batch-decrypt an array of messages.
  */
-async function decryptMessages(messages, myUid) {
+async function decryptMessages(messages, myUid, conversationIdFallback = null) {
   if (!myUid) return messages;
 
   const results = await Promise.allSettled(
-    messages.map((msg) => decryptMessage(msg, myUid)),
+    messages.map((msg) => decryptMessage(msg, myUid, conversationIdFallback)),
   );
 
   return results.map((result, index) => {
@@ -182,6 +276,9 @@ export async function sendMessage({
   quantity = null,
   inquiryStatus = null,
   replyTo = null,
+  ciphertext = null,
+  iv = null,
+  encryptionVersion = null,
 }) {
   const actualSenderId = senderId || auth.currentUser?.uid;
 
@@ -220,16 +317,22 @@ export async function sendMessage({
   const messageRef = doc(messagesRef);
   const batch = writeBatch(db);
 
-  // --- Encrypt text if present ---
+  // --- Encrypt text if present, or use pre-encrypted payload without re-encrypting ---
   const messageData = {
     conversationId,
     senderId: actualSenderId,
+    receiverId,
     type: type || "text",
     read: false,
     createdAt: serverTimestamp(),
   };
 
-  if (text) {
+  if (ciphertext && iv) {
+    // Already encrypted — use directly, never re-encrypt
+    messageData.ciphertext = ciphertext;
+    messageData.iv = iv;
+    messageData.encryptionVersion = encryptionVersion || ENCRYPTION_VERSION;
+  } else if (text) {
     const encrypted = await encryptMessageText(text, conversationId, actualSenderId, receiverId);
     if (encrypted) {
       messageData.ciphertext = encrypted.ciphertext;
@@ -301,9 +404,9 @@ export function subscribeMessages(
       // Reverse so UI receives chronological ascending order
       docs.reverse();
 
-      // Decrypt messages
+      // Decrypt messages with conversationId context
       const uid = myUid || auth.currentUser?.uid;
-      const decrypted = await decryptMessages(docs, uid);
+      const decrypted = await decryptMessages(docs, uid, conversationId);
 
       const oldestDocSnapshot =
         snapshot.docs.length > 0
@@ -360,9 +463,9 @@ export async function fetchOlderMessages(
     // Reverse to chronological order
     docs.reverse();
 
-    // Decrypt messages
+    // Decrypt messages with conversationId context
     const uid = auth.currentUser?.uid;
-    const decrypted = await decryptMessages(docs, uid);
+    const decrypted = await decryptMessages(docs, uid, conversationId);
 
     const oldestDocSnapshot =
       snapshot.docs.length > 0
@@ -441,9 +544,9 @@ export async function apiGetMessages(conversationId, { cursor = null, limit: pag
 
     const result = await apiRequest(endpoint);
 
-    // Decrypt messages from backend
+    // Decrypt messages from backend with conversationId context
     const uid = auth.currentUser?.uid;
-    const decrypted = await decryptMessages(result.data || [], uid);
+    const decrypted = await decryptMessages(result.data || [], uid, conversationId);
 
     return {
       messages: decrypted,

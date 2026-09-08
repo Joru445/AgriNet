@@ -11,6 +11,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import {
   generateECDHKeyPair,
   exportPublicKey,
+  computePublicKeyFingerprint,
 } from "./crypto.service";
 
 const DB_NAME = "agrinet-e2e-keys";
@@ -164,6 +165,7 @@ export async function fetchPublicKey(uid) {
       return {
         publicKeyJwk: data[PUBLIC_KEY_FIELD],
         keyVersion: data[PUBLIC_KEY_VERSION_FIELD] || 1,
+        source: "users",
       };
     }
   }
@@ -176,6 +178,7 @@ export async function fetchPublicKey(uid) {
       return {
         publicKeyJwk: data[PUBLIC_KEY_FIELD],
         keyVersion: data[PUBLIC_KEY_VERSION_FIELD] || 1,
+        source: "farmers",
       };
     }
   }
@@ -187,24 +190,100 @@ export async function fetchPublicKey(uid) {
  * Ensure the current user has a local key pair and publishes the public key.
  * Called on app init after authentication.
  *
+ * CRITICAL E2E RULES:
+ * 1. If local key exists:
+ *    - Check Firestore public key.
+ *    - If fingerprints match: healthy, do nothing.
+ *    - If Firestore key is missing: publish local public key.
+ *    - If fingerprints differ: DO NOT silently overwrite! Report key mismatch.
+ * 2. If local key does NOT exist:
+ *    - Check Firestore public key.
+ *    - If Firestore already has a key: DO NOT overwrite (multi-device limitation).
+ *    - If Firestore has no key: first-time setup; generate and publish.
+ *
  * @param {string} uid
  * @param {string} [role]
- * @returns {Promise<boolean>} - true if keys are ready, false if generation failed
+ * @returns {Promise<boolean>} - true if keys are ready, false if generation/sync failed
  */
 export async function ensureKeyPair(uid, role) {
   try {
     const existing = await hasLocalKeyPair(uid);
+
     if (existing) {
-      // Ensure public key is published (in case it was missed)
       const localPub = await getLocalPublicKey(uid);
-      if (localPub) {
+      const localFp = await computePublicKeyFingerprint(localPub);
+      const remoteData = await fetchPublicKey(uid);
+
+      if (!remoteData?.publicKeyJwk) {
+        // Firestore is missing public key — publish local key
+        console.log("[E2E] Publishing missing public key to Firestore:", {
+          currentUid: uid,
+          localPublicKeyFingerprint: localFp,
+          keyVersion: CURRENT_KEY_VERSION,
+        });
         await publishPublicKey(uid, localPub, role);
+        return true;
       }
-      return true;
+
+      const firestoreFp = await computePublicKeyFingerprint(remoteData.publicKeyJwk);
+
+      if (localFp && firestoreFp && localFp === firestoreFp) {
+        // Key is healthy and verified — do not touch Firestore
+        console.log("[E2E] Identity key pair healthy and verified:", {
+          currentUid: uid,
+          localPublicKeyFingerprint: localFp,
+          firestorePublicKeyFingerprint: firestoreFp,
+          lookupSource: remoteData.source,
+          keyVersion: remoteData.keyVersion,
+        });
+        return true;
+      }
+
+      // Fingerprints differ: DO NOT silently overwrite!
+      console.warn(
+        "[E2E] PUBLIC KEY MISMATCH: Local public key does not match Firestore public key. " +
+        "Preserving existing local key and Firestore key to avoid silent overwrite.",
+        {
+          currentUid: uid,
+          localPublicKeyFingerprint: localFp,
+          firestorePublicKeyFingerprint: firestoreFp,
+          lookupSource: remoteData.source,
+          keyVersion: remoteData.keyVersion,
+        },
+      );
+      return false;
     }
 
+    // Local key does NOT exist on this browser/device
+    const remoteData = await fetchPublicKey(uid);
+    if (remoteData?.publicKeyJwk) {
+      // User has an existing public key on another device/browser
+      const firestoreFp = await computePublicKeyFingerprint(remoteData.publicKeyJwk);
+      console.warn(
+        "[E2E] MULTI-DEVICE LIMITATION: User already has an encryption identity in Firestore, " +
+        "but this browser does not have the corresponding private key. " +
+        "Preventing silent key replacement to protect existing conversations.",
+        {
+          currentUid: uid,
+          firestorePublicKeyFingerprint: firestoreFp,
+          lookupSource: remoteData.source,
+          keyVersion: remoteData.keyVersion,
+        },
+      );
+      return false;
+    }
+
+    // First-time setup for user with no key anywhere
+    console.log("[E2E] Generating initial identity key pair for user:", { currentUid: uid });
     const { publicKeyJwk } = await generateAndStoreKeyPair(uid);
+    const newFp = await computePublicKeyFingerprint(publicKeyJwk);
     await publishPublicKey(uid, publicKeyJwk, role);
+    console.log("[E2E] Generated and published initial identity public key:", {
+      currentUid: uid,
+      localPublicKeyFingerprint: newFp,
+      firestorePublicKeyFingerprint: newFp,
+      keyVersion: CURRENT_KEY_VERSION,
+    });
     return true;
   } catch (error) {
     console.error("[E2E] Failed to ensure key pair:", error);

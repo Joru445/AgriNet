@@ -44,8 +44,8 @@ function FarmerProductCardSkeleton() {
 
 export default function ProductSkeleton() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
-      {Array.from({ length: 12 }).map((_, i) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-3 sm:gap-4">
+      {Array.from({ length: 10 }).map((_, i) => (
         <FarmerProductCardSkeleton key={i} />
       ))}
     </div>

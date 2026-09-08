@@ -78,19 +78,6 @@ export default {
     goToHome: "Pumunta sa Home",
   },
 
-  guest: {
-    loginRequired: "Kailangan ng Login",
-    loginToAction: "Mangyaring mag-log in o mag-register para sa {action}.",
-    loginToSendInquiry: "magpadala ng inquiry",
-    loginToMessage: "magmensahe sa farmer na ito",
-    loginToSave: "mag-save ng produkto",
-    loginToReview: "magsumite ng review",
-    browseAsGuest: "Mag-browse bilang Guest",
-    login: "Mag-log In",
-    register: "Mag-register",
-    marketplaceSubtitle: "Mag-sign in para magmensahe sa mga farmer, magpadala ng inquiry, at mag-save ng produkto.",
-  },
-
   offline: {
     message: "Offline ka. Maaaring hindi gumana ang ilang features.",
     reconnecting: "Nag-co-connect muli... Synco-sync ang data mo.",
@@ -336,7 +323,7 @@ export default {
       titleLine2: " sa",
       titleLine3: "Lokal na Magsasaka",
       subtitle:
-        "Inaalis ng AgriNet ang mga middlemen, binibigyan ang mga magsasaka ng patas na presyo at ang mga mamimili ng access sa pinakasariwang lokal na produktong agrikultural.",
+        "Inaalis ng AgriNet ang mga中间人, binibigyan ang mga magsasaka ng patas na presyo at ang mga mamimili ng access sa pinakasariwang lokal na produktong agrikultural.",
       getStarted: "Magsimula",
       browseProducts: "Mag-browse ng Produkto",
       findNearby: "Maghanap ng Malapit na Magsasaka",
@@ -446,7 +433,6 @@ export default {
     subtitle: "Manatiling updated sa aktibidad ng account mo.",
     markAllRead: "Markahan lahat bilang nabasa",
     loading: "Naglo-load ng mga notification...",
-    loadingMore: "Naglo-load pa...",
     emptyTitle: "Walang notification",
     emptySubtitle: "Updated ka na sa lahat.",
   },
@@ -859,7 +845,6 @@ export default {
     couldntSend: "Hindi maipadala.",
     tapToRetry: "I-tap para subukan muli",
     deleteFailedMessage: "Tanggalin ang nabigong mensahe",
-    decryptionFailed: "Hindi ma-decrypt ang mensaheng ito",
     photo: "Photo",
     selectConversation: "Pumili ng chat",
     selectConversationSubtitle:
@@ -967,6 +952,7 @@ export default {
       fruits: "Mga Prutas",
       grains: "Mga Butil",
       rootCrops: "Mga Root Crops",
+      "root crops": "Mga Root Crops",
       herbs: "Mga Halamang Gamot",
       livestock: "Mga Hayop",
       poultry: "Mga Manok",
@@ -1276,7 +1262,6 @@ export default {
     myProducts: "Aking mga Produkto",
     reviews: "Mga Review",
     reports: "Mga Ulat",
-    favorites: "Mga Paborito",
   },
 
   sidebar: {
@@ -1334,12 +1319,6 @@ export default {
     updateFailed: "Nabigong mag-update. Mangyaring subukan muli.",
     upToDate: "Naka-update ka na",
     upToDateDescription: "Ang iyong app ay gumagana sa pinakabagong bersyon.",
-    signInMethods: "Mga Paraan ng Pag-sign In",
-    google: "Google",
-    facebook: "Facebook",
-    connected: "Nakakonekta",
-    notConnected: "Hindi nakakonekta",
-    connect: "Kumonekta",
   },
 
   profile: {
@@ -1380,10 +1359,6 @@ export default {
       transactions: "Mga Transaction",
       completed: "Tapos na",
     },
-    visibility: {
-      public: "Pampubliko",
-      private: "Ako lang",
-    },
   },
 
   auth: {
@@ -1405,9 +1380,6 @@ export default {
       registerHere: "Magparehistro dito",
       orContinueWith: "o magpatuloy gamit ang",
       continueWithGoogle: "Magpatuloy gamit ang Google",
-      continueWithFacebook: "Magpatuloy gamit ang Facebook",
-      waitingForProvider:
-        "Kumpletuhin muna ang sign-in na nakabukas na sa kabilang tab.",
     },
 
     register: {
@@ -1451,10 +1423,6 @@ export default {
       createAccount: "Lumikha ng Account",
       createdToast:
         "Nalikha na ang iyong account! Check ang inbox o spam folder para i-verify ang account.",
-      createdToastGoogle: "Kumpleto na ang iyong Google profile!",
-      createdToastFacebook: "Kumpleto na ang iyong Facebook profile!",
-      openingGoogle: "Binubuksan ang pag-sign in sa Google...",
-      openingFacebook: "Binubuksan ang pag-sign in sa Facebook...",
     },
 
     forgot: {
@@ -1499,24 +1467,6 @@ export default {
       accountExistsDifferentCredential:
         "Mayroon nang account na gumagamit ng email na ito gamit ang ibang sign-in method. Mangyaring mag-sign in gamit ang iyong email at password.",
       googleSignInFailed: "Nabigong mag-sign in gamit ang Google. Pakisubukan muli.",
-      googleCancelled: "Kinansela ang pag-sign in gamit ang Google. Pakisubukan muli.",
-      facebookSignInFailed:
-        "Nabigong mag-sign in gamit ang Facebook. Pakisubukan muli.",
-      facebookCancelled:
-        "Kinansela ang pag-sign in gamit ang Facebook. Pakisubukan muli.",
-      googleProviderConflict:
-        "Ang Google account na ito ay nakakonekta na sa ibang AgriNet account. Walang binago.",
-      facebookProviderConflict:
-        "Ang Facebook account na ito ay nakakonekta na sa ibang AgriNet account. Walang binago.",
-      providerAlreadyLinked:
-        "Nakakonekta na ang sign-in method na ito sa iyong account.",
-      googleLinkFailed: "Nabigong ikonekta ang Google. Pakisubukan muli.",
-      facebookLinkFailed: "Nabigong ikonekta ang Facebook. Pakisubukan muli.",
-      linkCancelled: "Kinansela ang koneksyon.",
-      googleConnected: "Matagumpay na nakonekta ang Google!",
-      facebookConnected: "Matagumpay na nakonekta ang Facebook!",
-      allowPopups:
-        "Ang pag-sign in ay binubuksan sa bagong tab. Payagan ang mga pop-up para sa site na ito, pagkatapos subukan muli.",
       networkError:
         "Problema sa network. Pakisuri ang iyong koneksyon at subukan muli.",
       verifyPhone:
@@ -1564,18 +1514,6 @@ export default {
         "Masyadong maraming email requests. Maghintay ng isang minuto.",
       emailSendFailed: "Hindi maipadala ang email link.",
       logoutFailed: "Nabigong mag-sign out.",
-    },
-
-    handler: {
-      signingInGoogle: "Sinasign-in ka gamit ang Google...",
-      signingInFacebook: "Sinasign-in ka gamit ang Facebook...",
-      signedIn: "Matagumpay na naka-sign in!",
-      cancelled: "Kinansela ang pag-sign in.",
-      failure: "Nabigo ang pag-sign in. Pakisubukan muli.",
-      retry: "Subukan Muli",
-      startHint: "Magbubukas ang isang secure na sign-in window. I-click ang button para magpatuloy.",
-      popupBlocked: "Ni-block ng browser ang sign-in window. I-click ang button sa ibaba para subukan muli.",
-      closeHint: "Maaari mo nang isara ang tab na ito.",
     },
 
     verify: {
@@ -1731,28 +1669,5 @@ export default {
         body: "Pamahalaan ang admin account at mga setting mula sa profile mo sa itaas na kanang sulok.",
       },
     },
-  },
-
-  favorites: {
-    title: "Aking mga Paborito",
-    products: "Mga Produkto",
-    farmers: "Mga Magsasaka",
-    save: "I-save",
-    saved: "Na-save",
-    add: "Idagdag sa paborito",
-    remove: "Alisin sa paborito",
-    noProducts: "Walang paboritong produkto",
-    noProductsDesc: "Ang mga produktong i-save mo ay makikita dito.",
-    noFarmers: "Walang paboritong magsasaka",
-    noFarmersDesc: "Ang mga magsasaka na i-save mo ay makikita dito.",
-    loadError: "Nabigo ang pag-load ng mga paborito.",
-    loginRequired: "Kailangan ng Pag-login",
-    loginToView: "Mag-login para makita ang iyong mga na-save na produkto at magsasaka.",
-  },
-
-  loginRequired: {
-    title: "Mag-sign in upang magpatuloy",
-    description: "Mag-login sa iyong AgriNet account para ma-access ang feature na ito.",
-    register: "Gumawa ng account",
   },
 };

@@ -76,6 +76,7 @@ export default function useMessageActions({
         const failedMessage = buildFailedMessage({
           conversationId,
           senderId: profile.uid,
+          receiverId: activeConversation?.otherUser?.uid || activeUser?.uid || null,
           text,
           image: activeImg,
           error: "No internet connection",
@@ -110,8 +111,10 @@ export default function useMessageActions({
         stage = "send-message";
 
         // --- E2E: encrypt message text ---
+        const otherUid = activeConversation?.otherUser?.uid || activeUser?.uid;
         const messagePayload = {
           conversationId,
+          receiverId: otherUid || null,
           type: activeImg ? "image" : "text",
           imageUrl,
           imageId,
@@ -119,7 +122,6 @@ export default function useMessageActions({
         };
 
         if (text) {
-          const otherUid = activeConversation?.otherUser?.uid || activeUser?.uid;
           if (otherUid) {
             const conversationKey = await getConversationKey(profile.uid, otherUid, conversationId);
             const encrypted = await encrypt(text, conversationKey);
@@ -262,6 +264,7 @@ export default function useMessageActions({
             throw new Error("Recipient is not ready for encrypted messaging yet.");
           }
 
+          retryPayload.receiverId = otherUid;
           const convId = failedMessage.conversationId || conversationId;
           const conversationKey = await getConversationKey(profile.uid, otherUid, convId);
           const encrypted = await encrypt(retryPayload.text, conversationKey);

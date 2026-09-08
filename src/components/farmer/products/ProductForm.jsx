@@ -31,11 +31,18 @@ function getDurationOptions(t) {
   ];
 }
 
+const categoryKeyMap = {
+  "Root Crops": "rootCrops",
+};
+
 function getCategories(t) {
-  return categories.map((cat) => ({
-    value: cat,
-    label: t(`products.categories.${cat.toLowerCase()}`),
-  }));
+  return categories.map((cat) => {
+    const key = categoryKeyMap[cat] || cat.toLowerCase();
+    return {
+      value: cat,
+      label: t(`products.categories.${key}`),
+    };
+  });
 }
 
 function getUnits(t) {
@@ -112,16 +119,16 @@ function CustomDropdown({
       <button
         type="button"
         onClick={handleToggle}
-        className={`w-full border rounded-xl px-4 py-3 text-sm flex items-center justify-between bg-[var(--agri-card)] text-left transition-all cursor-pointer ${
+        className={`w-full border rounded-xl px-4 py-2.5 sm:py-3 text-sm flex items-center justify-between bg-[var(--agri-card)] text-left transition-all cursor-pointer ${
           isOpen
-            ? "border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 shadow-xs"
-            : "border-[var(--agri-border)] hover:border-gray-400"
+            ? "border-[#2D6A4F] ring-3 ring-[#2D6A4F]/15 shadow-xs"
+            : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 shadow-2xs"
         }`}
       >
         <span
           className={`truncate ${
             displayLabel
-              ? "text-[var(--agri-text)] font-medium"
+              ? "text-[var(--agri-text)] font-semibold"
               : "text-[var(--agri-text-muted)] font-normal"
           }`}
         >
@@ -131,7 +138,7 @@ function CustomDropdown({
         {/* Animated Chevron: turns upwards smoothly when open */}
         <i
           className={`ri-arrow-down-s-line text-xl text-[var(--agri-text-muted)] transition-transform duration-200 shrink-0 ml-2 ${
-            isOpen ? (openUpwards ? "" : "rotate-180 text-[#2D6A4F]") : ""
+            isOpen ? (openUpwards ? "" : "rotate-180 text-[#2D6A4F] dark:text-[var(--agri-brand)]") : ""
           }`}
         />
       </button>
@@ -139,7 +146,7 @@ function CustomDropdown({
       {/* Popup Menu with Smart Upward / Downward Drop */}
       {isOpen && (
         <div
-          className={`absolute left-0 right-0 z-50 bg-[var(--agri-card)] border border-[var(--agri-border)] rounded-xl shadow-2xl max-h-56 overflow-y-auto py-1 scrollbar-thin ${
+          className={`absolute left-0 right-0 z-50 bg-[var(--agri-card)] border border-gray-300 dark:border-gray-600 rounded-xl shadow-2xl max-h-56 overflow-y-auto py-1.5 scrollbar-thin ${
             openUpwards ? "bottom-full mb-1.5" : "top-full mt-1.5"
           }`}
         >
@@ -158,13 +165,13 @@ function CustomDropdown({
                 }}
                 className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors cursor-pointer ${
                   isSelected
-                    ? "bg-[#E8F5EE] text-[#2D6A4F] font-bold"
-                    : "text-[var(--agri-text-secondary)] hover:bg-[#F0F5F2] hover:text-[#1B4332]"
+                    ? "bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] text-[#1B4332] dark:text-[var(--agri-brand-light)] font-bold"
+                    : "text-[var(--agri-text)] hover:bg-[var(--agri-hover)] font-medium"
                 }`}
               >
                 <span className="truncate">{optLabel}</span>
                 {isSelected && (
-                  <i className="ri-check-line text-[#2D6A4F] font-bold text-base shrink-0 ml-2" />
+                  <i className="ri-check-line text-[#2D6A4F] dark:text-[var(--agri-brand)] font-bold text-base shrink-0 ml-2" />
                 )}
               </button>
             );
@@ -293,11 +300,11 @@ export default function ProductForm({ form, onChange }) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
       {/* 1. Product Name - Full Width */}
       <div className="col-span-1 sm:col-span-2 order-1">
-        <label className="text-sm font-semibold text-[var(--agri-text)] block mb-2">
-          {t("products.productName")}
+        <label className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wider block mb-1.5">
+          {t("products.productName")} <span className="text-red-500">*</span>
         </label>
 
         <input
@@ -305,7 +312,7 @@ export default function ProductForm({ form, onChange }) {
           value={form.name}
           onChange={onChange}
           placeholder={t("products.namePlaceholder")}
-          className="w-full border border-[var(--agri-border)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
+          className="w-full bg-[var(--agri-card)] border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 sm:py-3 text-sm font-medium text-[var(--agri-text)] placeholder:text-[var(--agri-text-muted)] hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:border-[#2D6A4F] dark:focus:border-[var(--agri-brand)] focus:ring-3 focus:ring-[#2D6A4F]/15 dark:focus:ring-[var(--agri-brand)]/20 shadow-2xs transition-all"
         />
       </div>
 
@@ -345,15 +352,14 @@ export default function ProductForm({ form, onChange }) {
         />
       </div>
 
-      {/* 4. Product Listing Duration:
-          - Mobile (order-4): In between Unit and Selling Price
-          - Desktop (sm:order-6): In row 3 on the left side, directly beside Stock Quantity! */}
+      {/* 4. Product Listing Duration */}
       <div className="order-4 sm:order-6">
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-semibold text-[var(--agri-text)]">
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wider">
             {t("products.listingDuration")}
           </label>
-          <span className="text-xs text-[var(--agri-text-muted)] font-medium">
+          <span className="text-[11px] font-medium text-[var(--agri-text-muted)] flex items-center gap-1 bg-[var(--agri-hover)] px-2 py-0.5 rounded-md">
+            <i className="ri-time-line text-xs" />
             {t("products.autoDisappear")}
           </span>
         </div>
@@ -383,7 +389,7 @@ export default function ProductForm({ form, onChange }) {
                   placeholder={customUnit === "minutes" ? "e.g. 30" : "e.g. 5"}
                   value={customValue}
                   onChange={(e) => handleCustomChange(e.target.value, customUnit)}
-                  className="w-full border border-[var(--agri-border)] rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
+                  className="w-full bg-[var(--agri-card)] border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 sm:py-3 text-sm font-medium text-[var(--agri-text)] placeholder:text-[var(--agri-text-muted)] hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:border-[#2D6A4F] dark:focus:border-[var(--agri-brand)] focus:ring-3 focus:ring-[#2D6A4F]/15 dark:focus:ring-[var(--agri-brand)]/20 shadow-2xs transition-all"
                 />
               </div>
 
@@ -404,19 +410,19 @@ export default function ProductForm({ form, onChange }) {
 
       {/* 5. Selling / Discounted Price */}
       <div className="order-5 sm:order-4">
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-semibold text-[var(--agri-text)]">
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wider">
             {t("products.sellingPrice")} <span className="text-red-500">*</span>
           </label>
           {hasDiscount && (
-            <span className="inline-flex items-center rounded-md bg-[#FF2D55] px-2 py-0.5 text-xs font-bold text-white shadow-2xs">
+            <span className="inline-flex items-center rounded-md bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 px-2 py-0.5 text-xs font-bold">
               -{discountPercent}% OFF
             </span>
           )}
         </div>
 
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--agri-text-muted)] font-bold select-none text-base">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)] select-none bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] border border-[#2D6A4F]/20 dark:border-[var(--agri-brand)]/20 px-2 py-0.5 rounded-md">
             ₱
           </span>
 
@@ -428,22 +434,22 @@ export default function ProductForm({ form, onChange }) {
             placeholder="0.00"
             value={form.price}
             onChange={onChange}
-            className="w-full border border-[var(--agri-border)] rounded-xl pl-9 pr-4 py-3 text-sm font-semibold text-[var(--agri-text)] focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
+            className="w-full bg-[var(--agri-card)] border border-gray-300 dark:border-gray-600 rounded-xl pl-11 pr-4 py-2.5 sm:py-3 text-sm font-bold text-[var(--agri-text)] placeholder:text-[var(--agri-text-muted)] hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:border-[#2D6A4F] dark:focus:border-[var(--agri-brand)] focus:ring-3 focus:ring-[#2D6A4F]/15 dark:focus:ring-[var(--agri-brand)]/20 shadow-2xs transition-all"
           />
         </div>
       </div>
 
       {/* 6. Original Price (For Slash Discount) */}
       <div className="order-6 sm:order-5">
-        <label className="text-sm font-semibold text-[var(--agri-text)] block mb-2">
+        <label className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wider block mb-1.5">
           {t("products.originalPrice")}{" "}
-          <span className="text-xs text-[var(--agri-text-muted)] font-normal">
+          <span className="text-[11px] text-[var(--agri-text-muted)] font-normal normal-case">
             {t("products.optionalDiscount")}
           </span>
         </label>
 
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--agri-text-muted)] font-bold select-none text-base">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--agri-text-muted)] select-none bg-[var(--agri-hover)] border border-gray-300 dark:border-gray-600 px-2 py-0.5 rounded-md">
             ₱
           </span>
 
@@ -455,17 +461,15 @@ export default function ProductForm({ form, onChange }) {
             placeholder="e.g. 60.00"
             value={form.originalPrice || ""}
             onChange={onChange}
-            className="w-full border border-[var(--agri-border)] rounded-xl pl-9 pr-4 py-3 text-sm font-medium text-[var(--agri-text-secondary)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
+            className="w-full bg-[var(--agri-card)] border border-gray-300 dark:border-gray-600 rounded-xl pl-11 pr-4 py-2.5 sm:py-3 text-sm font-medium text-[var(--agri-text-secondary)] placeholder:text-[var(--agri-text-muted)] hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:border-[#2D6A4F] dark:focus:border-[var(--agri-brand)] focus:ring-3 focus:ring-[#2D6A4F]/15 dark:focus:ring-[var(--agri-brand)]/20 shadow-2xs transition-all"
           />
         </div>
       </div>
 
-      {/* 7. Stock Quantity:
-          - Desktop (sm:order-7): Beside Listing Duration on the right side!
-          - Mobile (order-7): Below original price */}
+      {/* 7. Stock Quantity */}
       <div className="order-7 sm:order-7">
-        <label className="text-sm font-semibold text-[var(--agri-text)] block mb-2">
-          {t("products.stockQuantity")}
+        <label className="text-xs font-bold text-[var(--agri-text)] uppercase tracking-wider block mb-1.5">
+          {t("products.stockQuantity")} <span className="text-red-500">*</span>
         </label>
 
         <input
@@ -475,30 +479,44 @@ export default function ProductForm({ form, onChange }) {
           value={form.stock}
           onChange={onChange}
           placeholder="e.g. 100"
-          className="w-full border border-[var(--agri-border)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]/20 focus:border-[#2D6A4F]"
+          className="w-full bg-[var(--agri-card)] border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 sm:py-3 text-sm font-medium text-[var(--agri-text)] placeholder:text-[var(--agri-text-muted)] hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:border-[#2D6A4F] dark:focus:border-[var(--agri-brand)] focus:ring-3 focus:ring-[#2D6A4F]/15 dark:focus:ring-[var(--agri-brand)]/20 shadow-2xs transition-all"
         />
       </div>
 
-      {/* 8. Available Checkbox */}
+      {/* 8. Available Switch Row */}
       <div className="col-span-1 sm:col-span-2 order-8 sm:order-8">
-        <label className="flex items-center gap-3 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            name="available"
-            checked={form.available}
-            onChange={(e) =>
-              onChange({
-                target: {
-                  name: "available",
-                  value: e.target.checked,
-                },
-              })
-            }
-            className="h-4 w-4 rounded accent-[#2D6A4F]"
-          />
-          <span className="text-sm font-semibold text-[var(--agri-text)]">
-            {t("products.availableForSale")}
-          </span>
+        <label className="flex items-center justify-between p-3.5 sm:p-4 rounded-xl bg-[var(--agri-hover)]/40 hover:bg-[var(--agri-hover)]/70 border border-gray-300 dark:border-gray-600 transition-colors cursor-pointer select-none">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] text-[#2D6A4F] dark:text-[var(--agri-brand)] flex items-center justify-center shrink-0">
+              <i className="ri-store-3-line text-base" />
+            </div>
+            <div>
+              <span className="text-sm font-bold text-[var(--agri-text)] block">
+                {t("products.availableForSale")}
+              </span>
+              <span className="text-xs text-[var(--agri-text-muted)]">
+                Visible and ready for purchase in the marketplace
+              </span>
+            </div>
+          </div>
+
+          <div className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
+            <input
+              type="checkbox"
+              name="available"
+              checked={form.available}
+              onChange={(e) =>
+                onChange({
+                  target: {
+                    name: "available",
+                    value: e.target.checked,
+                  },
+                })
+              }
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2D6A4F] dark:peer-checked:bg-[var(--agri-brand)]" />
+          </div>
         </label>
       </div>
     </div>
