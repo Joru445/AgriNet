@@ -167,7 +167,7 @@ export default function usePublicProfile() {
                     (sum, r) => sum + Number(r.rating || 0),
                     0,
                   ) / loadedReviewCount
-                ).toFixed(1)
+                )
               : 0;
 
           setProducts(loadedProducts);

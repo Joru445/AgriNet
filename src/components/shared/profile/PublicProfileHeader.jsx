@@ -200,7 +200,9 @@ export default function PublicProfileHeader({
               <div className="flex items-center gap-1.5">
                 <i className="ri-star-fill text-amber-500" />
                 <span className="text-sm font-bold text-[var(--agri-text)]">
-                  {averageRating?.toFixed(1) || "N/A"}
+                  {averageRating != null && !isNaN(Number(averageRating))
+                    ? Number(averageRating).toFixed(1)
+                    : "N/A"}
                 </span>
                 <span className="text-xs text-[var(--agri-text-muted)]">
                   ({reviewCount || 0})
