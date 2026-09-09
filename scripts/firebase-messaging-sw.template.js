@@ -37,10 +37,22 @@ self.addEventListener("message", (event) => {
   }
 });
 
-// When activated, claim all open clients immediately so push
-// events are routed here instead of a competing SW.
+// When activated, force any existing controlling SW (e.g. Workbox) to
+// skip waiting, then claim all open clients.  This ensures push events
+// are routed here instead of a competing SW that may lack a push handler.
+// Without this, a previously-cached Workbox SW can remain the controller
+// and silently drop FCM push events.
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    (async () => {
+      // Tell any waiting SW (including ourselves) to activate immediately.
+      // If there is no other SW waiting, this is a harmless no-op.
+      self.skipWaiting();
+
+      // Claim all open clients so push events route to this SW.
+      await self.clients.claim();
+    })(),
+  );
 });
 
 // Handle background FCM messages

@@ -18,7 +18,6 @@ export default defineConfig({
         'icon-192x192.png',
         'icon-512x512.png',
         'icon-maskable-512x512.png',
-        'push-sw.js',
         'firebase-messaging-sw.js',
       ],
       manifest: {
@@ -60,7 +59,6 @@ export default defineConfig({
         ],
         globIgnores: [
           '**/remixicon-BTtOSOPh.svg',
-          '**/push-sw.js',
           '**/firebase-messaging-sw.js',
         ],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MiB
