@@ -17,18 +17,20 @@ const STATUS_COLORS = {
   cancelled: "bg-red-400",
 };
 
-function TabButton({ active, onClick, label }) {
+function TabButton({ active, onClick, label, mobileLabel }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-semibold transition ${
+      title={label}
+      className={`cursor-pointer w-full sm:w-auto flex items-center justify-center rounded-lg py-1.5 px-2 sm:px-3 text-xs font-bold transition-all text-center ${
         active
-          ? "bg-[var(--agri-card)] text-[#2D6A4F] dark:text-[var(--agri-brand)] shadow-2xs"
-          : "text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)]"
+          ? "bg-[var(--agri-card)] text-[#2D6A4F] dark:text-[var(--agri-brand)] shadow-2xs border border-[var(--agri-border-subtle)]"
+          : "text-[var(--agri-text-muted)] hover:text-[var(--agri-text)] hover:bg-[var(--agri-card)]/40 border border-transparent"
       }`}
     >
-      {label}
+      <span className="hidden sm:inline truncate">{label}</span>
+      <span className="sm:hidden truncate">{mobileLabel || label}</span>
     </button>
   );
 }
@@ -55,11 +57,27 @@ export default function RecentActivityTabbed({ products = [], reviews = [], load
       icon={tabIcon}
       compact
       fill
+      headerClassName="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-4"
       headerAction={
-        <div className="flex shrink-0 items-center rounded-lg bg-[var(--agri-hover)] p-0.5">
-          <TabButton active={tab === "products"} onClick={() => setTab("products")} label={t("farmer.recentProducts")} />
-          <TabButton active={tab === "inquiries"} onClick={() => setTab("inquiries")} label={t("farmer.recentInquiries")} />
-          <TabButton active={tab === "reviews"} onClick={() => setTab("reviews")} label={t("farmer.latestReviews")} />
+        <div className="grid grid-cols-3 w-full sm:w-auto sm:flex items-center rounded-xl bg-[var(--agri-hover)] p-1 gap-1 border border-[var(--agri-border-subtle)]/70 shadow-2xs">
+          <TabButton
+            active={tab === "products"}
+            onClick={() => setTab("products")}
+            label={t("farmer.recentProducts")}
+            mobileLabel={t("farmer.statProducts")}
+          />
+          <TabButton
+            active={tab === "inquiries"}
+            onClick={() => setTab("inquiries")}
+            label={t("farmer.recentInquiries")}
+            mobileLabel={t("farmer.statInquiries")}
+          />
+          <TabButton
+            active={tab === "reviews"}
+            onClick={() => setTab("reviews")}
+            label={t("farmer.latestReviews")}
+            mobileLabel={t("farmer.reviewsTitle")}
+          />
         </div>
       }
     >
@@ -84,8 +102,8 @@ function RecentProductsList({ products }) {
 
   if (displayed.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center px-4 py-8 text-center">
-        <i className="ri-store-2-line text-2xl text-[var(--agri-text-muted)]" />
+      <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
+        <i className="ri-store-2-line text-3xl text-[var(--agri-text-muted)]" />
         <p className="mt-2 text-sm font-medium text-[var(--agri-text-muted)]">{t("farmer.noProductsYet")}</p>
       </div>
     );
@@ -97,32 +115,50 @@ function RecentProductsList({ products }) {
         <li key={product.id}>
           <Link
             to="/farmer/products"
-            className="flex items-center gap-3 px-3 py-2 transition hover:bg-[var(--agri-hover)]/60"
+            className="group flex items-center justify-between gap-3 px-3.5 py-3 transition hover:bg-[var(--agri-hover)]/60"
           >
-            {product.images?.[0]?.url || product.images?.[0] ? (
-              <img
-                src={product.images[0].url || product.images[0]}
-                alt={product.name || "Product"}
-                className="h-8 w-8 shrink-0 rounded-lg object-cover border border-[var(--agri-border-subtle)]"
-              />
-            ) : (
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
-                <i className="ri-shopping-basket-line text-sm" />
-              </div>
-            )}
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              {product.images?.[0]?.url || product.images?.[0] ? (
+                <img
+                  src={product.images[0].url || product.images[0]}
+                  alt={product.name || "Product"}
+                  className="h-11 w-11 shrink-0 rounded-xl object-cover border border-[var(--agri-border-subtle)] shadow-2xs"
+                />
+              ) : (
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+                  <i className="ri-shopping-basket-line text-lg" />
+                </div>
+              )}
 
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-[var(--agri-text)]">
-                {product.name || t("admin.unnamedProduct")}
-              </p>
-              <p className={`mt-0.5 text-[11px] font-bold ${product.available ? "text-[#2D6A4F] dark:text-[var(--agri-brand)]" : "text-[var(--agri-text-muted)]"}`}>
-                {product.available ? t("admin.available") : t("admin.unavailable")}
-              </p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-[var(--agri-text)] group-hover:text-[#2D6A4F] dark:group-hover:text-[var(--agri-brand)] transition-colors">
+                  {product.name || t("admin.unnamedProduct")}
+                </p>
+                <div className="mt-1 flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                      product.available
+                        ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200/60"
+                        : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200/60"
+                    }`}
+                  >
+                    {product.available ? t("admin.available") : t("admin.unavailable")}
+                  </span>
+                  {product.category && (
+                    <span className="text-[11px] text-[var(--agri-text-muted)] truncate">
+                      • {product.category}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <p className="shrink-0 text-sm font-black text-[#1B4332] dark:text-[var(--agri-brand-light)]">
-              ₱{Number(product.price || 0).toLocaleString()}
-            </p>
+            <div className="shrink-0 flex items-center gap-2">
+              <span className="text-base font-black text-[#1B4332] dark:text-[var(--agri-brand-light)]">
+                ₱{Number(product.price || 0).toLocaleString()}
+              </span>
+              <i className="ri-arrow-right-s-line text-base text-[var(--agri-text-muted)] group-hover:text-[#2D6A4F] dark:group-hover:text-[var(--agri-brand)] transition-colors" />
+            </div>
           </Link>
         </li>
       ))}
@@ -145,8 +181,8 @@ function RecentInquiriesList() {
 
   if (displayed.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center px-4 py-8 text-center">
-        <i className="ri-file-list-3-line text-2xl text-[var(--agri-text-muted)]" />
+      <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
+        <i className="ri-file-list-3-line text-3xl text-[var(--agri-text-muted)]" />
         <p className="mt-2 text-sm font-medium text-[var(--agri-text-muted)]">{t("farmer.noTransactionsYet")}</p>
       </div>
     );
@@ -158,29 +194,34 @@ function RecentInquiriesList() {
         <li key={inquiry.id}>
           <Link
             to="/farmer/transactions"
-            className="flex items-center gap-3 px-3 py-2 transition hover:bg-[var(--agri-hover)]/60"
+            className="group flex items-center justify-between gap-3 px-3.5 py-3 transition hover:bg-[var(--agri-hover)]/60"
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
-              <i className="ri-file-list-3-line text-sm" />
-            </div>
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+                <i className="ri-file-list-3-line text-lg" />
+              </div>
 
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-[var(--agri-text)]">
-                {inquiry.productName || inquiry.product?.name || t("admin.unnamedProduct")}
-              </p>
-              <div className="mt-0.5 flex items-center gap-1.5">
-                <span className={`h-1.5 w-1.5 rounded-full ${STATUS_COLORS[inquiry.status] || "bg-gray-400"}`} />
-                <span className="text-[11px] font-medium text-[var(--agri-text-muted)]">
-                  {t(`transactions.status.${inquiry.status}`)}
-                </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-[var(--agri-text)] group-hover:text-[#2D6A4F] dark:group-hover:text-[var(--agri-brand)] transition-colors">
+                  {inquiry.productName || inquiry.product?.name || t("admin.unnamedProduct")}
+                </p>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--agri-text-muted)]">
+                    <span className={`h-2 w-2 rounded-full ${STATUS_COLORS[inquiry.status] || "bg-gray-400"}`} />
+                    {t(`transactions.status.${inquiry.status}`)}
+                  </span>
+                  {inquiry.createdAt && (
+                    <span className="text-[11px] text-[var(--agri-text-muted)]">
+                      • {new Date(inquiry.createdAt).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
-            {inquiry.createdAt && (
-              <span className="shrink-0 text-[11px] font-medium text-[var(--agri-text-muted)]">
-                {new Date(inquiry.createdAt).toLocaleDateString()}
-              </span>
-            )}
+            <div className="shrink-0 flex items-center gap-2">
+              <i className="ri-arrow-right-s-line text-base text-[var(--agri-text-muted)] group-hover:text-[#2D6A4F] dark:group-hover:text-[var(--agri-brand)] transition-colors" />
+            </div>
           </Link>
         </li>
       ))}
@@ -194,8 +235,8 @@ function RecentReviewsList({ reviews }) {
 
   if (displayed.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center px-4 py-8 text-center">
-        <i className="ri-star-line text-2xl text-[var(--agri-text-muted)]" />
+      <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
+        <i className="ri-star-line text-3xl text-[var(--agri-text-muted)]" />
         <p className="mt-2 text-sm font-medium text-[var(--agri-text-muted)]">{t("farmer.noReviewsYet")}</p>
       </div>
     );
@@ -207,37 +248,45 @@ function RecentReviewsList({ reviews }) {
         <li key={review.id}>
           <Link
             to="/farmer/reviews"
-            className="flex items-center gap-3 px-3 py-2 transition hover:bg-[var(--agri-hover)]/60"
+            className="group flex items-center justify-between gap-3 px-3.5 py-3 transition hover:bg-[var(--agri-hover)]/60"
           >
-            {review.reviewer?.profilePicture ? (
-              <img
-                src={review.reviewer.profilePicture}
-                alt={review.reviewer.fullname || "Reviewer"}
-                className="h-8 w-8 shrink-0 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-xs font-semibold text-[var(--agri-text-muted)]">
-                {(review.reviewer?.fullname || "?")[0]}
-              </div>
-            )}
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              {review.reviewer?.profilePicture ? (
+                <img
+                  src={review.reviewer.profilePicture}
+                  alt={review.reviewer.fullname || "Reviewer"}
+                  className="h-11 w-11 shrink-0 rounded-full object-cover border border-[var(--agri-border-subtle)]"
+                />
+              ) : (
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2D6A4F]/10 text-sm font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+                  {(review.reviewer?.fullname || "?")[0]}
+                </div>
+              )}
 
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-[var(--agri-text)]">
-                {review.reviewer?.fullname || review.reviewer?.username || t("reviews.anonymous")}
-              </p>
-              <div className="mt-0.5 flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <i
-                    key={star}
-                    className={`text-[11px] ${star <= (review.rating || 0) ? "ri-star-fill text-amber-400" : "ri-star-line text-[var(--agri-text-muted)]"}`}
-                  />
-                ))}
-                {review.comment && (
-                  <span className="ml-1 truncate text-[11px] text-[var(--agri-text-muted)]">
-                    — {review.comment}
-                  </span>
-                )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-[var(--agri-text)] group-hover:text-[#2D6A4F] dark:group-hover:text-[var(--agri-brand)] transition-colors">
+                  {review.reviewer?.fullname || review.reviewer?.username || t("reviews.anonymous")}
+                </p>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <i
+                        key={star}
+                        className={`text-xs ${star <= (review.rating || 0) ? "ri-star-fill text-amber-400" : "ri-star-line text-[var(--agri-text-muted)]"}`}
+                      />
+                    ))}
+                  </div>
+                  {review.comment && (
+                    <span className="truncate text-xs text-[var(--agri-text-muted)]">
+                      — {review.comment}
+                    </span>
+                  )}
+                </div>
               </div>
+            </div>
+
+            <div className="shrink-0 flex items-center gap-2">
+              <i className="ri-arrow-right-s-line text-base text-[var(--agri-text-muted)] group-hover:text-[#2D6A4F] dark:group-hover:text-[var(--agri-brand)] transition-colors" />
             </div>
           </Link>
         </li>

@@ -13,9 +13,11 @@ export default function DashboardHeader({ loading, onRefresh }) {
         type="button"
         onClick={onRefresh}
         disabled={loading}
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[var(--agri-border)] bg-[var(--agri-card)] px-2.5 py-1 text-xs font-semibold text-[var(--agri-text-secondary)] shadow-2xs hover:bg-[var(--agri-hover)] disabled:opacity-50 transition cursor-pointer"
+        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-bold text-[var(--agri-text-secondary)] shadow-2xs hover:bg-[var(--agri-hover)] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] disabled:opacity-50 transition cursor-pointer active:scale-95"
       >
-        <i className={`ri-refresh-line text-sm ${loading ? "animate-spin" : ""}`} />
+        <i
+          className={`ri-refresh-line text-sm ${loading ? "animate-spin" : ""}`}
+        />
         <span className="hidden sm:inline">{t("admin.refresh")}</span>
       </button>
     </div>
