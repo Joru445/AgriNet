@@ -8,7 +8,12 @@ export default function DashboardSection({
   fill = false,
   className = "",
   bodyClassName = "",
+  headerClassName = "",
 }) {
+  const headerLayoutClass = headerClassName
+    ? `${headerClassName} ${compact ? "p-3 sm:px-3.5 sm:py-2.5" : "p-4 sm:p-5"}`
+    : `flex items-center justify-between ${compact ? "px-3 py-2" : "p-5"}`;
+
   return (
     <section
       className={`rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-lg shadow-black/5 ${
@@ -16,11 +21,9 @@ export default function DashboardSection({
       } ${className}`}
     >
       <div
-        className={`flex items-center justify-between border-b border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 ${
-          compact ? "px-3 py-2" : "p-5"
-        }`}
+        className={`border-b border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 ${headerLayoutClass}`}
       >
-        <div className={`flex items-center ${compact ? "gap-2" : "gap-3"}`}>
+        <div className={`flex items-center min-w-0 ${compact ? "gap-2" : "gap-3"}`}>
           {icon && (
             <div
               className={`flex shrink-0 items-center justify-center rounded-xl bg-[#2D6A4F]/10 border border-[#2D6A4F]/20 text-[#2D6A4F] dark:text-[var(--agri-brand)] ${
@@ -31,9 +34,9 @@ export default function DashboardSection({
             </div>
           )}
 
-          <div>
+          <div className="min-w-0 flex-1">
             <h2
-              className={`font-bold text-[var(--agri-text)] ${
+              className={`truncate font-bold text-[var(--agri-text)] ${
                 compact ? "text-sm" : "text-base"
               }`}
             >

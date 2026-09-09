@@ -54,8 +54,8 @@ export default function Dashboard() {
       <KpiRow stats={stats} loading={loading} />
 
       {/* ── Tier 3: Analytics ─────────────────────────────────── */}
-      <div className="flex flex-col gap-2.5 p-4">
-        <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-3">
+      <div className="mx-auto max-w-7xl w-full flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 pb-12">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
           <InquiryTrendCard
             analytics={analytics.inquiryAnalytics}
             range={range}
@@ -74,20 +74,20 @@ export default function Dashboard() {
         {!loading && pendingCount > 0 && (
           <a
             href="/farmer/transactions"
-            className="flex items-center gap-3 rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 transition hover:border-amber-300 dark:hover:border-amber-500/50"
+            className="flex items-center gap-3 rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-4 py-3.5 transition hover:border-amber-300 dark:hover:border-amber-500/50 shadow-2xs"
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400">
-              <i className="ri-alert-line text-base" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400">
+              <i className="ri-alert-line text-lg" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-amber-800 dark:text-amber-200">
+              <p className="text-sm font-bold text-amber-900 dark:text-amber-100">
                 {t("admin.actionRequired")}
               </p>
-              <p className="text-xs text-amber-600 dark:text-amber-400">
+              <p className="text-xs text-amber-700 dark:text-amber-300">
                 {t("admin.pendingInquiriesDesc", { count: pendingCount })}
               </p>
             </div>
-            <i className="ri-arrow-right-line shrink-0 text-sm text-amber-400" />
+            <i className="ri-arrow-right-line shrink-0 text-base text-amber-500" />
           </a>
         )}
 
