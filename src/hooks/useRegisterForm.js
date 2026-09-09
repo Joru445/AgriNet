@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -7,11 +7,10 @@ import { useAuth } from "../context/AuthContext";
 
 import { register, createFacebookProfile, createGoogleProfile } from "../services/register.service";
 import {
-  SOCIAL_AUTH_TAB_SOURCE,
+  signInWithProvider,
   checkEmailAvailability,
   getCurrentUser,
   getSocialSignInErrorMessage,
-  openSocialAuthTab,
 } from "../services/auth.service";
 import {
   validateStep1,
@@ -91,11 +90,6 @@ export default function useRegisterForm() {
   const [checkedEmail, setCheckedEmail] = useState("");
   const [socialAuthInFlight, setSocialAuthInFlight] = useState(false);
 
-  // Tracks the currently open Google/Facebook authentication attempt so only
-  // its handler tab's result is consumed by this registration tab.
-  const nextAuthAttemptIdRef = useRef(0);
-  const pendingAuthAttemptRef = useRef(null);
-
   const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState(INITIAL_FORM);
@@ -145,74 +139,6 @@ export default function useRegisterForm() {
     });
   }, [user, profile, registrationMethod, setProviderData]);
 
-  /**
-   * Receives the result reported by the Google/Facebook handler tab
-   * (/auth/google, /auth/facebook) that this registration tab opened.
-   * On success it transitions straight into the provider Account step; errors
-   * and cancellations surface as toasts while the method screen stays put.
-   * Firebase Auth's cross-tab persistence also syncs the sign-in on its own,
-   * making this listener redundant-safe.
-   */
-  useEffect(() => {
-    function handleSocialAuthMessage(event) {
-      if (event.origin !== window.location.origin) return;
-      const data = event.data;
-      if (!data || data.source !== SOCIAL_AUTH_TAB_SOURCE) return;
-
-      // Only the registration flow that opened this attempt consumes its
-      // result. This keeps an unrelated /register tab (or a direct visit to
-      // /auth/google) from silently consuming another tab's authentication.
-      if (
-        data.socialAttempt == null ||
-        data.socialAttempt !== pendingAuthAttemptRef.current
-      ) {
-        return;
-      }
-
-      if (data.type === "auth-error" && data.code === "auth/popup-blocked") {
-        // The handler tab stays open offering Retry. Keep this attempt in
-        // flight until the retry resolves or the tab is closed (which reports
-        // auth-cancelled).
-        showToast.error(
-          getSocialSignInErrorMessage({ code: data.code }, data.method),
-        );
-        return;
-      }
-
-      pendingAuthAttemptRef.current = null;
-      setSocialAuthInFlight(false);
-
-      if (data.type === "auth-success") {
-        // If the user started another method while the tab was open (e.g.
-        // email), do not hijack their in-progress registration.
-        if (registrationMethod) return;
-
-        const method =
-          data.method === "facebook" ? "facebook" : "google";
-        setRegistrationMethod(method);
-        setStep(1);
-        setProviderData({
-          displayName: data.displayName || data.email?.split("@")[0] || "",
-          email: data.email || "",
-          username: null,
-          photoURL: data.photoURL || "",
-        });
-      } else if (data.type === "auth-error") {
-        showToast.error(
-          getSocialSignInErrorMessage(
-            { code: data.code },
-            data.method,
-          ),
-        );
-      } else if (data.type === "auth-cancelled") {
-        showToast.info(t(`auth.errors.${data.method}Cancelled`));
-      }
-    }
-
-    window.addEventListener("message", handleSocialAuthMessage);
-    return () =>
-      window.removeEventListener("message", handleSocialAuthMessage);
-  }, [registrationMethod, setProviderData]);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
@@ -421,25 +347,26 @@ export default function useRegisterForm() {
         return;
       }
 
-      // Google/Facebook authenticate in a dedicated handler tab opened directly
-      // from this click (window.open). This registration tab is never redirected
-      // or refreshed; the result arrives via the "message" listener.
       if (method === "google" || method === "facebook") {
-        // Ignore clicks while a provider tab is already being handled so
-        // repeated clicks cannot open multiple authentication tabs.
         if (socialAuthInFlight) return;
 
-        nextAuthAttemptIdRef.current += 1;
-        const attemptId = String(nextAuthAttemptIdRef.current);
-        pendingAuthAttemptRef.current = attemptId;
-
-        if (!openSocialAuthTab(method, attemptId)) {
-          pendingAuthAttemptRef.current = null;
-          showToast.error(t("auth.errors.allowPopups"));
-          return;
-        }
-
         setSocialAuthInFlight(true);
+        signInWithProvider(method)
+          .then(() => {
+            // Firebase Auth state updates → useEffect detects user → populates form
+          })
+          .catch((error) => {
+            if (
+              error.code === "auth/popup-closed-by-user" ||
+              error.code === "auth/cancelled-popup-request"
+            ) {
+              return;
+            }
+            showToast.error(getSocialSignInErrorMessage(error, method));
+          })
+          .finally(() => {
+            setSocialAuthInFlight(false);
+          });
       }
     },
     [socialAuthInFlight],

@@ -6,6 +6,7 @@ import RecentActivity from "../../components/admin/RecentActivity";
 import RecentProducts from "../../components/admin/RecentProducts";
 import RecentUsers from "../../components/admin/RecentUsers";
 import ErrorState from "../../components/ui/ErrorState";
+import TabButton from "../../components/ui/TabButton";
 import SkeletonBox from "../../components/common/SkeletonBox";
 import UserGrowthCard from "../../components/admin/metrics/UserGrowthCard";
 import CategoryDonutCard from "../../components/admin/metrics/CategoryDonutCard";
@@ -368,22 +369,6 @@ export default function Dashboard() {
         </div>
       </div>
     </main>
-  );
-}
-
-function TabButton({ active, onClick, label }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-semibold transition ${
-        active
-          ? "bg-(--agri-card) text-[#2D6A4F] dark:text-(--agri-brand) shadow-2xs"
-          : "text-(--agri-text-muted) hover:text-(--agri-text-secondary)"
-      }`}
-    >
-      {label}
-    </button>
   );
 }
 

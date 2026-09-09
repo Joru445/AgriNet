@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import RoleBadge from "../../common/RoleBadge";
 import { useLanguage } from "../../../context/LanguageContext";
+import ResponsiveModal from "../../ui/ResponsiveModal";
 
 const DURATION_OPTIONS = [
   { value: "1d", labelKey: "farmerVerification.duration1d" },
@@ -76,35 +77,12 @@ export default function UserEditModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs"
-      onClick={onClose}
+    <ResponsiveModal
+      open={Boolean(user)}
+      onClose={onClose}
+      title={t("adminUser.editTitle")}
+      maxWidth="max-w-md"
     >
-      <div
-        className="w-full max-w-md rounded-3xl bg-[var(--agri-card)] p-5 sm:p-6 shadow-2xl border border-[var(--agri-border)] max-h-[92vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[var(--agri-border)]">
-          <div>
-            <h3 className="text-lg sm:text-xl font-bold text-[var(--agri-text)] tracking-tight">
-              {t("adminUser.editTitle")}
-            </h3>
-            <p className="text-xs font-medium text-[var(--agri-text-muted)]">
-              {t("adminUser.editSubtitle")}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label={t("adminUser.close")}
-          >
-            <i className="ri-close-line text-xl" />
-          </button>
-        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           {/* User Quick Identity Card */}
@@ -285,7 +263,6 @@ export default function UserEditModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </ResponsiveModal>
   );
 }

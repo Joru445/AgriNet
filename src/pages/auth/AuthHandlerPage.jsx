@@ -3,8 +3,7 @@ import { useSearchParams } from "react-router-dom";
 
 import {
   notifySocialAuthResult,
-  signInWithFacebookPopup,
-  signInWithGooglePopup,
+  signInWithProvider,
 } from "../../services/auth.service";
 import { t } from "../../i18n";
 
@@ -81,9 +80,7 @@ export default function AuthHandlerPage({ method }) {
     setPopupBlocked(false);
 
     try {
-      const result = isFacebook
-        ? await signInWithFacebookPopup()
-        : await signInWithGooglePopup();
+      const result = await signInWithProvider(method);
 
       report({
         type: "auth-success",

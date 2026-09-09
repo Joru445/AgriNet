@@ -91,30 +91,39 @@ googleProvider.setCustomParameters({
   prompt: "select_account",
 });
 
-/**
- * Initiates Google authentication using a popup that opens from the dedicated
- * /auth/google tab. popup is deterministic (resolves with a UserCredential or
- * rejects with a specific code) and never leaves the registration tab.
- */
-export async function signInWithGooglePopup() {
-  return signInWithPopup(auth, googleProvider);
-}
-
 const facebookProvider = new FacebookAuthProvider();
 facebookProvider.addScope("email");
 
 /**
- * Initiates Facebook authentication using a popup that opens from the dedicated
- * /auth/facebook tab. popup is deterministic (resolves with a UserCredential or
- * rejects with a specific code) and never leaves the registration tab.
+ * Opens the provider popup directly from the user's click.
+ * Must be called synchronously from a click handler to avoid popup blocking.
+ *
+ * @param {string} method "google" | "facebook"
+ * @param {Object} [options]
+ * @param {string} [options.loginHint] Email hint for Google's account chooser
+ * @returns {Promise<import("firebase/auth").UserCredential>}
  */
-export async function signInWithFacebookPopup() {
-  return signInWithPopup(auth, facebookProvider);
+export async function signInWithProvider(method, options = {}) {
+  const provider =
+    method === "google"
+      ? googleProvider
+      : method === "facebook"
+        ? facebookProvider
+        : null;
+
+  if (!provider) throw new Error(`Unsupported provider: ${method}`);
+
+  if (method === "google" && options.loginHint) {
+    googleProvider.setCustomParameters({ login_hint: options.loginHint });
+  }
+
+  return signInWithPopup(auth, provider);
 }
 
 /**
  * Message envelope used by the social-auth handler tab to report back to the
  * registration tab that opened it. Both windows are same-origin.
+ * @deprecated Used only by the handler-tab flow for registration.
  */
 export const SOCIAL_AUTH_TAB_SOURCE = "agrinet-social-auth";
 export const SOCIAL_AUTH_TAB_NAME = "agrinet-social-auth";

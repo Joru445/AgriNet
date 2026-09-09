@@ -2,6 +2,7 @@ import { useState } from "react";
 import RoleBadge from "../../common/RoleBadge";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import { useLanguage } from "../../../context/LanguageContext";
+import ResponsiveModal from "../../ui/ResponsiveModal";
 
 export default function UserDetailsModal({ user, onClose }) {
   const { t } = useLanguage();
@@ -52,34 +53,12 @@ export default function UserDetailsModal({ user, onClose }) {
     "No address provided";
 
   return (
-    <div
-      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs"
-      onClick={onClose}
+    <ResponsiveModal
+      open={Boolean(user)}
+      onClose={onClose}
+      title={t("adminUser.detailsTitle")}
+      maxWidth="max-w-md"
     >
-      <div
-        className="w-full max-w-md rounded-3xl bg-[var(--agri-card)] p-4 sm:p-5 shadow-2xl border border-[var(--agri-border)] max-h-[92vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between pb-2.5 border-b border-[var(--agri-border)]">
-          <div>
-            <h3 className="text-lg sm:text-xl font-bold text-[var(--agri-text)] tracking-tight">
-              {t("adminUser.detailsTitle")}
-            </h3>
-            <p className="text-xs font-medium text-[var(--agri-text-muted)]">
-              {t("adminUser.detailsSubtitle")}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer"
-            aria-label={t("adminUser.close")}
-          >
-            <i className="ri-close-line text-xl" />
-          </button>
-        </div>
-
         {/* Profile Card / Avatar */}
         <div className="flex flex-col items-center text-center pt-2.5 pb-2">
           <div className="relative mb-2">
@@ -268,7 +247,6 @@ export default function UserDetailsModal({ user, onClose }) {
             {t("adminUser.closeDetails")}
           </button>
         </div>
-      </div>
 
       {/* Fullscreen Zoomable Image Modal */}
       <ImageViewerModal
@@ -277,6 +255,6 @@ export default function UserDetailsModal({ user, onClose }) {
         title={fullscreenImage?.title}
         onClose={() => setFullscreenImage(null)}
       />
-    </div>
+    </ResponsiveModal>
   );
 }

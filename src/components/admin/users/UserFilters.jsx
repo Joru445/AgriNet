@@ -1,4 +1,5 @@
 import { useLanguage } from "../../../context/LanguageContext";
+import InlineSearchInput from "../../ui/InlineSearchInput";
 
 export default function UserFilters({
   search,
@@ -15,17 +16,11 @@ export default function UserFilters({
   return (
     <div className="mb-6 rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-4.5 shadow-md shadow-black/5">
       <div className="flex flex-col gap-3 lg:flex-row">
-        <div className="relative flex-1">
-          <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--agri-text-muted)] text-base" />
-
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={t("adminUser.searchPlaceholder")}
-            className="w-full rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 py-2.5 pl-10 pr-4 text-sm font-medium text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/10"
-          />
-        </div>
+        <InlineSearchInput
+          value={search}
+          onChange={onSearchChange}
+          placeholder={t("adminUser.searchPlaceholder")}
+        />
 
         <select
           value={sortBy}

@@ -50,6 +50,10 @@ const Profile = lazy(() => import("../pages/shared/Profile"));
 const Settings = lazy(() => import("../pages/shared/Settings"));
 const Notifications = lazy(() => import("../pages/shared/Notifications"));
 const Favorites = lazy(() => import("../pages/shared/Favorites"));
+
+// Test Pages (PoC)
+const PasskeyTest = lazy(() => import("../pages/test/PasskeyTest"));
+
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 export default function AppRoutes() {
@@ -181,6 +185,11 @@ export default function AppRoutes() {
             </Route>
           </Route>
         </Route>
+
+        {/* ── TEST (PoC) — development only ──────────────── */}
+        {import.meta.env.DEV && (
+          <Route path="/passkey-test" element={<PasskeyTest />} />
+        )}
 
         <Route path="*" element={<NotFound />} />
       </Routes>

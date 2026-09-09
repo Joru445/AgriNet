@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@simplewebauthn/browser": "^14.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "firebase": "^12.16.0",
     "leaflet": "^1.9.4",

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import { formatFullDateTime, formatDate } from "../../../utils/date";
+import ResponsiveModal from "../../ui/ResponsiveModal";
 
 const STATUS_CONFIG = {
   pending: { color: "bg-gray-500/10 text-gray-600", labelKey: "adminTransaction.statusPending" },
@@ -83,23 +84,12 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
     : null;
 
   return (
-    <div
-      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs"
-      onClick={onClose}
+    <ResponsiveModal
+      open={Boolean(inquiryId)}
+      onClose={onClose}
+      title={t("adminTransaction.detailsTitle")}
+      maxWidth="max-w-2xl"
     >
-      <div
-        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-lg p-1.5 text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text)] transition cursor-pointer"
-          aria-label={t("common.close")}
-        >
-          <i className="ri-close-line text-lg" />
-        </button>
-
         {loading && (
           <div className="flex items-center justify-center py-16">
             <i className="ri-loader-4-line animate-spin text-2xl text-[#2D6A4F]" />
@@ -417,7 +407,6 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </ResponsiveModal>
   );
 }

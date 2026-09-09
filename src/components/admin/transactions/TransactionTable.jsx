@@ -1,4 +1,5 @@
 import { useLanguage } from "../../../context/LanguageContext";
+import AdminPagination from "../../ui/AdminPagination";
 
 import TransactionTableRow from "./TransactionTableRow";
 
@@ -68,35 +69,14 @@ export default function TransactionTable({
       </div>
 
       {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-[var(--agri-border-subtle)] px-5 py-3">
-          <p className="text-xs text-[var(--agri-text-muted)]">
-            {t("adminTransaction.showingCount", {
-              count: inquiries.length,
-              total: pagination.total,
-            })}
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onPageChange(pagination.page - 1)}
-              disabled={pagination.page <= 1}
-              className="rounded-lg border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {t("adminTransaction.previousPage")}
-            </button>
-            <span className="text-xs font-semibold text-[var(--agri-text-muted)]">
-              {pagination.page} / {pagination.totalPages}
-            </span>
-            <button
-              onClick={() => onPageChange(pagination.page + 1)}
-              disabled={pagination.page >= pagination.totalPages}
-              className="rounded-lg border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {t("adminTransaction.nextPage")}
-            </button>
-          </div>
-        </div>
-      )}
+      <AdminPagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        total={pagination.total}
+        count={inquiries.length}
+        onPageChange={onPageChange}
+        i18nPrefix="adminTransaction"
+      />
     </div>
   );
 }

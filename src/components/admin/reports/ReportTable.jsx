@@ -1,4 +1,5 @@
 import { useLanguage } from "../../../context/LanguageContext";
+import AdminPagination from "../../ui/AdminPagination";
 
 import ReportTableRow from "./ReportTableRow";
 
@@ -61,35 +62,14 @@ export default function ReportTable({
         </table>
       </div>
 
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-[var(--agri-border-subtle)] px-5 py-3">
-          <p className="text-xs text-[var(--agri-text-muted)]">
-            {t("adminReport.showingCount", {
-              count: reports.length,
-              total: pagination.total,
-            })}
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onPageChange(page - 1)}
-              disabled={page <= 1}
-              className="rounded-lg border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {t("adminReport.previousPage")}
-            </button>
-            <span className="text-xs font-semibold text-[var(--agri-text-muted)]">
-              {page} / {pagination.totalPages}
-            </span>
-            <button
-              onClick={() => onPageChange(page + 1)}
-              disabled={page >= pagination.totalPages}
-              className="rounded-lg border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {t("adminReport.nextPage")}
-            </button>
-          </div>
-        </div>
-      )}
+      <AdminPagination
+        page={page}
+        totalPages={pagination.totalPages}
+        total={pagination.total}
+        count={reports.length}
+        onPageChange={onPageChange}
+        i18nPrefix="adminReport"
+      />
     </div>
   );
 }

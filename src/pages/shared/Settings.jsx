@@ -9,6 +9,8 @@ import LogoutConfirmModal from "../../components/common/LogoutConfirmModal";
 import ConnectedAccounts from "../../components/common/ConnectedAccounts";
 import UserIdentity from "../../components/common/UserIdentity";
 import FarmerVerification from "../../components/farmer/verification/FarmerVerification";
+import AccountSwitcher from "../../components/settings/AccountSwitcher";
+import PasskeyManager from "../../components/settings/PasskeyManager";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -125,6 +127,12 @@ export default function Settings() {
           </div>
         </div>
       </section>
+
+      {/* Accounts */}
+      <AccountSwitcher />
+
+      {/* Passkeys */}
+      <PasskeyManager />
 
       {/* Farmer Verification (farmers only) */}
       {profile?.role === "farmer" && <FarmerVerification />}

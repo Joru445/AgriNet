@@ -10,6 +10,7 @@ import ProductFilters from "../../components/admin/products/ProductFilters";
 import ProductTable from "../../components/admin/products/ProductTable";
 import ProductTableSkeleton from "../../components/admin/products/ProductTableSkeleton";
 import ProductDetailModal from "../../components/admin/products/ProductDetailModal";
+import Alert from "../../components/ui/Alert";
 
 export default function Products() {
   const { t } = useLanguage();
@@ -82,10 +83,7 @@ export default function Products() {
         />
 
         {error && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-800/30 dark:bg-red-900/10 dark:text-red-400">
-            <i className="ri-error-warning-line mr-2" />
-            {error}
-          </div>
+          <Alert variant="error" message={error} className="mb-6" />
         )}
 
         {loading ? (

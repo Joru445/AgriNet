@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import DashboardSection from "../../components/common/DashboardSection";
 import SkeletonBox from "../../components/common/SkeletonBox";
 import ErrorState from "../../components/ui/ErrorState";
+import ResponsiveModal from "../../components/ui/ResponsiveModal";
+import TabButton from "../../components/ui/TabButton";
 
 import { useLanguage } from "../../context/LanguageContext";
 import {
@@ -47,25 +49,6 @@ function formatDate(timestamp) {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function TabButton({ active, onClick, label, count }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-semibold transition ${
-        active
-          ? "bg-[var(--agri-card)] text-[#2D6A4F] dark:text-[var(--agri-brand)] shadow-2xs"
-          : "text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)]"
-      }`}
-    >
-      {label}
-      {count !== undefined && (
-        <span className="ml-1 text-[10px] opacity-70">({count})</span>
-      )}
-    </button>
-  );
 }
 
 function VerificationRow({ verification, onView }) {
@@ -146,35 +129,12 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
   }
 
   return (
-    <div
-      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs"
-      onClick={onClose}
+    <ResponsiveModal
+      open={Boolean(verification)}
+      onClose={onClose}
+      title={t("farmerVerification.detailTitle")}
+      maxWidth="max-w-md"
     >
-      <div
-        className="w-full max-w-md rounded-3xl bg-[var(--agri-card)] p-5 sm:p-6 shadow-2xl border border-[var(--agri-border)] max-h-[92vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[var(--agri-border)]">
-          <div>
-            <h3 className="text-lg sm:text-xl font-bold text-[var(--agri-text)] tracking-tight">
-              {t("farmerVerification.detailTitle")}
-            </h3>
-            <p className="text-xs font-medium text-[var(--agri-text-muted)]">
-              {t("farmerVerification.detailSubtitle")}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <i className="ri-close-line text-xl" />
-          </button>
-        </div>
-
         {/* Farmer Info */}
         <div className="mt-4 space-y-3">
           <div className="flex items-center gap-3 p-3 rounded-2xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
@@ -322,8 +282,7 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </ResponsiveModal>
   );
 }
 

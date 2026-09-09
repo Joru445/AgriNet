@@ -7,10 +7,22 @@ export default function Login() {
     form,
     errors,
     loading,
+    passkeyLoading,
+    passkeyError,
     socialAuthInFlight,
-    initiateSocialLogin,
+    savedAccounts,
+    hasSavedAccounts,
+    viewMode,
+    passwordAccount,
     handleChange,
     handleSubmit,
+    handleSelectSavedAccount,
+    handleSelectSocialAccount,
+    handleSelectPasskeyAccount,
+    handlePasskeyRetry,
+    handleUseAnotherAccount,
+    handleBackToSaved,
+    initiateSocialLogin,
   } = useLoginForm();
 
   return (
@@ -20,10 +32,22 @@ export default function Login() {
         form={form}
         errors={errors}
         loading={loading}
+        passkeyLoading={passkeyLoading}
+        passkeyError={passkeyError}
         socialAuthInFlight={socialAuthInFlight}
+        savedAccounts={savedAccounts}
+        hasSavedAccounts={hasSavedAccounts}
+        viewMode={viewMode}
+        passwordAccount={passwordAccount}
         onChange={handleChange}
         onSubmit={handleSubmit}
         onSocialLogin={initiateSocialLogin}
+        onSelectSavedAccount={handleSelectSavedAccount}
+        onSelectSocialAccount={handleSelectSocialAccount}
+        onSelectPasskeyAccount={handleSelectPasskeyAccount}
+        onPasskeyRetry={handlePasskeyRetry}
+        onUseAnotherAccount={handleUseAnotherAccount}
+        onBackToSaved={handleBackToSaved}
       />
     </div>
   );

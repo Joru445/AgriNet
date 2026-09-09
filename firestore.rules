@@ -171,6 +171,16 @@ service cloud.firestore {
       match /installations/{installationId} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
+
+      /*
+       * Passkeys (WebAuthn credentials).
+       *
+       * Backend-managed via Admin SDK. Clients cannot directly
+       * create, modify, or delete passkey documents.
+       */
+      match /passkeys/{credentialId} {
+        allow read, write: if false;
+      }
     }
 
 

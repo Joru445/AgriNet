@@ -33,8 +33,11 @@ export async function createFarmerProfile(data) {
   });
 }
 
-export async function getFarmers() {
-  const result = await apiRequest("/farmers");
+export async function getFarmers({ hasProducts = false } = {}) {
+  const params = new URLSearchParams();
+  if (hasProducts) params.set("hasProducts", "true");
+  const qs = params.toString();
+  const result = await apiRequest(`/farmers${qs ? `?${qs}` : ""}`);
   return result.data || [];
 }
 

@@ -3,6 +3,7 @@ import ImageViewerModal from "../../common/ImageViewerModal";
 import { formatFullDateTime } from "../../../utils/date";
 import useStartConversation from "../../../hooks/useStartConversation";
 import { useLanguage } from "../../../context/LanguageContext";
+import ResponsiveModal from "../../ui/ResponsiveModal";
 
 function getStatusClasses(status) {
   switch (status) {
@@ -87,40 +88,13 @@ export default function ReportDetailsModal({
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4"
-        onClick={onClose}
+      <ResponsiveModal
+        open={Boolean(report)}
+        onClose={onClose}
+        title={t("adminReport.investigationTitle")}
+        maxWidth="max-w-xl"
       >
-        <div
-          className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl bg-[var(--agri-card)] shadow-2xl border border-[var(--agri-border-subtle)] anim-scale-in"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between border-b border-[var(--agri-border-subtle)] px-6 py-4 bg-[var(--agri-hover)]/80">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-600 dark:text-red-400">
-                <i className="ri-alert-line text-xl" />
-              </div>
-              <div>
-                <h2 className="text-base sm:text-lg font-bold text-[var(--agri-text)] leading-tight">
-                  {t("adminReport.investigationTitle")}
-                </h2>
-                <p className="text-xs text-[var(--agri-text-muted)] font-medium">
-                  {t("adminReport.investigationSubtitle")}
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)]/70 hover:text-[var(--agri-text-secondary)] transition cursor-pointer"
-              aria-label={t("adminReport.close")}
-            >
-              <i className="ri-close-line text-xl" />
-            </button>
-          </div>
-
-          <div className="space-y-4 p-6">
+          <div className="p-6 space-y-4">
             {/* Reason & Status Card */}
             <div className="rounded-2xl bg-[var(--agri-card)] p-4 border border-[var(--agri-border-subtle)] shadow-xs space-y-3">
               <div className="flex items-start justify-between gap-2">
@@ -433,8 +407,7 @@ export default function ReportDetailsModal({
               </button>
             </div>
           </div>
-        </div>
-      </div>
+      </ResponsiveModal>
 
       {showEvidenceViewer && report.evidenceUrl && (
         <ImageViewerModal

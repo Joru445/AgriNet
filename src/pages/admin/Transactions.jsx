@@ -8,6 +8,7 @@ import TransactionFilters from "../../components/admin/transactions/TransactionF
 import TransactionTable from "../../components/admin/transactions/TransactionTable";
 import TransactionTableSkeleton from "../../components/admin/transactions/TransactionTableSkeleton";
 import TransactionDetailModal from "../../components/admin/transactions/TransactionDetailModal";
+import Alert from "../../components/ui/Alert";
 
 export default function Transactions() {
   const {
@@ -64,10 +65,7 @@ export default function Transactions() {
         />
 
         {error && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-800/30 dark:bg-red-900/10 dark:text-red-400">
-            <i className="ri-error-warning-line mr-2" />
-            {error}
-          </div>
+          <Alert variant="error" message={error} className="mb-6" />
         )}
 
         {loading ? (

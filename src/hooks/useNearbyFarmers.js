@@ -83,7 +83,7 @@ export default function useNearbyFarmers() {
         return;
       }
 
-      const data = await getFarmers();
+      const data = await getFarmers({ hasProducts: true });
 
       setFarmers(data);
       pageCache.set(CACHE_KEY, data, CACHE_TTL);
