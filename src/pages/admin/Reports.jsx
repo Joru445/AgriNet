@@ -84,9 +84,9 @@ export default function Reports() {
     }
   }, [markDismissed, t]);
 
-  const handleToggleUserSuspension = useCallback(async (uid, nextStatus) => {
+  const handleToggleUserSuspension = useCallback(async (uid, nextStatus, options = {}) => {
     try {
-      await apiSetUserSuspension(uid, nextStatus);
+      await apiSetUserSuspension(uid, nextStatus, options);
       setSelectedReport((prev) => {
         if (!prev || !prev.reportedUser) return prev;
         if (prev.reportedUser.uid === uid) {

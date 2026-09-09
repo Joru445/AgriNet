@@ -49,6 +49,8 @@ export default function ReportFilters({
             <option value="">{t("adminReport.allTypes")}</option>
             <option value="user">{t("adminReport.typeUser")}</option>
             <option value="product">{t("adminReport.typeProduct")}</option>
+            <option value="store">{t("adminReport.typeStore")}</option>
+            <option value="message">{t("adminReport.typeMessage")}</option>
           </select>
 
           {/* Date From */}

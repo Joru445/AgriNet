@@ -93,6 +93,8 @@ export default function ReportModal({
         return t("reportModal.purchaseInquiry");
       case "product":
         return t("reportModal.productListing");
+      case "store":
+        return t("reportModal.storeAccount");
       case "profile":
       case "user":
       default:

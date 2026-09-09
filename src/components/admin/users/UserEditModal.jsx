@@ -2,15 +2,7 @@ import { useEffect, useState } from "react";
 import RoleBadge from "../../common/RoleBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 import ResponsiveModal from "../../ui/ResponsiveModal";
-
-const DURATION_OPTIONS = [
-  { value: "1d", labelKey: "farmerVerification.duration1d" },
-  { value: "3d", labelKey: "farmerVerification.duration3d" },
-  { value: "7d", labelKey: "farmerVerification.duration7d" },
-  { value: "14d", labelKey: "farmerVerification.duration14d" },
-  { value: "30d", labelKey: "farmerVerification.duration30d" },
-  { value: "permanent", labelKey: "farmerVerification.durationPermanent" },
-];
+import { DURATION_OPTIONS } from "../../../utils/suspensionOptions";
 
 export default function UserEditModal({
   user,

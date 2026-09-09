@@ -4,6 +4,7 @@ import { formatFullDateTime } from "../../../utils/date";
 import useStartConversation from "../../../hooks/useStartConversation";
 import { useLanguage } from "../../../context/LanguageContext";
 import ResponsiveModal from "../../ui/ResponsiveModal";
+import { DURATION_OPTIONS } from "../../../utils/suspensionOptions";
 
 function getStatusClasses(status) {
   switch (status) {
@@ -34,6 +35,9 @@ export default function ReportDetailsModal({
   const [showEvidenceViewer, setShowEvidenceViewer] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [suspendMode, setSuspendMode] = useState(false);
+  const [suspensionDuration, setSuspensionDuration] = useState("7d");
+  const [suspensionReason, setSuspensionReason] = useState("");
 
   const targetType = report?.targetType || report?.type || "user";
 
@@ -43,9 +47,15 @@ export default function ReportDetailsModal({
   useEffect(() => {
     if (!report) {
       setAdminNotes("");
+      setSuspendMode(false);
+      setSuspensionDuration("7d");
+      setSuspensionReason("");
       return;
     }
     setAdminNotes(report.adminNotes || "");
+    setSuspendMode(false);
+    setSuspensionDuration("7d");
+    setSuspensionReason("");
   }, [report]);
 
   if (!report) return null;
@@ -55,10 +65,27 @@ export default function ReportDetailsModal({
 
   const handleUserSuspension = async () => {
     if (!report.reportedUserId || !onToggleUserSuspension) return;
+
+    if (isUserSuspended) {
+      setActionLoading(true);
+      try {
+        await onToggleUserSuspension(report.reportedUserId, "active");
+      } finally {
+        setActionLoading(false);
+      }
+    } else {
+      setSuspendMode(true);
+    }
+  };
+
+  const handleConfirmSuspend = async () => {
+    if (!report.reportedUserId || !onToggleUserSuspension) return;
     setActionLoading(true);
     try {
-      const nextStatus = isUserSuspended ? "active" : "suspended";
-      await onToggleUserSuspension(report.reportedUserId, nextStatus);
+      await onToggleUserSuspension(report.reportedUserId, "suspended", {
+        durationPreset: suspensionDuration,
+        reason: suspensionReason,
+      });
     } finally {
       setActionLoading(false);
     }
@@ -235,7 +262,7 @@ export default function ReportDetailsModal({
                   )}
                 </div>
 
-                {onToggleUserSuspension && (
+                {onToggleUserSuspension && !suspendMode && (
                   <button
                     type="button"
                     onClick={handleUserSuspension}
@@ -249,6 +276,79 @@ export default function ReportDetailsModal({
                     <i className={isUserSuspended ? "ri-user-follow-line" : "ri-user-unfollow-line"} />
                     {isUserSuspended ? t("adminReport.reactivateUser") : t("adminReport.suspendUser")}
                   </button>
+                )}
+
+                {onToggleUserSuspension && suspendMode && (
+                  <div className="space-y-3 rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-3">
+                    <p className="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider">
+                      {t("adminUser.suspensionOptions")}
+                    </p>
+
+                    <div>
+                      <label className="mb-1 block text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                        {t("adminUser.suspensionDuration")}
+                      </label>
+                      <select
+                        value={suspensionDuration}
+                        onChange={(e) => setSuspensionDuration(e.target.value)}
+                        disabled={actionLoading}
+                        className="w-full rounded-lg border border-amber-200 dark:border-amber-500/30 bg-white dark:bg-[var(--agri-card)] px-3 py-2 text-sm font-semibold text-[var(--agri-text)] outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 cursor-pointer disabled:opacity-60"
+                      >
+                        {DURATION_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {t(opt.labelKey)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                        {t("adminUser.suspensionReason")} *
+                      </label>
+                      <textarea
+                        value={suspensionReason}
+                        onChange={(e) => setSuspensionReason(e.target.value)}
+                        placeholder={t("adminUser.suspensionReasonPlaceholder")}
+                        rows={2}
+                        disabled={actionLoading}
+                        className="w-full rounded-lg border border-amber-200 dark:border-amber-500/30 bg-white dark:bg-[var(--agri-card)] px-3 py-2 text-sm text-[var(--agri-text)] outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 resize-none disabled:opacity-60"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSuspendMode(false);
+                          setSuspensionDuration("7d");
+                          setSuspensionReason("");
+                        }}
+                        disabled={actionLoading}
+                        className="flex-1 py-2 px-3 rounded-xl border border-amber-300 dark:border-amber-500/30 text-xs font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition cursor-pointer disabled:opacity-60"
+                      >
+                        {t("common.cancel")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleConfirmSuspend}
+                        disabled={actionLoading || !suspensionReason.trim()}
+                        className="flex-1 py-2 px-3 rounded-xl bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition cursor-pointer shadow-xs active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {actionLoading ? (
+                          <span className="flex items-center justify-center gap-1.5">
+                            <i className="ri-loader-4-line animate-spin text-sm" />
+                            {t("adminUser.saving")}
+                          </span>
+                        ) : (
+                          <span className="flex items-center justify-center gap-1.5">
+                            <i className="ri-user-unfollow-line" />
+                            {t("adminReport.suspendUser")}
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
 
