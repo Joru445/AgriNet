@@ -33,6 +33,7 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
   const { t } = useLanguage();
   const [requesting, setRequesting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null); // "success" | "error"
+  const [lastAction, setLastAction] = useState(null); // "enable" | "disable"
   const statusTimer = useRef(null);
 
   // Report subscription state to parent whenever it changes.
@@ -55,11 +56,13 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
 
     try {
       if (subscribed) {
+        setLastAction("disable");
         await unsubscribe();
         setStatusMessage("success");
       } else {
+        setLastAction("enable");
         const result = await requestPermission();
-        if (result) setStatusMessage("success");
+        setStatusMessage(result?.ok ? "success" : "error");
       }
     } catch {
       setStatusMessage("error");
@@ -67,7 +70,10 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
       setRequesting(false);
 
       if (statusTimer.current) clearTimeout(statusTimer.current);
-      statusTimer.current = setTimeout(() => setStatusMessage(null), 3000);
+      statusTimer.current = setTimeout(() => {
+        setStatusMessage(null);
+        setLastAction(null);
+      }, 3000);
     }
   };
 
@@ -179,7 +185,7 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
         <div className="flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 px-3 py-2 text-xs text-red-700 dark:text-red-300 anim-fade-in">
           <i className="ri-error-warning-line text-sm text-red-500" />
           <span>
-            {subscribed
+            {lastAction === "enable"
               ? t("pushNotifications.enableFailed")
               : t("pushNotifications.disableFailed")}
           </span>

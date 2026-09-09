@@ -9,6 +9,7 @@ import {
 
 import { useAuth } from "./AuthContext";
 import OnboardingTour from "../components/onboarding/OnboardingTour";
+import { markOptedIn } from "../services/pushSubscription.service";
 
 const OnboardingContext = createContext(null);
 
@@ -81,7 +82,14 @@ export function OnboardingProvider({ children }) {
     // Called from the Finish button click (user gesture) so Chrome allows it.
     if (uid && !hasPromptedPush(uid) && typeof Notification !== "undefined" && Notification.permission === "default") {
       markPushPrompted(uid);
-      Notification.requestPermission().catch(() => {});
+      Notification.requestPermission()
+        .then((result) => {
+          if (result === "granted") {
+            markOptedIn(uid);
+            window.dispatchEvent(new Event("agrinet:push-opted-in"));
+          }
+        })
+        .catch(() => {});
     }
   }, [uid]);
 

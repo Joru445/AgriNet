@@ -9,6 +9,10 @@ import {
   registerPushInstallation,
   removePushInstallation,
   getInstallationId,
+  hasOptedIn,
+  markOptedIn,
+  clearOptIn,
+  deleteFCMToken,
 } from "../services/pushSubscription.service";
 
 const PROMPT_DONE_KEY_PREFIX = "agrinet_push_prompted_v2_";
@@ -32,14 +36,18 @@ function markPromptedDone(uid) {
 }
 
 /**
- * Manages the full FCM push notification lifecycle:
- *   1. Detect browser support
- *   2. Register FCM service worker (when user is logged in)
- *   3. Check permission status — set subscribed immediately if already granted
- *   4. Request permission + get token (only on user gesture)
- *   5. Register installation with backend (best-effort, does not block toggle)
- *   6. Handle cleanup on logout
- *   7. One-time permission prompt on first login
+ * Manages the full FCM push notification lifecycle.
+ *
+ * State is driven by an explicit per-user opt-in flag (`hasOptedIn`).
+ * Toggle ON = browser permission granted AND backend registration confirmed.
+ * Toggle OFF = browser subscription actually removed (persists across reloads).
+ *
+ * 1. Detect browser support
+ * 2. Register FCM service worker (when user is logged in)
+ * 3. One-time adoption for pre-existing subscribers (permission granted + live subscription)
+ * 4. Request permission + get token + await backend registration (only on user gesture)
+ * 5. Handle cleanup on logout
+ * 6. Re-init on `agrinet:push-opted-in` event (e.g., onboarding grant)
  */
 export default function usePushNotifications() {
   const { profile } = useAuth();
@@ -62,10 +70,12 @@ export default function usePushNotifications() {
 
   // When user is logged in and supported, register the FCM SW
   // and detect existing subscription state immediately.
+  // Only subscribes when the user has explicitly opted in.
   useEffect(() => {
     if (!profile?.uid || !supported) return;
 
     let cancelled = false;
+    const uid = profile.uid;
 
     async function initFCM() {
       try {
@@ -76,29 +86,39 @@ export default function usePushNotifications() {
         installationIdRef.current = getInstallationId();
 
         if (Notification.permission === "granted") {
+          // One-time adoption: pre-existing subscribers who never had an
+          // opt-in flag (granted via browser settings or old onboarding)
+          if (!hasOptedIn(uid)) {
+            const existing = await reg.pushManager
+              .getSubscription()
+              .catch(() => null);
+            if (existing) markOptedIn(uid);
+          }
+
+          // Not opted in — do NOT auto-subscribe. Toggle stays OFF.
+          if (!hasOptedIn(uid)) {
+            setSubscribed(false);
+            setPermission(getNotificationPermission());
+            return;
+          }
+
+          // Opted in — full flow: token + backend registration
           const token = await getFCMToken(reg);
           if (cancelled) return;
 
           if (token) {
             fcmTokenRef.current = token;
 
-            // Toggle reflects client-side state: we have a valid token.
-            // Backend registration is best-effort — does not block the toggle.
-            setSubscribed(true);
-            setPermission(getNotificationPermission());
-
+            // Await backend registration (strict — toggle reflects reality)
             if (profile?.uid && !registeredRef.current) {
-              registerPushInstallation({
+              await registerPushInstallation({
                 fcmToken: token,
                 installationId: installationIdRef.current || getInstallationId(),
-              })
-                .then(() => {
-                  registeredRef.current = true;
-                })
-                .catch((err) => {
-                  console.warn("[Push] Backend registration failed (will retry next load):", err);
-                });
+              }).catch(() => {});
+              registeredRef.current = true;
             }
+
+            setSubscribed(true);
           } else {
             setSubscribed(false);
           }
@@ -114,8 +134,13 @@ export default function usePushNotifications() {
 
     initFCM();
 
+    // Re-init when onboarding grants permission and sets opt-in
+    const handleOptedIn = () => initFCM();
+    window.addEventListener("agrinet:push-opted-in", handleOptedIn);
+
     return () => {
       cancelled = true;
+      window.removeEventListener("agrinet:push-opted-in", handleOptedIn);
     };
   }, [profile?.uid, supported]);
 
@@ -125,42 +150,43 @@ export default function usePushNotifications() {
    * Flow:
    * 1. Request browser notification permission
    * 2. If granted, get FCM token
-   * 3. Set subscribed immediately (toggle shows ON)
-   * 4. Register installation with backend (best-effort)
+   * 3. Register installation with backend (awaited — strict)
+   * 4. Mark opt-in and set subscribed on success
+   *
+   * @returns {{ ok: boolean, reason?: string }}
    */
   const requestPermission = useCallback(async () => {
-    if (!supported) return false;
+    if (!supported) return { ok: false, reason: "unsupported" };
 
     const result = await requestNotificationPermission();
     setPermission(result);
 
-    if (result !== "granted") return false;
+    if (result !== "granted") return { ok: false, reason: "permission" };
 
     // Get FCM token (registers SW if needed)
     const reg = registrationRef.current;
     const token = await getFCMToken(reg);
-    if (!token) return false;
+    if (!token) return { ok: false, reason: "token" };
 
     fcmTokenRef.current = token;
 
-    // Toggle reflects client-side success immediately
-    setSubscribed(true);
-
-    // Backend registration is best-effort — does not block the toggle
+    // Backend registration — await it (toggle only shows ON after confirmed)
     if (profile?.uid) {
-      registerPushInstallation({
-        fcmToken: token,
-        installationId: installationIdRef.current || getInstallationId(),
-      })
-        .then(() => {
-          registeredRef.current = true;
-        })
-        .catch((err) => {
-          console.warn("[Push] Backend registration failed (will retry next load):", err);
+      try {
+        await registerPushInstallation({
+          fcmToken: token,
+          installationId: installationIdRef.current || getInstallationId(),
         });
+        registeredRef.current = true;
+      } catch {
+        return { ok: false, reason: "backend" };
+      }
     }
 
-    return true;
+    // Opt-in persisted — toggle is now truthful and persistent
+    markOptedIn(profile?.uid);
+    setSubscribed(true);
+    return { ok: true };
   }, [supported, profile?.uid]);
 
   /**
@@ -182,14 +208,27 @@ export default function usePushNotifications() {
     const current = getNotificationPermission();
     if (current !== "default") return current;
 
-    return requestPermission();
+    const result = await requestPermission();
+    return result?.ok ? "granted" : "denied";
   }, [supported, profile?.uid, requestPermission]);
 
   /**
    * Unsubscribe from push notifications.
+   * Removes browser subscription, revokes FCM token, clears opt-in flag.
+   * OFF is persistent — does not re-resubscribe on reload.
    */
   const unsubscribe = useCallback(async () => {
+    const uid = profile?.uid;
     const installationId = installationIdRef.current;
+    const token = fcmTokenRef.current;
+    const reg = registrationRef.current;
+
+    // Remove browser subscription + revoke FCM token
+    try {
+      await deleteFCMToken(token, reg);
+    } catch {
+      // Best-effort — partial cleanup is acceptable
+    }
 
     // Remove from backend
     if (installationId) {
@@ -200,9 +239,13 @@ export default function usePushNotifications() {
       }
     }
 
+    // Clear opt-in so OFF is persistent across reloads
+    if (uid) clearOptIn(uid);
+
     fcmTokenRef.current = null;
+    registeredRef.current = false;
     setSubscribed(false);
-  }, []);
+  }, [profile?.uid]);
 
   /**
    * Check and update subscription status.
@@ -210,8 +253,8 @@ export default function usePushNotifications() {
    */
   const refreshStatus = useCallback(() => {
     setPermission(getNotificationPermission());
-    setSubscribed(Boolean(fcmTokenRef.current));
-  }, []);
+    setSubscribed(hasOptedIn(profile?.uid) && Boolean(fcmTokenRef.current));
+  }, [profile?.uid]);
 
   // Clean up on logout
   useEffect(() => {

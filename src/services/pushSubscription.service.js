@@ -3,11 +3,12 @@ import {
   getPermissionState,
   registerMessagingSW,
   requestFCMToken,
+  deleteFCMToken,
 } from "../firebase/messaging";
 import { apiRequest } from "./api/api.client";
 
 // Re-export for consumers that need direct SW registration
-export { registerMessagingSW };
+export { registerMessagingSW, deleteFCMToken };
 
 // ============================================================
 // PUSH SUPPORT DETECTION
@@ -169,5 +170,50 @@ export function getInstallationId() {
   } catch {
     // localStorage unavailable (private browsing, etc.)
     return `fallback-${Date.now()}`;
+  }
+}
+
+// ============================================================
+// OPT-IN PERSISTENCE
+// ============================================================
+
+const OPTED_IN_KEY_PREFIX = "agrinet_push_opted_in_";
+
+/**
+ * Whether the user has explicitly opted in to push notifications.
+ * Stored in localStorage keyed by UID.
+ */
+export function hasOptedIn(uid) {
+  if (!uid) return false;
+  try {
+    return localStorage.getItem(OPTED_IN_KEY_PREFIX + uid) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Record explicit push notification opt-in for a user.
+ * Called after backend registration succeeds or onboarding grant.
+ */
+export function markOptedIn(uid) {
+  if (!uid) return;
+  try {
+    localStorage.setItem(OPTED_IN_KEY_PREFIX + uid, "1");
+  } catch {
+    // Storage unavailable; opt-in won't persist.
+  }
+}
+
+/**
+ * Clear the opt-in flag for a user.
+ * Called during unsubscribe so OFF is persistent across reloads.
+ */
+export function clearOptIn(uid) {
+  if (!uid) return;
+  try {
+    localStorage.removeItem(OPTED_IN_KEY_PREFIX + uid);
+  } catch {
+    // Storage unavailable.
   }
 }

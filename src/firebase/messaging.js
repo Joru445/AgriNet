@@ -1,4 +1,4 @@
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getMessaging, getToken, deleteToken, onMessage } from "firebase/messaging";
 import { app } from "./config";
 
 /**
@@ -239,6 +239,44 @@ export async function requestFCMToken(registration) {
     }
     return null;
   }
+}
+
+/**
+ * Revoke an FCM token and unsubscribe the browser push subscription.
+ *
+ * This performs a clean unsubscribe: Firebase's deleteToken revokes
+ * the token server-side, then pushManager.unsubscribe() removes the
+ * browser subscription. Both are best-effort — partial cleanup is
+ * acceptable because a new token will be issued on next subscribe.
+ *
+ * @param {string} token - The FCM registration token to revoke
+ * @param {ServiceWorkerRegistration} registration - The SW registration
+ * @returns {Promise<boolean>} Whether the operation succeeded (best-effort)
+ */
+export async function deleteFCMToken(token, registration) {
+  const messaging = getMessagingInstance();
+  let ok = false;
+
+  if (messaging && token) {
+    try {
+      await deleteToken(messaging);
+      ok = true;
+    } catch {
+      // Token may already be invalid — proceed to unsubscribe
+    }
+  }
+
+  try {
+    const subscription = await registration?.pushManager?.getSubscription();
+    if (subscription) {
+      await subscription.unsubscribe();
+      ok = true;
+    }
+  } catch {
+    // Best-effort
+  }
+
+  return ok;
 }
 
 /**
