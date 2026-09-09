@@ -5,7 +5,7 @@ import { useLanguage } from "../../../context/LanguageContext";
 import DashboardSection from "../../common/DashboardSection";
 import SkeletonBox from "../../common/SkeletonBox";
 
-const PIPELINE_STATUSES = ["pending", "accepted", "reserved", "ongoing", "completed"];
+const PIPELINE_STATUSES = ["pending", "accepted", "reserved", "ongoing", "completed", "cancelled"];
 
 const STATUS_CONFIG = {
   pending: { dot: "bg-amber-400", border: "border-amber-200/60 dark:border-amber-500/20", bg: "bg-amber-50/40 dark:bg-amber-500/5" },
@@ -20,8 +20,8 @@ function PipelineFlow({ counts }) {
   const { t } = useLanguage();
   return (
     <div className="p-3.5 sm:p-4">
-      {/* Pipeline cards in a responsive grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+      {/* Pipeline cards in a responsive grid: 2 cols on mobile (3x2), 3 cols on tablet, 6 cols on laptop */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
         {PIPELINE_STATUSES.map((status) => {
           const count = counts[status] ?? 0;
           const config = STATUS_CONFIG[status];
@@ -43,21 +43,6 @@ function PipelineFlow({ counts }) {
           );
         })}
       </div>
-
-      {/* Cancelled summary pill */}
-      {counts.cancelled > 0 && (
-        <div className="mt-3 flex items-center justify-between rounded-xl border border-red-200/80 dark:border-red-500/20 bg-red-50/70 dark:bg-red-500/10 px-3.5 py-2">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
-            <span className="text-xs font-semibold text-red-700 dark:text-red-300">
-              {t("transactions.status.cancelled")}
-            </span>
-          </div>
-          <span className="text-sm font-black text-red-800 dark:text-red-200">
-            {counts.cancelled}
-          </span>
-        </div>
-      )}
     </div>
   );
 }
