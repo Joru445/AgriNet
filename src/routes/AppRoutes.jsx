@@ -37,6 +37,7 @@ const Reports = lazy(() => import("../pages/admin/Reports.jsx"));
 const FarmerVerifications = lazy(() => import("../pages/admin/FarmerVerifications"));
 const AdminProducts = lazy(() => import("../pages/admin/Products"));
 const AdminTransactions = lazy(() => import("../pages/admin/Transactions"));
+const AdminActivity = lazy(() => import("../pages/admin/Activity"));
 
 // Shared Pages
 const ProductDetails = lazy(() => import("../pages/shared/ProductDetails"));
@@ -155,6 +156,8 @@ export default function AppRoutes() {
               <Route path="/admin/farmer-verifications" element={<FarmerVerifications />} />
 
               <Route path="/admin/reports" element={<Reports />} />
+
+              <Route path="/admin/activity" element={<AdminActivity />} />
 
               <Route path="/admin/transactions" element={<AdminTransactions />} />
 

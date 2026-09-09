@@ -5,7 +5,7 @@ export default function ProductTableRow({ product, onView, onToggleAvailability,
 
   const isPreorder = product.sellingMode === "preorder";
   const isReported = product.totalReports > 0;
-
+  
   return (
     <tr className="border-b border-[var(--agri-border-subtle)] last:border-0 hover:bg-[var(--agri-hover)]/80 transition-colors">
       {/* Product Image + Name */}
@@ -14,7 +14,7 @@ export default function ProductTableRow({ product, onView, onToggleAvailability,
           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[var(--agri-hover)]">
             {product.images?.[0] ? (
               <img
-                src={product.images[0]}
+                src={product.images?.[0].url}
                 alt={product.name}
                 className="h-full w-full object-cover"
                 loading="lazy"

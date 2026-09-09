@@ -124,7 +124,7 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {product.images.map((img, idx) => (
                   <div key={idx} className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-[var(--agri-hover)]">
-                    <img src={img} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    <img src={img.url} alt="" className="h-full w-full object-cover" loading="lazy" />
                   </div>
                 ))}
               </div>

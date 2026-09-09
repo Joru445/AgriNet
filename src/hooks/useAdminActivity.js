@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { apiGetAuditLogs } from "../services/admin.service";
 
 export default function useAdminActivity() {
-  const [logs, setLogs] = useState([]);
+  const [serverLogs, setServerLogs] = useState([]);
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -34,19 +34,7 @@ export default function useAdminActivity() {
         endDate: dateTo || undefined,
       });
 
-      let filtered = result.logs;
-
-      if (search && search.trim()) {
-        const keyword = search.trim().toLowerCase();
-        filtered = filtered.filter((log) => {
-          const targetId = (log.targetId || "").toLowerCase();
-          const adminId = (log.adminId || "").toLowerCase();
-          const action = (log.action || "").toLowerCase();
-          return targetId.includes(keyword) || adminId.includes(keyword) || action.includes(keyword);
-        });
-      }
-
-      setLogs(filtered);
+      setServerLogs(result.logs);
       setPagination(result.pagination);
     } catch (err) {
       console.error("Failed to load audit logs:", err);
@@ -54,7 +42,7 @@ export default function useAdminActivity() {
     } finally {
       setLoading(false);
     }
-  }, [page, action, targetType, dateFrom, dateTo, search]);
+  }, [page, action, targetType, dateFrom, dateTo]);
 
   useEffect(() => {
     fetchLogs();
@@ -63,6 +51,22 @@ export default function useAdminActivity() {
   useEffect(() => {
     setPage(1);
   }, [action, targetType, dateFrom, dateTo]);
+
+  // Search is applied client-side to the fetched page, so typing does not
+  // trigger a server refetch per keystroke.
+  const logs = useMemo(() => {
+    if (!search || !search.trim()) {
+      return serverLogs;
+    }
+
+    const keyword = search.trim().toLowerCase();
+    return serverLogs.filter((log) => {
+      const targetId = (log.targetId || "").toLowerCase();
+      const adminId = (log.adminId || "").toLowerCase();
+      const action = (log.action || "").toLowerCase();
+      return targetId.includes(keyword) || adminId.includes(keyword) || action.includes(keyword);
+    });
+  }, [serverLogs, search]);
 
   return {
     logs,

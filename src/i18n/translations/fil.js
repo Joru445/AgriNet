@@ -1261,6 +1261,10 @@ export default {
     newInquiryCreated: "Bagong inquiry ang nalikha",
     newInquiryDescription: "May bagong inquiry sa produkto ang nalikha",
     recentlyLabel: "Kamakailan",
+    pendingReports: "Mga Nakabinbing Report",
+    pendingReportsDesc: "{count} report na naghihintay ng pagsusuri.",
+    verifiedFarmers: "Na-verify na magsasaka",
+    quickAccess: "Mabilis na Pag-access",
   },
 
   adminMetrics: {
@@ -1455,6 +1459,27 @@ export default {
     reserved: "Nakalaan",
   },
 
+  adminActivity: {
+    headerTitle: "Log ng Aktibidad",
+    headerSubtitle: "Subaybayan ang mga aksyon sa moderation at pamamahala sa AgriNet.",
+    searchPlaceholder: "Maghanap ayon sa aksyon, target, o admin id...",
+    allActions: "Lahat ng Aksyon",
+    allTypes: "Lahat ng Uri",
+    dateFrom: "Mula",
+    dateTo: "Hanggang",
+    clearFilters: "I-clear ang mga Filter",
+    action: "Aksyon",
+    target: "Target",
+    admin: "Admin",
+    dateTime: "Petsa & Oras",
+    noLogsFound: "Walang nahanap na aktibidad",
+    noLogsHint: "Subukang baguhin ang iyong paghahanap o mga filter.",
+    showingCount: "Ipinapakita ang {count} sa {total} log",
+    previousPage: "Nakaraan",
+    nextPage: "Susunod",
+    loading: "Naglo-load ng aktibidad...",
+  },
+
   adminStatus: {
     active: "Aktibo",
     suspended: "Suspended",
@@ -1478,6 +1503,7 @@ export default {
     myProducts: "Aking mga Produkto",
     reviews: "Mga Review",
     reports: "Mga Ulat",
+    adminActivity: "Aktibidad",
     farmerVerifications: "Mga Verifikasiyon",
     adminProducts: "Marketplace",
     adminTransactions: "Mga Transaksyon",

@@ -18,7 +18,9 @@ export default function Header({ user, collapsed, hideBackButton }) {
 
   const isAnonymous = !user;
 
-  const notificationPath = isAnonymous ? "/login" : getNotificationsPath(user.role);
+  const notificationPath = isAnonymous
+    ? "/login"
+    : getNotificationsPath(user.role);
   const mePath = isAnonymous ? "/login" : getMePath(user.role);
   const favoritesPath = isAnonymous ? "/login" : getFavoritesPath(user.role);
 
@@ -81,7 +83,7 @@ export default function Header({ user, collapsed, hideBackButton }) {
                 )}
               </Link>
 
-              {user?.role !== "farmer" && (
+              {user?.role === "consumer" && (
                 <Link
                   to={favoritesPath}
                   data-onboarding="header-favorites"
@@ -89,6 +91,16 @@ export default function Header({ user, collapsed, hideBackButton }) {
                   aria-label={t("nav.favorites")}
                 >
                   <i className="ri-heart-line text-lg" />
+                </Link>
+              )}
+              {user?.role === "admin" && (
+                <Link
+                  to="/admin/farmer-verifications"
+                  data-onboarding="header-verification"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]"
+                  aria-label={t("nav.farmerVerifications")}
+                >
+                  <i className="ri-shield-star-line" />
                 </Link>
               )}
             </div>

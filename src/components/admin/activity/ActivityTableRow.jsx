@@ -1,5 +1,4 @@
 import { formatFullDateTime } from "../../../utils/date";
-import { useLanguage } from "../../../context/LanguageContext";
 
 function getActionConfig(action) {
   switch (action) {
@@ -31,7 +30,6 @@ function formatAction(action) {
 }
 
 export default function ActivityTableRow({ log }) {
-  const { t } = useLanguage();
   const config = getActionConfig(log.action);
 
   return (

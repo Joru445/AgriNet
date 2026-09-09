@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import StatCard from "../../components/common/StatCard";
 import DashboardSection from "../../components/common/DashboardSection";
 import RecentActivity from "../../components/admin/RecentActivity";
@@ -95,15 +96,15 @@ export default function Dashboard() {
             Array.from({ length: 8 }).map((_, index) => <KpiSkeleton key={index} />)
           ) : (
             <>
-              <StatCard compact title={t("admin.totalUsers")} value={stats?.users?.total ?? 0} to="/admin/users" />
-              <StatCard compact title={t("admin.farmers")} value={stats?.users?.farmers ?? 0} to="/admin/users" />
-              <StatCard compact title={t("admin.consumers")} value={stats?.users?.consumers ?? 0} to="/admin/users" />
-              <StatCard compact title={t("admin.products")} value={stats?.products?.total ?? 0} to="/admin/products" />
-              <StatCard compact title={t("admin.ongoing")} value={stats?.inquiries?.ongoing ?? 0} to="/admin/transactions" />
-              <StatCard compact title={t("admin.completed")} value={stats?.inquiries?.completed ?? 0} to="/admin/transactions" />
-              <StatCard compact title={t("admin.pending")} value={stats?.inquiries?.pending ?? 0} to="/admin/transactions" />
-              <StatCard compact title={t("admin.suspended")} value={stats?.users?.suspended ?? 0} to="/admin/users" />
-              <StatCard compact title={t("admin.pendingVerifications")} value={stats?.pendingVerifications ?? 0} to="/admin/farmer-verifications" />
+              <StatCard compact title={t("admin.totalUsers")} value={stats?.users?.total ?? 0} />
+              <StatCard compact title={t("admin.farmers")} value={stats?.users?.farmers ?? 0} />
+              <StatCard compact title={t("admin.consumers")} value={stats?.users?.consumers ?? 0} />
+              <StatCard compact title={t("admin.products")} value={stats?.products?.total ?? 0} />
+              <StatCard compact title={t("admin.ongoing")} value={stats?.inquiries?.ongoing ?? 0} />
+              <StatCard compact title={t("admin.completed")} value={stats?.inquiries?.completed ?? 0} />
+              <StatCard compact title={t("admin.pending")} value={stats?.inquiries?.pending ?? 0} />
+              <StatCard compact title={t("admin.suspended")} value={stats?.users?.suspended ?? 0} />
+              <StatCard compact title={t("admin.pendingVerifications")} value={stats?.pendingVerifications ?? 0} />
             </>
           )}
         </div>
@@ -145,6 +146,43 @@ export default function Dashboard() {
 
       {/* ── Tier 2: Analytics ──────────────────────────────── */}
       <div className="flex flex-col gap-2.5 p-4">
+        {/* ── Quick Access shortcuts ─────────────────────────── */}
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-(--agri-text-muted)">
+            {t("admin.quickAccess")}
+          </p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <ShortcutCard
+              to="/admin/transactions"
+              icon="ri-file-list-3-line"
+              title={t("adminTransaction.headerTitle")}
+              subtitle={t("adminTransaction.headerSubtitle")}
+              styles="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+            />
+            <ShortcutCard
+              to="/admin/products"
+              icon="ri-store-2-line"
+              title={t("adminProduct.headerTitle")}
+              subtitle={t("adminProduct.headerSubtitle")}
+              styles="bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400"
+            />
+            <ShortcutCard
+              to="/admin/users"
+              icon="ri-user-settings-line"
+              title={t("adminUser.headerTitle")}
+              subtitle={t("adminUser.headerSubtitle")}
+              styles="bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400"
+            />
+            <ShortcutCard
+              to="/admin/activity"
+              icon="ri-history-line"
+              title={t("adminActivity.headerTitle")}
+              subtitle={t("adminActivity.headerSubtitle")}
+              styles="bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400"
+            />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-3">
           <UserGrowthCard
             analytics={analytics.userGrowth}
@@ -346,5 +384,23 @@ function TabButton({ active, onClick, label }) {
     >
       {label}
     </button>
+  );
+}
+
+function ShortcutCard({ to, icon, title, subtitle, styles }) {
+  return (
+    <Link
+      to={to}
+      className="flex items-center gap-3 rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-3.5 py-3 shadow-2xs transition hover:border-[#2D6A4F]/40 hover:bg-[var(--agri-hover)]"
+    >
+      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${styles}`}>
+        <i className={`${icon} text-base`} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold text-[var(--agri-text)]">{title}</p>
+        <p className="truncate text-[11px] text-[var(--agri-text-muted)]">{subtitle}</p>
+      </div>
+      <i className="ri-arrow-right-line shrink-0 text-sm text-[var(--agri-text-muted)]" />
+    </Link>
   );
 }

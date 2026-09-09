@@ -32,7 +32,7 @@ export default function TransactionTableRow({ inquiry, onView }) {
           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[var(--agri-hover)]">
             {(inquiry.product?.images?.[0] || inquiry.productSnapshot?.imageUrl) ? (
               <img
-                src={inquiry.product?.images?.[0] || inquiry.productSnapshot?.imageUrl}
+                src={inquiry.product?.images?.[0].url || inquiry.productSnapshot?.imageUrl}
                 alt=""
                 className="h-full w-full object-cover"
                 loading="lazy"

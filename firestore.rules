@@ -89,7 +89,14 @@ service cloud.firestore {
         		"uid",
         		"email",
         		"role",
-        		"status"
+        		"status",
+
+        		// Moderation/trust fields are backend-only
+        		"verified",
+        		"verificationStatus",
+        		"rating",
+        		"reviewCount",
+        		"createdAt"
       		]);
 		}
 
@@ -137,7 +144,16 @@ service cloud.firestore {
        */
       allow create: if
         isSignedIn()
-        && request.auth.uid == userId;
+        && request.auth.uid == userId
+
+        // Registration only: clients may only create consumer/farmer accounts
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role in ["consumer", "farmer"]
+        && request.resource.data.status == "active"
+
+        // Moderation/trust fields are backend-only
+        && !request.resource.data.keys()
+          .hasAny(["verified", "verificationStatus", "rating", "reviewCount"]);
 
 
       /*
@@ -171,14 +187,56 @@ service cloud.firestore {
 
       /*
        * New farmer profile creation.
+       *
+       * Clients may only create a "not_applied" profile; verification,
+       * rating and reviewCount are backend-exclusive.
        */
       allow create: if
         isSignedIn()
-        && request.auth.uid == farmerId;
+        && request.auth.uid == farmerId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.verified == false
+        && (
+          !request.resource.data.keys()
+            .hasAny(["verificationStatus"])
+          ||
+          request.resource.data.verificationStatus == "not_applied"
+        )
+        && (
+          !request.resource.data.keys()
+            .hasAny(["rating"])
+          ||
+          request.resource.data.rating == 0
+        )
+        && (
+          !request.resource.data.keys()
+            .hasAny(["reviewCount"])
+          ||
+          request.resource.data.reviewCount == 0
+        );
 
 
+      /*
+       * Owners may maintain their public profile but cannot touch
+       * trust/moderation fields.
+       */
       allow update, delete: if
-        isOwner(farmerId)
+        (
+          isOwner(farmerId)
+          && !request.resource.data
+            .diff(resource.data)
+            .affectedKeys()
+            .hasAny([
+              "uid",
+              "email",
+              "role",
+              "verified",
+              "verificationStatus",
+              "rating",
+              "reviewCount",
+              "createdAt"
+            ])
+        )
         || isAdmin();
     }
 
@@ -1207,6 +1265,7 @@ match /notifications/{notificationId} {
 
   allow update: if isSignedIn()
     && resource.data.recipientId == request.auth.uid
+    && request.resource.data.recipientId == resource.data.recipientId
     && resource.data.read == false
     && request.resource.data.read == true;
 

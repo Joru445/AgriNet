@@ -1244,6 +1244,10 @@ export default {
     newInquiryCreated: "New inquiry created",
     newInquiryDescription: "A new product inquiry was created",
     recentlyLabel: "Recently",
+    pendingReports: "Pending Reports",
+    pendingReportsDesc: "{count} reports awaiting review.",
+    verifiedFarmers: "Verified farmers",
+    quickAccess: "Quick Access",
   },
 
   adminMetrics: {
@@ -1429,6 +1433,27 @@ export default {
     reserved: "Reserved",
   },
 
+  adminActivity: {
+    headerTitle: "Activity Log",
+    headerSubtitle: "Track moderation and management actions across AgriNet.",
+    searchPlaceholder: "Search by action, target, or admin id...",
+    allActions: "All Actions",
+    allTypes: "All Types",
+    dateFrom: "From",
+    dateTo: "To",
+    clearFilters: "Clear Filters",
+    action: "Action",
+    target: "Target",
+    admin: "Admin",
+    dateTime: "Date & Time",
+    noLogsFound: "No activity found",
+    noLogsHint: "Try adjusting your search or filters.",
+    showingCount: "Showing {count} of {total} logs",
+    previousPage: "Previous",
+    nextPage: "Next",
+    loading: "Loading activity...",
+  },
+
   adminStatus: {
     active: "Active",
     suspended: "Suspended",
@@ -1452,6 +1477,7 @@ export default {
     myProducts: "My Products",
     reviews: "Reviews",
     reports: "Reports",
+    adminActivity: "Activity",
     farmerVerifications: "Verifications",
     adminProducts: "Marketplace",
     adminTransactions: "Transactions",

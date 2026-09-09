@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { doc, updateDoc } from "firebase/firestore";
@@ -29,6 +30,18 @@ export function InquiriesProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  /*
+   * Latest profile snapshot for the listener callback. Kept in a ref so the
+   * completedDeals/totalDeals sync below does not re-subscribe the listener
+   * every time those stats flow back from Firestore (the previous dependency
+   * array caused a subscribe/unsubscribe churn loop).
+   */
+  const profileRef = useRef(profile);
+
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
+
   useEffect(() => {
     if (!profile?.uid || !profile?.role) {
       setInquiries([]);
@@ -47,8 +60,12 @@ export function InquiriesProvider({ children }) {
         setLoading(false);
 
         // Keep the consumer's completedDeals and totalDeals synced in Firestore
-        // so farmers viewing their profile see real-time transaction stats
-        if (profile.role === "consumer" && Array.isArray(data)) {
+        // so farmers viewing their profile see real-time transaction stats.
+        // Uses profileRef to avoid re-subscribing when the stats updated below
+        // flow back into the profile object (which previously caused a
+        // listener subscribe/unsubscribe churn loop).
+        const current = profileRef.current;
+        if (current.role === "consumer" && Array.isArray(data)) {
           const completed = data.filter(
             (i) => i.status === "completed" || i.status === "resolved",
           ).length;
@@ -58,10 +75,10 @@ export function InquiriesProvider({ children }) {
           ).length;
 
           if (
-            profile.completedDeals !== completed ||
-            profile.totalDeals !== total
+            current.completedDeals !== completed ||
+            current.totalDeals !== total
           ) {
-            updateDoc(doc(db, "users", profile.uid), {
+            updateDoc(doc(db, "users", profileRef.current.uid), {
               completedDeals: completed,
               totalDeals: total,
               cancelledDeals: cancelled,
@@ -78,7 +95,7 @@ export function InquiriesProvider({ children }) {
     );
 
     return unsubscribe;
-  }, [profile?.uid, profile?.role, profile?.completedDeals, profile?.totalDeals]);
+  }, [profile?.uid, profile?.role]);
 
   return (
     <InquiriesContext.Provider value={{ inquiries, loading, error }}>
