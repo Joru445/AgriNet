@@ -11,17 +11,35 @@ import {
   getInstallationId,
 } from "../services/pushSubscription.service";
 
+const PROMPT_DONE_KEY_PREFIX = "agrinet_push_prompted_v2_";
+
+function hasPromptedBefore(uid) {
+  if (!uid) return true;
+  try {
+    return localStorage.getItem(PROMPT_DONE_KEY_PREFIX + uid) === "1";
+  } catch {
+    return true;
+  }
+}
+
+function markPromptedDone(uid) {
+  if (!uid) return;
+  try {
+    localStorage.setItem(PROMPT_DONE_KEY_PREFIX + uid, "1");
+  } catch {
+    // Storage unavailable; prompt will show again next session.
+  }
+}
+
 /**
  * Manages the full FCM push notification lifecycle:
  *   1. Detect browser support
  *   2. Register FCM service worker (when user is logged in)
- *   3. Check permission status (does NOT auto-prompt)
+ *   3. Check permission status — set subscribed immediately if already granted
  *   4. Request permission + get token (only on user gesture)
- *   5. Register installation with backend
+ *   5. Register installation with backend (best-effort, does not block toggle)
  *   6. Handle cleanup on logout
- *
- * Does NOT automatically request permission on mount.
- * The consumer must call `requestPermission()` from a user gesture.
+ *   7. One-time permission prompt on first login
  */
 export default function usePushNotifications() {
   const { profile } = useAuth();
@@ -34,7 +52,7 @@ export default function usePushNotifications() {
   const installationIdRef = useRef(null);
   const registeredRef = useRef(false);
 
-  // Check support on mount
+  // Check support on mount — synchronously determine initial state
   useEffect(() => {
     const pushSupported = isPushSupported();
     setSupported(pushSupported);
@@ -43,7 +61,7 @@ export default function usePushNotifications() {
   }, []);
 
   // When user is logged in and supported, register the FCM SW
-  // and check if we already have a valid token
+  // and detect existing subscription state immediately.
   useEffect(() => {
     if (!profile?.uid || !supported) return;
 
@@ -64,22 +82,28 @@ export default function usePushNotifications() {
           if (token) {
             fcmTokenRef.current = token;
 
-            // Only call backend if not already registered this session.
-            // Prevents redundant writes on every profile snapshot update.
-            if (profile?.uid && !registeredRef.current) {
-              try {
-                await registerPushInstallation({
-                  fcmToken: token,
-                  installationId: installationIdRef.current || getInstallationId(),
-                });
-                registeredRef.current = true;
-              } catch (err) {
-                console.error("[Push] Failed to re-register installation:", err);
-              }
-            }
-
+            // Toggle reflects client-side state: we have a valid token.
+            // Backend registration is best-effort — does not block the toggle.
             setSubscribed(true);
+            setPermission(getNotificationPermission());
+
+            if (profile?.uid && !registeredRef.current) {
+              registerPushInstallation({
+                fcmToken: token,
+                installationId: installationIdRef.current || getInstallationId(),
+              })
+                .then(() => {
+                  registeredRef.current = true;
+                })
+                .catch((err) => {
+                  console.warn("[Push] Backend registration failed (will retry next load):", err);
+                });
+            }
+          } else {
+            setSubscribed(false);
           }
+        } else {
+          setSubscribed(false);
         }
 
         setPermission(getNotificationPermission());
@@ -100,8 +124,9 @@ export default function usePushNotifications() {
    *
    * Flow:
    * 1. Request browser notification permission
-   * 2. If granted, register FCM SW and get token
-   * 3. Register installation with backend
+   * 2. If granted, get FCM token
+   * 3. Set subscribed immediately (toggle shows ON)
+   * 4. Register installation with backend (best-effort)
    */
   const requestPermission = useCallback(async () => {
     if (!supported) return false;
@@ -118,23 +143,47 @@ export default function usePushNotifications() {
 
     fcmTokenRef.current = token;
 
-    // Register installation with backend before considering push enabled
+    // Toggle reflects client-side success immediately
+    setSubscribed(true);
+
+    // Backend registration is best-effort — does not block the toggle
     if (profile?.uid) {
-      try {
-        await registerPushInstallation({
-          fcmToken: token,
-          installationId: installationIdRef.current || getInstallationId(),
+      registerPushInstallation({
+        fcmToken: token,
+        installationId: installationIdRef.current || getInstallationId(),
+      })
+        .then(() => {
+          registeredRef.current = true;
+        })
+        .catch((err) => {
+          console.warn("[Push] Backend registration failed (will retry next load):", err);
         });
-      } catch (err) {
-        console.error("[Push] Failed to register installation:", err);
-        fcmTokenRef.current = null;
-        return false;
-      }
     }
 
-    setSubscribed(true);
     return true;
   }, [supported, profile?.uid]);
+
+  /**
+   * One-time notification permission prompt for first login.
+   *
+   * Checks localStorage to avoid re-prompting.
+   * Must be called from a user gesture (e.g., after onboarding completes).
+   *
+   * @returns {Promise<string>} The resulting permission state
+   */
+  const promptOnFirstLogin = useCallback(async () => {
+    if (!supported) return "denied";
+    if (!profile?.uid) return "default";
+    if (hasPromptedBefore(profile.uid)) return getNotificationPermission();
+
+    markPromptedDone(profile.uid);
+
+    // If permission already granted or denied, don't re-prompt
+    const current = getNotificationPermission();
+    if (current !== "default") return current;
+
+    return requestPermission();
+  }, [supported, profile?.uid, requestPermission]);
 
   /**
    * Unsubscribe from push notifications.
@@ -161,7 +210,6 @@ export default function usePushNotifications() {
    */
   const refreshStatus = useCallback(() => {
     setPermission(getNotificationPermission());
-    // Re-check if we still have a valid token
     setSubscribed(Boolean(fcmTokenRef.current));
   }, []);
 
@@ -181,6 +229,7 @@ export default function usePushNotifications() {
     subscribed,
     loading,
     requestPermission,
+    promptOnFirstLogin,
     unsubscribe,
     refreshStatus,
   };

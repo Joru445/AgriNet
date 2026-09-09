@@ -1,25 +1,34 @@
 import { useState } from "react";
 
 import Avatar from "../common/Avatar";
-import RoleBadge from "../common/RoleBadge";
 import ConfirmDialog from "../ui/ConfirmDialog";
 
 import { useSavedAccounts } from "../../hooks/useSavedAccounts";
 import { useLanguage } from "../../context/LanguageContext";
 import { showToast } from "../../utils/toast";
 
-/**
- * Returns a provider icon class for display.
- */
-function getProviderIcon(provider) {
+function getProviderLabel(provider) {
   switch (provider) {
     case "google.com":
-      return "ri-google-fill";
+      return "Google";
     case "facebook.com":
-      return "ri-facebook-circle-fill";
+      return "Facebook";
     default:
-      return "ri-mail-line";
+      return "Password";
   }
+}
+
+function AccountMetadata({ account, t }) {
+  const parts = [];
+  if (account.role) parts.push(t(`roles.${account.role}`) || account.role);
+  parts.push(getProviderLabel(account.provider));
+  if (account.hasPasskey) parts.push(t("settings.passkey") || "Passkey");
+
+  return (
+    <span className="text-xs text-[var(--agri-text-muted)] truncate">
+      {parts.join(" \u00b7 ")}
+    </span>
+  );
 }
 
 export default function AccountSwitcher() {
@@ -51,7 +60,14 @@ export default function AccountSwitcher() {
     }
   }
 
-  function handleRemove(account) {
+  function handleRowClick(account) {
+    if (switching) return;
+    if (account.uid === currentAccount?.uid) return;
+    setConfirmTarget(account);
+  }
+
+  function handleRemove(e, account) {
+    e.stopPropagation();
     if (account.uid === currentAccount?.uid) {
       setRemoveTarget(account);
       return;
@@ -86,35 +102,26 @@ export default function AccountSwitcher() {
   if (!currentAccount) return null;
 
   return (
-    <section className="mb-6">
-      <h2 className="text-sm font-bold text-[var(--agri-text)] mb-3">
+    <section>
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--agri-text-muted)] mb-2">
         {t("settings.accounts")}
       </h2>
 
-      <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden shadow-sm">
+      <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden">
         {/* Current account */}
-        <div className="flex items-center gap-3 px-4 py-3.5">
+        <div className="flex items-center gap-3 px-4 py-3 bg-[var(--agri-brand-bg)]/30">
           <Avatar
             src={currentAccount.avatar}
-            name={currentAccount.displayName}
-            size="sm"
+            name={currentAccount.email}
+            size="xs"
           />
           <div className="min-w-0 flex-1">
             <span className="block text-sm font-semibold text-[var(--agri-text)] truncate">
-              {currentAccount.displayName || currentAccount.email}
-            </span>
-            <span className="block text-xs text-[var(--agri-text-muted)] truncate">
               {currentAccount.email}
             </span>
+            <AccountMetadata account={currentAccount} t={t} />
           </div>
-          <RoleBadge role={currentAccount.role} />
-          {currentAccount.hasPasskey && (
-            <span className="rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
-              <i className="ri-key-2-line mr-0.5" />
-              {t("settings.passkey")}
-            </span>
-          )}
-          <span className="rounded-full bg-[var(--agri-brand-bg)] px-2.5 py-0.5 text-xs font-bold text-[var(--agri-brand)]">
+          <span className="shrink-0 rounded-full bg-[var(--agri-brand)] px-2 py-0.5 text-[10px] font-bold text-white">
             {t("settings.currentAccount")}
           </span>
         </div>
@@ -125,50 +132,36 @@ export default function AccountSwitcher() {
             key={account.uid}
             className="border-t border-[var(--agri-border-subtle)]"
           >
-            <div className="flex items-center gap-3 px-4 py-3.5">
+            <button
+              type="button"
+              onClick={() => handleRowClick(account)}
+              disabled={switching}
+              className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-[var(--agri-hover)] disabled:opacity-50 cursor-pointer"
+            >
               <Avatar
                 src={account.avatar}
-                name={account.displayName}
-                size="sm"
+                name={account.email}
+                size="xs"
               />
               <div className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-[var(--agri-text)] truncate">
-                  {account.displayName || account.email}
-                </span>
-                <span className="block text-xs text-[var(--agri-text-muted)] truncate flex items-center gap-1">
-                  <i className={`${getProviderIcon(account.provider)} text-xs`} />
                   {account.email}
-                  {account.hasPasskey && (
-                    <i className="ri-key-2-line text-green-600 ml-1" />
-                  )}
                 </span>
+                <AccountMetadata account={account} t={t} />
               </div>
-              <RoleBadge role={account.role} />
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setConfirmTarget(account)}
+                  onClick={(e) => handleRemove(e, account)}
                   disabled={switching}
-                  className="rounded-xl bg-[var(--agri-brand)] px-3 py-1.5 text-xs font-bold text-white transition hover:opacity-90 cursor-pointer disabled:opacity-50"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
+                  aria-label={t("settings.removeAccount") || "Remove account"}
                 >
-                  {switching ? (
-                    <i className="ri-loader-4-line animate-spin" />
-                  ) : account.hasPasskey ? (
-                    t("settings.switchWithPasskey")
-                  ) : (
-                    t("settings.switchAccount")
-                  )}
+                  <i className="ri-close-line text-sm" />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handleRemove(account)}
-                  disabled={switching}
-                  className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
-                >
-                  <i className="ri-delete-bin-line text-sm" />
-                </button>
+                <i className="ri-arrow-right-s-line text-[var(--agri-text-muted)] text-sm" />
               </div>
-            </div>
+            </button>
           </div>
         ))}
 
@@ -178,12 +171,12 @@ export default function AccountSwitcher() {
             type="button"
             onClick={handleAddAccount}
             disabled={switching}
-            className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-[var(--agri-hover)] disabled:opacity-50"
+            className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-[var(--agri-hover)] disabled:opacity-50 cursor-pointer"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-brand-bg)] text-[var(--agri-brand)]">
-              <i className="ri-add-line text-lg" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--agri-brand-bg)] text-[var(--agri-brand)]">
+              <i className="ri-add-line text-sm" />
             </div>
-            <span className="text-sm font-semibold text-[var(--agri-text)]">
+            <span className="text-sm font-medium text-[var(--agri-text-secondary)]">
               {t("settings.addAccount")}
             </span>
           </button>

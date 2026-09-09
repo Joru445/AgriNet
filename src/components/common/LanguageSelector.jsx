@@ -1,6 +1,6 @@
 import { useLanguage } from "../../context/LanguageContext";
 
-export default function LanguageSelector() {
+export default function LanguageSelector({ compact = false }) {
   const { lang, setLang, t } = useLanguage();
 
   const options = [
@@ -18,6 +18,45 @@ export default function LanguageSelector() {
     },
   ];
 
+  if (compact) {
+    return (
+      <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
+            <i className="ri-translate-2 text-base" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-[var(--agri-text)]">
+              {t("settings.language")}
+            </p>
+            <p className="text-xs text-[var(--agri-text-muted)]">
+              {t("settings.languageDescription")}
+            </p>
+          </div>
+        </div>
+        <div className="flex shrink-0 rounded-lg border border-[var(--agri-border)] bg-[var(--agri-hover)] p-0.5">
+          {options.map((opt) => {
+            const active = lang === opt.code;
+            return (
+              <button
+                key={opt.code}
+                type="button"
+                onClick={() => setLang(opt.code)}
+                className={`flex h-8 items-center justify-center rounded-md px-3 text-xs font-bold transition-all cursor-pointer ${
+                  active
+                    ? "bg-[var(--agri-brand)] text-white shadow-sm"
+                    : "text-[var(--agri-text-muted)] hover:text-[var(--agri-text)]"
+                }`}
+              >
+                {opt.abbreviation}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4 shadow-sm">
       <div className="flex items-center gap-3 mb-3">
@@ -33,7 +72,6 @@ export default function LanguageSelector() {
           </p>
         </div>
       </div>
-
       <div className="grid grid-cols-2 gap-2">
         {options.map((opt) => {
           const active = lang === opt.code;

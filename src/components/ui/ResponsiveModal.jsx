@@ -118,7 +118,7 @@ export default function ResponsiveModal({
             </div>
           )}
 
-          <div className="max-h-[80vh] overflow-y-auto">{children}</div>
+          <div className="max-h-[80vh] overflow-y-auto p-2 px-4">{children}</div>
         </div>
       </div>
 

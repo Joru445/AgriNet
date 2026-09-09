@@ -34,6 +34,7 @@ export default {
     error: "May Mali",
     locationFallback: "Iyong Lugar",
     linkCopied: "Na-copy na ang link",
+    retry: "Subukan Muli",
   },
 
   location: {
@@ -1384,6 +1385,7 @@ export default {
     type: "Uri",
     reportStatus: "Status",
     dateTime: "Petsa at Oras",
+    actions: "Mga Aksyon",
     noReportsFound: "Walang nahanap na ulat",
     noReportsHint: "Subukan baguhin ang search o mga filter.",
     viewReportDetails: "Tingnan ang Buong Detalye ng Ulat",
@@ -1542,6 +1544,8 @@ export default {
   settings: {
     title: "Mga Setting",
     subtitle: "Pamahalaan ang mga preference ng iyong app.",
+    security: "Seguridad",
+    preferences: "Mga Kagustuhan",
     myProfile: "Aking Profile",
     appearance: "Appearance",
     appearanceDesc: "Piliin ang gustong tema",

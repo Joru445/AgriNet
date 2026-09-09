@@ -112,7 +112,7 @@ export default function AuthHandlerPage({ method }) {
         scheduleClose();
       }
     }
-  }, [isFacebook, method, report, scheduleClose]);
+  }, [method, report, scheduleClose]);
 
   useEffect(() => {
     // If this tab is closed without reporting an outcome (e.g. the popup was

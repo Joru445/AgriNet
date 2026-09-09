@@ -168,7 +168,7 @@ export default function useInquiryFlow({
         const inquiryPayload = {
           conversationId,
           senderId: profile.uid,
-          receiverId: activeUser.uid,
+          receiverId: activeUser?.uid || activeConversation?.otherUser?.uid,
           text: inquiryText || "",
           type: "product_inquiry",
           productId: inquiryProduct.id,

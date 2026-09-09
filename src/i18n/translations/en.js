@@ -34,6 +34,7 @@ export default {
     error: "Error",
     locationFallback: "Your Area",
     linkCopied: "Link copied to clipboard",
+    retry: "Try Again",
   },
 
   location: {
@@ -1362,6 +1363,7 @@ export default {
     type: "Type",
     reportStatus: "Status",
     dateTime: "Date & Time",
+    actions: "Actions",
     noReportsFound: "No reports found",
     noReportsHint: "Try changing your search or filters.",
     viewReportDetails: "View Full Report Details",
@@ -1516,6 +1518,8 @@ export default {
   settings: {
     title: "Settings",
     subtitle: "Manage your app preferences.",
+    security: "Security",
+    preferences: "Preferences",
     myProfile: "My Profile",
     appearance: "Appearance",
     appearanceDesc: "Choose your preferred theme",

@@ -15,6 +15,7 @@ const OnboardingContext = createContext(null);
 // Persisted per authenticated user UID so the tour only runs once per account,
 // while still allowing a manual "Replay Tutorial" from the profile.
 const DONE_KEY_PREFIX = "agrinet_onboarding_done_v1_";
+const PUSH_PROMPT_KEY_PREFIX = "agrinet_push_prompted_v2_";
 
 // Small delay so the role landing page and its layout have rendered.
 const AUTO_OPEN_DELAY = 700;
@@ -34,6 +35,24 @@ function markTourDone(uid) {
     localStorage.setItem(DONE_KEY_PREFIX + uid, "1");
   } catch {
     // Storage unavailable; tour will simply show again next time.
+  }
+}
+
+function hasPromptedPush(uid) {
+  if (!uid) return true;
+  try {
+    return localStorage.getItem(PUSH_PROMPT_KEY_PREFIX + uid) === "1";
+  } catch {
+    return true;
+  }
+}
+
+function markPushPrompted(uid) {
+  if (!uid) return;
+  try {
+    localStorage.setItem(PUSH_PROMPT_KEY_PREFIX + uid, "1");
+  } catch {
+    // Storage unavailable; prompt will show again next session.
   }
 }
 
@@ -57,6 +76,13 @@ export function OnboardingProvider({ children }) {
   const completeTour = useCallback(() => {
     markTourDone(uid);
     setOpen(false);
+
+    // One-time notification permission prompt on first login.
+    // Called from the Finish button click (user gesture) so Chrome allows it.
+    if (uid && !hasPromptedPush(uid) && typeof Notification !== "undefined" && Notification.permission === "default") {
+      markPushPrompted(uid);
+      Notification.requestPermission().catch(() => {});
+    }
   }, [uid]);
 
   // Auto-open the tour on the user's first signed-in session, but never for

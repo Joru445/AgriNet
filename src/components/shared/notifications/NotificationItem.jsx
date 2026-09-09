@@ -3,6 +3,19 @@ import { useNotificationsContext } from "../../../context/NotificationsContext";
 import { useLanguage } from "../../../context/LanguageContext";
 import { getNotificationTarget } from "../../../utils/getNotificationTarget";
 
+// ============================================================
+// DESIGN: Message notifications are FCM-only (no Firestore document).
+// They do NOT appear in this in-app notification list.
+// Message notifications are displayed as browser push notifications
+// via the FCM service worker (firebase-messaging-sw.js), which shows:
+//   - Avatar (sender profile image via data.senderAvatar)
+//   - Content (message text via payload.title / payload.body)
+//   - Timestamp (handled by browser notification system)
+//
+// Other notification types (inquiry, transaction, review, etc.) ARE
+// persisted to Firestore and appear in this in-app notification list.
+// ============================================================
+
 function formatNotificationTime(createdAt, t) {
   if (!createdAt) return "";
 
@@ -24,7 +37,6 @@ function formatNotificationTime(createdAt, t) {
 
 const notificationIcons = {
   inquiry: "ri-question-answer-line",
-  message: "ri-message-3-line",
   transaction: "ri-shopping-bag-3-line",
   review: "ri-star-line",
   verification: "ri-shield-check-line",

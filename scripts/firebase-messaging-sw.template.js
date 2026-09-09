@@ -45,12 +45,12 @@ self.addEventListener("activate", (event) => {
 
 // Handle background FCM messages
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || payload.data?.title || "AgriNet";
+  const title = payload.data?.title || payload.notification?.title || "AgriNet";
   const options = {
-    body: payload.notification?.body || payload.data?.body || "",
-    icon: "/icon-192x192.png",
+    body: payload.data?.body || payload.notification?.body || "",
+    icon: payload.data?.senderAvatar || "/icon-192x192.png",
     badge: "/icon-192x192.png",
-    image: payload.notification?.image || payload.data?.image || undefined,
+    image: payload.data?.senderAvatar || payload.notification?.image || undefined,
     data: payload.data || {},
     tag: payload.data?.tag || "agrinet-notification",
     renotify: true,
