@@ -58,86 +58,48 @@ export function getPermissionState() {
 /**
  * Register the Firebase Messaging service worker.
  *
- * Firebase needs a ServiceWorkerRegistration to deliver push messages.
- * This registers firebase-messaging-sw.js which handles background delivery.
+ * Firefox/Chrome allow only ONE service worker registration per
+ * (origin, scope). The PWA's Workbox SW occupies scope "/" — if the FCM
+ * SW also registered at scope "/", the later register() call REPLACES the
+ * script in that slot, and push events then go to whichever script owns
+ * the "/" registration (often Workbox, which has no push handler) and are
+ * silently dropped.
  *
- * CRITICAL: On Android Chrome, push events are only delivered to the
- * SERVICE WORKER CONTROLLER — not just any "activated" SW. If Workbox
- * (vite-plugin-pwa) already registered a SW at scope "/" first, the FCM
- * SW may reach "activated" state but never become the controller, so
- * push events are silently dropped. This function waits for the
- * 'controllerchange' event, which fires only after the SW calls
- * self.clients.claim() and the browser promotes it to controller.
+ * To avoid that conflict this registers the FCM SW at its own sub-scope
+ * "/fcm-notifications/". The script lives at the origin root where the
+ * max scope is "/", so any sub-scope prefix is allowed without a
+ * Service-Worker-Allowed header.
+ *
+ * Push events are delivered to the ACTIVE service worker of the
+ * registration that owns the push subscription — NOT to the page
+ * controller. So this only needs to wait for the SW to activate; there is
+ * no need to wait for controllerchange or clients.claim().
  *
  * @param {string} swPath - Path to the FCM service worker file
+ * @param {string} scope - Registration scope (must be within the SW script's max scope)
  * @returns {Promise<ServiceWorkerRegistration|null>}
  */
 export async function registerMessagingSW(
   swPath = "/firebase-messaging-sw.js",
+  scope = "/fcm-notifications/",
 ) {
   if (!("serviceWorker" in navigator)) return null;
 
   try {
     const registration = await navigator.serviceWorker.register(swPath, {
-      scope: "/",
+      scope,
     });
 
-    // Already the controller — nothing to wait for
-    const currentController = navigator.serviceWorker.controller;
-    if (currentController?.scriptURL?.endsWith(swPath)) {
-      console.log("[FCM] Service worker is already the controller");
-      return registration;
+    // If a newer SW version is waiting, invite it to activate immediately.
+    // Safe no-op when there is no waiting/installing worker.
+    const pending = registration.waiting || registration.installing;
+    if (pending && pending.state === "waiting") {
+      pending.postMessage({ type: "SKIP_WAITING" });
     }
 
-    // SW is active but NOT the controller — wait for clients.claim()
-    if (registration.active && !registration.waiting && !registration.installing) {
-      console.log(
-        "[FCM] Service worker is active but not the controller — waiting for claim",
-      );
-
-      await waitForControllerChange();
-      console.log("[FCM] Service worker is now the controller");
-      return registration;
-    }
-
-    // SW is installing or waiting — send SKIP_WAITING, then wait for
-    // both activation AND controller change.
-    const sw = registration.installing || registration.waiting;
-    if (sw) {
-      // Race check: may have activated between register() and here
-      if (sw.state === "activated") {
-        // Activated but may not be controller yet
-        if (!currentController?.scriptURL?.endsWith(swPath)) {
-          await waitForControllerChange();
-        }
-        console.log("[FCM] Service worker activated and is controller");
-        return registration;
-      }
-
-      console.log(
-        "[FCM] Service worker is",
-        sw.state,
-        "- activating and claiming clients",
-      );
-
-      if (registration.waiting) {
-        registration.waiting.postMessage({ type: "SKIP_WAITING" });
-      }
-
-      // Wait for activation
-      await new Promise((resolve) => {
-        sw.addEventListener("statechange", (e) => {
-          if (e.target.state === "activated") {
-            resolve();
-          }
-        });
-      });
-
-      // Wait for the SW to become the controller (via clients.claim())
-      await waitForControllerChange();
-
-      console.log("[FCM] Service worker activated and is controller");
-    }
+    // Just wait for the SW to become active — delivery does not depend
+    // on page-controller state.
+    await waitForActive(registration);
 
     return registration;
   } catch (error) {
@@ -147,44 +109,50 @@ export async function registerMessagingSW(
 }
 
 /**
- * Wait for the 'controllerchange' event on navigator.serviceWorker.
+ * Wait for the registration's service worker to reach the "activated"
+ * state. Resolves immediately if an active worker already exists.
  *
- * This event fires when a Service Worker calls self.clients.claim()
- * and the browser promotes it to the active controller. Without this,
- * push events are routed to the old controller (Workbox) and the FCM
- * SW never receives them.
- *
- * Includes a 3s safety timeout: if controllerchange never fires
- * (e.g., another SW already claimed), we resolve anyway so the
- * caller doesn't hang. The caller will proceed with getToken()
- * which may or may not work depending on whether the FCM SW
- * actually received the push subscription.
+ * @param {ServiceWorkerRegistration} registration
+ * @param {number} timeoutMs
+ * @returns {Promise<void>}
  */
-function waitForControllerChange() {
+function waitForActive(registration, timeoutMs = 5000) {
   return new Promise((resolve) => {
-    // If the FCM SW is already the controller, resolve immediately
-    if (navigator.serviceWorker.controller?.scriptURL?.includes("firebase-messaging")) {
+    if (registration.active) {
       resolve();
       return;
     }
 
-    const onChange = () => {
-      navigator.serviceWorker.removeEventListener("controllerchange", onChange);
-      clearTimeout(timeoutId);
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
       resolve();
     };
 
-    navigator.serviceWorker.addEventListener("controllerchange", onChange);
+    const onStateChange = () => {
+      if (registration.active) finish();
+    };
 
-    // Safety timeout — don't block getToken() forever if claim() fails
-    const timeoutId = setTimeout(() => {
-      navigator.serviceWorker.removeEventListener("controllerchange", onChange);
+    const onUpdateFound = () => {
+      registration.installing?.addEventListener("statechange", onStateChange);
+      registration.waiting?.addEventListener("statechange", onStateChange);
+    };
+
+    registration.installing?.addEventListener("statechange", onStateChange);
+    registration.waiting?.addEventListener("statechange", onStateChange);
+    registration.addEventListener("updatefound", onUpdateFound);
+
+    const timer = setTimeout(() => {
+      registration.removeEventListener("updatefound", onUpdateFound);
       console.warn(
-        "[FCM] controllerchange did not fire within 3s — " +
-        "the FCM SW may not be the controller. Push delivery is not guaranteed."
+        "[FCM] Service worker did not become active within",
+        timeoutMs,
+        "ms",
       );
-      resolve();
-    }, 3000);
+      finish();
+    }, timeoutMs);
   });
 }
 
@@ -193,8 +161,9 @@ function waitForControllerChange() {
  *
  * This will:
  * 1. Register the FCM service worker (if not already registered)
- * 2. Request notification permission (only if not already granted/denied)
- * 3. Get an FCM token from Firebase
+ * 2. Ensure notification permission is granted
+ * 3. Get an FCM token from Firebase (bounded by a 15s timeout so the
+ *    toggle never hangs on a slow service worker or network)
  *
  * Does NOT auto-prompt for permission — the caller must ensure
  * this is invoked from a user gesture when permission is "default".
@@ -224,10 +193,20 @@ export async function requestFCMToken(registration) {
     }
     if (!registration) return null;
 
-    const token = await getToken(messaging, {
-      vapidKey,
-      serviceWorkerRegistration: registration,
-    });
+    const token = await Promise.race([
+      getToken(messaging, {
+        vapidKey,
+        serviceWorkerRegistration: registration,
+      }),
+      new Promise((_, reject) =>
+        setTimeout(() => {
+          const err = new Error("getToken timed out");
+          err.code = "messaging/get-token-timeout";
+          err.name = "FirebaseError";
+          reject(err);
+        }, 15000),
+      ),
+    ]);
 
     return token;
   } catch (error) {

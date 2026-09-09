@@ -5,6 +5,8 @@ export const CATEGORY_ICONS = {
   Livestock: "ri-heart-line",
   Herbs: "ri-medicine-bottle-line",
   "Root Crops": "ri-earth-line",
+  Poultry: "ri-egg-line",
+  Meat: "ri-restaurant-line",
   Seafood: "ri-water-flash-line",
   Others: "ri-shopping-basket-2-line",
 };

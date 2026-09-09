@@ -110,6 +110,8 @@ export default {
     disable: "I-disable",
     enable: "I-enable",
     enabling: "Nag-e-enable...",
+    checking: "Sine-check ang status ng push notification...",
+    disabling: "Ina-disable ang push notification...",
     description: "Maka-receive ng notification tungkol sa bagong mensahe at transaksyon",
     deviceDescription: "Mga push notification sa device na ito",
     enableSuccess: "Naka-enable na ang push notification.",
@@ -472,6 +474,7 @@ export default {
   product: {
     inStock: "May Stock",
     outOfStock: "Walang Stock",
+    notAvailable: "Hindi Available",
     stockLeft: "{count} na lang ang natitira",
     stockCount: "{count} na stock",
     noReviews: "Walang review",
@@ -769,6 +772,8 @@ export default {
     livestock: "Mga Hayop",
     herbs: "Mga Halamang Gamot",
     rootCrops: "Root Crops",
+    poultry: "Poultry",
+    meat: "Karne",
     seafood: "Mga Pagkaing-Dagat",
     others: "Iba pa",
   },
@@ -1090,6 +1095,7 @@ export default {
       livestock: "Mga Hayop",
       poultry: "Mga Manok",
       seafood: "Mga Pagkaing Dagat",
+      meat: "Karne",
       others: "Iba pa",
     },
     units: {
@@ -1162,6 +1168,8 @@ export default {
     poultry: "Mga Manok",
     herbs: "Mga Halamang Gamot",
     rootCrops: "Mga Ugat na Pananim",
+    meat: "Karne",
+    seafood: "Mga Pagkaing-Dagat",
   },
 
   nearby: {

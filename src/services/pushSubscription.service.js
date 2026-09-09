@@ -217,3 +217,39 @@ export function clearOptIn(uid) {
     // Storage unavailable.
   }
 }
+
+// ============================================================
+// EXPLICIT CHOICE PERSISTENCE
+// ============================================================
+
+const PUSH_CHOICE_KEY_PREFIX = "agrinet_push_choice_";
+
+/**
+ * Whether the user has made an explicit (yes or no) decision about push
+ * notifications. Set on toggle enable, toggle disable, and (real) opt-out.
+ * Stored in localStorage keyed by UID.
+ */
+export function hasMadePushChoice(uid) {
+  if (!uid) return false;
+  try {
+    return localStorage.getItem(PUSH_CHOICE_KEY_PREFIX + uid) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Record that the user made an explicit choice about push notifications.
+ *
+ * This is the flag that stops auto-adoption: an OFF that a user actively
+ * chose (even if the browser level cleanup partially failed) must NOT be
+ * resurrected to ON on the next app load.
+ */
+export function markPushChoice(uid) {
+  if (!uid) return;
+  try {
+    localStorage.setItem(PUSH_CHOICE_KEY_PREFIX + uid, "1");
+  } catch {
+    // Storage unavailable; choice won't persist.
+  }
+}

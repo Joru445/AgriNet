@@ -6,6 +6,7 @@ export const CATEGORIES = [
   "Herbs",
   "Livestock",
   "Poultry",
+  "Meat",
   "Seafood",
   "Others",
 ];

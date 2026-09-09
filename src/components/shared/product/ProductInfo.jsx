@@ -4,6 +4,7 @@ import {
   hasProductDiscount,
 } from "../../../utils/price";
 import { useLiveRemainingTime } from "../../../utils/productExpiration";
+import { getProductStatus, PRODUCT_STATUS } from "../../../utils/productStatus";
 import { useLanguage } from "../../../context/LanguageContext";
 import { showToast } from "../../../utils/toast";
 
@@ -14,6 +15,8 @@ const CATEGORY_ICONS = {
   Livestock: "ri-heart-line",
   Herbs: "ri-medicine-bottle-line",
   "Root Crops": "ri-earth-line",
+  Poultry: "ri-egg-line",
+  Meat: "ri-restaurant-line",
   Seafood: "ri-water-flash-line",
   Others: "ri-shopping-basket-2-line",
 };
@@ -34,7 +37,12 @@ export default function ProductInfo({
     : 0;
 
   const { remainingTime, isExpired } = useLiveRemainingTime(product);
-  const isAvailable = product.available !== false && !isExpired;
+  const productStatus = isExpired
+    ? PRODUCT_STATUS.NO_STOCK
+    : getProductStatus(product);
+  const isNotAvailable = productStatus === PRODUCT_STATUS.NOT_AVAILABLE;
+  const isNoStock = productStatus === PRODUCT_STATUS.NO_STOCK;
+  const isInStock = productStatus === PRODUCT_STATUS.IN_STOCK;
   const isPreorder = product.sellingMode === "preorder";
   const priceFormatted = getFormatPrice(priceNum);
   const originalPriceFormatted = getFormatPrice(originalPriceNum);
@@ -121,21 +129,25 @@ export default function ProductInfo({
         {!isPreorder && (
           <span
             className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold border ${
-              isAvailable
+              isInStock
                 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
                 : "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20"
             }`}
           >
             <span
               className={`h-1.5 w-1.5 rounded-full ${
-                isAvailable ? "bg-emerald-600" : "bg-red-600"
+                isInStock ? "bg-emerald-600" : "bg-red-600"
               }`}
             />
-            {isAvailable ? t("product.inStock") : t("product.outOfStock")}
+            {isNotAvailable
+              ? t("product.notAvailable")
+              : isNoStock
+                ? t("product.outOfStock")
+                : t("product.inStock")}
           </span>
         )}
 
-        {remainingTime && isAvailable && (
+        {remainingTime && isInStock && (
           <span className="inline-flex items-center rounded-full bg-[var(--agri-hover)] border border-[var(--agri-border)] px-2 py-0.5 text-xs font-bold text-[var(--agri-text-secondary)]">
             <span>{remainingTime}</span>
           </span>

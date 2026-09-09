@@ -13,6 +13,7 @@ const CATEGORY_LABEL_KEY = {
   livestock: "products.categories.livestock",
   poultry: "products.categories.poultry",
   seafood: "products.categories.seafood",
+  meat: "products.categories.meat",
   other: "products.categories.others",
 };
 

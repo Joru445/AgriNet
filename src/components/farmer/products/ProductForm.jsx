@@ -12,6 +12,7 @@ const categories = [
   "Herbs",
   "Livestock",
   "Poultry",
+  "Meat",
   "Seafood",
   "Others",
 ];

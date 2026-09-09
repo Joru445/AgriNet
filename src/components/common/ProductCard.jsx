@@ -12,6 +12,12 @@ import {
 } from "../../utils/price";
 
 import { useLiveRemainingTime } from "../../utils/productExpiration";
+import {
+  getProductStock,
+  getProductStatus,
+  PRODUCT_STATUS,
+  LOW_STOCK_THRESHOLD,
+} from "../../utils/productStatus";
 
 import productPlaceholder from "../../assets/img/productPlaceholder.png";
 import { formatTimestamp } from "../../utils/date";
@@ -36,10 +42,13 @@ export default function ProductCard({
       : rawImage;
 
   const { remainingTime, isExpired } = useLiveRemainingTime(product);
-  const stockNum = Number(product.stock ?? 0);
-  const isPreorder = product.sellingMode === "preorder";
-  const isAvailable = product.available !== false && (isPreorder || stockNum > 0) && !isExpired;
-  const isLowStock = isAvailable && stockNum <= 5 && !isPreorder;
+  const stockNum = getProductStock(product);
+  const productStatus = getProductStatus(product);
+  const isPreorder = productStatus === PRODUCT_STATUS.PREORDER;
+  const isNotAvailable = productStatus === PRODUCT_STATUS.NOT_AVAILABLE;
+  const isNoStock = productStatus === PRODUCT_STATUS.NO_STOCK;
+  const isAvailable = productStatus === PRODUCT_STATUS.IN_STOCK;
+  const isLowStock = isAvailable && stockNum <= LOW_STOCK_THRESHOLD;
 
   // Auto delete / vanish completely from consumer view once duration is done
   if (isExpired) {
@@ -92,7 +101,11 @@ export default function ProductCard({
           <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-amber-500 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
             {t("product.preOrder")}
           </div>
-        ) : !isAvailable ? (
+        ) : isNotAvailable ? (
+          <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
+            {t("product.notAvailable")}
+          </div>
+        ) : isNoStock ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
             {t("product.outOfStock")}
           </div>
@@ -107,7 +120,7 @@ export default function ProductCard({
         )}
 
         {/* Duration / Auto-Disappear Badge - Bottom Left of Image */}
-        {remainingTime && isAvailable && (
+        {remainingTime && (isAvailable || isPreorder) && (
           <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 z-10 flex items-center rounded-full bg-black/70 px-2 py-0.5 text-[9px] sm:text-[11px] font-bold text-white shadow-sm backdrop-blur-xs border border-white/20">
             <span>{remainingTime}</span>
           </div>

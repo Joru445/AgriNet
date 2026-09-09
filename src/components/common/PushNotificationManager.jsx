@@ -25,13 +25,13 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
     supported,
     permission,
     subscribed,
-    loading,
+    initializing,
+    busy,
     requestPermission,
     unsubscribe,
   } = usePushNotifications();
 
   const { t } = useLanguage();
-  const [requesting, setRequesting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null); // "success" | "error"
   const [lastAction, setLastAction] = useState(null); // "enable" | "disable"
   const statusTimer = useRef(null);
@@ -51,7 +51,7 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
   }, []);
 
   const handleToggle = async () => {
-    setRequesting(true);
+    if (busy) return;
     setStatusMessage(null);
 
     try {
@@ -67,8 +67,6 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
     } catch {
       setStatusMessage("error");
     } finally {
-      setRequesting(false);
-
       if (statusTimer.current) clearTimeout(statusTimer.current);
       statusTimer.current = setTimeout(() => {
         setStatusMessage(null);
@@ -77,7 +75,26 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
     }
   };
 
-  if (loading) return null;
+  // Initial state detection in progress — never render a wrong OFF here.
+  if (initializing) {
+    return (
+      <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
+            <i className="ri-loader-4-line animate-spin text-lg" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
+              {t("pushNotifications.title")}
+            </p>
+            <p className="text-xs text-[var(--agri-text-muted)]">
+              {t("pushNotifications.checking")}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Not supported in this browser
   if (!supported) {
@@ -155,11 +172,11 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
           type="button"
           role="switch"
           aria-checked={subscribed}
-          disabled={requesting}
+          disabled={busy}
           onClick={handleToggle}
           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
             subscribed ? "bg-[var(--agri-brand)]" : "bg-[var(--agri-border)]"
-          } ${requesting ? "opacity-50" : ""}`}
+          } ${busy ? "opacity-50" : ""}`}
         >
           <span
             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -168,6 +185,14 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
           />
         </button>
       </div>
+
+      {/* Busy indicator while disabling */}
+      {busy && lastAction === "disable" && (
+        <div className="flex items-center gap-2 rounded-lg bg-[var(--agri-hover)] border border-[var(--agri-border)] px-3 py-2 text-xs text-[var(--agri-text-muted)] anim-fade-in">
+          <i className="ri-loader-4-line animate-spin text-sm" />
+          <span>{t("pushNotifications.disabling")}</span>
+        </div>
+      )}
 
       {/* Toggle feedback */}
       {statusMessage === "success" && (

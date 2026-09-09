@@ -4,6 +4,7 @@ import { apiGetMarketplaceProducts } from "../services/product.service";
 import useUserLocation from "./useUserLocation";
 import { getDistanceKm } from "../utils/distance";
 import { isProductExpired } from "../utils/productExpiration";
+import { isProductBuyable } from "../utils/productStatus";
 import * as pageCache from "../utils/pageCache";
 
 const HOME_PRODUCT_LIMIT = 12;
@@ -88,10 +89,8 @@ export default function useHomeProducts() {
    */
   const availableProducts = useMemo(() => {
     return marketplaceProducts.filter((product) => {
-      const stock = Number(product.stock ?? 0);
-
       return (
-        product.available !== false && stock > 0 && !isProductExpired(product)
+        isProductBuyable(product) && !isProductExpired(product)
       );
     });
   }, [marketplaceProducts]);

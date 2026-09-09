@@ -9,6 +9,12 @@
 //
 // Firebase config source: environment variables (VITE_FIREBASE_*)
 // or .env.local for local development.
+//
+// REGISTRATION SCOPE: this SW MUST be registered at its own sub-scope
+// ("/fcm-notifications/", see src/firebase/messaging.js) so it never
+// shares the "/" registration slot held by the Workbox PWA SW. Push
+// events are delivered to the ACTIVE worker of the registration that
+// owns the push subscription — not to the page controller.
 // ============================================================
 
 importScripts(
@@ -25,8 +31,16 @@ const firebaseConfig = {
   appId: "__FIREBASE_APP_ID__",
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-const messaging = firebase.messaging();
+let messaging = null;
+
+// A CDN load/init failure must NOT break the SW install or the
+// notificationclick handler below.
+try {
+  const app = firebase.initializeApp(firebaseConfig);
+  messaging = firebase.messaging();
+} catch (err) {
+  console.error("[FCM SW] Firebase initialization failed:", err);
+}
 
 // Allow the page to signal this SW to skip the waiting phase.
 // This is required on Android Chrome where push events are only
@@ -37,40 +51,37 @@ self.addEventListener("message", (event) => {
   }
 });
 
-// When activated, force any existing controlling SW (e.g. Workbox) to
-// skip waiting, then claim all open clients.  This ensures push events
-// are routed here instead of a competing SW that may lack a push handler.
-// Without this, a previously-cached Workbox SW can remain the controller
-// and silently drop FCM push events.
+// When activated, force this SW to active and claim open clients. At its
+// dedicated sub-scope this never interferes with the Workbox "/" SW.
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
-      // Tell any waiting SW (including ourselves) to activate immediately.
-      // If there is no other SW waiting, this is a harmless no-op.
       self.skipWaiting();
-
-      // Claim all open clients so push events route to this SW.
       await self.clients.claim();
     })(),
   );
 });
 
 // Handle background FCM messages
-messaging.onBackgroundMessage((payload) => {
-  const title = payload.data?.title || payload.notification?.title || "AgriNet";
-  const options = {
-    body: payload.data?.body || payload.notification?.body || "",
-    icon: payload.data?.senderAvatar || "/icon-192x192.png",
-    badge: "/icon-192x192.png",
-    image: payload.data?.senderAvatar || payload.notification?.image || undefined,
-    data: payload.data || {},
-    tag: payload.data?.tag || "agrinet-notification",
-    renotify: true,
-    vibrate: [100, 50, 100],
-  };
+if (messaging) {
+  messaging.onBackgroundMessage((payload) => {
+    const title = payload.data?.title || payload.notification?.title || "AgriNet";
+    const options = {
+      body: payload.data?.body || payload.notification?.body || "",
+      icon: payload.data?.senderAvatar || "/icon-192x192.png",
+      badge: "/icon-192x192.png",
+      image: payload.data?.senderAvatar || payload.notification?.image || undefined,
+      data: payload.data || {},
+      tag: payload.data?.tag || "agrinet-notification",
+      renotify: true,
+      vibrate: [100, 50, 100],
+    };
 
-  self.registration.showNotification(title, options);
-});
+    console.log("[FCM SW] background push:", { title, tag: options.tag });
+
+    self.registration.showNotification(title, options);
+  });
+}
 
 // Handle notification click — deep-link into the app
 self.addEventListener("notificationclick", (event) => {

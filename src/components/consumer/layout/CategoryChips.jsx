@@ -8,8 +8,11 @@ import fruits from "../../../assets/categories/fruits.webp";
 import grains from "../../../assets/categories/grains.webp";
 import livestocks from "../../../assets/categories/livestocks.webp";
 import poultry from "../../../assets/categories/poultry.webp";
+import meats from "../../../assets/categories/meats.webp";
+import seafoods from "../../../assets/categories/seafoods.webp";
 import herbs from "../../../assets/categories/herbs.webp";
 import rootCrops from "../../../assets/categories/root-crops.webp";
+import placeholder from "../../../assets/categories/placeholder.svg";
 
 const categories = [
   {
@@ -41,6 +44,16 @@ const categories = [
     id: "Poultry",
     labelKey: "categories.poultry",
     image: poultry,
+  },
+  {
+    id: "Meat",
+    labelKey: "categories.meat",
+    image: meats,
+  },
+  {
+    id: "Seafood",
+    labelKey: "categories.seafood",
+    image: seafoods,
   },
   {
     id: "Herbs",

@@ -110,6 +110,8 @@ export default {
     disable: "Disable",
     enable: "Enable",
     enabling: "Enabling...",
+    checking: "Checking push notification status...",
+    disabling: "Disabling push notifications...",
     description: "Get notified about new messages and transactions",
     deviceDescription: "Push notifications on this device",
     enableSuccess: "Push notifications enabled.",
@@ -471,7 +473,8 @@ export default {
 
   product: {
     inStock: "In Stock",
-    outOfStock: "Out of Stock",
+    outOfStock: "No Stock",
+    notAvailable: "Not Available",
     stockLeft: "{count} left",
     stockCount: "{count} stocks",
     noReviews: "No reviews",
@@ -759,6 +762,8 @@ export default {
     livestock: "Livestock",
     herbs: "Herbs",
     rootCrops: "Root Crops",
+    poultry: "Poultry",
+    meat: "Meat",
     seafood: "Seafood",
     others: "Others",
   },
@@ -1075,6 +1080,7 @@ export default {
       livestock: "Livestock",
       poultry: "Poultry",
       seafood: "Seafood",
+      meat: "Meat",
       others: "Others",
     },
     units: {
@@ -1147,6 +1153,8 @@ export default {
     poultry: "Poultry",
     herbs: "Herbs",
     rootCrops: "Root Crops",
+    meat: "Meat",
+    seafood: "Seafood",
   },
 
   nearby: {

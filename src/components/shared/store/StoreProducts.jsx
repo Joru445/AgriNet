@@ -17,6 +17,8 @@ export default function StoreProducts({ farmer, products = [] }) {
     { id: "Livestock", label: t("storeProfile.livestock"), icon: "ri-heart-pulse-line" },
     { id: "Herbs", label: t("storeProfile.herbs"), icon: "ri-medicine-bottle-line" },
     { id: "Root Crops", label: t("storeProfile.rootCrops"), icon: "ri-earth-line" },
+    { id: "Poultry", label: t("storeProfile.poultry"), icon: "ri-egg-line" },
+    { id: "Meat", label: t("storeProfile.meat"), icon: "ri-restaurant-line" },
     { id: "Seafood", label: t("storeProfile.seafood"), icon: "ri-water-flash-line" },
     { id: "Others", label: t("storeProfile.others"), icon: "ri-shopping-basket-2-line" },
   ];
