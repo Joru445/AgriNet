@@ -1,10 +1,14 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import Avatar from "../../common/Avatar";
+import ImageViewerModal from "../../common/ImageViewerModal";
+import useProfileViewer from "../../../hooks/useProfileViewer";
 
 export default function NearbyFarmerCard({ farmer }) {
   const { t } = useLanguage();
+  const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
   return (
+    <>
     <div className="group flex flex-col justify-between h-full rounded-2xl border border-[var(--agri-border)]/90 bg-[var(--agri-card)] p-3.5 sm:p-4 shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5">
       <div>
         {/* Top Header: Avatar + Farmer Info */}
@@ -15,6 +19,7 @@ export default function NearbyFarmerCard({ farmer }) {
               name={farmer.fullname}
               size="md"
               className="w-11 h-11 sm:w-12 sm:h-12 ring-2 ring-[#D8F3DC]"
+              onClick={handleAvatarClick(farmer)}
             />
             {(farmer.verificationStatus === "approved" || farmer.verified) && (
               <span
@@ -94,5 +99,12 @@ export default function NearbyFarmerCard({ farmer }) {
         </Link>
       </div>
     </div>
+    <ImageViewerModal
+      isOpen={Boolean(lightbox)}
+      src={lightbox?.src}
+      title={lightbox?.title}
+      onClose={closeLightbox}
+    />
+    </>
   );
 }

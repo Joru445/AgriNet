@@ -1,9 +1,12 @@
 import productPlaceholder from "../../../assets/img/productPlaceholder.png";
 import Avatar from "../../common/Avatar";
+import ImageViewerModal from "../../common/ImageViewerModal";
 import { useLanguage } from "../../../context/LanguageContext";
+import useProfileViewer from "../../../hooks/useProfileViewer";
 
 export default function TransactionSummary({ inquiry }) {
   const { t } = useLanguage();
+  const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
 
   if (!inquiry) {
     return null;
@@ -16,6 +19,7 @@ export default function TransactionSummary({ inquiry }) {
   const productImage = getImageUrl(product.imageUrl) || productPlaceholder;
 
   return (
+    <>
     <section className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-5 sm:p-6 shadow-md">
       <div className="mb-4">
         <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)] border border-emerald-500/20">
@@ -70,7 +74,7 @@ export default function TransactionSummary({ inquiry }) {
       </div>
 
       <div className="mt-4 flex items-center gap-3 border-t border-[var(--agri-border-subtle)] pt-4">
-        <Avatar src={farmer.profilePicture} name={farmer.fullname} />
+        <Avatar src={farmer.profilePicture} name={farmer.fullname} onClick={handleAvatarClick(farmer)} />
 
         <div className="min-w-0">
           <p className="text-xs font-semibold text-[var(--agri-text-muted)]">{t("transactionReview.farmer")}</p>
@@ -92,6 +96,13 @@ export default function TransactionSummary({ inquiry }) {
         </div>
       </div>
     </section>
+    <ImageViewerModal
+      isOpen={Boolean(lightbox)}
+      src={lightbox?.src}
+      title={lightbox?.title}
+      onClose={closeLightbox}
+    />
+    </>
   );
 }
 

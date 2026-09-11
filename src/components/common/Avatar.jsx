@@ -10,7 +10,7 @@ const SIZE_MAP = {
   xl: { container: "h-28 w-28 text-3xl", px: 112 },
 };
 
-export default function Avatar({ src, name, size = "md", className = "" }) {
+export default function Avatar({ src, name, size = "md", className = "", onClick }) {
   const [imgError, setImgError] = useState(false);
   const { container: sizeClass, px } = SIZE_MAP[size] || SIZE_MAP.md;
 
@@ -18,6 +18,16 @@ export default function Avatar({ src, name, size = "md", className = "" }) {
   const imageSrc = showImage && isCloudinaryUrl(src)
     ? applyTransform(src, AVATAR_MD_TF)
     : src;
+
+  const clickAttrs = onClick
+    ? {
+        onClick: (e) => {
+          e.stopPropagation();
+          onClick(e);
+        },
+        className: `cursor-pointer ${className}`,
+      }
+    : { className };
 
   if (showImage) {
     return (
@@ -29,7 +39,8 @@ export default function Avatar({ src, name, size = "md", className = "" }) {
         loading="lazy"
         decoding="async"
         onError={() => setImgError(true)}
-        className={`${sizeClass} shrink-0 rounded-full object-cover object-top ${className}`}
+        className={`${sizeClass} shrink-0 rounded-full object-cover object-top ${clickAttrs.className}`}
+        {...(onClick ? { onClick: clickAttrs.onClick } : {})}
       />
     );
   }
@@ -42,9 +53,10 @@ export default function Avatar({ src, name, size = "md", className = "" }) {
         bg-[#D8F3DC] dark:bg-(--agri-brand-bg)
         font-semibold text-[#2D6A4F] dark:text-(--agri-brand)
         ${sizeClass}
-        ${className}
+        ${clickAttrs.className}
       `}
       aria-label={name || "User"}
+      {...(onClick ? { onClick: clickAttrs.onClick } : {})}
     >
       {getInitials(name)}
     </div>

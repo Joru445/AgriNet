@@ -1637,6 +1637,8 @@ export default {
     signOut: "Sign Out",
     backHome: "Back to Home",
     continue: "Continue",
+    signedInExisting:
+      "You already have an AgriNet account. You are now signed in.",
 
     login: {
       welcomeBack: "Welcome Back!",
@@ -1654,6 +1656,7 @@ export default {
       backToSaved: "Back to saved accounts",
       signInAs: "Sign in as",
       forgotPassword: "Forgot password?",
+      savePassword: "Save password",
       signIn: "Sign In",
       signingIn: "Signing In...",
       noAccount: "Don't have an account?",
@@ -1777,6 +1780,8 @@ export default {
       invalidCredentials: "Invalid email or password.",
       tooManyAttempts: "Too many login attempts. Please try again later.",
       signInFailed: "Unable to sign in. Please try again.",
+      socialCheckFailed:
+        "Unable to verify your account. Please try again.",
       passkeyFailed: "Passkey authentication failed. Please try again.",
       passkeyCancelled: "Passkey authentication was cancelled.",
       passkeyNotFound: "No passkey found for this account.",

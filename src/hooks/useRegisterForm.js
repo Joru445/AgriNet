@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 
 import { auth } from "../firebase/auth";
 import { useAuth } from "../context/AuthContext";
@@ -11,6 +11,8 @@ import {
   checkEmailAvailability,
   getCurrentUser,
   getSocialSignInErrorMessage,
+  resolveSocialAccountStatus,
+  SOCIAL_ACCOUNT_STATUS,
 } from "../services/auth.service";
 import {
   validateStep1,
@@ -18,6 +20,7 @@ import {
   validateStep3,
   requiresPasswordStep,
 } from "../utils/registerValidation";
+import { getRoleHome } from "../utils/routes";
 import { showToast } from "../utils/toast";
 import { t } from "../i18n";
 
@@ -90,6 +93,18 @@ export default function useRegisterForm() {
   const [checkedEmail, setCheckedEmail] = useState("");
   const [socialAuthInFlight, setSocialAuthInFlight] = useState(false);
 
+  /**
+   * Explicit control of the social registration resolution state:
+   *   null       -> nothing pending; an authenticated social user without a
+   *                 profile may (re)start resolution (popup success, refresh
+   *                 mid-setup)
+   *   "checking" -> existence check against Firebase is in flight
+   *   "dismissed"-> the user deliberately backed out of an in-progress social
+   *                 registration; do not auto-resume the form until they
+   *                 explicitly pick a provider again
+   */
+  const [socialResolution, setSocialResolution] = useState(null);
+
   const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState(INITIAL_FORM);
@@ -112,13 +127,21 @@ export default function useRegisterForm() {
   }, []);
 
   /**
-   * Resumes social profile setup for an authenticated Firebase user that has
-   * no AgriNet profile yet (e.g. right after the handler tab completed a Google
-   * or Facebook sign-in, or a refresh mid-setup). Social providers register
-   * through Account -> Profile, skipping the Password step entirely.
+   * After a Google/Facebook sign-in resolves (or on a refresh mid-setup),
+   * determines whether the authenticated provider user may continue a NEW
+   * AgriNet registration — and only then shows the prefilled form.
+   *
+   * The provider identity always comes from Firebase (user.providerData) and
+   * is never assumed to be a new registration based on the email alone.
+   *   - existing AgriNet profile      -> existing account, sign in (navigate)
+   *   - email on another auth method  -> conflict, direct to Login
+   *   - cannot verify                 -> abort, never continue registration
+   *   - otherwise                     -> NEW registration, prefill and continue
    */
   useEffect(() => {
-    if (!user || profile || registrationMethod) return;
+    if (!user || profile || registrationMethod || socialResolution !== null) {
+      return;
+    }
 
     const providerId = user.providerData?.[0]?.providerId;
     const method =
@@ -129,15 +152,83 @@ export default function useRegisterForm() {
           : null;
     if (!method) return;
 
-    setRegistrationMethod(method);
-    setStep(1);
-    setProviderData({
-      displayName: user.displayName || user.email?.split("@")[0] || "",
-      email: user.email || "",
-      username: null,
-      photoURL: user.photoURL || "",
-    });
-  }, [user, profile, registrationMethod, setProviderData]);
+    let cancelled = false;
+    setSocialResolution("checking");
+
+    resolveSocialAccountStatus(user, method)
+      .then(async (resolution) => {
+        if (cancelled) return;
+
+        if (resolution.status === SOCIAL_ACCOUNT_STATUS.EXISTS) {
+          // Existing account: the provider sign-in already authenticated them.
+          // Never show the registration form and never duplicate the profile.
+          setSocialResolution("dismissed");
+          const existing = resolution.profile || {};
+          showToast.success(t("auth.signedInExisting"));
+
+          if (existing.status === "suspended") {
+            navigate("/suspended", { replace: true });
+            return;
+          }
+
+          // A profile without a role is a broken account; do not try to route
+          // it (that would loop) and never re-register it.
+          if (!existing.role) {
+            showToast.error(t("auth.errors.accountRole"));
+            await signOut(auth).catch(() => {});
+            navigate("/login", { replace: true });
+            return;
+          }
+
+          const phoneVerified = Boolean(
+            user.phoneNumber ||
+              user.providerData?.some((p) => p.providerId === "phone"),
+          );
+          if (phoneVerified) {
+            navigate(getRoleHome(existing.role), { replace: true });
+          } else {
+            navigate("/verify-account", { replace: true });
+          }
+          return;
+        }
+
+        if (resolution.status === SOCIAL_ACCOUNT_STATUS.CONFLICT) {
+          // Same email already exists under another sign-in method. Do not
+          // continue registration and never create a second Firebase account.
+          setSocialResolution("dismissed");
+          showToast.error(t("auth.errors.accountExistsDifferentCredential"));
+          await signOut(auth).catch(() => {});
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        if (resolution.status === SOCIAL_ACCOUNT_STATUS.UNKNOWN) {
+          setSocialResolution("dismissed");
+          showToast.error(t("auth.errors.socialCheckFailed"));
+          return;
+        }
+
+        // status === "new": safe to continue profile registration.
+        setSocialResolution(null);
+        setRegistrationMethod(method);
+        setStep(1);
+        setProviderData({
+          displayName: user.displayName || user.email?.split("@")[0] || "",
+          email: user.email || "",
+          username: null,
+          photoURL: user.photoURL || "",
+        });
+      })
+      .catch((error) => {
+        console.error("Failed to resolve social registration:", error);
+        if (!cancelled) setSocialResolution("dismissed");
+        showToast.error(t("auth.errors.socialCheckFailed"));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, profile, registrationMethod, socialResolution, navigate, setProviderData]);
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -350,11 +441,13 @@ export default function useRegisterForm() {
       if (method === "google" || method === "facebook") {
         if (socialAuthInFlight) return;
 
+        // Explicitly allow (re)starting the existence check for the provider
+        // account the moment the popup resolves. This also re-enables
+        // auto-resume when the user picks a provider again after dismissing.
+        setSocialResolution(null);
         setSocialAuthInFlight(true);
+
         signInWithProvider(method)
-          .then(() => {
-            // Firebase Auth state updates → useEffect detects user → populates form
-          })
           .catch((error) => {
             if (
               error.code === "auth/popup-closed-by-user" ||
@@ -362,6 +455,15 @@ export default function useRegisterForm() {
             ) {
               return;
             }
+
+            // The email already belongs to an account using another sign-in
+            // method. Never continue registration and never create a duplicate.
+            if (error.code === "auth/account-exists-with-different-credential") {
+              showToast.error(getSocialSignInErrorMessage(error, method));
+              navigate("/login", { replace: true });
+              return;
+            }
+
             showToast.error(getSocialSignInErrorMessage(error, method));
           })
           .finally(() => {
@@ -369,15 +471,19 @@ export default function useRegisterForm() {
           });
       }
     },
-    [socialAuthInFlight],
+    [socialAuthInFlight, navigate],
   );
 
   /**
-   * Resets registration back to method selection
+   * Resets registration back to method selection. Deliberately dismisses any
+   * in-progress social resolution so an authenticated provider user is not
+   * instantly pushed back into the registration form until they pick a method
+   * again.
    */
   const resetRegistrationMethod = useCallback(() => {
     setRegistrationMethod(null);
     setAuthProviderData(null);
+    setSocialResolution("dismissed");
     setStep(1);
   }, []);
 
@@ -388,6 +494,7 @@ export default function useRegisterForm() {
     if (step <= 1) {
       setRegistrationMethod(null);
       setAuthProviderData(null);
+      setSocialResolution("dismissed");
       setStep(1);
     } else if (step === 3 && !requiresPasswordStep(registrationMethod)) {
       setStep(1);
@@ -395,6 +502,37 @@ export default function useRegisterForm() {
       setStep((prev) => Math.max(prev - 1, 1));
     }
   }
+
+  /**
+   * Explicit, controlled exit from the registration flow. Always returns to a
+   * public route and never leaves the user trapped.
+   *
+   * Signing out only happens when a provider sign-in created an incomplete
+   * (profile-less) auth session; fully registered users keep their session.
+   *
+   * @param {string} destination Public route: "/landing", "/login", etc.
+   */
+  const cancelRegistration = useCallback(
+    async (destination = "/landing") => {
+      setRegistrationMethod(null);
+      setAuthProviderData(null);
+      setSocialResolution("dismissed");
+      setStep(1);
+      setCheckedEmail("");
+
+      // Clear any ephemeral provider session that has no AgriNet profile yet.
+      if (user && !profile) {
+        try {
+          await signOut(auth);
+        } catch (signOutError) {
+          console.warn("Failed to sign out during registration cancel:", signOutError);
+        }
+      }
+
+      navigate(destination, { replace: true });
+    },
+    [user, profile, navigate],
+  );
 
   /**
    * Validates Step 3 and submits registration to Firebase
@@ -511,8 +649,12 @@ export default function useRegisterForm() {
     selectRegistrationMethod,
     setRegistrationMethod,
     resetRegistrationMethod,
+    cancelRegistration,
+    onExitToLogin: () => cancelRegistration("/login"),
+    onExitToLanding: () => cancelRegistration("/landing"),
 
     socialAuthInFlight,
+    socialResolution,
     authProviderData,
     setProviderData,
     isEmailReadOnly,

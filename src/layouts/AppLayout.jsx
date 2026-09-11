@@ -12,7 +12,7 @@ import useMediaQuery from "../hooks/useMediaQuery";
 import { tabRoutes } from "../constants/tabsRoutes";
 
 export default function AppLayout() {
-  const { profile } = useAuth();
+  const { identity, authInitializing } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(true);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
@@ -30,7 +30,12 @@ export default function AppLayout() {
           collapsed ? "lg:ml-20" : "lg:ml-60"
         }`}
       >
-        <Header user={profile} collapsed={collapsed} hideBackButton={isTabRoutes} />
+        <Header
+          user={identity}
+          collapsed={collapsed}
+          hideBackButton={isTabRoutes}
+          authInitializing={authInitializing}
+        />
         <OfflineIndicator />
 
         <div

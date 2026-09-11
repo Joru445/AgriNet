@@ -12,17 +12,20 @@ import {
 import { useNotificationsContext } from "../context/NotificationsContext";
 import { useLanguage } from "../context/LanguageContext";
 
-export default function Header({ user, collapsed, hideBackButton }) {
+export default function Header({ user, collapsed, hideBackButton, authInitializing }) {
   const { t } = useLanguage();
   const { unreadCount: notifCount } = useNotificationsContext();
 
-  const isAnonymous = !user;
+  // Only after Firebase Auth initialization completes may a null user be
+  // treated as a genuine guest. While auth is still initializing (which
+  // includes restoring a persisted session offline), never render Login UI.
+  const isAnonymous = !authInitializing && !user;
 
-  const notificationPath = isAnonymous
-    ? "/login"
-    : getNotificationsPath(user.role);
-  const mePath = isAnonymous ? "/login" : getMePath(user.role);
-  const favoritesPath = isAnonymous ? "/login" : getFavoritesPath(user.role);
+  const notificationPath =
+    isAnonymous || !user ? "/login" : getNotificationsPath(user.role);
+  const mePath = isAnonymous || !user ? "/login" : getMePath(user.role);
+  const favoritesPath =
+    isAnonymous || !user ? "/login" : getFavoritesPath(user.role);
 
   return (
     <header className="shrink-0 sticky top-0 right-0 z-9996 dark:lg:rounded-2xl flex h-[calc(3.75rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] items-center justify-between bg-(--agri-surface)/95 border-b border-(--agri-border) dark:border-(--agri-surface) px-3 md:px-5 dark:lg:m-2 backdrop-blur-sm transition-all duration-300 ease-in-out">
@@ -52,7 +55,12 @@ export default function Header({ user, collapsed, hideBackButton }) {
 
       {/* ── Right actions ─────────────────────────────── */}
       <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
-        {isAnonymous ? (
+        {authInitializing ? (
+          /* Auth state still initializing: neutral placeholder, never Login */
+          <div className="flex items-center gap-1.5 px-1.5 w-9 h-9 animate-pulse">
+            <div className="size-9 rounded-full bg-(--agri-hover)" />
+          </div>
+        ) : isAnonymous ? (
           <>
             <Link
               to="/login"

@@ -77,6 +77,8 @@ export default function LoginFormPanel({
   hasSavedAccounts,
   viewMode,
   passwordAccount,
+  savePassword,
+  onSavePasswordChange,
   onChange,
   onSubmit,
   onSocialLogin,
@@ -178,6 +180,18 @@ export default function LoginFormPanel({
             error={errors.password}
           />
 
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={savePassword}
+              onChange={(e) => onSavePasswordChange?.(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-[#2D6A4F] focus:ring-[#2D6A4F] cursor-pointer"
+            />
+            <span className="text-xs text-gray-600">
+              {t("auth.login.savePassword")}
+            </span>
+          </label>
+
           <div className="flex justify-end">
             <Link
               to="/forgot-password"
@@ -245,6 +259,18 @@ export default function LoginFormPanel({
           onChange={onChange}
           error={errors.password}
         />
+
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={savePassword}
+            onChange={(e) => onSavePasswordChange?.(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-[#2D6A4F] focus:ring-[#2D6A4F] cursor-pointer"
+          />
+          <span className="text-xs text-gray-600">
+            {t("auth.login.savePassword")}
+          </span>
+        </label>
 
         <div className="flex justify-end">
           <Link

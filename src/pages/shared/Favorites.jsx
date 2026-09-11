@@ -10,6 +10,7 @@ import { getFarmers } from "../../services/farmer.service";
 import ProductCard from "../../components/common/ProductCard";
 import EmptyState from "../../components/ui/EmptyState";
 import LoginRequired from "../../components/ui/LoginRequired";
+import Loading from "../../components/Loading";
 
 import {
   applyTransform,
@@ -18,7 +19,7 @@ import {
 } from "../../utils/cloudinaryTransform";
 
 export default function Favorites() {
-  const { user } = useAuth();
+  const { user, authInitializing } = useAuth();
   const { t } = useLanguage();
   const [tab, setTab] = useState("products");
   const [loading, setLoading] = useState(true);
@@ -73,6 +74,10 @@ export default function Favorites() {
       cancelled = true;
     };
   }, [user, t]);
+
+  if (authInitializing) {
+    return <Loading />;
+  }
 
   if (!user) {
     return <LoginRequired title={t("favorites.title")} />;

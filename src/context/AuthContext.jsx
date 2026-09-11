@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -15,6 +16,8 @@ import {
 import { auth } from "../firebase/auth";
 import { db } from "../firebase/firestore";
 import { apiSyncTransactionStats } from "../services/user.service";
+import { getCachedUserProfile } from "../utils/userProfileCache";
+import { getSavedAccounts } from "../services/savedAccounts.service";
 
 const AuthContext = createContext();
 
@@ -24,6 +27,13 @@ export function AuthProvider({ children }) {
   const [farmer, setFarmer] = useState(null);
   const [emailVerified, setEmailVerified] = useState(false);
 
+  // true until Firebase Auth has restored the persisted session (or confirmed
+  // there is none). During this window NOTHING may render as "signed out".
+  // Offline never flips this to a signed-out state.
+  const [authInitializing, setAuthInitializing] = useState(true);
+
+  // true while the full authenticated state (auth + profile/farmer) has not
+  // been determined yet. Route guards use it to wait instead of redirecting.
   const [loading, setLoading] = useState(true);
 
   // Track one-time operations per auth session to avoid repeated Firestore writes.
@@ -53,6 +63,11 @@ export function AuthProvider({ children }) {
     const unsubscribeAuth = onAuthStateChanged(
       auth,
       (firebaseUser) => {
+        // Firebase Auth initialization is complete: the persisted session has
+        // been restored or confirmed absent. This is the ONLY point where the
+        // app may distinguish "authenticated" from "signed out".
+        setAuthInitializing(false);
+
         // Clean up previous listeners.
         unsubscribeProfile?.();
         unsubscribeFarmer?.();
@@ -136,16 +151,16 @@ export function AuthProvider({ children }) {
 
                 setLoading(false);
               },
-              (error) => {
-                console.error(
-                  "Failed to load farmer profile:",
-                  error,
-                );
+(error) => {
+              console.error(
+                "Failed to load farmer profile:",
+                error,
+              );
 
-                setFarmer(null);
-                setLoading(false);
-              },
-            );
+              setFarmer(null);
+              setLoading(false);
+            },
+          );
           },
           (error) => {
             console.error(
@@ -153,9 +168,12 @@ export function AuthProvider({ children }) {
               error,
             );
 
-            setProfile(null);
-            setFarmer(null);
-            setLoading(false);
+            // Offline/unavailable is NOT a sign-out and NOT a missing profile.
+            // The authenticated identity and last known profile are retained as
+            // they were; loading stays true so route guards wait instead of
+            // redirecting an authenticated user to /login. Firestore retries
+            // the snapshot automatically when connectivity returns.
+            setLoading(true);
           },
         );
       },
@@ -176,6 +194,45 @@ export function AuthProvider({ children }) {
       }
     : null;
 
+  /**
+   * Display identity for the current user.
+   *
+   * Prefers the live Firestore profile. When the profile has not been resolved
+   * yet (offline, pending snapshot, failed API refresh), it falls back to the
+   * last-known cached profile, then to saved-account metadata, then to the
+   * Firebase user itself. This is IDENTITY — never a synthetic "authenticated"
+   * flag — so authenticated users are never shown Login / Sign Up merely
+   * because Firestore/API data could not be fetched.
+   */
+  const identity = useMemo(() => {
+    if (!user) return null;
+    if (profile) return profile;
+
+    const cached = user.uid
+      ? getCachedUserProfile(user.uid, user.uid)
+      : null;
+    if (cached) return cached;
+
+    const saved = getSavedAccounts().find((entry) => entry.uid === user.uid);
+    if (saved) {
+      return {
+        uid: saved.uid,
+        fullname: saved.displayName || saved.email || "",
+        username: "",
+        profilePicture: saved.avatar || "",
+        role: saved.role || "",
+      };
+    }
+
+    return {
+      uid: user.uid,
+      fullname: user.displayName || user.email || "",
+      username: "",
+      profilePicture: user.photoURL || "",
+      role: "",
+    };
+  }, [user, profile]);
+
   // Firebase Auth is the single source of truth for verification states
   const phoneVerified = Boolean(
     user?.phoneNumber ||
@@ -194,7 +251,15 @@ export function AuthProvider({ children }) {
         profile,
         farmer,
         account,
+        identity,
+
+        // True until Firebase Auth has restored the persisted session. While
+        // true, consumers must never render "signed out" / Login UI.
+        authInitializing,
+        // True while the full authenticated state is still being determined
+        // (auth initialization and/or profile load). Route guards wait on this.
         loading,
+        profileLoading: loading && !authInitializing,
 
         suspended: profile?.status === "suspended",
         emailVerified: isEmailVerified,

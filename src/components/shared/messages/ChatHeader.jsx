@@ -6,15 +6,18 @@ import { useLanguage } from "../../../context/LanguageContext";
 
 import Avatar from "../../common/Avatar";
 import BackButton from "../../common/BackButton";
+import ImageViewerModal from "../../common/ImageViewerModal";
 import ReportModal from "../../common/ReportModal";
 
 import { getProfilePath } from "../../../utils/routes";
+import useProfileViewer from "../../../hooks/useProfileViewer";
 
 export default function ChatHeader({ user }) {
   const { profile } = useAuth();
   const { t } = useLanguage();
 
   const navigate = useNavigate();
+  const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const menuRef = useRef(null);
@@ -64,7 +67,7 @@ export default function ChatHeader({ user }) {
         <div className="flex items-center gap-3 min-w-0">
           <BackButton className="flex sm:hidden" />
 
-          <Avatar src={user.profilePicture} name={user.fullname} size="sm" />
+          <Avatar src={user.profilePicture} name={user.fullname} size="sm" onClick={handleAvatarClick(user)} />
 
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 min-w-0">
@@ -150,6 +153,13 @@ export default function ChatHeader({ user }) {
         targetId={targetUid}
         targetTitle={t("messages.conversationWith", { name: user.fullname || user.username })}
         reportedUser={user}
+      />
+
+      <ImageViewerModal
+        isOpen={Boolean(lightbox)}
+        src={lightbox?.src}
+        title={lightbox?.title}
+        onClose={closeLightbox}
       />
     </>
   );

@@ -11,7 +11,6 @@ import UserIdentity from "./common/UserIdentity";
 import LogoutConfirmModal from "./common/LogoutConfirmModal";
 import { PulsingDot } from "./ui/Badge";
 
-import { useUnreadMessages } from "../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../context/UnreadInquiriesContext";
 import { useUnreadReports } from "../context/UnreadReportsContext";
 
@@ -23,21 +22,21 @@ const NAV_GROUPS = [
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }) {
-  const { profile, logout } = useAuth();
+  const { user, profile, authInitializing, identity, logout } = useAuth();
   const { t } = useLanguage();
-  const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } =
     useUnreadInquiries();
   const { pendingReportsCount, showReportPopup, reportPopupMessage } =
     useUnreadReports();
   const navigate = useNavigate();
 
-  const isAnonymous = !profile;
+  // Only after auth initialization completes is a null user a genuine guest.
+  const isAnonymous = !authInitializing && !user;
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const role = profile?.role;
+  const role = identity?.role || profile?.role;
   const items = role ? (navigationByRole[role] ?? []) : consumerNavigation;
 
   async function handleLogout() {
@@ -106,21 +105,21 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         <div className={` border-b border-white/8 ${collapsed ? "flex justify-center items-center w-full h-14 mx-auto" : "px-3 py-3"}`}>
           {collapsed ? (
             <div className="flex justify-center">
-              {profile?.profilePicture ? (
+              {identity?.profilePicture ? (
                 <img
-                  src={profile.profilePicture}
-                  alt={profile.fullname}
+                  src={identity.profilePicture}
+                  alt={identity.fullname}
                   className="h-8 w-8 rounded-full object-cover"
                 />
               ) : (
                 <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-semibold text-white/70">
-                  {(profile?.fullname || "?")[0]}
+                  {(identity?.fullname || "?")[0]}
                 </div>
               )}
             </div>
           ) : (
             <UserIdentity
-              user={profile}
+              user={identity}
               showUsername={false}
               showRole={true}
               showVerified={false}

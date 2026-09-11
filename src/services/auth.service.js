@@ -21,6 +21,7 @@ import {
   query,
   where,
   getDocs,
+  getDoc,
   limit,
   updateDoc,
 } from "firebase/firestore";
@@ -223,6 +224,124 @@ export const PROVIDER_IDS = {
   password: "password",
   phone: "phone",
 };
+
+/**
+ * Outcome of resolving a just-authenticated social provider user before their
+ * AgriNet registration form is allowed to continue.
+ *
+ *  - "exists"   -> the provider user already has an AgriNet profile. Treat as
+ *                  an existing account: never show the registration form and
+ *                  never create a duplicate profile.
+ *  - "conflict" -> the user's email already belongs to another AgriNet account
+ *                  (password/phone/other provider). Never create a duplicate
+ *                  account for that email.
+ *  - "new"      -> genuinely new provider account with no profile and no
+ *                  competing sign-in method for the same email. Safe to
+ *                  continue into profile registration.
+ *  - "unknown"  -> the account could not be verified (network/permission).
+ *                  Registering is too risky, so registration must NOT continue.
+ */
+export const SOCIAL_ACCOUNT_STATUS = {
+  EXISTS: "exists",
+  CONFLICT: "conflict",
+  NEW: "new",
+  UNKNOWN: "unknown",
+};
+
+/**
+ * Decides whether a just-authenticated Google/Facebook user should continue a
+ * NEW AgriNet registration or must be treated as an existing/conflicting
+ * account.
+ *
+ * Firebase Auth (the authenticated provider user) is the source of truth for
+ * the provider identity; the email alone is never used to assume a new
+ * registration is allowed. Sign-in methods reported by Firebase (including
+ * which provider owns the email) are checked alongside the AgriNet profile.
+ *
+ * @param {import("firebase/auth").User} user Authenticated Firebase user
+ * @param {string} method "google" | "facebook"
+ * @returns {Promise<{status: string, profile?: Object|null, signInMethods?: string[]}>}
+ */
+export async function resolveSocialAccountStatus(user, method) {
+  const providerId = PROVIDER_IDS[method];
+
+  if (!user?.uid) {
+    return { status: SOCIAL_ACCOUNT_STATUS.UNKNOWN, signInMethods: [] };
+  }
+
+  let existingProfile = null;
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (snap.exists()) {
+      existingProfile = { uid: snap.id, ...snap.data() };
+    }
+  } catch (error) {
+    console.warn(
+      "Failed to read AgriNet profile while resolving social registration:",
+      error?.code || error?.message,
+    );
+  }
+
+  // 1. An existing AgriNet profile means this provider account already exists.
+  //    The provider sign-in that just completed IS the login; never continue
+  //    into registration and never duplicate the profile.
+  if (existingProfile) {
+    return {
+      status: SOCIAL_ACCOUNT_STATUS.EXISTS,
+      profile: existingProfile,
+      signInMethods: [],
+    };
+  }
+
+  let signInMethods = [];
+  let methodsCheckFailed = null;
+  const email = user.email ? user.email.trim().toLowerCase() : "";
+
+  if (email) {
+    try {
+      signInMethods = await fetchSignInMethodsForEmail(auth, email);
+    } catch (error) {
+      methodsCheckFailed = error;
+      console.warn(
+        "fetchSignInMethodsForEmail failed while resolving social registration:",
+        error?.code || error?.message,
+      );
+    }
+  }
+
+  // 2. Without being able to confirm the email is unused elsewhere, continuing
+  //    registration could create a second account for an email that already
+  //    belongs to another auth method.
+  if (email && methodsCheckFailed) {
+    return { status: SOCIAL_ACCOUNT_STATUS.UNKNOWN, signInMethods: [] };
+  }
+
+  // 3. Providers without a public email (e.g. some Facebook accounts) cannot
+  //    conflict by email; a missing profile is the only signal, so this is a
+  //    new registration.
+  if (!email) {
+    return {
+      status: SOCIAL_ACCOUNT_STATUS.NEW,
+      signInMethods,
+    };
+  }
+
+  // 4. The email already belongs to another sign-in method (password, phone,
+  //    or another provider). Never continue registration and never create a
+  //    second Firebase account for that email.
+  const otherMethods = signInMethods.filter((id) => id !== providerId);
+  if (otherMethods.length > 0) {
+    return {
+      status: SOCIAL_ACCOUNT_STATUS.CONFLICT,
+      signInMethods,
+    };
+  }
+
+  // 5. The email is not registered under any other method (or is only owned by
+  //    this same provider without a profile — a cancelled mid-registration
+  //    resume). Safe to continue profile registration.
+  return { status: SOCIAL_ACCOUNT_STATUS.NEW, signInMethods };
+}
 
 /**
  * Returns the Firebase providerIds currently linked to an account.

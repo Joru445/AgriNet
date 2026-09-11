@@ -43,12 +43,16 @@ export function useSavedAccounts() {
   const savedUidRef = useRef(null);
 
   // Auto-save profile when it first loads (handles social auth and page refreshes)
+  // Password accounts are NOT auto-saved — they are only saved when the user
+  // explicitly checks "Save password" on the login form.
   useEffect(() => {
     if (!profile?.uid) return;
     if (savedUidRef.current === profile.uid) return;
     savedUidRef.current = profile.uid;
 
     const provider = getPrimaryProvider(user);
+    if (provider === "password") return;
+
     const updated = saveAccount({
       uid: profile.uid,
       email: profile.email,
@@ -91,17 +95,26 @@ export function useSavedAccounts() {
   /**
    * Signs out the current Firebase user (if any), then navigates to the login
    * page with the target account's email pre-filled.
+   *
+   * Navigation happens BEFORE signOut, and `state.fromSwitch` tells PublicRoute
+   * to keep the login page visible while the previous session is being torn
+   * down. This prevents the generic signed-out redirect (route guards fire
+   * <Navigate to="/login"> after signOut) from overwriting the intended route.
+   * The email is additionally stored in sessionStorage as a fallback.
    */
   const navigateToLogin = useCallback(
     async (account) => {
+      if (account?.email) {
+        sessionStorage.setItem("agrinet_switch_email", account.email);
+      }
       const email = account?.email || "";
       const loginUrl = `/login${email ? `?email=${encodeURIComponent(email)}` : ""}`;
+
+      navigate(loginUrl, { replace: true, state: { fromSwitch: true } });
 
       if (auth.currentUser) {
         await signOut(auth);
       }
-
-      navigate(loginUrl, { replace: true });
     },
     [navigate],
   );
@@ -153,7 +166,9 @@ export function useSavedAccounts() {
    * Hybrid account switching:
    * - For social accounts (Google/Facebook): signs out, then opens social auth tab
    * - For passkey accounts: signs out, then authenticates with passkey
-   * - For email/password accounts: signs out, then navigates to login with email pre-filled
+   * - For email/password accounts: navigates to login with email pre-filled,
+   *   then signs out (navigation first so route-guard redirects cannot overwrite
+   *   the intended login route)
    *
    * Throws on signOut failure so the caller can handle the error.
    */
@@ -166,38 +181,58 @@ export function useSavedAccounts() {
 
       const hasPasskey = account.hasPasskey === true;
 
-      // Sign out current user first
-      if (auth.currentUser) {
-        await signOut(auth);
-      }
-
       if (isSocialAccount) {
+        // Social auth opens a popup/redirect flow — sign out first.
+        if (auth.currentUser) {
+          await signOut(auth);
+        }
         const method = account.provider === "google.com" ? "google" : "facebook";
         await signInWithProvider(method, { loginHint: account.email });
-      } else if (hasPasskey) {
-        // For accounts with passkeys, try passkey authentication
+        return;
+      }
+
+      if (hasPasskey) {
+        // Passkey auth must happen while signed out: sign out first, then
+        // authenticate through the platform authenticator.
+        if (auth.currentUser) {
+          await signOut(auth);
+        }
+
         try {
           const result = await authenticateWithPasskey(account.email);
 
           if (result?.customToken) {
             await signInWithCustomToken(auth, result.customToken);
-          } else {
-            // Fallback to login page if passkey auth fails
-            const email = account.email || "";
-            const loginUrl = `/login${email ? `?email=${encodeURIComponent(email)}` : ""}`;
-            navigate(loginUrl, { replace: true });
+            sessionStorage.removeItem("agrinet_switch_email");
+            return;
           }
         } catch {
-          // Fallback to login page on any error
-          const email = account.email || "";
-          const loginUrl = `/login${email ? `?email=${encodeURIComponent(email)}` : ""}`;
-          navigate(loginUrl, { replace: true });
+          // fall through to the login page fallback below
         }
-      } else {
-        // For email/password accounts, navigate to login with email pre-filled
-        const email = account.email || "";
-        const loginUrl = `/login${email ? `?email=${encodeURIComponent(email)}` : ""}`;
-        navigate(loginUrl, { replace: true });
+
+        // Fallback to login page if passkey auth fails
+        if (account.email) {
+          sessionStorage.setItem("agrinet_switch_email", account.email);
+        }
+        const fallbackEmail = account.email || "";
+        const fallbackUrl = `/login${fallbackEmail ? `?email=${encodeURIComponent(fallbackEmail)}` : ""}`;
+        navigate(fallbackUrl, { replace: true, state: { fromSwitch: true } });
+        return;
+      }
+
+      // Email/password account: navigate to the login page (with the target
+      // email pre-filled) BEFORE signing out. PublicRoute sees state.fromSwitch
+      // and keeps the login page open while the previous session is torn down,
+      // so the generic signed-out redirect cannot overwrite this route.
+      if (account.email) {
+        sessionStorage.setItem("agrinet_switch_email", account.email);
+      }
+      const email = account.email || "";
+      const loginUrl = `/login${email ? `?email=${encodeURIComponent(email)}` : ""}`;
+      navigate(loginUrl, { replace: true, state: { fromSwitch: true } });
+
+      if (auth.currentUser) {
+        await signOut(auth);
       }
     },
     [navigate],

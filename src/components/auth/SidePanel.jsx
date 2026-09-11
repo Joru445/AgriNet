@@ -4,7 +4,7 @@ import logo from "../../assets/favicon.ico";
 import landscapeBg from "../../assets/img/landscape.jpg";
 import { useLanguage } from "../../context/LanguageContext";
 
-export default function SidePanel({ step = null }) {
+export default function SidePanel({ step = null, onExitToLanding }) {
   const { t } = useLanguage();
 
   const STAGES = [
@@ -33,7 +33,16 @@ export default function SidePanel({ step = null }) {
       <div className="relative z-10 flex flex-col w-full h-full p-10">
 
         {/* Logo */}
-        <Link to="/landing" className="flex items-center gap-2.5 w-fit group">
+        <Link
+          to="/landing"
+          className="flex items-center gap-2.5 w-fit group"
+          onClick={(e) => {
+            if (onExitToLanding) {
+              e.preventDefault();
+              onExitToLanding();
+            }
+          }}
+        >
           <img src={logo} alt="AgriNet" className="h-9 w-9 object-contain drop-shadow-lg" />
           <span className="text-lg font-bold text-white drop-shadow">
             AgriNet

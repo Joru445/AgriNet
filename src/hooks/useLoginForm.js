@@ -4,7 +4,7 @@ import { signInWithCustomToken } from "firebase/auth";
 
 import { auth } from "../firebase/auth";
 import { login } from "../services/login.service";
-import { getSavedAccounts } from "../services/savedAccounts.service";
+import { getSavedAccounts, saveAccount } from "../services/savedAccounts.service";
 import {
   authenticateWithPasskey,
   PasskeyError,
@@ -21,6 +21,31 @@ import { t } from "../i18n";
 
 const EMPTY_ERRORS = { email: "", password: "", general: "" };
 
+// ── Account-switch intent (module-scoped so it survives React StrictMode
+// ── double-mounting in development) ───────────────────────────────────────
+//
+// When Saved Accounts switches to a password account, useSavedAccounts stores
+// the target email in sessionStorage BEFORE signing out. SessionStorage (not a
+// query param) is used because route guards fire <Navigate to="/login"> after
+// signOut, which can overwrite query-parameter navigation. The Login page reads
+// this intent once on mount.
+let consumedSwitchEmail;
+
+function getSwitchEmail() {
+  if (consumedSwitchEmail === undefined) {
+    consumedSwitchEmail = sessionStorage.getItem("agrinet_switch_email") || "";
+    if (consumedSwitchEmail) {
+      sessionStorage.removeItem("agrinet_switch_email");
+    }
+  }
+  return consumedSwitchEmail;
+}
+
+function clearSwitchEmail() {
+  consumedSwitchEmail = "";
+  sessionStorage.removeItem("agrinet_switch_email");
+}
+
 /**
  * View modes:
  *   "saved"    — saved-account selector (initial when accounts exist)
@@ -28,37 +53,61 @@ const EMPTY_ERRORS = { email: "", password: "", general: "" };
  *   "login"    — normal full login form (email/password/social)
  */
 export function useLoginForm() {
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [savedAccounts] = useState(() => getSavedAccounts());
+  const hasSavedAccounts = savedAccounts.length > 0;
+
+  // Initial view state: an account switch (sessionStorage — primary) or an
+  // ?email= query param (direct links — fallback) that matches a saved account
+  // opens the password-only form directly. Solved at init (not in an effect) so
+  // there is no flash of the wrong view.
+  const targetEmail =
+    getSwitchEmail() ||
+    new URLSearchParams(window.location.search).get("email") ||
+    "";
+  const switchAccount = targetEmail
+    ? savedAccounts.find((a) => a.email === targetEmail) || null
+    : null;
+
+  const [form, setForm] = useState(() => ({
+    email: targetEmail || "",
+    password: "",
+  }));
   const [errors, setErrors] = useState(EMPTY_ERRORS);
   const [loading, setLoading] = useState(false);
   const [socialAuthInFlight, setSocialAuthInFlight] = useState(false);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [passkeyError, setPasskeyError] = useState(null);
+  const [savePassword, setSavePassword] = useState(false);
   const passkeyFailedAccountRef = useRef(null);
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [savedAccounts] = useState(() => getSavedAccounts());
-  const hasSavedAccounts = savedAccounts.length > 0;
-
   // "saved" → saved accounts, "password" → password form, "login" → full form
-  const [viewMode, setViewMode] = useState(() =>
-    hasSavedAccounts ? "saved" : "login",
-  );
+  const [viewMode, setViewMode] = useState(() => {
+    if (targetEmail) return switchAccount ? "password" : "login";
+    return hasSavedAccounts ? "saved" : "login";
+  });
 
   // Track which saved account is being password-authenticated
-  const [passwordAccount, setPasswordAccount] = useState(null);
+  const [passwordAccount, setPasswordAccount] = useState(() =>
+    switchAccount || null,
+  );
 
-  // Pre-fill email from query param (?email=...) — switches to login view
+  // Pre-fill email from query param (?email=...) — used for direct links.
+  // If the email matches a saved account, open the password-only form.
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const emailParam = params.get("email");
     if (emailParam) {
-      setForm((prev) => ({ ...prev, email: emailParam }));
-      setViewMode("login");
+      setForm({ email: emailParam, password: "" });
+      setErrors(EMPTY_ERRORS);
+      setPasskeyError(null);
+      const matchingAccount = savedAccounts.find((a) => a.email === emailParam) || null;
+      setPasswordAccount(matchingAccount);
+      setViewMode(matchingAccount ? "password" : "login");
     }
-  }, [location.search]);
+  }, [location.search, savedAccounts]);
 
   // ── Saved-account actions ──────────────────────────────────────────
 
@@ -169,18 +218,22 @@ export function useLoginForm() {
 
   /** "Use another account" → normal login form */
   const handleUseAnotherAccount = useCallback(() => {
+    clearSwitchEmail();
     setForm((prev) => ({ ...prev, email: "", password: "" }));
     setErrors(EMPTY_ERRORS);
     setPasskeyError(null);
     setPasswordAccount(null);
+    setSavePassword(false);
     setViewMode("login");
   }, []);
 
   /** "Back to saved accounts" from any view */
   const handleBackToSaved = useCallback(() => {
+    clearSwitchEmail();
     setErrors(EMPTY_ERRORS);
     setPasskeyError(null);
     setPasswordAccount(null);
+    setSavePassword(false);
     setForm((prev) => ({ ...prev, password: "" }));
     setViewMode("saved");
   }, []);
@@ -236,6 +289,21 @@ export function useLoginForm() {
         showToast.info(t("auth.errors.verifyPhone"));
         navigate("/verify-account", { replace: true });
         return;
+      }
+
+      clearSwitchEmail();
+
+      // Save password account to saved accounts if checkbox is checked
+      if (savePassword && user?.uid) {
+        const provider = user.providerData?.[0]?.providerId || "password";
+        saveAccount({
+          uid: user.uid,
+          email: form.email,
+          displayName: profile.displayName || "",
+          avatar: profile.avatar || "",
+          role: profile.role || "consumer",
+          provider,
+        });
       }
 
       const from = location.state?.from;
@@ -310,6 +378,8 @@ export function useLoginForm() {
     hasSavedAccounts,
     viewMode,
     passwordAccount,
+    savePassword,
+    setSavePassword,
     handleChange,
     handleSubmit,
     handleSelectSavedAccount,

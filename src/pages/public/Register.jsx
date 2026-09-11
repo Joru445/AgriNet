@@ -14,6 +14,7 @@ export default function Register() {
             ? registerFormState.step
             : null
         }
+        onExitToLanding={registerFormState.onExitToLanding}
       />
 
       <RegisterForm {...registerFormState} />

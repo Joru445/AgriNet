@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import Avatar from "../../common/Avatar";
+import ImageViewerModal from "../../common/ImageViewerModal";
 import MessageBubble from "./MessageBubble";
 import MessageReplyButton from "./MessageReplyButton";
 import useSwipeToReply, { prefersReducedMotion } from "../../../hooks/useSwipeToReply";
 import { buildReplySnapshot } from "../../../utils/messageReply";
+import useProfileViewer from "../../../hooks/useProfileViewer";
 
 const REVEAL_WIDTH = 72;
 
@@ -40,6 +42,7 @@ export default function MessageRow({
   const mine = message.senderId === profile?.uid;
   const isTouch = useIsTouch();
   const reducedMotion = prefersReducedMotion();
+  const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
 
   // Allow replying only to the other user ("the user who chat me")
   const canReply = !mine;
@@ -105,6 +108,7 @@ export default function MessageRow({
   })();
 
   return (
+    <>
     <div
       data-message-id={message.id}
       className={`group/swipe relative flex w-full min-w-0 scroll-mt-6 scroll-mb-6 ${mine ? "justify-end" : "justify-start"} ${groupSpacing}`}
@@ -138,6 +142,7 @@ export default function MessageRow({
                 name={user?.fullname}
                 size="sm"
                 className={`flex shrink-0 mb-1 ${avatarVisibility}`}
+                onClick={handleAvatarClick(user)}
               />
             )}
 
@@ -165,6 +170,13 @@ export default function MessageRow({
         </div>
       </div>
     </div>
+    <ImageViewerModal
+      isOpen={Boolean(lightbox)}
+      src={lightbox?.src}
+      title={lightbox?.title}
+      onClose={closeLightbox}
+    />
+    </>
   );
 }
 

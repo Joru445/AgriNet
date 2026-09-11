@@ -29,6 +29,8 @@ export default function RegisterForm({
   handleStep2Continue,
   previousStep,
   submit,
+  onExitToLogin,
+  onExitToLanding,
 }) {
   const { t } = useLanguage();
 
@@ -54,6 +56,10 @@ export default function RegisterForm({
             <Link
               className="flex items-center gap-2 no-underline hover:no-underline"
               to="/landing"
+              onClick={(e) => {
+                e.preventDefault();
+                onExitToLanding?.();
+              }}
             >
               <img
                 src={logo}
@@ -173,6 +179,10 @@ export default function RegisterForm({
             <Link
               to="/login"
               className="text-[#2D6A4F] font-semibold hover:underline"
+              onClick={(e) => {
+                e.preventDefault();
+                onExitToLogin?.();
+              }}
             >
               {t("auth.register.signIn")}
             </Link>
@@ -183,6 +193,10 @@ export default function RegisterForm({
             <Link
               to="/landing"
               className="inline-flex items-center justify-center gap-1 hover:text-[#2D6A4F]"
+              onClick={(e) => {
+                e.preventDefault();
+                onExitToLanding?.();
+              }}
             >
               <i className="ri-arrow-left-line" />
               {t("auth.backHome")}

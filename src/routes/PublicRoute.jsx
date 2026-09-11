@@ -10,18 +10,24 @@ export default function PublicRoute() {
 
   if (loading) return <Loading />;
 
+  // Account switch from Saved Accounts: we arrive here (still possibly signed
+  // in as the previous user) with state.fromSwitch. Renders the login page and
+  // suppresses redirects so the generic signed-out redirect cannot overwrite
+  // the intended saved-account login route.
+  if (location.state?.fromSwitch) return <Outlet />;
+
   if (!user) return <Outlet />;
 
   if (suspended) {
     return <Navigate to="/suspended" replace />;
   }
 
-  // An authenticated Firebase user without an AgriNet profile (e.g. a new
-  // Google user) must complete AgriNet profile setup before anything else.
-  if (!profile) {
-    if (location.pathname === "/register") return <Outlet />;
-    return <Navigate to="/register" replace />;
-  }
+  // An authenticated Firebase user without an AgriNet profile (e.g. a mid-way
+  // Google/Facebook registration) may still visit public routes. Registration
+  // resume is handled deliberately by the Register page itself; it must never
+  // force every public route (landing, login) back to /register and trap the
+  // user in the registration flow.
+  if (!profile) return <Outlet />;
 
   if (!phoneVerified) {
     return <Navigate to="/verify-account" replace />;

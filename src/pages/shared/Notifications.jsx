@@ -1,12 +1,12 @@
 import { useAuth } from "../../context/AuthContext";
 import { useNotificationsContext } from "../../context/NotificationsContext";
 import { useLanguage } from "../../context/LanguageContext";
-
+import Loading from "../../components/Loading";
 import NotificationList from "../../components/shared/notifications/NotificationList";
 import LoginRequired from "../../components/ui/LoginRequired";
 
 export default function Notifications() {
-  const { user } = useAuth();
+  const { user, authInitializing } = useAuth();
   const {
     notifications,
     loading,
@@ -17,6 +17,10 @@ export default function Notifications() {
     markAllAsRead,
   } = useNotificationsContext();
   const { t } = useLanguage();
+
+  if (authInitializing) {
+    return <Loading />;
+  }
 
   if (!user) {
     return <LoginRequired title={t("header.notifications")} />;

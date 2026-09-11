@@ -1,7 +1,9 @@
 import Avatar from "../../common/Avatar";
+import ImageViewerModal from "../../common/ImageViewerModal";
 import { formatTimestamp } from "../../../utils/date";
 import { useAuth } from "../../../context/AuthContext";
 import { useLanguage } from "../../../context/LanguageContext";
+import useProfileViewer from "../../../hooks/useProfileViewer";
 
 export default function ConversationItem({
   item,
@@ -13,6 +15,7 @@ export default function ConversationItem({
 }) {
   const { profile } = useAuth();
   const { t } = useLanguage();
+  const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
   const user = searching ? item : item.otherUser;
 
   const targetKey = searching ? `user_${user?.uid}` : item.id;
@@ -69,6 +72,7 @@ export default function ConversationItem({
   })();
 
   return (
+    <>
     <button
       onClick={handleClick}
       className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-all duration-150 cursor-pointer ${
@@ -78,7 +82,7 @@ export default function ConversationItem({
       }`}
     >
       <div className="relative shrink-0">
-        <Avatar src={user?.profilePicture} name={user?.fullname} />
+        <Avatar src={user?.profilePicture} name={user?.fullname} onClick={handleAvatarClick(user)} />
 
         {user?.online && (
           <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-[var(--agri-card)]" />
@@ -174,5 +178,12 @@ export default function ConversationItem({
         </span>
       )}
     </button>
+    <ImageViewerModal
+      isOpen={Boolean(lightbox)}
+      src={lightbox?.src}
+      title={lightbox?.title}
+      onClose={closeLightbox}
+    />
+    </>
   );
 }

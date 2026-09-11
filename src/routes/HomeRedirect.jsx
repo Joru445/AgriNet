@@ -15,9 +15,10 @@ export default function HomeRedirect() {
     return <Navigate to="/suspended" replace />;
   }
 
-  // New Firebase users without an AgriNet profile go to profile setup.
+  // New Firebase users without an AgriNet profile are sent to the public
+  // landing page, never trapped into the registration flow.
   if (!profile) {
-    return <Navigate to="/register" replace />;
+    return <Navigate to="/landing" replace />;
   }
 
   if (!phoneVerified) {

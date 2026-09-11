@@ -18,6 +18,7 @@ import { usePWAUpdate } from "../../hooks/usePWAUpdate";
 import { getMePath } from "../../utils/routes";
 import { showToast } from "../../utils/toast";
 import LoginRequired from "../../components/ui/LoginRequired";
+import Loading from "../../components/Loading";
 
 function SectionHeading({ children, className = "" }) {
   return (
@@ -36,7 +37,7 @@ function SectionCard({ children, className = "" }) {
 }
 
 export default function Settings() {
-  const { user, profile, logout } = useAuth();
+  const { user, profile, logout, authInitializing } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { needRefresh, updateServiceWorker } = usePWAUpdate();
@@ -45,6 +46,10 @@ export default function Settings() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [pushSubscribed, setPushSubscribed] = useState(false);
+
+  if (authInitializing) {
+    return <Loading />;
+  }
 
   if (!user) {
     return <LoginRequired title={t("settings.title")} />;

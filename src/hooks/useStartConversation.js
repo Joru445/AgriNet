@@ -5,10 +5,17 @@ import { setCachedUserProfile } from "../utils/userProfileCache";
 
 export default function useStartConversation() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { user, authInitializing, identity } = useAuth();
 
   return function startConversation(otherUser) {
-    if (!profile) {
+    // Wait for Firebase Auth initialization: a null user during this window is
+    // NOT a guest and must not be bounced to Login.
+    if (authInitializing) return;
+
+    // Firebase Auth is the source of truth. A signed-in user — even offline,
+    // with a still-pending Firestore profile — may start a conversation;
+    // identity provides a safe role fallback.
+    if (!user) {
       navigate("/login");
       return;
     }
@@ -21,7 +28,7 @@ export default function useStartConversation() {
         profilePicture: otherUser.profilePicture || "",
       });
 
-      const messagesPath = getMessagesPath(profile.role);
+      const messagesPath = getMessagesPath(identity?.role || "");
       navigate(`${messagesPath}?user=${uid}`);
     }
   };

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import landscape from "../../../assets/img/landscapeCover.jpg";
 
+import ImageViewerModal from "../../common/ImageViewerModal";
 import RoleBadge from "../../common/RoleBadge";
 import ReportModal from "../../common/ReportModal";
 import { getInitials } from "../../../utils/getInitials";
@@ -22,6 +23,7 @@ export default function PublicProfileHeader({
   const { user } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
   const [showReportModal, setShowReportModal] = useState(false);
+  const [lightbox, setLightbox] = useState(null);
 
   const isFarmer = role === "farmer";
 
@@ -107,10 +109,11 @@ export default function PublicProfileHeader({
                       : profile.profilePicture
                   }
                   alt={name}
-                  className="h-24 w-24 sm:h-32 sm:w-32 rounded-full object-cover"
+                  className="h-24 w-24 sm:h-32 sm:w-32 rounded-full object-cover cursor-pointer"
                   loading="lazy"
                   width={128}
                   height={128}
+                  onClick={() => setLightbox({ src: profile.profilePicture, title: name })}
                 />
               ) : (
                 <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-[#2D6A4F]/10 flex items-center justify-center text-[#2D6A4F] dark:text-[var(--agri-brand)] text-3xl font-bold">
@@ -235,6 +238,13 @@ export default function PublicProfileHeader({
         targetId={targetUid}
         targetTitle={name}
         reportedUser={profile}
+      />
+
+      <ImageViewerModal
+        isOpen={Boolean(lightbox)}
+        src={lightbox?.src}
+        title={lightbox?.title}
+        onClose={() => setLightbox(null)}
       />
     </section>
   );

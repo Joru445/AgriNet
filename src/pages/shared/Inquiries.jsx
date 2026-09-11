@@ -10,7 +10,7 @@ import InquiryTable from "../../components/shared/inquiries/InquiryTable";
 import LoginRequired from "../../components/ui/LoginRequired";
 
 export default function Inquiries() {
-  const { user, profile } = useAuth();
+  const { user, profile, authInitializing } = useAuth();
   const { t } = useLanguage();
   const [view, setView] = useState("grid");
 
@@ -25,6 +25,10 @@ export default function Inquiries() {
 
     changeStatus,
   } = useInquiries();
+
+  if (authInitializing) {
+    return <InquirySkeleton />;
+  }
 
   if (!user) {
     return <LoginRequired title={t("nav.transactions")} />;

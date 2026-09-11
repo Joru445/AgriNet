@@ -14,7 +14,7 @@ import { getSettingsPath } from "../../utils/routes";
 import LoginRequired from "../../components/ui/LoginRequired";
 
 export default function Profile() {
-  const { user, profile } = useAuth();
+  const { user, profile, authInitializing } = useAuth();
   const { startTour } = useOnboarding();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -36,6 +36,10 @@ export default function Profile() {
     handleCancel,
     handleAvatar,
   } = useProfile(profile);
+
+  if (authInitializing) {
+    return <ProfileSkeleton />;
+  }
 
   if (!user) {
     return <LoginRequired title={t("nav.profile")} />;

@@ -1666,6 +1666,8 @@ export default {
     signOut: "Mag-sign Out",
     backHome: "Bumalik sa Home",
     continue: "Magpatuloy",
+    signedInExisting:
+      "Mayroon ka nang AgriNet account. Naka-sign in ka na.",
 
     login: {
       welcomeBack: "Welcome back!",
@@ -1683,6 +1685,7 @@ export default {
       backToSaved: "Bumalik sa mga na-save na account",
       signInAs: "Mag-sign in bilang",
       forgotPassword: "Nakalimutan ang password?",
+      savePassword: "I-save ang password",
       signIn: "Mag-sign In",
       signingIn: "Nag-sign in...",
       noAccount: "Wala ka pang account?",
@@ -1809,6 +1812,8 @@ export default {
       tooManyAttempts:
         "Masyadong maraming pagsubok sa pag-log in. Subukan muli mamaya.",
       signInFailed: "Hindi makapag-sign in. Subukan muli.",
+      socialCheckFailed:
+        "Hindi ma-verify ang iyong account. Subukan muli.",
       passkeyFailed: "Nabigo ang passkey authentication. Subukan muli.",
       passkeyCancelled: "Kinansela ang passkey authentication.",
       passkeyNotFound: "Walang passkey para sa account na ito.",

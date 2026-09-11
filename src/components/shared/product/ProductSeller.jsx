@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Avatar from "../../common/Avatar";
+import ImageViewerModal from "../../common/ImageViewerModal";
 import { useLanguage } from "../../../context/LanguageContext";
+import useProfileViewer from "../../../hooks/useProfileViewer";
 
 export default function ProductSeller({ farmer, isOwner }) {
   const { t } = useLanguage();
   const [expandedAddress, setExpandedAddress] = useState(false);
+  const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
 
   if (!farmer) return null;
 
@@ -19,6 +22,7 @@ export default function ProductSeller({ farmer, isOwner }) {
   if (isOwner || !farmerId) return null;
 
   return (
+    <>
     <section className="mx-4 sm:mx-6 mt-4 sm:mt-5 rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)] p-4">
       <div className="flex items-center gap-3.5">
         <Link to={`/profile/${farmerId}`} className="shrink-0">
@@ -26,6 +30,7 @@ export default function ProductSeller({ farmer, isOwner }) {
             src={farmerAvatar}
             name={farmerName}
             className="w-11 h-11"
+            onClick={handleAvatarClick(farmer)}
           />
         </Link>
 
@@ -90,5 +95,12 @@ export default function ProductSeller({ farmer, isOwner }) {
         </Link>
       </div>
     </section>
+    <ImageViewerModal
+      isOpen={Boolean(lightbox)}
+      src={lightbox?.src}
+      title={lightbox?.title}
+      onClose={closeLightbox}
+    />
+    </>
   );
 }

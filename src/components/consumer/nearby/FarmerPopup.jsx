@@ -1,10 +1,14 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import Avatar from "../../common/Avatar";
+import ImageViewerModal from "../../common/ImageViewerModal";
+import useProfileViewer from "../../../hooks/useProfileViewer";
 
 export default function FarmerPopup({ farmer, onMessage }) {
   const { t } = useLanguage();
+  const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
   return (
+    <>
     <div className="w-56 p-0.5 select-none text-left">
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -14,6 +18,7 @@ export default function FarmerPopup({ farmer, onMessage }) {
             name={farmer.fullname}
             size="sm"
             className="w-11 h-11 ring-2 ring-[#D8F3DC]"
+            onClick={handleAvatarClick(farmer)}
           />
           {(farmer.verificationStatus === "approved" || farmer.verified) && (
             <span
@@ -90,5 +95,12 @@ export default function FarmerPopup({ farmer, onMessage }) {
         </button>
       </div>
     </div>
+    <ImageViewerModal
+      isOpen={Boolean(lightbox)}
+      src={lightbox?.src}
+      title={lightbox?.title}
+      onClose={closeLightbox}
+    />
+    </>
   );
 }

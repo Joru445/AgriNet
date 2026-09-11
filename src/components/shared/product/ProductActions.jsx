@@ -9,13 +9,19 @@ import { showToast } from "../../../utils/toast";
 export default function ProductActions({ product, farmer, isOwner, onProductUpdate }) {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { profile } = useAuth();
+  const { user, authInitializing, identity } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const isPreorder = product.sellingMode === "preorder";
 
+  // Gated on Firebase Auth (not Firestore profile): an authenticated user whose
+  // profile is still loading (e.g. offline) must NOT be treated as a guest.
+  const isSignedIn = Boolean(user) && !authInitializing;
+
   function handleInquiry() {
-    if (!profile) {
+    if (authInitializing) return;
+
+    if (!user) {
       navigate("/login");
       return;
     }
@@ -23,7 +29,7 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
     const farmerId = farmer?.uid || farmer?.id || product?.farmerId;
     if (!farmerId) return;
 
-    navigate(`${getMessagesPath(profile.role)}?user=${farmerId}`, {
+    navigate(`${getMessagesPath(identity?.role || "")}?user=${farmerId}`, {
       state: {
         inquiryProduct: product,
       },
@@ -49,13 +55,13 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
       {/* Favorite Toggle */}
       {!isOwner && (
         <button
-          onClick={() => profile && toggleFavorite("product", product.id)}
+          onClick={() => isSignedIn && toggleFavorite("product", product.id)}
           className={`flex w-full items-center justify-center gap-2 rounded-xl border py-3 text-sm font-semibold transition cursor-pointer mb-3
             ${isFavorite("product", product.id)
               ? "border-[#E63946] bg-[#E63946]/10 text-[#E63946] hover:bg-[#E63946]/20"
               : "border-[var(--agri-border)] bg-transparent text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]"
             }
-            ${!profile ? "opacity-60 cursor-default" : ""}
+            ${!isSignedIn ? "opacity-60 cursor-default" : ""}
           `}
         >
           <i className={`${isFavorite("product", product.id) ? "ri-heart-fill" : "ri-heart-line"} text-lg`} />
@@ -88,7 +94,7 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
         >
           <i className="ri-chat-1-line text-lg" />
-          {profile
+          {isSignedIn
             ? isPreorder
               ? t("productDetails.sendPreOrderInquiry")
               : t("productDetails.sendInquiry")
