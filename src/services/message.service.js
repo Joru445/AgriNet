@@ -236,7 +236,7 @@ export async function fetchOlderMessages(
  */
 export async function apiSendMessage(data) {
   try {
-    const result = await apiRequest("/messages", {
+    const result = await apiRequest("/v1/messages", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -267,7 +267,7 @@ export async function apiGetMessages(conversationId, { cursor = null, limit: pag
     if (pageSize !== 40) params.set("limit", String(pageSize));
 
     const qs = params.toString();
-    const endpoint = `/messages/${conversationId}${qs ? `?${qs}` : ""}`;
+    const endpoint = `/v1/messages/${conversationId}${qs ? `?${qs}` : ""}`;
 
     const result = await apiRequest(endpoint);
 

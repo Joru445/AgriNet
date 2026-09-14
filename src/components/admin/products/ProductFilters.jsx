@@ -36,7 +36,7 @@ export default function ProductFilters({
           >
             <option value="">{t("adminProduct.allCategories")}</option>
             {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
+              <option key={cat.value} value={cat.value}>{t(cat.labelKey)}</option>
             ))}
           </select>
 

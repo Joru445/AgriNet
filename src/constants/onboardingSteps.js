@@ -31,37 +31,37 @@ const consumerSteps = [
   {
     id: "consumer-welcome",
             target: null,
-    path: "/home",
+    path: "/marketplace",
   },
   {
     id: "consumer-search",
             target: TARGET.search,
-    path: "/home",
+    path: "/marketplace",
   },
   {
     id: "consumer-nearby",
             target: NAV.nearby,
-    path: "/home",
+    path: "/marketplace",
   },
   {
     id: "consumer-product",
             target: TARGET.productCard,
-    path: "/home",
+    path: "/marketplace",
   },
   {
     id: "consumer-messages",
             target: NAV.messages,
-    path: "/home",
+    path: "/marketplace",
   },
   {
     id: "consumer-notifications",
             target: TARGET.bell,
-    path: "/home",
+    path: "/marketplace",
   },
   {
     id: "consumer-profile",
             target: TARGET.headerProfile,
-    path: "/home",
+    path: "/marketplace",
   },
 ];
 
@@ -153,7 +153,7 @@ export function getOnboardingSteps(role) {
  * correct entry point on every breakpoint.
  */
 const NAV_KEYS_BY_PATH = {
-  "/home": "nav-home",
+  "/marketplace": "nav-home",
   "/nearby": "nav-nearby",
   "/messages": "nav-messages",
   "/transactions": "nav-transactions",

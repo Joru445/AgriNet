@@ -97,7 +97,7 @@ export async function submitTransactionReview({
  * validates the inquiry server-side, and persists aggregated ratings.
  */
 export async function apiSubmitTransactionReview(data) {
-  const result = await apiRequest("/reviews", {
+  const result = await apiRequest("/v1/reviews", {
     method: "POST",
     body: JSON.stringify(data),
   });

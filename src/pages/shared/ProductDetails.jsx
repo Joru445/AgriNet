@@ -11,6 +11,7 @@ import ProductInfo from "../../components/shared/product/ProductInfo";
 import ProductSeller from "../../components/shared/product/ProductSeller";
 import ProductDescription from "../../components/shared/product/ProductDescription";
 import ProductActions from "../../components/shared/product/ProductActions";
+import MobileActionBar from "../../components/shared/product/MobileActionBar";
 import ProductDetailsSkeleton from "../../components/shared/product/ProductDetailsSkeleton";
 
 import ReviewSection from "../../components/common/ReviewSection";
@@ -46,7 +47,7 @@ export default function ProductDetails() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl pb-4">
+    <main className="mx-auto max-w-7xl pb-24 lg:pb-4">
       {loading ? (
         <ProductDetailsSkeleton />
       ) : (
@@ -116,6 +117,13 @@ export default function ProductDetails() {
                     role: "farmer",
                   }
             }
+          />
+
+          {/* Mobile fixed bottom action bar */}
+          <MobileActionBar
+            product={product}
+            farmer={farmer}
+            isOwner={isOwner}
           />
         </>
       )}

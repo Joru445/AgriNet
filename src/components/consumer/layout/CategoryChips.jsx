@@ -12,7 +12,6 @@ import meats from "../../../assets/categories/meats.webp";
 import seafoods from "../../../assets/categories/seafoods.webp";
 import herbs from "../../../assets/categories/herbs.webp";
 import rootCrops from "../../../assets/categories/root-crops.webp";
-import placeholder from "../../../assets/categories/placeholder.svg";
 
 const categories = [
   {
@@ -21,47 +20,47 @@ const categories = [
     image: all,
   },
   {
-    id: "Vegetables",
+    id: "vegetables",
     labelKey: "categories.vegetables",
     image: vegetables,
   },
   {
-    id: "Fruits",
+    id: "fruits",
     labelKey: "categories.fruits",
     image: fruits,
   },
   {
-    id: "Grains",
+    id: "grains",
     labelKey: "categories.grains",
     image: grains,
   },
   {
-    id: "Livestock",
+    id: "livestocks",
     labelKey: "categories.livestock",
     image: livestocks,
   },
   {
-    id: "Poultry",
+    id: "poultry",
     labelKey: "categories.poultry",
     image: poultry,
   },
   {
-    id: "Meat",
+    id: "meats",
     labelKey: "categories.meat",
     image: meats,
   },
   {
-    id: "Seafood",
+    id: "seafoods",
     labelKey: "categories.seafood",
     image: seafoods,
   },
   {
-    id: "Herbs",
+    id: "herbs",
     labelKey: "categories.herbs",
     image: herbs,
   },
   {
-    id: "Root Crops",
+    id: "root-crops",
     labelKey: "categories.rootCrops",
     image: rootCrops,
   },
@@ -93,7 +92,7 @@ export default function CategoryChips({ value = "All", onChange }) {
   }
 
   return (
-    <div className="w-full flex items-center justify-start gap-3 overflow-x-auto px-4 py-2 scrollbar-none">
+    <div className="w-full flex items-center justify-start gap-3 overflow-x-auto px-4 sm:px-2 py-2 scrollbar-none">
       {categories.map((cat) => {
         const active = value === cat.id;
 

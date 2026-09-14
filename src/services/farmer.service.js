@@ -33,27 +33,36 @@ export async function createFarmerProfile(data) {
   });
 }
 
-export async function getFarmers({ hasProducts = false } = {}) {
+export async function getFarmers({ hasProducts = false, lat, lng, maxDistance, cursor, limit } = {}) {
   const params = new URLSearchParams();
   if (hasProducts) params.set("hasProducts", "true");
+  if (lat != null) params.set("lat", String(lat));
+  if (lng != null) params.set("lng", String(lng));
+  if (maxDistance != null) params.set("maxDistance", String(maxDistance));
+  if (cursor) params.set("cursor", cursor);
+  if (limit != null) params.set("limit", String(limit));
   const qs = params.toString();
-  const result = await apiRequest(`/farmers${qs ? `?${qs}` : ""}`);
-  return result.data || [];
+  const result = await apiRequest(`/v1/farmers${qs ? `?${qs}` : ""}`);
+  return {
+    farmers: result.data || [],
+    cursor: result.pagination?.cursor ?? null,
+    hasMore: result.pagination?.hasMore ?? false,
+  };
 }
 
 export async function getFarmerDashboard() {
-  const result = await apiRequest("/farmers/dashboard");
+  const result = await apiRequest("/v1/farmers/dashboard");
   return result.data;
 }
 
 export async function apiGetFarmerInquiryAnalytics({ from, to }) {
   const params = new URLSearchParams({ from, to });
-  const result = await apiRequest(`/farmers/dashboard/inquiry-analytics?${params.toString()}`);
+  const result = await apiRequest(`/v1/farmers/dashboard/inquiry-analytics?${params.toString()}`);
   return result.data;
 }
 
 export async function apiGetFarmerProductAnalytics() {
-  const result = await apiRequest("/farmers/dashboard/product-analytics");
+  const result = await apiRequest("/v1/farmers/dashboard/product-analytics");
   return result.data;
 }
 
@@ -63,7 +72,7 @@ export async function getFarmerById(uid) {
   }
 
   try {
-    const result = await apiRequest(`/farmers/${uid}`);
+    const result = await apiRequest(`/v1/farmers/${uid}`);
     const farmer = result.data;
 
     if (farmer) {
@@ -100,7 +109,7 @@ export async function apiSetFarmerVerification(uid, verified) {
     throw new Error("Verification value must be true or false.");
   }
 
-  const result = await apiRequest(`/admin/farmers/${uid}/verification`, {
+  const result = await apiRequest(`/v1/admin/farmers/${uid}/verification`, {
     method: "PATCH",
     body: JSON.stringify({ verified }),
   });
@@ -132,7 +141,7 @@ export async function unverifyFarmer(uid) {
  * Get the authenticated farmer's verification status.
  */
 export async function getMyVerification() {
-  const result = await apiRequest("/farmers/verification");
+  const result = await apiRequest("/v1/farmers/verification");
   return result.data;
 }
 
@@ -140,7 +149,7 @@ export async function getMyVerification() {
  * Submit a verification application.
  */
 export async function submitVerification() {
-  const result = await apiRequest("/farmers/verification", {
+  const result = await apiRequest("/v1/farmers/verification", {
     method: "POST",
   });
   return result.data;
@@ -162,7 +171,7 @@ export async function apiListFarmerVerifications({ status, limit, cursor } = {})
   if (cursor) params.set("cursor", cursor);
 
   const query = params.toString();
-  const result = await apiRequest(`/admin/farmer-verifications${query ? `?${query}` : ""}`);
+  const result = await apiRequest(`/v1/admin/farmer-verifications${query ? `?${query}` : ""}`);
   return result.data;
 }
 
@@ -170,7 +179,7 @@ export async function apiListFarmerVerifications({ status, limit, cursor } = {})
  * Get a specific farmer verification application (admin only).
  */
 export async function apiGetFarmerVerificationById(farmerId) {
-  const result = await apiRequest(`/admin/farmer-verifications/${farmerId}`);
+  const result = await apiRequest(`/v1/admin/farmer-verifications/${farmerId}`);
   return result.data;
 }
 
@@ -178,7 +187,7 @@ export async function apiGetFarmerVerificationById(farmerId) {
  * Approve a farmer verification (admin only).
  */
 export async function apiApproveFarmerVerification(farmerId) {
-  const result = await apiRequest(`/admin/farmer-verifications/${farmerId}/approve`, {
+  const result = await apiRequest(`/v1/admin/farmer-verifications/${farmerId}/approve`, {
     method: "POST",
   });
   return result.data;
@@ -188,7 +197,7 @@ export async function apiApproveFarmerVerification(farmerId) {
  * Reject a farmer verification (admin only).
  */
 export async function apiRejectFarmerVerification(farmerId, reason) {
-  const result = await apiRequest(`/admin/farmer-verifications/${farmerId}/reject`, {
+  const result = await apiRequest(`/v1/admin/farmer-verifications/${farmerId}/reject`, {
     method: "POST",
     body: JSON.stringify({ reason }),
   });

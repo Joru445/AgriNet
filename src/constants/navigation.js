@@ -45,7 +45,7 @@ export const farmerNavigation = [
 
 export const consumerNavigation = [
   {
-    to: "/home",
+    to: "/marketplace",
     icon: "ri-store-2-line",
     labelKey: "nav.home",
     bottom: true,

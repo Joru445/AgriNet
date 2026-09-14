@@ -85,7 +85,10 @@ export default function AccountSwitcher() {
     try {
       await navigateToLogin(null);
     } catch (error) {
-      console.error("Failed to sign out after removing current account:", error);
+      console.error(
+        "Failed to sign out after removing current account:",
+        error,
+      );
       showToast.error(t("common.error") || "Failed to sign out");
     }
   }
@@ -130,38 +133,36 @@ export default function AccountSwitcher() {
         {otherAccounts.map((account) => (
           <div
             key={account.uid}
-            className="border-t border-[var(--agri-border-subtle)]"
+            className="border-t border-[var(--agri-border-subtle)] pr-4"
           >
-            <button
-              type="button"
-              onClick={() => handleRowClick(account)}
-              disabled={switching}
-              className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-[var(--agri-hover)] disabled:opacity-50 cursor-pointer"
-            >
-              <Avatar
-                src={account.avatar}
-                name={account.email}
-                size="xs"
-              />
-              <div className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-[var(--agri-text)] truncate">
-                  {account.email}
-                </span>
-                <AccountMetadata account={account} t={t} />
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  onClick={(e) => handleRemove(e, account)}
-                  disabled={switching}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
-                  aria-label={t("settings.removeAccount") || "Remove account"}
-                >
-                  <i className="ri-close-line text-sm" />
-                </button>
-                <i className="ri-arrow-right-s-line text-[var(--agri-text-muted)] text-sm" />
-              </div>
-            </button>
+            <div className="flex w-full items-center gap-3">
+              <button
+                type="button"
+                onClick={() => handleRowClick(account)}
+                disabled={switching}
+                className="flex min-w-0 flex-1 items-center gap-3 text-left transition hover:bg-(--agri-brand-bg)/30 disabled:opacity-50 cursor-pointer px-4 py-3"
+              >
+                <Avatar src={account.avatar} name={account.email} size="xs" />
+
+                <div className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-[var(--agri-text)] truncate">
+                    {account.email}
+                  </span>
+
+                  <AccountMetadata account={account} t={t} />
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => handleRemove(e, account)}
+                disabled={switching}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
+                aria-label={t("settings.removeAccount") || "Remove account"}
+              >
+                <i className="ri-close-line text-sm" />
+              </button>
+            </div>
           </div>
         ))}
 
@@ -194,7 +195,11 @@ export default function AccountSwitcher() {
             : t("settings.switchAccountConfirm")
         }
         description={confirmTarget?.email}
-        icon={confirmTarget?.hasPasskey ? "ri-key-2-line" : "ri-arrow-left-right-line"}
+        icon={
+          confirmTarget?.hasPasskey
+            ? "ri-key-2-line"
+            : "ri-arrow-left-right-line"
+        }
         loading={switching}
       />
 

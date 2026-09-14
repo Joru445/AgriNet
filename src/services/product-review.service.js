@@ -3,7 +3,7 @@ import { apiRequest } from "./api/api.client";
 export async function getReviewsByProduct(productId, { maxReviews = 20 } = {}) {
   try {
     const result = await apiRequest(
-      `/reviews/products/${productId}?limit=${maxReviews}`,
+      `/v1/reviews/products/${productId}?limit=${maxReviews}`,
     );
     return result.data || [];
   } catch {
@@ -15,7 +15,7 @@ export async function getProductReviewSummaries(productIds) {
   if (!productIds.length) return new Map();
 
   const result = await apiRequest(
-    `/reviews/products/summaries?ids=${productIds.join(",")}`,
+    `/v1/reviews/products/summaries?ids=${productIds.join(",")}`,
   );
 
   const data = result.data || {};
@@ -27,7 +27,7 @@ export async function getProductReviewSummaries(productIds) {
 
 export async function getInquiryProductReview(inquiryId) {
   try {
-    const result = await apiRequest(`/reviews/inquiries/${inquiryId}/product`);
+    const result = await apiRequest(`/v1/reviews/inquiries/${inquiryId}/product`);
     return result.data ?? null;
   } catch (error) {
     if (error.status === 404) return null;

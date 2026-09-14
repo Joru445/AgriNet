@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import useUserLocation from "./useUserLocation";
 import { useAuth } from "../context/AuthContext";
 
 import { getFarmers } from "../services/farmer.service";
-import { getDistanceKm } from "../utils/distance";
 import * as pageCache from "../utils/pageCache";
 
-const CACHE_KEY = "nearbyFarmers";
+const CACHE_KEY_PREFIX = "nearbyFarmers";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export default function useNearbyFarmers() {
@@ -42,8 +41,11 @@ export default function useNearbyFarmers() {
     return { lat: 13.9411, lng: 121.6243 };
   }, [gpsLocation, profile]);
 
-  const [loading, setLoading] = useState(!pageCache.get(CACHE_KEY));
-  const [farmers, setFarmers] = useState(() => pageCache.get(CACHE_KEY) ?? []);
+  const [loading, setLoading] = useState(false);
+  const [farmers, setFarmers] = useState(() => {
+    const cacheKey = `${CACHE_KEY_PREFIX}_${validUserLocation.lat}_${validUserLocation.lng}`;
+    return pageCache.get(cacheKey) ?? [];
+  });
 
   const [maxDistance, setMaxDistanceState] = useState(() => {
     const stored = localStorage.getItem("agri_nearby_distance");
@@ -63,85 +65,42 @@ export default function useNearbyFarmers() {
     }
   }, []);
 
-  useEffect(() => {
-    const cached = pageCache.get(CACHE_KEY);
+  // Build a cache key that includes location + distance so different
+  // queries are cached independently.
+  const cacheKey = `${CACHE_KEY_PREFIX}_${validUserLocation.lat}_${validUserLocation.lng}_${maxDistance}`;
+
+  const loadFarmers = useCallback(async () => {
+    const cached = pageCache.get(cacheKey);
     if (cached) {
+      setFarmers(cached);
       setLoading(false);
       return;
     }
-    loadFarmers();
-  }, []);
 
-  async function loadFarmers() {
     try {
       setLoading(true);
 
-      const cached = pageCache.get(CACHE_KEY);
-      if (cached) {
-        setFarmers(cached);
-        setLoading(false);
-        return;
-      }
-
-      const data = await getFarmers({ hasProducts: true });
+      const { farmers: data } = await getFarmers({
+        hasProducts: true,
+        lat: validUserLocation.lat,
+        lng: validUserLocation.lng,
+        maxDistance,
+      });
 
       setFarmers(data);
-      pageCache.set(CACHE_KEY, data, CACHE_TTL);
+      pageCache.set(cacheKey, data, CACHE_TTL);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }
+  }, [validUserLocation.lat, validUserLocation.lng, maxDistance, cacheKey]);
 
-  const nearbyFarmers = useMemo(() => {
-    return farmers
-      .map((farmer) => {
-        const fLat = farmer.location?.lat;
-        const fLng = farmer.location?.lng;
+  useEffect(() => {
+    loadFarmers();
+  }, [loadFarmers]);
 
-        if (
-          typeof fLat !== "number" ||
-          isNaN(fLat) ||
-          typeof fLng !== "number" ||
-          isNaN(fLng)
-        ) {
-          return {
-            ...farmer,
-            distance: null,
-          };
-        }
-
-        if (!validUserLocation) {
-          return {
-            ...farmer,
-            distance: null,
-          };
-        }
-
-        const distance = getDistanceKm(
-          validUserLocation.lat,
-          validUserLocation.lng,
-          fLat,
-          fLng,
-        );
-
-        return {
-          ...farmer,
-          distance: typeof distance === "number" && !isNaN(distance) ? distance : null,
-        };
-      })
-      .filter((farmer) => {
-        return (
-          typeof farmer.distance === "number" &&
-          !isNaN(farmer.distance) &&
-          farmer.distance <= maxDistance
-        );
-      })
-      .sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
-  }, [farmers, validUserLocation, maxDistance]);
-
-  const nearestFarmer = nearbyFarmers[0] ?? null;
+  const nearestFarmer = farmers[0] ?? null;
 
   return {
     loading,
@@ -150,7 +109,6 @@ export default function useNearbyFarmers() {
     userLocation: validUserLocation,
 
     farmers,
-    nearbyFarmers,
 
     nearestFarmer,
 
@@ -159,7 +117,7 @@ export default function useNearbyFarmers() {
 
     refreshLocation,
     reloadFarmers: () => {
-      pageCache.invalidate(CACHE_KEY);
+      pageCache.invalidate(cacheKey);
       loadFarmers();
     },
   };

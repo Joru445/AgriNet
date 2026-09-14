@@ -1,5 +1,5 @@
 export const tabRoutes = [
-  "/home",
+  "/marketplace",
   "/nearby",
   "/products",
   "/messages",

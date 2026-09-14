@@ -126,7 +126,7 @@ export function getSettingsPath(role) {
  * Consumers/admins see /profile/:uid, farmers see /farmer/profile/:uid.
  */
 export function getPublicProfilePath(uid, role) {
-  if (!uid) return "/home";
+  if (!uid) return "/marketplace";
   if (role === "farmer") return `/farmer/profile/${uid}`;
   return `/profile/${uid}`;
 }
@@ -140,7 +140,7 @@ export function getRoleHome(role) {
       return "/farmer";
 
     case "consumer":
-      return "/home";
+      return "/marketplace";
 
     default:
       return "/login";

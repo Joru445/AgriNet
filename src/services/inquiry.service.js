@@ -681,17 +681,17 @@ function getImageUrl(images) {
  */
 
 export async function apiGetInquiries() {
-  const data = await apiRequest("/inquiries");
+  const data = await apiRequest("/v1/inquiries");
   return data.data ?? [];
 }
 
 export async function apiGetInquiryById(inquiryId) {
-  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}`);
+  const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}`);
   return data.data ?? null;
 }
 
 export async function apiAcceptInquiry(inquiryData) {
-  const data = await apiRequest("/inquiries/accept", {
+  const data = await apiRequest("/v1/inquiries/accept", {
     method: "POST",
     body: JSON.stringify(inquiryData),
   });
@@ -699,21 +699,21 @@ export async function apiAcceptInquiry(inquiryData) {
 }
 
 export async function apiStartTransaction(inquiryId) {
-  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/start`, {
+  const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}/start`, {
     method: "PATCH",
   });
   return data.data ?? null;
 }
 
 export async function apiRequestCompletion(inquiryId) {
-  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/request-completion`, {
+  const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}/request-completion`, {
     method: "PATCH",
   });
   return data.data ?? null;
 }
 
 export async function apiSubmitProof(inquiryId, proof) {
-  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/proof`, {
+  const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}/proof`, {
     method: "POST",
     body: JSON.stringify({ proof }),
   });
@@ -721,21 +721,21 @@ export async function apiSubmitProof(inquiryId, proof) {
 }
 
 export async function apiConfirmProof(inquiryId) {
-  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/confirm-completion`, {
+  const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}/confirm-completion`, {
     method: "PATCH",
   });
   return data.data ?? null;
 }
 
 export async function apiRejectProof(inquiryId) {
-  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/reject-proof`, {
+  const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}/reject-proof`, {
     method: "PATCH",
   });
   return data.data ?? null;
 }
 
 export async function apiCancelInquiry(inquiryId) {
-  const data = await apiRequest(`/inquiries/${encodeURIComponent(inquiryId)}/cancel`, {
+  const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}/cancel`, {
     method: "PATCH",
   });
   return data.data ?? null;

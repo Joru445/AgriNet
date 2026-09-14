@@ -314,13 +314,20 @@ async function getFarmersByIds(ids) {
  * preserved for easy rollback.
  */
 
-export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor } = {}) {
+export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, category, available, sellingMode, farmerId } = {}) {
   try {
     const params = new URLSearchParams();
     params.set("limit", String(pageSize));
     if (cursor) params.set("cursor", String(cursor));
 
-    const data = await apiRequest(`/products/marketplace?${params}`);
+    // Pass supported filters to the backend so Firestore applies them
+    // server-side rather than returning the full collection.
+    if (category) params.set("category", category);
+    if (available !== undefined) params.set("available", String(available));
+    if (sellingMode) params.set("sellingMode", sellingMode);
+    if (farmerId) params.set("farmerId", farmerId);
+
+    const data = await apiRequest(`/v1/products/marketplace?${params}`);
 
     return {
       products: data.data ?? [],
@@ -335,7 +342,7 @@ export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor }
 
 export async function apiGetProductById(id) {
   try {
-    const data = await apiRequest(`/products/${encodeURIComponent(id)}`);
+    const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}`);
     return data.data ?? null;
   } catch (err) {
     console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
@@ -345,7 +352,7 @@ export async function apiGetProductById(id) {
 
 export async function apiGetFarmerProducts(farmerId) {
   try {
-    const data = await apiRequest(`/products/farmer/${encodeURIComponent(farmerId)}`);
+    const data = await apiRequest(`/v1/products/farmer/${encodeURIComponent(farmerId)}`);
     return data.data ?? [];
   } catch (err) {
     console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
@@ -355,7 +362,7 @@ export async function apiGetFarmerProducts(farmerId) {
 
 export async function apiCreateProduct(productData) {
   try {
-    const data = await apiRequest("/products", {
+    const data = await apiRequest("/v1/products", {
       method: "POST",
       body: JSON.stringify(productData),
     });
@@ -368,7 +375,7 @@ export async function apiCreateProduct(productData) {
 
 export async function apiUpdateProduct(id, productData) {
   try {
-    const data = await apiRequest(`/products/${encodeURIComponent(id)}`, {
+    const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}`, {
       method: "PATCH",
       body: JSON.stringify(productData),
     });
@@ -381,7 +388,7 @@ export async function apiUpdateProduct(id, productData) {
 
 export async function apiDeleteProduct(id) {
   try {
-    const data = await apiRequest(`/products/${encodeURIComponent(id)}`, {
+    const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
     return data.data ?? null;
@@ -392,14 +399,14 @@ export async function apiDeleteProduct(id) {
 }
 
 export async function apiToggleProductAvailability(id) {
-  const data = await apiRequest(`/products/${encodeURIComponent(id)}/availability`, {
+  const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}/availability`, {
     method: "PATCH",
   });
   return data.data ?? null;
 }
 
 export async function apiUpdateProductStock(id, stock) {
-  const data = await apiRequest(`/products/${encodeURIComponent(id)}/stock`, {
+  const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}/stock`, {
     method: "PATCH",
     body: JSON.stringify({ stock }),
   });
@@ -407,7 +414,7 @@ export async function apiUpdateProductStock(id, stock) {
 }
 
 export async function apiMarkProductAsAvailable(id) {
-  const data = await apiRequest(`/products/${encodeURIComponent(id)}/mark-available`, {
+  const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}/mark-available`, {
     method: "PATCH",
   });
   return data.data ?? null;

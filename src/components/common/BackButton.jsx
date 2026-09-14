@@ -18,7 +18,7 @@ export default function BackButton({
     } else if (window.history.length > 1) {
       navigate(-1);
     } else {
-      navigate("/home");
+      navigate("/marketplace");
     }
   };
 

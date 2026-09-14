@@ -51,7 +51,7 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
   }
 
   return (
-    <section className="px-4 sm:px-6 mt-4 sm:mt-5 pb-2">
+    <section className="hidden lg:block px-4 sm:px-6 mt-4 sm:mt-5 pb-2">
       {/* Favorite Toggle */}
       {!isOwner && (
         <button
@@ -59,7 +59,7 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
           className={`flex w-full items-center justify-center gap-2 rounded-xl border py-3 text-sm font-semibold transition cursor-pointer mb-3
             ${isFavorite("product", product.id)
               ? "border-[#E63946] bg-[#E63946]/10 text-[#E63946] hover:bg-[#E63946]/20"
-              : "border-[var(--agri-border)] bg-transparent text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]"
+              : "border-(--agri-border) bg-transparent text-(--agri-text-secondary) hover:bg-(--agri-hover)"
             }
             ${!isSignedIn ? "opacity-60 cursor-default" : ""}
           `}
@@ -93,7 +93,6 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
           onClick={handleInquiry}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
         >
-          <i className="ri-chat-1-line text-lg" />
           {isSignedIn
             ? isPreorder
               ? t("productDetails.sendPreOrderInquiry")

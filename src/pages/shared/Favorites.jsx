@@ -8,6 +8,7 @@ import { getProducts } from "../../services/product.service";
 import { getFarmers } from "../../services/farmer.service";
 
 import ProductCard from "../../components/common/ProductCard";
+import ProductGridSkeleton from "../../components/shared/product/ProductGridSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
 import LoginRequired from "../../components/ui/LoginRequired";
 import Loading from "../../components/Loading";
@@ -37,7 +38,7 @@ export default function Favorites() {
       setError(null);
 
       try {
-        const { items } = await getFavorites(1, 100);
+        const { items } = await getFavorites({ limit: 100 });
         const productIds = items
           .filter((f) => f.type === "product")
           .map((f) => f.targetId);
@@ -45,7 +46,7 @@ export default function Favorites() {
           .filter((f) => f.type === "farmer")
           .map((f) => f.targetId);
 
-        const [allProducts, allFarmers] = await Promise.all([
+        const [allProducts, { farmers: allFarmers }] = await Promise.all([
           getProducts(),
           getFarmers(),
         ]);
@@ -120,14 +121,10 @@ export default function Favorites() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] h-64 animate-pulse"
-            />
-          ))}
-        </div>
+        <ProductGridSkeleton
+          count={4}
+          gridClassName="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+        />
       ) : error ? (
         <EmptyState
           icon="ri-error-warning-line"

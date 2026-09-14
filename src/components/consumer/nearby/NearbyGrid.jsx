@@ -1,4 +1,4 @@
-import EmptyNearby from "./EmptyNearby";
+import EmptyState from "../../ui/EmptyState";
 import NearbyFarmerCard from "./NearbyFarmerCard";
 
 export default function NearbyFarmerGrid({ loading, farmers }) {
@@ -10,8 +10,14 @@ export default function NearbyFarmerGrid({ loading, farmers }) {
     );
   }
 
-  if (!farmers.length) {
-    return <EmptyNearby />;
+  if (!farmers?.length) {
+    return (
+      <EmptyState
+        icon="ri-map-pin-line"
+        title="No nearby farmers"
+        description="Try expanding your search distance"
+      />
+    );
   }
 
   return (

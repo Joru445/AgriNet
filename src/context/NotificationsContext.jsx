@@ -57,25 +57,29 @@ export function NotificationsProvider({ children }) {
   const hasLoadedPagesRef = useRef(false);
 
   useEffect(() => {
+    // Always clear stale data when the effect re-runs (UID change or mount).
+    setNotifications([]);
+    setUnreadCount(0);
+    setLoading(true);
+    setLoadingMore(false);
+    setCursor(null);
+    setHasMore(false);
     hasLoadedPagesRef.current = false;
 
     if (!profile?.uid) {
-      setNotifications([]);
-      setUnreadCount(0);
       setLoading(false);
-      setLoadingMore(false);
-      setCursor(null);
-      setHasMore(false);
       return;
     }
 
-    setLoading(true);
-    setCursor(null);
-    setHasMore(false);
+    const listenerUid = profile.uid;
 
     const unsubscribeList = subscribeUserNotifications(
-      profile.uid,
+      listenerUid,
       (data) => {
+        // Guard: ignore if the authenticated user has changed since this
+        // listener was created.
+        if (profile?.uid !== listenerUid) return;
+
         setNotifications((current) => mergeFirstPage(current, data));
 
         if (!hasLoadedPagesRef.current) {
@@ -92,8 +96,12 @@ export function NotificationsProvider({ children }) {
     );
 
     const unsubscribeUnread = subscribeUnreadNotifications(
-      profile.uid,
-      setUnreadCount,
+      listenerUid,
+      (count) => {
+        // Guard: same check.
+        if (profile?.uid !== listenerUid) return;
+        setUnreadCount(count);
+      },
       (error) => {
         console.error("Failed to load unread notifications:", error);
       },

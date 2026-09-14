@@ -11,16 +11,15 @@ export default function StoreProducts({ farmer, products = [] }) {
 
   const CATEGORIES = [
     { id: "All", label: t("storeProfile.all"), icon: "ri-apps-2-line" },
-    { id: "Vegetables", label: t("storeProfile.vegetables"), icon: "ri-plant-line" },
-    { id: "Fruits", label: t("storeProfile.fruits"), icon: "ri-seedling-line" },
-    { id: "Grains", label: t("storeProfile.grains"), icon: "ri-leaf-line" },
-    { id: "Livestock", label: t("storeProfile.livestock"), icon: "ri-heart-pulse-line" },
-    { id: "Herbs", label: t("storeProfile.herbs"), icon: "ri-medicine-bottle-line" },
-    { id: "Root Crops", label: t("storeProfile.rootCrops"), icon: "ri-earth-line" },
-    { id: "Poultry", label: t("storeProfile.poultry"), icon: "ri-egg-line" },
-    { id: "Meat", label: t("storeProfile.meat"), icon: "ri-restaurant-line" },
-    { id: "Seafood", label: t("storeProfile.seafood"), icon: "ri-water-flash-line" },
-    { id: "Others", label: t("storeProfile.others"), icon: "ri-shopping-basket-2-line" },
+    { id: "vegetables", label: t("storeProfile.vegetables"), icon: "ri-plant-line" },
+    { id: "fruits", label: t("storeProfile.fruits"), icon: "ri-seedling-line" },
+    { id: "grains", label: t("storeProfile.grains"), icon: "ri-leaf-line" },
+    { id: "livestocks", label: t("storeProfile.livestock"), icon: "ri-heart-pulse-line" },
+    { id: "herbs", label: t("storeProfile.herbs"), icon: "ri-medicine-bottle-line" },
+    { id: "root-crops", label: t("storeProfile.rootCrops"), icon: "ri-earth-line" },
+    { id: "poultry", label: t("storeProfile.poultry"), icon: "ri-egg-line" },
+    { id: "meats", label: t("storeProfile.meat"), icon: "ri-restaurant-line" },
+    { id: "seafoods", label: t("storeProfile.seafood"), icon: "ri-water-flash-line" },
   ];
 
   const filteredProducts = useMemo(() => {

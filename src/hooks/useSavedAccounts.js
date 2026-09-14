@@ -48,6 +48,11 @@ export function useSavedAccounts() {
   useEffect(() => {
     if (!profile?.uid) return;
     if (savedUidRef.current === profile.uid) return;
+
+    // Guard: only save if the profile UID matches the current Firebase user.
+    // Prevents saving a stale profile from a previous account during switching.
+    if (user?.uid !== profile.uid) return;
+
     savedUidRef.current = profile.uid;
 
     const provider = getPrimaryProvider(user);

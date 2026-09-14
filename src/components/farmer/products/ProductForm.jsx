@@ -5,16 +5,15 @@ import { useLanguage } from "../../../context/LanguageContext";
 const tomorrowDate = new Date(Date.now() + 86400000).toISOString().split("T")[0];
 
 const categories = [
-  "Vegetables",
-  "Fruits",
-  "Grains",
-  "Root Crops",
-  "Herbs",
-  "Livestock",
-  "Poultry",
-  "Meat",
-  "Seafood",
-  "Others",
+  "vegetables",
+  "fruits",
+  "grains",
+  "root-crops",
+  "herbs",
+  "livestocks",
+  "poultry",
+  "meats",
+  "seafoods",
 ];
 
 const units = ["kg", "g", "pcs", "bundle", "pack", "box", "sack"];
@@ -34,18 +33,11 @@ function getDurationOptions(t) {
   ];
 }
 
-const categoryKeyMap = {
-  "Root Crops": "rootCrops",
-};
-
 function getCategories(t) {
-  return categories.map((cat) => {
-    const key = categoryKeyMap[cat] || cat.toLowerCase();
-    return {
-      value: cat,
-      label: t(`products.categories.${key}`),
-    };
-  });
+  return categories.map((cat) => ({
+    value: cat,
+    label: t(`products.categories.${cat}`),
+  }));
 }
 
 function getUnits(t) {

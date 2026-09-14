@@ -126,7 +126,7 @@ export async function apiGetNotifications({ cursor = null, limit: pageSize = 20 
   if (pageSize !== 20) params.set("limit", String(pageSize));
 
   const qs = params.toString();
-  const endpoint = `/notifications${qs ? `?${qs}` : ""}`;
+  const endpoint = `/v1/notifications${qs ? `?${qs}` : ""}`;
 
   const result = await apiRequest(endpoint);
 
@@ -140,13 +140,13 @@ export async function apiGetNotifications({ cursor = null, limit: pageSize = 20 
 export async function apiMarkNotificationRead(notificationId) {
   if (!notificationId) return;
 
-  await apiRequest(`/notifications/${encodeURIComponent(notificationId)}/read`, {
+  await apiRequest(`/v1/notifications/${encodeURIComponent(notificationId)}/read`, {
     method: "PATCH",
   });
 }
 
 export async function apiMarkAllNotificationsRead() {
-  await apiRequest("/notifications/read-all", {
+  await apiRequest("/v1/notifications/read-all", {
     method: "PATCH",
   });
 }

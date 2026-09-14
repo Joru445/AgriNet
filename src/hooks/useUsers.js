@@ -63,7 +63,7 @@ export default function useUsers() {
 
     async function loadFarmers() {
       try {
-        const data = await getFarmers();
+        const { farmers: data } = await getFarmers();
 
         if (mounted) {
           setFarmers(data);

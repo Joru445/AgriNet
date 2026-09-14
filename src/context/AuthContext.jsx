@@ -97,9 +97,17 @@ export function AuthProvider({ children }) {
           firebaseUser.uid,
         );
 
+        // Capture the UID this listener was created for so stale callbacks
+        // from a previous user's snapshot cannot overwrite the current state.
+        const listenerUid = firebaseUser.uid;
+
         unsubscribeProfile = onSnapshot(
           userRef,
           (snapshot) => {
+            // Guard: ignore if the authenticated user has changed since this
+            // listener was created (e.g. rapid account switching).
+            if (auth.currentUser?.uid !== listenerUid) return;
+
             if (!snapshot.exists()) {
               setProfile(null);
               setFarmer(null);
@@ -132,7 +140,7 @@ export function AuthProvider({ children }) {
             const farmerRef = doc(
               db,
               "farmers",
-              firebaseUser.uid,
+              listenerUid,
             );
 
             unsubscribeFarmer?.();
@@ -140,6 +148,9 @@ export function AuthProvider({ children }) {
             unsubscribeFarmer = onSnapshot(
               farmerRef,
               (farmerSnapshot) => {
+                // Guard: same check for farmer listener.
+                if (auth.currentUser?.uid !== listenerUid) return;
+
                 setFarmer(
                   farmerSnapshot.exists()
                     ? {
@@ -151,16 +162,16 @@ export function AuthProvider({ children }) {
 
                 setLoading(false);
               },
-(error) => {
-              console.error(
-                "Failed to load farmer profile:",
-                error,
-              );
+              (error) => {
+                console.error(
+                  "Failed to load farmer profile:",
+                  error,
+                );
 
-              setFarmer(null);
-              setLoading(false);
-            },
-          );
+                setFarmer(null);
+                setLoading(false);
+              },
+            );
           },
           (error) => {
             console.error(

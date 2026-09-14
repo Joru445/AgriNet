@@ -36,21 +36,30 @@ export function ConversationsProvider({ children }) {
   const userProfileCacheRef = useRef(new Map());
 
   useEffect(() => {
+    // Always clear stale data when the effect re-runs (UID change or mount).
+    // Prevents previous account's conversations from flashing while the new
+    // subscription is loading.
+    setConversations([]);
+    setLoading(true);
+
     if (!profile?.uid) {
-      setConversations([]);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    const listenerUid = profile.uid;
 
-    const unsubscribe = subscribeUserConversations(profile.uid, (data) => {
+    const unsubscribe = subscribeUserConversations(listenerUid, (data) => {
+      // Guard: ignore if the authenticated user has changed since this
+      // listener was created.
+      if (profile?.uid !== listenerUid) return;
+
       try {
         const missingProfileUids = [];
 
         const mapped = data.map((conversation) => {
           const otherUid = conversation.participants?.find(
-            (p) => p !== profile.uid,
+            (p) => p !== listenerUid,
           );
 
           const otherInfo = conversation.participantInfo?.[otherUid] || {};
@@ -91,7 +100,7 @@ export function ConversationsProvider({ children }) {
                 (cachedProfile?.verified ??
                 otherInfo.verified === true),
             },
-            unreadCount: conversation.unreadCount?.[profile.uid] ?? 0,
+            unreadCount: conversation.unreadCount?.[listenerUid] ?? 0,
             rawUnreadCount: conversation.unreadCount || {},
           };
         });
@@ -103,7 +112,7 @@ export function ConversationsProvider({ children }) {
           uniqueMissing.forEach(async (missingUid) => {
             try {
               const user = await getUserProfile(missingUid);
-              if (user) {
+              if (user && profile?.uid === listenerUid) {
                 userProfileCacheRef.current.set(missingUid, user);
                 setCachedUserProfile(missingUid, user);
                 setConversations((prev) =>

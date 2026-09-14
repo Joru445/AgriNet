@@ -10,7 +10,7 @@ export default function Nearby() {
     loading,
     userLocation,
     maxDistance,
-    nearbyFarmers,
+    farmers,
     nearestFarmer,
 
     setMaxDistance,
@@ -21,7 +21,7 @@ export default function Nearby() {
       <NearbyHeader />
 
       <NearbyMap
-        farmers={nearbyFarmers}
+        farmers={farmers}
         maxDistance={maxDistance}
         userLocation={userLocation}
       />
@@ -32,7 +32,7 @@ export default function Nearby() {
         onDistanceChange={setMaxDistance}
       />
 
-      <NearbyFarmerGrid loading={loading} farmers={nearbyFarmers} />
+      <NearbyFarmerGrid loading={loading} farmers={farmers} />
     </main>
   );
 }

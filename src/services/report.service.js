@@ -40,7 +40,7 @@ export function getReportPriority(reason = "") {
  */
 
 export async function createReport(data) {
-  const result = await apiRequest("/admin/reports", {
+  const result = await apiRequest("/v1/admin/reports", {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -63,7 +63,13 @@ export async function getActiveReportForTarget({
   if (!reporterId) return null;
 
   try {
-    const result = await apiRequest("/admin/reports/mine?limit=100");
+    // When targetId is available, filter server-side to avoid fetching
+    // the full report list.  The backend /mine endpoint supports
+    // status and targetId query params.
+    const params = new URLSearchParams({ limit: "50" });
+    if (targetId) params.set("targetId", targetId);
+
+    const result = await apiRequest(`/v1/admin/reports/mine?${params.toString()}`);
     const reports = result.data || [];
 
     const match = reports.find((r) => {
@@ -121,7 +127,7 @@ export async function updateReportStatus(reportId, status, adminNotes = "") {
     throw new Error("Invalid report status.");
   }
 
-  const result = await apiRequest(`/admin/reports/${reportId}/status`, {
+  const result = await apiRequest(`/v1/admin/reports/${reportId}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status, adminNotes }),
   });
@@ -165,7 +171,7 @@ export async function apiListAdminReports({
   if (startDate) params.set("startDate", startDate);
   if (endDate) params.set("endDate", endDate);
 
-  const result = await apiRequest(`/admin/reports?${params.toString()}`);
+  const result = await apiRequest(`/v1/admin/reports?${params.toString()}`);
   return result;
 }
 
@@ -180,7 +186,7 @@ export async function apiGetAdminReport(reportId) {
     throw new Error("Report ID is required.");
   }
 
-  const result = await apiRequest(`/admin/reports/${reportId}`);
+  const result = await apiRequest(`/v1/admin/reports/${reportId}`);
   return result.data;
 }
 

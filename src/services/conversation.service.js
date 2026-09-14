@@ -203,7 +203,7 @@ export async function updateConversation(conversationId, data) {
  */
 export async function apiGetConversations() {
   try {
-    const response = await apiRequest("/conversations");
+    const response = await apiRequest("/v1/conversations");
     return response.data;
   } catch (err) {
     console.warn("[Conversations] Backend API getConversations failed:", err.message);
@@ -213,7 +213,7 @@ export async function apiGetConversations() {
 
 export async function apiGetConversationById(conversationId) {
   try {
-    const response = await apiRequest(`/conversations/${conversationId}`);
+    const response = await apiRequest(`/v1/conversations/${conversationId}`);
     return response.data;
   } catch (err) {
     console.warn("[Conversations] Backend API getConversationById failed:", err.message);
@@ -223,7 +223,7 @@ export async function apiGetConversationById(conversationId) {
 
 export async function apiFindOrCreateConversation(otherUserId, { findOnly = false } = {}) {
   try {
-    const response = await apiRequest("/conversations", {
+    const response = await apiRequest("/v1/conversations", {
       method: "POST",
       body: JSON.stringify({ otherUserId, findOnly }),
     });
@@ -261,7 +261,7 @@ export async function apiFindOrCreateConversation(otherUserId, { findOnly = fals
 export async function apiMarkConversationRead(conversationId) {
   try {
     const response = await apiRequest(
-      `/conversations/${conversationId}/read`,
+      `/v1/conversations/${conversationId}/read`,
       { method: "PATCH" },
     );
     return response.data;

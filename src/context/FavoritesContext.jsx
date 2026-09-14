@@ -21,19 +21,21 @@ export function FavoritesProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Always clear stale data when the effect re-runs (user change or mount).
+    setFavoriteIds(new Set());
+    setLoading(true);
+
     if (!user) {
-      setFavoriteIds(new Set());
       setLoading(false);
       return;
     }
 
     let cancelled = false;
-
-    setLoading(true);
+    const listenerUid = user.uid;
 
     getFavoriteIds()
       .then((ids) => {
-        if (!cancelled) {
+        if (!cancelled && user?.uid === listenerUid) {
           setFavoriteIds(new Set(ids));
           setLoading(false);
         }

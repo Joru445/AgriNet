@@ -43,19 +43,27 @@ export function InquiriesProvider({ children }) {
   }, [profile]);
 
   useEffect(() => {
+    // Always clear stale data when the effect re-runs (UID change or mount).
+    setInquiries([]);
+    setLoading(true);
+    setError(null);
+
     if (!profile?.uid || !profile?.role) {
-      setInquiries([]);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    const listenerUid = profile.uid;
+    const listenerRole = profile.role;
 
     const unsubscribe = subscribeUserInquiries(
-      profile.uid,
-      profile.role,
+      listenerUid,
+      listenerRole,
       (data) => {
+        // Guard: ignore if the authenticated user has changed since this
+        // listener was created.
+        if (profile?.uid !== listenerUid) return;
+
         setInquiries(data);
         setLoading(false);
 
@@ -78,7 +86,7 @@ export function InquiriesProvider({ children }) {
             current.completedDeals !== completed ||
             current.totalDeals !== total
           ) {
-            updateDoc(doc(db, "users", profileRef.current.uid), {
+            updateDoc(doc(db, "users", listenerUid), {
               completedDeals: completed,
               totalDeals: total,
               cancelledDeals: cancelled,

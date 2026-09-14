@@ -21,7 +21,6 @@ const VerifyAccount = lazy(() => import("../pages/public/VerifyAccount"));
 const Suspended = lazy(() => import("../pages/Suspended.jsx"));
 
 // Consumer Pages
-const ConsumerHome = lazy(() => import("../pages/consumer/Home"));
 const MarketPlace = lazy(() => import("../pages/consumer/Marketplace"))
 const Nearby = lazy(() => import("../pages/consumer/Nearby"));
 
@@ -93,7 +92,6 @@ export default function AppRoutes() {
           <Route path="/profile/:uid" element={<PublicProfile />} />
 
           {/* Protected — pages check auth internally and show LoginRequired */}
-          <Route path="/home" element={<ConsumerHome />} />
           <Route path="/transactions" element={<Inquiries />} />
           <Route
             path="/transactions/:inquiryId/proof"

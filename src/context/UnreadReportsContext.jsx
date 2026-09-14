@@ -126,14 +126,26 @@ export function UnreadReportsProvider({ children }) {
   }, [isReportsPage, profile?.uid]);
 
   useEffect(() => {
+    // Always clear stale data when the effect re-runs (UID change or mount).
+    setPendingReportsCount(0);
+    setShowReportPopup(false);
+    setReportPopupMessage("New report");
+    setAllReports([]);
+    allReportsRef.current = [];
+    if (popupTimerRef.current) clearTimeout(popupTimerRef.current);
+
     if (!profile?.uid || profile?.role !== "admin") {
-      setPendingReportsCount(0);
-      setShowReportPopup(false);
       return;
     }
 
+    const listenerUid = profile.uid;
+
     const unsubscribe = subscribeReports(
       (reports) => {
+        // Guard: ignore if the authenticated user has changed since this
+        // listener was created.
+        if (profile?.uid !== listenerUid) return;
+
         allReportsRef.current = reports;
         setAllReports(reports);
 
@@ -145,17 +157,17 @@ export function UnreadReportsProvider({ children }) {
         if (pathnameRef.current.includes("/admin/reports")) {
           const now = Date.now();
           lastSeenTimeRef.current = now;
-          saveStoredLastSeenTime(profile.uid, now);
+          saveStoredLastSeenTime(listenerUid, now);
 
           pendingReports.forEach((r) => seenReportsRef.current.add(r.id));
-          saveStoredSeenIds(profile.uid, seenReportsRef.current);
+          saveStoredSeenIds(listenerUid, seenReportsRef.current);
 
           setPendingReportsCount(0);
           setShowReportPopup(false);
           return;
         }
 
-        const lastSeenTime = lastSeenTimeRef.current || getStoredLastSeenTime(profile.uid);
+        const lastSeenTime = lastSeenTimeRef.current || getStoredLastSeenTime(listenerUid);
         const storedSeenIds = seenReportsRef.current;
 
         // Filter truly unseen reports:

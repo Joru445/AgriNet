@@ -88,7 +88,7 @@ async function withPasskeyErrors(fn) {
 
 export async function registerPasskey() {
   return withPasskeyErrors(async () => {
-    const optionsResponse = await apiRequest("/api/webauthn/register/options", {
+    const optionsResponse = await apiRequest("/v1/webauthn/register/options", {
       method: "POST",
     });
 
@@ -97,7 +97,7 @@ export async function registerPasskey() {
     const registrationResponse = await startRegistration({ optionsJSON: options });
 
     const verificationResponse = await apiRequest(
-      "/api/webauthn/register/verify",
+      "/v1/webauthn/register/verify",
       {
         method: "POST",
         body: JSON.stringify({ response: registrationResponse }),
@@ -111,7 +111,7 @@ export async function registerPasskey() {
 export async function authenticateWithPasskey(email) {
   return withPasskeyErrors(async () => {
     const optionsResponse = await apiRequest(
-      "/api/webauthn/authenticate/options",
+      "/v1/webauthn/authenticate/options",
       {
         method: "POST",
         body: JSON.stringify({ email }),
@@ -125,7 +125,7 @@ export async function authenticateWithPasskey(email) {
     });
 
     const verificationResponse = await apiRequest(
-      "/api/webauthn/authenticate/verify",
+      "/v1/webauthn/authenticate/verify",
       {
         method: "POST",
         body: JSON.stringify({
@@ -140,7 +140,7 @@ export async function authenticateWithPasskey(email) {
 }
 
 export async function getRegisteredPasskeys() {
-  const response = await apiRequest("/api/webauthn/passkeys", {
+  const response = await apiRequest("/v1/webauthn/passkeys", {
     method: "GET",
   });
 
@@ -149,7 +149,7 @@ export async function getRegisteredPasskeys() {
 
 export async function removePasskey(credentialId) {
   const response = await apiRequest(
-    `/api/webauthn/passkeys/${encodeURIComponent(credentialId)}`,
+    `/v1/webauthn/passkeys/${encodeURIComponent(credentialId)}`,
     {
       method: "DELETE",
     },

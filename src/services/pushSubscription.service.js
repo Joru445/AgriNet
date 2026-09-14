@@ -105,7 +105,7 @@ export async function registerPushInstallation({
   };
 
   try {
-    const result = await apiRequest("/push/installations", {
+    const result = await apiRequest("/v1/push/installations", {
       method: "POST",
       body: JSON.stringify(body),
     });
@@ -133,7 +133,7 @@ export async function removePushInstallation(installationId) {
   if (!installationId) return;
 
   try {
-    await apiRequest(`/push/installations/${encodeURIComponent(installationId)}`, {
+    await apiRequest(`/v1/push/installations/${encodeURIComponent(installationId)}`, {
       method: "DELETE",
     });
   } catch (error) {

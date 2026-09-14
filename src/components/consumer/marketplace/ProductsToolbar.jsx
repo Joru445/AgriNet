@@ -9,7 +9,7 @@ export default function ProductsToolbar({
 }) {
   const { t } = useLanguage();
   return (
-    <div className="flex items-center justify-betweenaw">
+    <div className="flex items-center justify-between">
       {/* Product Count */}
       {loading ? (
         <span className="inline-block h-5 w-24 bg-[var(--agri-hover)] rounded-md animate-pulse" />

@@ -59,7 +59,7 @@ export default function NotificationPreferences({ pushEnabled = true }) {
       setSaveStatus(null);
 
       try {
-        await apiRequest("/users/me/notification-preferences", {
+        await apiRequest("/v1/users/me/notification-preferences", {
           method: "PATCH",
           body: JSON.stringify({ [key]: value }),
         });

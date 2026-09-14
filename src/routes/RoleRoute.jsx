@@ -36,7 +36,7 @@ export default function RoleRoute({ allowedRole }) {
         return <Navigate to="/farmer" replace />;
 
       case "consumer":
-        return <Navigate to="/home" replace />;
+        return <Navigate to="/marketplace" replace />;
 
       default:
         return <Navigate to="/login" replace />;

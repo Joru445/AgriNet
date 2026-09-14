@@ -61,7 +61,7 @@ export async function enrichFarmerReviews(reviews) {
 }
 
 export async function getFarmerReviews(farmerId) {
-  const result = await apiRequest(`/reviews/farmers/${farmerId}`);
+  const result = await apiRequest(`/v1/reviews/farmers/${farmerId}`);
   const reviews = result.data || [];
 
   return reviews.map((r) => ({
@@ -75,7 +75,7 @@ export async function getFarmerReviews(farmerId) {
 
 export async function getRecentFarmerReviews(farmerId, maxLimit = 3) {
   const result = await apiRequest(
-    `/reviews/farmers/${farmerId}?limit=${maxLimit}`,
+    `/v1/reviews/farmers/${farmerId}?limit=${maxLimit}`,
   );
   const reviews = result.data || [];
 
@@ -91,18 +91,18 @@ export async function getRecentFarmerReviews(farmerId, maxLimit = 3) {
 }
 
 export async function getAverageFarmerRating(farmerId) {
-  const result = await apiRequest(`/reviews/farmers/${farmerId}/summary`);
+  const result = await apiRequest(`/v1/reviews/farmers/${farmerId}/summary`);
   return result.data?.average ?? 0;
 }
 
 export async function getFarmerReviewCount(farmerId) {
-  const result = await apiRequest(`/reviews/farmers/${farmerId}/summary`);
+  const result = await apiRequest(`/v1/reviews/farmers/${farmerId}/summary`);
   return result.data?.count ?? 0;
 }
 
 export async function getInquiryFarmerReview(inquiryId) {
   try {
-    const result = await apiRequest(`/reviews/inquiries/${inquiryId}/farmer`);
+    const result = await apiRequest(`/v1/reviews/inquiries/${inquiryId}/farmer`);
     return result.data ?? null;
   } catch (error) {
     if (error.status === 404) return null;

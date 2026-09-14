@@ -67,8 +67,8 @@ export async function getUserProfile(uid, requesterUid) {
 
   try {
     const endpoint = requesterUid && requesterUid !== uid
-      ? `/users/${uid}?requester=${requesterUid}`
-      : `/users/${uid}`;
+      ? `/v1/users/${uid}?requester=${requesterUid}`
+      : `/v1/users/${uid}`;
 
     const result = await apiRequest(endpoint);
     const profile = result.user;
@@ -102,7 +102,7 @@ export async function getUserProfile(uid, requesterUid) {
  */
 
 export async function updateMyProfile(data) {
-  const result = await apiRequest("/users/me/profile", {
+  const result = await apiRequest("/v1/users/me/profile", {
     method: "PATCH",
     body: JSON.stringify(data),
   });
@@ -117,7 +117,7 @@ export async function updateMyProfile(data) {
  */
 
 export async function apiSyncTransactionStats() {
-  const result = await apiRequest("/users/me/transaction-stats", {
+  const result = await apiRequest("/v1/users/me/transaction-stats", {
     method: "PATCH",
   });
 
@@ -181,7 +181,7 @@ export async function searchUsers(search) {
   const params = new URLSearchParams();
   params.set("q", keyword);
 
-  const result = await apiRequest(`/users/search?${params.toString()}`);
+  const result = await apiRequest(`/v1/users/search?${params.toString()}`);
 
   return result.users ?? [];
 }

@@ -16,7 +16,7 @@ export async function apiSetUserSuspension(uid, status, options = {}) {
     if (options.reason) body.reason = options.reason;
   }
 
-  const result = await apiRequest(`/admin/users/${uid}/status`, {
+  const result = await apiRequest(`/v1/admin/users/${uid}/status`, {
     method: "PATCH",
     body: JSON.stringify(body),
   });
@@ -27,7 +27,7 @@ export async function apiSetUserSuspension(uid, status, options = {}) {
 }
 
 export async function apiSetProductAvailability(productId, available) {
-  const result = await apiRequest(`/admin/products/${productId}/availability`, {
+  const result = await apiRequest(`/v1/admin/products/${productId}/availability`, {
     method: "PATCH",
     body: JSON.stringify({ available }),
   });
@@ -58,7 +58,7 @@ export async function apiGetAdminProducts(params = {}) {
   if (params.sortOrder) query.set("sortOrder", params.sortOrder);
 
   const qs = query.toString();
-  const result = await apiRequest(`/admin/products${qs ? `?${qs}` : ""}`);
+  const result = await apiRequest(`/v1/admin/products${qs ? `?${qs}` : ""}`);
 
   return {
     products: result.data || [],
@@ -67,7 +67,7 @@ export async function apiGetAdminProducts(params = {}) {
 }
 
 export async function apiGetAdminProduct(productId) {
-  const result = await apiRequest(`/admin/products/${productId}`);
+  const result = await apiRequest(`/v1/admin/products/${productId}`);
   return result.data;
 }
 
@@ -78,7 +78,7 @@ export async function apiGetAdminProduct(productId) {
  */
 
 export async function getDashboardData() {
-  const result = await apiRequest("/admin/dashboard");
+  const result = await apiRequest("/v1/admin/dashboard");
   return result.data;
 }
 
@@ -115,27 +115,27 @@ function withRange(path, { from, to }) {
 
 export async function apiGetUserGrowth({ from, to }) {
   const result = await apiRequest(
-    withRange("/admin/dashboard/user-growth", { from, to }),
+    withRange("/v1/admin/dashboard/user-growth", { from, to }),
   );
   return result.data;
 }
 
 export async function apiGetProductAnalytics({ from, to }) {
   const result = await apiRequest(
-    withRange("/admin/dashboard/product-analytics", { from, to }),
+    withRange("/v1/admin/dashboard/product-analytics", { from, to }),
   );
   return result.data;
 }
 
 export async function apiGetTransactionAnalytics({ from, to }) {
   const result = await apiRequest(
-    withRange("/admin/dashboard/transaction-analytics", { from, to }),
+    withRange("/v1/admin/dashboard/transaction-analytics", { from, to }),
   );
   return result.data;
 }
 
 export async function apiGetCategoryDistribution() {
-  const result = await apiRequest("/admin/dashboard/category-distribution");
+  const result = await apiRequest("/v1/admin/dashboard/category-distribution");
   return result.data;
 }
 
@@ -159,7 +159,7 @@ export async function apiGetAdminTransactions(params = {}) {
   if (params.sortOrder) query.set("sortOrder", params.sortOrder);
 
   const qs = query.toString();
-  const result = await apiRequest(`/admin/transactions${qs ? `?${qs}` : ""}`);
+  const result = await apiRequest(`/v1/admin/transactions${qs ? `?${qs}` : ""}`);
 
   return {
     inquiries: result.data || [],
@@ -168,12 +168,12 @@ export async function apiGetAdminTransactions(params = {}) {
 }
 
 export async function apiGetAdminTransaction(inquiryId) {
-  const result = await apiRequest(`/admin/transactions/${inquiryId}`);
+  const result = await apiRequest(`/v1/admin/transactions/${inquiryId}`);
   return result.data;
 }
 
 export async function apiGetTransactionSummary() {
-  const result = await apiRequest("/admin/transactions/summary");
+  const result = await apiRequest("/v1/admin/transactions/summary");
   return result.data;
 }
 
@@ -195,7 +195,7 @@ export async function apiGetAuditLogs(params = {}) {
   if (params.endDate) query.set("endDate", params.endDate);
 
   const qs = query.toString();
-  const result = await apiRequest(`/admin/audit${qs ? `?${qs}` : ""}`);
+  const result = await apiRequest(`/v1/admin/audit${qs ? `?${qs}` : ""}`);
 
   return {
     logs: result.data || [],
