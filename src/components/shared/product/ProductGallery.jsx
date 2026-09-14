@@ -16,7 +16,7 @@ function ProductGalleryImages({ product }) {
 
   if (!images.length) {
     return (
-      <div className="aspect-square w-full bg-[var(--agri-hover)] flex items-center justify-center text-[var(--agri-text-muted)] text-sm">
+      <div className="aspect-square w-full bg-(--agri-hover) flex items-center justify-center text-(--agri-text-muted) text-sm">
         {t("productDetails.noImages")}
       </div>
     );
@@ -65,7 +65,7 @@ function ProductGalleryImages({ product }) {
             return (
               <div
                 key={image.publicId || index}
-                className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center bg-[var(--agri-hover)] cursor-pointer"
+                className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center bg-(--agri-hover) cursor-pointer"
                 onClick={() =>
                   setFullscreenImage({
                     src: imgSrc,
@@ -112,7 +112,7 @@ function ProductGalleryImages({ product }) {
             return (
               <div
                 key={image.publicId || index}
-                className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center bg-[var(--agri-hover)] cursor-pointer"
+                className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center bg-(--agri-hover) cursor-pointer"
                 onClick={() =>
                   setFullscreenImage({
                     src: imgSrc,
@@ -194,8 +194,8 @@ function DesktopOverlay({ images, selected, product, currentImageUrl, onFullscre
             onClick={() => onThumbnailClick(index)}
             className={`shrink-0 w-12 h-12 overflow-hidden rounded-lg transition-all duration-200 cursor-pointer ${
               selected === index
-                ? "border-2 border-[#2D6A4F] ring-1 ring-[#2D6A4F]/20 opacity-100"
-                : "border border-[var(--agri-border)] opacity-60 hover:opacity-100"
+                ? "border-2 border-(--agri-green-mid) ring-1 ring-(--agri-green-mid)/20 opacity-100"
+                : "border border-(--agri-border) opacity-60 hover:opacity-100"
             }`}
           >
             <img
@@ -211,7 +211,7 @@ function DesktopOverlay({ images, selected, product, currentImageUrl, onFullscre
       })}
       <div className="ml-auto flex items-center gap-2">
         {images.length > 1 && (
-          <span className="text-xs font-semibold text-[var(--agri-text-muted)]">
+          <span className="text-xs font-semibold text-(--agri-text-muted)">
             {selected + 1}/{images.length}
           </span>
         )}
@@ -223,7 +223,7 @@ function DesktopOverlay({ images, selected, product, currentImageUrl, onFullscre
               title: `${product.name} (${selected + 1}/${images.length})`,
             })
           }
-          className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--agri-hover)] text-[var(--agri-text-muted)] hover:bg-[var(--agri-border)] hover:text-[var(--agri-text)] transition-colors cursor-pointer"
+          className="flex h-8 w-8 items-center justify-center rounded-lg bg-(--agri-hover) text-(--agri-text-muted) hover:bg-(--agri-border) hover:text-(--agri-text) transition-colors cursor-pointer"
           title={t("productDetails.viewFullscreen")}
         >
           <i className="ri-zoom-in-line text-sm" />

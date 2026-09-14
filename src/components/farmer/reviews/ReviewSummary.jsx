@@ -1,13 +1,13 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 import ReviewRating from "./ReviewRating";
 
 export default function ReviewSummary({ averageRating, reviewCount }) {
   const { t } = useLanguage();
 
   return (
-    <div className="bg-[var(--agri-card)] rounded-2xl border border-[var(--agri-border)] p-6">
+    <div className="bg-(--agri-card) rounded-2xl border border-(--agri-border) p-6">
       <div className="flex flex-col items-center justify-center">
-        <h2 className="text-5xl font-bold text-[var(--agri-text)]">
+        <h2 className="text-5xl font-bold text-(--agri-text)">
           {Number(averageRating || 0).toFixed(1)}
         </h2>
 
@@ -15,7 +15,7 @@ export default function ReviewSummary({ averageRating, reviewCount }) {
           <ReviewRating rating={Math.round(Number(averageRating || 0))} size="text-xl" />
         </div>
 
-        <p className="mt-3 text-sm text-[var(--agri-text-muted)]">
+        <p className="mt-3 text-sm text-(--agri-text-muted)">
           {t("farmer.basedOnReviews", { count: reviewCount })}
         </p>
       </div>

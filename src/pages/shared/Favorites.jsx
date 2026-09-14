@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
@@ -86,19 +86,19 @@ export default function Favorites() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 pb-24 md:pb-6">
-      <h1 className="text-2xl font-bold text-[var(--agri-text)] mb-4">
+      <h1 className="text-2xl font-bold text-(--agri-text) mb-4">
         {t("favorites.title")}
       </h1>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-[var(--agri-border-subtle)]">
+      <div className="flex gap-2 mb-6 border-b border-(--agri-border-subtle)">
         <button
           type="button"
           onClick={() => setTab("products")}
           className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition cursor-pointer
             ${tab === "products"
               ? "border-[#2D6A4F] text-[#2D6A4F]"
-              : "border-transparent text-[var(--agri-text-muted)] hover:text-[var(--agri-text)]"
+              : "border-transparent text-(--agri-text-muted) hover:text-(--agri-text)"
             }
           `}
         >
@@ -111,7 +111,7 @@ export default function Favorites() {
           className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition cursor-pointer
             ${tab === "farmers"
               ? "border-[#2D6A4F] text-[#2D6A4F]"
-              : "border-transparent text-[var(--agri-text-muted)] hover:text-[var(--agri-text)]"
+              : "border-transparent text-(--agri-text-muted) hover:text-(--agri-text)"
             }
           `}
         >
@@ -169,7 +169,7 @@ function FarmerCard({ farmer }) {
   return (
     <Link
       to={`/profile/${farmer.id || farmer.uid}`}
-      className="flex items-center gap-4 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md anim-fade-in"
+      className="flex items-center gap-4 rounded-xl border border-(--agri-border) bg-(--agri-card) p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md anim-fade-in"
     >
       <div className="h-14 w-14 shrink-0 rounded-full bg-[#2D6A4F]/10 flex items-center justify-center overflow-hidden">
         {farmer.profilePicture ? (
@@ -191,18 +191,18 @@ function FarmerCard({ farmer }) {
       </div>
 
       <div className="min-w-0 flex-1">
-        <h3 className="text-sm font-bold text-[var(--agri-text)] truncate">
+        <h3 className="text-sm font-bold text-(--agri-text) truncate">
           {name}
         </h3>
         {location && (
-          <p className="text-xs text-[var(--agri-text-muted)] truncate flex items-center gap-1 mt-0.5">
+          <p className="text-xs text-(--agri-text-muted) truncate flex items-center gap-1 mt-0.5">
             <i className="ri-map-pin-line text-[#2D6A4F]" />
             {location}
           </p>
         )}
       </div>
 
-      <i className="ri-arrow-right-s-line text-[var(--agri-text-muted)] shrink-0" />
+      <i className="ri-arrow-right-s-line text-(--agri-text-muted) shrink-0" />
     </Link>
   );
 }

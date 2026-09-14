@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 import StatCard from "../../common/StatCard";
 
 export default function DashboardStats({ stats = {}, loading = false }) {
@@ -9,11 +9,11 @@ export default function DashboardStats({ stats = {}, loading = false }) {
         {[1, 2, 3, 4, 5].map((item) => (
           <div
             key={item}
-            className="h-24 rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-3 space-y-2 shadow-2xs"
+            className="h-24 rounded-2xl border border-(--agri-border) bg-(--agri-card) p-3 space-y-2 shadow-2xs"
           >
-            <div className="h-3.5 w-20 bg-[var(--agri-hover)] rounded" />
-            <div className="h-6 w-14 bg-[var(--agri-hover)] rounded" />
-            <div className="h-3 w-28 bg-[var(--agri-hover)] rounded" />
+            <div className="h-3.5 w-20 bg-(--agri-hover) rounded" />
+            <div className="h-6 w-14 bg-(--agri-hover) rounded" />
+            <div className="h-3 w-28 bg-(--agri-hover) rounded" />
           </div>
         ))}
       </div>

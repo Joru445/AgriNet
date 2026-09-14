@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 import { formatTimestamp } from "../../../utils/date";
 
 const STATUS_CONFIG = {
@@ -25,11 +25,11 @@ export default function TransactionTableRow({ inquiry, onView }) {
   const price = inquiry.productSnapshot?.price || inquiry.product?.price || 0;
 
   return (
-    <tr className="border-b border-[var(--agri-border-subtle)] last:border-0 hover:bg-[var(--agri-hover)]/80 transition-colors">
+    <tr className="border-b border-(--agri-border-subtle) last:border-0 hover:bg-(--agri-hover)/80 transition-colors">
       {/* Product */}
       <td className="px-5 py-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[var(--agri-hover)]">
+          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-(--agri-hover)">
             {(inquiry.product?.images?.[0] || inquiry.productSnapshot?.imageUrl) ? (
               <img
                 src={inquiry.product?.images?.[0].url || inquiry.productSnapshot?.imageUrl}
@@ -38,16 +38,16 @@ export default function TransactionTableRow({ inquiry, onView }) {
                 loading="lazy"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-[var(--agri-text-muted)]">
+              <div className="flex h-full w-full items-center justify-center text-(--agri-text-muted)">
                 <i className="ri-image-line" />
               </div>
             )}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-[var(--agri-text)]">
+            <p className="truncate text-sm font-semibold text-(--agri-text)">
               {productName}
             </p>
-            <p className="truncate text-xs text-[var(--agri-text-muted)]">
+            <p className="truncate text-xs text-(--agri-text-muted)">
               {quantity} {unit} × ₱{price.toLocaleString()}
             </p>
           </div>
@@ -56,14 +56,14 @@ export default function TransactionTableRow({ inquiry, onView }) {
 
       {/* Farmer */}
       <td className="px-5 py-4">
-        <span className="text-sm font-medium text-[var(--agri-text-secondary)]">
+        <span className="text-sm font-medium text-(--agri-text-secondary)">
           {farmerName}
         </span>
       </td>
 
       {/* Consumer */}
       <td className="px-5 py-4">
-        <span className="text-sm font-medium text-[var(--agri-text-secondary)]">
+        <span className="text-sm font-medium text-(--agri-text-secondary)">
           {consumerName}
         </span>
       </td>
@@ -85,7 +85,7 @@ export default function TransactionTableRow({ inquiry, onView }) {
 
       {/* Date */}
       <td className="px-5 py-4">
-        <span className="text-xs text-[var(--agri-text-muted)]">
+        <span className="text-xs text-(--agri-text-muted)">
           {formatTimestamp(inquiry.createdAt) || "—"}
         </span>
       </td>
@@ -94,7 +94,7 @@ export default function TransactionTableRow({ inquiry, onView }) {
       <td className="px-5 py-4">
         <button
           onClick={() => onView(inquiry)}
-          className="rounded-lg p-2 text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text)] transition cursor-pointer"
+          className="rounded-lg p-2 text-(--agri-text-muted) hover:bg-(--agri-hover) hover:text-(--agri-text) transition cursor-pointer"
           title={t("adminTransaction.viewDetails")}
           aria-label={t("adminTransaction.viewDetails")}
         >

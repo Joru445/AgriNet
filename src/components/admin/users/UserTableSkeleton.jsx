@@ -1,4 +1,4 @@
-import SkeletonBox from "../../common/SkeletonBox";
+﻿import SkeletonBox from "../../common/SkeletonBox";
 
 /**
  * Skeleton that mirrors the admin UserTable
@@ -7,15 +7,15 @@ import SkeletonBox from "../../common/SkeletonBox";
  */
 export default function UserTableSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-lg shadow-black/5">
+    <div className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-lg shadow-black/5">
       <div className="overflow-x-auto max-md:scrollbar-none">
         <table className="w-full min-w-200">
           <thead>
-            <tr className="border-b border-[var(--agri-border)] bg-[var(--agri-hover)]/80">
+            <tr className="border-b border-(--agri-border) bg-(--agri-hover)/80">
               {["", "", "", "", ""].map((_, i) => (
                 <th
                   key={i}
-                  className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]"
+                  className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-secondary)"
                 >
                   <SkeletonBox className="h-3 w-16 rounded" />
                 </th>
@@ -27,7 +27,7 @@ export default function UserTableSkeleton() {
             {Array.from({ length: 6 }).map((_, rowIndex) => (
               <tr
                 key={rowIndex}
-                className="border-b border-[var(--agri-border-subtle)] last:border-0"
+                className="border-b border-(--agri-border-subtle) last:border-0"
               >
                 {/* User */}
                 <td className="px-5 py-4">

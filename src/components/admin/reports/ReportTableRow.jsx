@@ -1,4 +1,4 @@
-import { formatFullDateTime } from "../../../utils/date";
+﻿import { formatFullDateTime } from "../../../utils/date";
 import { useLanguage } from "../../../context/LanguageContext";
 
 function getStatusClasses(status) {
@@ -10,9 +10,9 @@ function getStatusClasses(status) {
     case "resolved":
       return "bg-green-500/10 text-green-700 dark:text-green-300 border border-green-500/20";
     case "dismissed":
-      return "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] border border-[var(--agri-border)]";
+      return "bg-(--agri-hover) text-(--agri-text-secondary) border border-(--agri-border)";
     default:
-      return "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] border border-[var(--agri-border)]";
+      return "bg-(--agri-hover) text-(--agri-text-secondary) border border-(--agri-border)";
   }
 }
 
@@ -35,11 +35,11 @@ export default function ReportTableRow({ report, onView }) {
   };
 
   return (
-    <tr className="border-b border-[var(--agri-border-subtle)] last:border-0 hover:bg-[var(--agri-hover)]/60 transition-colors">
+    <tr className="border-b border-(--agri-border-subtle) last:border-0 hover:bg-(--agri-hover)/60 transition-colors">
       <td className="px-5 py-4">
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-bold text-[var(--agri-text)] leading-tight">
+            <p className="text-sm font-bold text-(--agri-text) leading-tight">
               {report.reason || t("adminReport.noReason")}
             </p>
             {report.evidenceUrl && (
@@ -50,9 +50,9 @@ export default function ReportTableRow({ report, onView }) {
           </div>
 
           {report.targetTitle && (
-            <div className="flex items-center gap-1.5 text-xs text-[var(--agri-text-muted)]">
-              <span className="text-[var(--agri-text-muted)] font-medium">{t("adminReport.targetLabel")}</span>
-              <span className="font-semibold text-[var(--agri-text-secondary)] truncate max-w-xs">{report.targetTitle}</span>
+            <div className="flex items-center gap-1.5 text-xs text-(--agri-text-muted)">
+              <span className="text-(--agri-text-muted) font-medium">{t("adminReport.targetLabel")}</span>
+              <span className="font-semibold text-(--agri-text-secondary) truncate max-w-xs">{report.targetTitle}</span>
             </div>
           )}
         </div>
@@ -60,18 +60,18 @@ export default function ReportTableRow({ report, onView }) {
 
       <td className="px-5 py-4">
         <div>
-          <p className="text-sm font-semibold text-[var(--agri-text)]">
+          <p className="text-sm font-semibold text-(--agri-text)">
             {report.reporterName || t("adminReport.unknownUser")}
           </p>
 
           {report.reporterUsername && (
-            <p className="text-xs text-[var(--agri-text-muted)] font-medium">@{report.reporterUsername}</p>
+            <p className="text-xs text-(--agri-text-muted) font-medium">@{report.reporterUsername}</p>
           )}
         </div>
       </td>
 
       <td className="px-5 py-4">
-        <span className="capitalize text-xs font-bold text-[var(--agri-text-secondary)] bg-[var(--agri-hover)] border border-[var(--agri-border)] px-2.5 py-1 rounded-lg">
+        <span className="capitalize text-xs font-bold text-(--agri-text-secondary) bg-(--agri-hover) border border-(--agri-border) px-2.5 py-1 rounded-lg">
           {report.targetType || report.type || "user"}
         </span>
       </td>
@@ -87,7 +87,7 @@ export default function ReportTableRow({ report, onView }) {
       </td>
 
       <td className="px-5 py-4 whitespace-nowrap">
-        <span className="text-xs font-semibold text-[var(--agri-text-secondary)]">
+        <span className="text-xs font-semibold text-(--agri-text-secondary)">
           {formatFullDateTime(report.createdAt) || "—"}
         </span>
       </td>
@@ -96,7 +96,7 @@ export default function ReportTableRow({ report, onView }) {
         <button
           type="button"
           onClick={() => onView(report)}
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] transition hover:bg-[#2D6A4F] hover:text-white shadow-2xs cursor-pointer active:scale-95"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--agri-hover) text-(--agri-text-secondary) transition hover:bg-[#2D6A4F] hover:text-white shadow-2xs cursor-pointer active:scale-95"
           title={t("adminReport.viewReportDetails")}
           aria-label={t("adminReport.viewReportAria")}
         >

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+﻿import { useRef, useState } from "react";
 
 import landscape from "../../../assets/img/landscapeCover.jpg";
 
@@ -149,34 +149,34 @@ export default function ProfileHeader({
             {/* Name + meta */}
             <div className="min-w-0 flex-1 pt-1.5">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-[var(--agri-text)]">
+                <h1 className="text-xl sm:text-2xl font-bold text-(--agri-text)">
                   {displayName}
                 </h1>
 
                 {(profile.verificationStatus === "approved" || profile.verified) && (
                   <i
-                    className="ri-verified-badge-fill text-lg text-[#2D6A4F] dark:text-[var(--agri-brand)]"
+                    className="ri-verified-badge-fill text-lg text-[#2D6A4F] dark:text-(--agri-brand)"
                     title={t("common.verifiedFarmer")}
                     aria-label={t("common.verifiedFarmer")}
                   />
                 )}
 
-                <span className="inline-flex items-center gap-1 rounded-full bg-[var(--agri-brand-bg)] px-2.5 py-0.5 text-[11px] font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+                <span className="inline-flex items-center gap-1 rounded-full bg-(--agri-brand-bg) px-2.5 py-0.5 text-[11px] font-bold text-[#2D6A4F] dark:text-(--agri-brand)">
                   <i className="ri-user-star-line" />
                   {roleLabel}
                 </span>
               </div>
 
-              <p className="mt-0.5 text-sm text-[var(--agri-text-muted)] font-medium">
+              <p className="mt-0.5 text-sm text-(--agri-text-muted) font-medium">
                 @{profile.username || "user"}
               </p>
 
               {isFarmer && (
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--agri-text-secondary)]">
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-(--agri-text-secondary)">
                   {profile.storeName && (
                     <span className="inline-flex items-center gap-1.5">
-                      <i className="ri-store-2-line text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-                      <span className="font-semibold text-[var(--agri-text)]">
+                      <i className="ri-store-2-line text-[#2D6A4F] dark:text-(--agri-brand)" />
+                      <span className="font-semibold text-(--agri-text)">
                         {profile.storeName}
                       </span>
                     </span>
@@ -188,7 +188,7 @@ export default function ProfileHeader({
               )}
 
               {profile.bio && (
-                <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-[var(--agri-text-secondary)]">
+                <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-(--agri-text-secondary)">
                   {profile.bio}
                 </p>
               )}

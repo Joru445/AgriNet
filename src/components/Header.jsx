@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 
 import BackButton from "./common/BackButton";
 import UserIdentity from "./common/UserIdentity";
@@ -82,7 +82,7 @@ export default function Header({ user, collapsed, hideBackButton, authInitializi
               <Link
                 to={notificationPath}
                 data-onboarding="bell"
-                className="relative flex size-9 shrink-0 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]"
+                className="relative flex size-9 shrink-0 items-center justify-center rounded-lg text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand)"
                 aria-label={t("header.notifications")}
               >
                 <i className="ri-notification-3-line text-lg" />
@@ -95,7 +95,7 @@ export default function Header({ user, collapsed, hideBackButton, authInitializi
                 <Link
                   to={favoritesPath}
                   data-onboarding="header-favorites"
-                  className="flex size-9 shrink-0 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-lg text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand)"
                   aria-label={t("nav.favorites")}
                 >
                   <i className="ri-heart-line text-lg" />
@@ -105,7 +105,7 @@ export default function Header({ user, collapsed, hideBackButton, authInitializi
                 <Link
                   to="/admin/farmer-verifications"
                   data-onboarding="header-verification"
-                  className="flex size-9 shrink-0 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-lg text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand)"
                   aria-label={t("nav.farmerVerifications")}
                 >
                   <i className="ri-shield-star-line" />
@@ -117,7 +117,7 @@ export default function Header({ user, collapsed, hideBackButton, authInitializi
             <Link
               to={mePath}
               data-onboarding="header-profile"
-              className="flex items-center gap-2 px-1.5 sm:px-2.5 py-1 max-w-36 sm:max-w-45 md:max-w-60 rounded-lg transition-colors hover:bg-[var(--agri-hover)]"
+              className="flex items-center gap-2 px-1.5 sm:px-2.5 py-1 max-w-36 sm:max-w-45 md:max-w-60 rounded-lg transition-colors hover:bg-(--agri-hover)"
             >
               <UserIdentity user={user} showUsername={false} showRole={true} />
             </Link>

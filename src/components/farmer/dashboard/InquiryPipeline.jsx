@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 
 import { useLanguage } from "../../../context/LanguageContext";
 
@@ -11,7 +11,7 @@ const STATUS_CONFIG = {
   pending: { dot: "bg-amber-400", border: "border-amber-200/60 dark:border-amber-500/20", bg: "bg-amber-50/40 dark:bg-amber-500/5" },
   accepted: { dot: "bg-blue-400", border: "border-blue-200/60 dark:border-blue-500/20", bg: "bg-blue-50/40 dark:bg-blue-500/5" },
   reserved: { dot: "bg-violet-400", border: "border-violet-200/60 dark:border-violet-500/20", bg: "bg-violet-50/40 dark:bg-violet-500/5" },
-  ongoing: { dot: "bg-[#2D6A4F] dark:bg-[var(--agri-brand)]", border: "border-emerald-200/60 dark:border-emerald-500/20", bg: "bg-emerald-50/40 dark:bg-emerald-500/5" },
+  ongoing: { dot: "bg-[#2D6A4F] dark:bg-(--agri-brand)", border: "border-emerald-200/60 dark:border-emerald-500/20", bg: "bg-emerald-50/40 dark:bg-emerald-500/5" },
   completed: { dot: "bg-emerald-500", border: "border-emerald-200/60 dark:border-emerald-500/20", bg: "bg-emerald-50/40 dark:bg-emerald-500/5" },
   cancelled: { dot: "bg-red-400", border: "border-red-200/60 dark:border-red-500/20", bg: "bg-red-50/40 dark:bg-red-500/5" },
 };
@@ -32,11 +32,11 @@ function PipelineFlow({ counts }) {
             >
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={`h-2.5 w-2.5 rounded-full ${config.dot} shrink-0`} />
-                <span className="text-[11px] font-bold text-[var(--agri-text-muted)] truncate">
+                <span className="text-[11px] font-bold text-(--agri-text-muted) truncate">
                   {t(`transactions.status.${status}`)}
                 </span>
               </div>
-              <span className="text-xl sm:text-2xl font-black text-[var(--agri-text)]">
+              <span className="text-xl sm:text-2xl font-black text-(--agri-text)">
                 {count}
               </span>
             </div>
@@ -56,47 +56,47 @@ function PreOrderSummary({ stats }) {
   if (preorderCount === 0 && reservedCount === 0 && pendingPreorder === 0) return null;
 
   return (
-    <div className="border-t border-[var(--agri-border-subtle)] p-3.5 sm:p-4">
-      <p className="text-[11px] font-bold text-[var(--agri-text-muted)] mb-2.5 uppercase tracking-wider flex items-center gap-1.5">
-        <i className="ri-timer-line text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+    <div className="border-t border-(--agri-border-subtle) p-3.5 sm:p-4">
+      <p className="text-[11px] font-bold text-(--agri-text-muted) mb-2.5 uppercase tracking-wider flex items-center gap-1.5">
+        <i className="ri-timer-line text-sm text-[#2D6A4F] dark:text-(--agri-brand)" />
         <span>{t("farmer.preorderVisibility")}</span>
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         <Link
           to="/farmer/products"
-          className="flex items-center justify-between gap-2 rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 px-3 py-2.5 text-xs transition hover:border-[#2D6A4F]/40 hover:bg-[var(--agri-hover)] shadow-2xs"
+          className="flex items-center justify-between gap-2 rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 px-3 py-2.5 text-xs transition hover:border-[#2D6A4F]/40 hover:bg-(--agri-hover) shadow-2xs"
         >
           <div className="flex items-center gap-2 min-w-0">
             <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-400" />
-            <span className="truncate font-medium text-[var(--agri-text-muted)]">
+            <span className="truncate font-medium text-(--agri-text-muted)">
               {t("farmer.preorderProducts")}
             </span>
           </div>
-          <span className="font-black text-sm text-[var(--agri-text)]">{preorderCount}</span>
+          <span className="font-black text-sm text-(--agri-text)">{preorderCount}</span>
         </Link>
         <Link
           to="/farmer/transactions"
-          className="flex items-center justify-between gap-2 rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 px-3 py-2.5 text-xs transition hover:border-[#2D6A4F]/40 hover:bg-[var(--agri-hover)] shadow-2xs"
+          className="flex items-center justify-between gap-2 rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 px-3 py-2.5 text-xs transition hover:border-[#2D6A4F]/40 hover:bg-(--agri-hover) shadow-2xs"
         >
           <div className="flex items-center gap-2 min-w-0">
             <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-violet-400" />
-            <span className="truncate font-medium text-[var(--agri-text-muted)]">
+            <span className="truncate font-medium text-(--agri-text-muted)">
               {t("farmer.reservedInquiries")}
             </span>
           </div>
-          <span className="font-black text-sm text-[var(--agri-text)]">{reservedCount}</span>
+          <span className="font-black text-sm text-(--agri-text)">{reservedCount}</span>
         </Link>
         <Link
           to="/farmer/transactions"
-          className="flex items-center justify-between gap-2 rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 px-3 py-2.5 text-xs transition hover:border-[#2D6A4F]/40 hover:bg-[var(--agri-hover)] shadow-2xs"
+          className="flex items-center justify-between gap-2 rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 px-3 py-2.5 text-xs transition hover:border-[#2D6A4F]/40 hover:bg-(--agri-hover) shadow-2xs"
         >
           <div className="flex items-center gap-2 min-w-0">
             <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-blue-400" />
-            <span className="truncate font-medium text-[var(--agri-text-muted)]">
+            <span className="truncate font-medium text-(--agri-text-muted)">
               {t("farmer.pendingPreorders")}
             </span>
           </div>
-          <span className="font-black text-sm text-[var(--agri-text)]">{pendingPreorder}</span>
+          <span className="font-black text-sm text-(--agri-text)">{pendingPreorder}</span>
         </Link>
       </div>
     </div>
@@ -127,7 +127,7 @@ export default function InquiryPipeline({ stats = {}, loading = false }) {
       headerAction={
         <Link
           to="/farmer/transactions"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-[#2D6A4F]/20 bg-[#2D6A4F]/10 px-2.5 py-1 text-xs font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:bg-[#2D6A4F] hover:text-white transition-all shadow-2xs"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[#2D6A4F]/20 bg-[#2D6A4F]/10 px-2.5 py-1 text-xs font-bold text-[#2D6A4F] dark:text-(--agri-brand) hover:bg-[#2D6A4F] hover:text-white transition-all shadow-2xs"
         >
           <span>{t("farmer.totalTransactions")}: {total}</span>
           <i className="ri-arrow-right-s-line text-sm" />

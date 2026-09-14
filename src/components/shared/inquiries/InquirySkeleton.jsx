@@ -1,4 +1,4 @@
-import SkeletonBox from "../../common/SkeletonBox";
+﻿import SkeletonBox from "../../common/SkeletonBox";
 
 /**
  * Skeleton that mirrors the InquiryTable grid
@@ -8,9 +8,9 @@ import SkeletonBox from "../../common/SkeletonBox";
  */
 function InquiryCardSkeleton() {
   return (
-    <article className="flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-md">
+    <article className="flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-md">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--agri-border)] bg-[var(--agri-hover)] px-4 py-3 sm:px-5">
+      <div className="flex items-center justify-between border-b border-(--agri-border) bg-(--agri-hover) px-4 py-3 sm:px-5">
         <div className="flex items-center gap-2">
           <SkeletonBox className="h-4 w-4 rounded" />
           <SkeletonBox className="h-3 w-24 rounded" />
@@ -45,7 +45,7 @@ function InquiryCardSkeleton() {
       </div>
 
       {/* Actions footer */}
-      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/60 px-4 py-3 sm:px-5">
+      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-(--agri-border-subtle) bg-(--agri-hover)/60 px-4 py-3 sm:px-5">
         <SkeletonBox className="h-9 w-32 rounded-xl" />
         <SkeletonBox className="h-9 w-20 rounded-xl" />
       </div>

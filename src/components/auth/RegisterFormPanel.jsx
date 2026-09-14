@@ -37,7 +37,7 @@ export default function RegisterForm({
   return (
     <div
       className="flex-1 w-full min-w-0 relative h-full min-h-0 overflow-y-auto scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      style={{ backgroundColor: "var(--agri-bg-surface)" }}
+      style={{ backgroundColor: "var(--agri-surface)" }}
     >
       {/* Mobile-only agricultural landscape background */}
       <div className="fixed inset-0 lg:hidden pointer-events-none overflow-hidden">

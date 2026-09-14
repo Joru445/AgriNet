@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+﻿import { useState, useMemo } from "react";
 
 import { useLanguage } from "../../../context/LanguageContext";
 
@@ -42,9 +42,9 @@ export default function StoreProducts({ farmer, products = [] }) {
       {/* Products Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">{t("storeProfile.products")}</h2>
+          <h2 className="text-2xl font-bold text-[#1B4332] dark:text-(--agri-brand-light)">{t("storeProfile.products")}</h2>
 
-          <p className="text-sm text-[var(--agri-text-muted)]">
+          <p className="text-sm text-(--agri-text-muted)">
             {filteredProducts.length === 0
               ? t("storeProfile.noProductsYet")
               : isLimited
@@ -62,7 +62,7 @@ export default function StoreProducts({ farmer, products = [] }) {
           <button
             type="button"
             onClick={() => setShowAll((prev) => !prev)}
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 text-sm font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:underline cursor-pointer"
+            className="self-start sm:self-auto inline-flex items-center gap-1.5 text-sm font-bold text-[#2D6A4F] dark:text-(--agri-brand) hover:underline cursor-pointer"
           >
             <span>
               {showAll
@@ -87,12 +87,12 @@ export default function StoreProducts({ farmer, products = [] }) {
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer shadow-2xs ${
                 active
                   ? "bg-[#1B4332] text-white shadow-sm ring-2 ring-[#2D6A4F]/30 scale-[1.02]"
-                  : "bg-[var(--agri-card)] border border-[var(--agri-border)] text-[var(--agri-text-secondary)] hover:border-[#2D6A4F] hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] hover:bg-[#F4F9F5]"
+                  : "bg-(--agri-card) border border-(--agri-border) text-(--agri-text-secondary) hover:border-[#2D6A4F] hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) hover:bg-[#F4F9F5] dark:hover:bg-(--agri-elevated)"
               }`}
             >
               <i
                 className={`${cat.icon} text-sm ${
-                  active ? "text-emerald-300" : "text-[#2D6A4F] dark:text-[var(--agri-brand)]"
+                  active ? "text-emerald-300" : "text-[#2D6A4F] dark:text-(--agri-brand)"
                 }`}
               />
               <span>{cat.label}</span>
@@ -103,16 +103,16 @@ export default function StoreProducts({ farmer, products = [] }) {
 
       {/* Products Grid */}
       {filteredProducts.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[var(--agri-border)] bg-[var(--agri-card)] py-14 text-center">
-          <i className="ri-shopping-basket-line text-5xl text-[var(--agri-text-muted)]" />
+        <div className="rounded-2xl border border-dashed border-(--agri-border) bg-(--agri-card) py-14 text-center">
+          <i className="ri-shopping-basket-line text-5xl text-(--agri-text-muted)" />
 
-          <h3 className="mt-3 text-lg font-semibold text-[var(--agri-text)]">
+          <h3 className="mt-3 text-lg font-semibold text-(--agri-text)">
             {selectedCategory === "All"
               ? t("storeProfile.noProductsYet")
               : t("storeProfile.noProductsCategory", { category: selectedCategory })}
           </h3>
 
-          <p className="text-[var(--agri-text-muted)] mt-1 text-sm">
+          <p className="text-(--agri-text-muted) mt-1 text-sm">
             {selectedCategory === "All"
               ? t("storeProfile.noProductsListed", { farmer: farmer?.fullname || t("farmer.farmerFallback") })
               : t("storeProfile.noItemsCategory", { category: selectedCategory })}
@@ -131,7 +131,7 @@ export default function StoreProducts({ farmer, products = [] }) {
               <button
                 type="button"
                 onClick={() => setShowAll((prev) => !prev)}
-                className="inline-flex items-center gap-2 rounded-xl border border-[#2D6A4F]/30 bg-[var(--agri-card)] px-5 py-2.5 text-sm font-bold text-[#1B4332] dark:text-[var(--agri-brand)] shadow-2xs hover:bg-[#2D6A4F] hover:text-white dark:hover:bg-[#2D6A4F] dark:hover:text-white transition-all cursor-pointer active:scale-95"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#2D6A4F]/30 bg-(--agri-card) px-5 py-2.5 text-sm font-bold text-[#1B4332] dark:text-(--agri-brand) shadow-2xs hover:bg-[#2D6A4F] hover:text-white dark:hover:bg-[#2D6A4F] dark:hover:text-white transition-all cursor-pointer active:scale-95"
               >
                 <span>
                   {showAll

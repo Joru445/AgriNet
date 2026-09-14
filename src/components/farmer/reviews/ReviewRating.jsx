@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ReviewRating({ rating = 0 }) {
   const { t } = useLanguage();
@@ -15,12 +15,12 @@ export default function ReviewRating({ rating = 0 }) {
           className={
             star <= value
               ? "ri-star-fill text-yellow-400"
-              : "ri-star-line text-[var(--agri-border)]"
+              : "ri-star-line text-(--agri-border)"
           }
         />
       ))}
 
-      <span className="ml-1 text-xs font-medium text-[var(--agri-text-muted)]">
+      <span className="ml-1 text-xs font-medium text-(--agri-text-muted)">
         {value.toFixed(1)}
       </span>
     </div>

@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ProductToolbar({
   view,
@@ -21,7 +21,7 @@ export default function ProductToolbar({
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         {/* Search Bar (Matching Consumer Home Page Style) */}
-        <div className="relative flex-1 sm:w-72 flex items-center gap-2 bg-(--agri-card) rounded-xl px-3 py-1.5 border-2 border-[var(--agri-border-subtle)] shadow-xs focus-within:border-[#2D6A4F] focus-within:shadow-md focus-within:ring-3 focus-within:ring-[#2D6A4F]/15 transition-all">
+        <div className="relative flex-1 sm:w-72 flex items-center gap-2 bg-(--agri-card) rounded-xl px-3 py-1.5 border-2 border-(--agri-border-subtle) shadow-xs focus-within:border-[#2D6A4F] focus-within:shadow-md focus-within:ring-3 focus-within:ring-[#2D6A4F]/15 transition-all">
           <i className="ri-search-line text-[#2D6A4F] dark:text-(--agri-brand) text-lg font-bold shrink-0" />
 
           <input
@@ -35,28 +35,28 @@ export default function ProductToolbar({
             <button
               type="button"
               onClick={() => onSearch("")}
-              className="p-0.5 rounded-full text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer"
+              className="p-0.5 rounded-full text-(--agri-text-muted) hover:text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
               title={t("common.cancel")}
             >
-              <i className="ri-close-circle-fill text-base text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)]" />
+              <i className="ri-close-circle-fill text-base text-(--agri-text-muted) hover:text-(--agri-text-secondary)" />
             </button>
           )}
         </div>
 
         <div className="flex items-center gap-2.5 justify-between sm:justify-start">
           {/* Grid / List View Toggle (High contrast & readable) */}
-          <div className="flex bg-[var(--agri-card)] border-2 border-[var(--agri-border-subtle)] rounded-xl p-1 shadow-xs items-center gap-1">
+          <div className="flex bg-(--agri-card) border-2 border-(--agri-border-subtle) rounded-xl p-1 shadow-xs items-center gap-1">
             <button
               type="button"
               onClick={() => onViewChange("grid")}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
                 view === "grid"
-                  ? "bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] border border-[#BBDAC4] text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-xs"
-                  : "text-[var(--agri-text-muted)] hover:text-[var(--agri-text)] hover:bg-[var(--agri-hover)]"
+                  ? "bg-[#E8F5EE] dark:bg-(--agri-brand-bg-alt) border border-[#BBDAC4] text-[#1B4332] dark:text-(--agri-brand-light) shadow-xs"
+                  : "text-(--agri-text-muted) hover:text-(--agri-text) hover:bg-(--agri-hover)"
               }`}
               title={t("products.grid")}
             >
-              <i className="ri-grid-fill text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+              <i className="ri-grid-fill text-sm text-[#2D6A4F] dark:text-(--agri-brand)" />
               <span className="hidden sm:inline">{t("products.grid")}</span>
             </button>
 
@@ -65,12 +65,12 @@ export default function ProductToolbar({
               onClick={() => onViewChange("list")}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
                 view === "list"
-                  ? "bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] border border-[#BBDAC4] text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-xs"
-                  : "text-[var(--agri-text-muted)] hover:text-[var(--agri-text)] hover:bg-[var(--agri-hover)]"
+                  ? "bg-[#E8F5EE] dark:bg-(--agri-brand-bg-alt) border border-[#BBDAC4] text-[#1B4332] dark:text-(--agri-brand-light) shadow-xs"
+                  : "text-(--agri-text-muted) hover:text-(--agri-text) hover:bg-(--agri-hover)"
               }`}
               title={t("products.list")}
             >
-              <i className="ri-list-check text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+              <i className="ri-list-check text-sm text-[#2D6A4F] dark:text-(--agri-brand)" />
               <span className="hidden sm:inline">{t("products.list")}</span>
             </button>
           </div>

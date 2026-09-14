@@ -82,7 +82,7 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
           )}
           <button
             onClick={handleProduct}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-(--agri-green-mid) py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-(--agri-green-mid)/20 transition hover:bg-(--agri-green-dark) active:scale-[0.99] cursor-pointer"
           >
             <i className="ri-settings-3-line text-lg" />
             {t("productDetails.manageProduct")}
@@ -91,7 +91,7 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
       ) : (
         <button
           onClick={handleInquiry}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-(--agri-green-mid) py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-(--agri-green-mid)/20 transition hover:bg-(--agri-green-dark) active:scale-[0.99] cursor-pointer"
         >
           {isSignedIn
             ? isPreorder

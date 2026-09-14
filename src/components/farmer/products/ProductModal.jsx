@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 
 import { useLanguage } from "../../../context/LanguageContext";
 import ProductForm from "./ProductForm";
@@ -77,7 +77,7 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 md:p-6 z-9999 animate-in fade-in duration-200">
-      <div className="bg-[var(--agri-card)] w-full max-w-2xl lg:max-w-3xl max-h-[92vh] sm:max-h-[88vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl border border-gray-300 dark:border-gray-700">
+      <div className="bg-(--agri-card) w-full max-w-2xl lg:max-w-3xl max-h-[92vh] sm:max-h-[88vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl border border-gray-300 dark:border-gray-700">
         {/* Scrollable Container with Header, Form, and Actions */}
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
           {/* Header - AgriNet System Green */}
@@ -117,7 +117,7 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 hover:bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] hover:text-[var(--agri-text)] font-semibold text-sm transition-colors cursor-pointer"
+                className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 hover:bg-(--agri-hover) text-(--agri-text-secondary) hover:text-(--agri-text) font-semibold text-sm transition-colors cursor-pointer"
               >
                 {t("common.cancel")}
               </button>
@@ -128,7 +128,7 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
                 onClick={handleSubmit}
                 className={`inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
                   saving || !isValid
-                    ? "bg-[var(--agri-hover)] text-[var(--agri-text-muted)] border border-[var(--agri-border-subtle)] cursor-not-allowed opacity-75"
+                    ? "bg-(--agri-hover) text-(--agri-text-muted) border border-(--agri-border-subtle) cursor-not-allowed opacity-75"
                     : "bg-[#2D6A4F] hover:bg-[#1B4332] text-white shadow-md hover:shadow-lg active:scale-98 cursor-pointer"
                 }`}
               >

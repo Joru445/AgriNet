@@ -23,7 +23,7 @@ export default function ProductSeller({ farmer, isOwner }) {
 
   return (
     <>
-    <section className="mx-4 sm:mx-6 mt-4 sm:mt-5 rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)] p-4">
+    <section className="mx-4 sm:mx-6 mt-4 sm:mt-5 rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover) p-4">
       <div className="flex items-center gap-3.5">
         <Link to={`/profile/${farmerId}`} className="shrink-0">
           <Avatar
@@ -38,7 +38,7 @@ export default function ProductSeller({ farmer, isOwner }) {
           <div className="flex items-center gap-1.5 min-w-0">
             <Link
               to={`/profile/${farmerId}`}
-              className="font-semibold text-sm sm:text-base text-[var(--agri-text)] hover:underline truncate"
+              className="font-semibold text-sm sm:text-base text-(--agri-text) hover:underline truncate"
             >
               {farmerName}
             </Link>
@@ -46,7 +46,7 @@ export default function ProductSeller({ farmer, isOwner }) {
               <span
                 title={t("productSeller.verifiedFarmer")}
                 aria-label={t("productSeller.verifiedFarmer")}
-                className="inline-flex shrink-0 items-center text-[#2D6A4F] text-sm"
+                className="inline-flex shrink-0 items-center text-(--agri-green-mid) dark:text-(--agri-brand) text-sm"
               >
                 <i className="ri-verified-badge-fill" />
               </span>
@@ -54,7 +54,7 @@ export default function ProductSeller({ farmer, isOwner }) {
           </div>
 
           {address && (
-            <div className="mt-0.5 flex items-start gap-1 text-xs text-[var(--agri-text-muted)]">
+            <div className="mt-0.5 flex items-start gap-1 text-xs text-(--agri-text-muted)">
               <i className="ri-map-pin-line shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1 leading-snug">
                 <span
@@ -70,7 +70,7 @@ export default function ProductSeller({ farmer, isOwner }) {
                   <button
                     type="button"
                     onClick={() => setExpandedAddress((prev) => !prev)}
-                    className="mt-0.5 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] hover:underline cursor-pointer inline-flex items-center gap-0.5 transition-colors"
+                    className="mt-0.5 text-xs font-bold text-(--agri-green-mid) dark:text-(--agri-brand) hover:text-(--agri-green-dark) dark:hover:text-(--agri-brand-light) hover:underline cursor-pointer inline-flex items-center gap-0.5 transition-colors"
                   >
                     {expandedAddress ? t("productSeller.seeLess") : t("productSeller.seeMore")}
                     <i
@@ -89,7 +89,7 @@ export default function ProductSeller({ farmer, isOwner }) {
 
         <Link
           to={`/profile/${farmerId}`}
-          className="shrink-0 rounded-lg border border-[var(--agri-border)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text)] transition-colors"
+          className="shrink-0 rounded-lg border border-(--agri-border) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) hover:text-(--agri-text) transition-colors"
         >
           {t("productSeller.visitStore")}
         </Link>

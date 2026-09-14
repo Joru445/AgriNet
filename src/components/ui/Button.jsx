@@ -1,4 +1,4 @@
-export default function Button({
+﻿export default function Button({
   children,
   onClick,
   variant = "primary",
@@ -12,7 +12,7 @@ export default function Button({
     primary: "bg-[#2D6A4F] text-white hover:bg-[#1B4332]",
 
     secondary:
-      "border border-[#2D6A4F] bg-transparent text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:bg-[#2D6A4F]/10",
+      "border border-[#2D6A4F] bg-transparent text-[#2D6A4F] dark:text-(--agri-brand) hover:bg-[#2D6A4F]/10",
 
     danger: "bg-[#DC2626] text-white hover:bg-[#B91C1C]",
 
@@ -20,9 +20,9 @@ export default function Button({
 
     save: "bg-[#000080]/60 text-white hover:bg-[#000080]/80",
 
-    cancel: "border border-[var(--agri-border)] bg-transparent text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]",
+    cancel: "border border-(--agri-border) bg-transparent text-(--agri-text-secondary) hover:bg-(--agri-hover)",
 
-    ghost: "text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:bg-[#2D6A4F]/10",
+    ghost: "text-[#2D6A4F] dark:text-(--agri-brand) hover:bg-[#2D6A4F]/10",
   };
 
   return (

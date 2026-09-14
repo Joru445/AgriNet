@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 
 import { t } from "../../i18n";
 
@@ -28,22 +28,22 @@ export default class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <main className="min-h-screen flex items-center justify-center bg-[var(--agri-page)] px-4 py-8">
-          <div className="w-full max-w-md text-center rounded-2xl bg-[var(--agri-card)] p-6 sm:p-8 shadow-xl border border-[var(--agri-border-subtle)]">
+        <main className="min-h-screen flex items-center justify-center bg-(--agri-page) px-4 py-8">
+          <div className="w-full max-w-md text-center rounded-2xl bg-(--agri-card) p-6 sm:p-8 shadow-xl border border-(--agri-border-subtle)">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10 text-red-600">
               <i className="ri-error-warning-line text-3xl" />
             </div>
 
-            <h1 className="text-xl sm:text-2xl font-bold text-[var(--agri-text)]">
+            <h1 className="text-xl sm:text-2xl font-bold text-(--agri-text)">
               {t("errorBoundary.title")}
             </h1>
 
-            <p className="mt-2 text-sm text-[var(--agri-text-secondary)]">
+            <p className="mt-2 text-sm text-(--agri-text-secondary)">
               {t("errorBoundary.description")}
             </p>
 
             {this.state.error?.message && (
-              <div className="mt-4 p-3 bg-[var(--agri-hover)] rounded-lg text-left text-xs font-mono text-[var(--agri-text-secondary)] overflow-x-auto max-h-32 border border-[var(--agri-border)]">
+              <div className="mt-4 p-3 bg-(--agri-hover) rounded-lg text-left text-xs font-mono text-(--agri-text-secondary) overflow-x-auto max-h-32 border border-(--agri-border)">
                 {this.state.error.message}
               </div>
             )}
@@ -61,7 +61,7 @@ export default class ErrorBoundary extends React.Component {
               <button
                 type="button"
                 onClick={this.handleGoHome}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-5 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition-colors cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-(--agri-border) bg-(--agri-card) px-5 py-2.5 text-sm font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition-colors cursor-pointer"
               >
                 <i className="ri-home-4-line" />
                 {t("errorBoundary.goToHome")}

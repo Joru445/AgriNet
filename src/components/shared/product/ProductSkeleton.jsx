@@ -1,4 +1,4 @@
-import SkeletonBox from "../../common/SkeletonBox";
+﻿import SkeletonBox from "../../common/SkeletonBox";
 
 /**
  * Skeleton that mirrors the farmer ProductGrid/ProductCard
@@ -7,10 +7,10 @@ import SkeletonBox from "../../common/SkeletonBox";
  */
 function FarmerProductCardSkeleton() {
   return (
-    <div className="flex flex-col justify-between overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-sm">
+    <div className="flex flex-col justify-between overflow-hidden rounded-xl border border-(--agri-border) bg-(--agri-card) shadow-sm">
       {/* Image + badges */}
-      <div className="relative aspect-square w-full overflow-hidden bg-[var(--agri-hover)]">
-        <SkeletonBox className="absolute left-1.5 top-1.5 flex w-20 items-center gap-1 rounded-full bg-[var(--agri-card)] px-1.5 py-0.5" />
+      <div className="relative aspect-square w-full overflow-hidden bg-(--agri-hover)">
+        <SkeletonBox className="absolute left-1.5 top-1.5 flex w-20 items-center gap-1 rounded-full bg-(--agri-card) px-1.5 py-0.5" />
 
         <SkeletonBox className="absolute top-0 right-0 h-4 w-12 rounded-bl-lg" />
       </div>
@@ -33,7 +33,7 @@ function FarmerProductCardSkeleton() {
         </div>
 
         {/* Footer action buttons */}
-        <div className="pt-2 border-t border-[var(--agri-border)] flex items-center gap-1.5">
+        <div className="pt-2 border-t border-(--agri-border) flex items-center gap-1.5">
           <SkeletonBox className="flex-1 h-7 rounded-lg" />
           <SkeletonBox className="h-7 w-8 rounded-lg" />
         </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import { formatDate } from "../../../utils/date";
@@ -101,10 +101,10 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
           <div className="space-y-6">
             {/* Header */}
             <div>
-              <h2 className="text-lg font-bold text-[var(--agri-text)]">
+              <h2 className="text-lg font-bold text-(--agri-text)">
                 {t("adminProduct.detailsTitle")}
               </h2>
-              <p className="text-sm text-[var(--agri-text-muted)]">
+              <p className="text-sm text-(--agri-text-muted)">
                 {t("adminProduct.detailsSubtitle")}
               </p>
             </div>
@@ -113,7 +113,7 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
             {product.images?.length > 0 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {product.images.map((img, idx) => (
-                  <div key={idx} className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-[var(--agri-hover)]">
+                  <div key={idx} className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-(--agri-hover)">
                     <img src={img.url} alt="" className="h-full w-full object-cover" loading="lazy" />
                   </div>
                 ))}
@@ -121,50 +121,50 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
             )}
 
             {/* Product Info */}
-            <div className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 p-4">
-              <h3 className="mb-3 text-sm font-bold text-[var(--agri-text)]">
+            <div className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 p-4">
+              <h3 className="mb-3 text-sm font-bold text-(--agri-text)">
                 {t("adminProduct.productInformation")}
               </h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminProduct.productName")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">{product.name}</p>
+                  <span className="text-(--agri-text-muted)">{t("adminProduct.productName")}</span>
+                  <p className="font-semibold text-(--agri-text)">{product.name}</p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminProduct.category")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">{product.category}</p>
+                  <span className="text-(--agri-text-muted)">{t("adminProduct.category")}</span>
+                  <p className="font-semibold text-(--agri-text)">{product.category}</p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminProduct.price")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">₱{product.price.toLocaleString()}/{product.unit}</p>
+                  <span className="text-(--agri-text-muted)">{t("adminProduct.price")}</span>
+                  <p className="font-semibold text-(--agri-text)">₱{product.price.toLocaleString()}/{product.unit}</p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminProduct.stock")}</span>
-                  <p className={`font-semibold ${product.stock <= 0 ? "text-red-500" : "text-[var(--agri-text)]"}`}>
+                  <span className="text-(--agri-text-muted)">{t("adminProduct.stock")}</span>
+                  <p className={`font-semibold ${product.stock <= 0 ? "text-red-500" : "text-(--agri-text)"}`}>
                     {product.stock} {product.unit}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminProduct.sellingMode")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">
+                  <span className="text-(--agri-text-muted)">{t("adminProduct.sellingMode")}</span>
+                  <p className="font-semibold text-(--agri-text)">
                     {isPreorder ? t("adminProduct.preorder") : t("adminProduct.availableNow")}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminProduct.availability")}</span>
+                  <span className="text-(--agri-text-muted)">{t("adminProduct.availability")}</span>
                   <p className={`font-semibold ${product.available ? "text-green-600" : "text-red-500"}`}>
                     {product.available ? t("adminProduct.available") : t("adminProduct.unavailable")}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminProduct.rating")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">
+                  <span className="text-(--agri-text-muted)">{t("adminProduct.rating")}</span>
+                  <p className="font-semibold text-(--agri-text)">
                     {product.ratingSummary?.average?.toFixed(1) || "0.0"} ({product.ratingSummary?.count || 0} reviews)
                   </p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminProduct.listingDuration")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">
+                  <span className="text-(--agri-text-muted)">{t("adminProduct.listingDuration")}</span>
+                  <p className="font-semibold text-(--agri-text)">
                     {product.durationHours ? `${product.durationHours}h` : "—"}
                   </p>
                 </div>
@@ -214,31 +214,31 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
             )}
 
             {/* Farmer Info */}
-            <div className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 p-4">
-              <h3 className="mb-3 text-sm font-bold text-[var(--agri-text)]">
+            <div className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 p-4">
+              <h3 className="mb-3 text-sm font-bold text-(--agri-text)">
                 {t("adminProduct.farmerInformation")}
               </h3>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[var(--agri-hover)]">
+                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-(--agri-hover)">
                   {product.farmer?.profilePicture ? (
                     <img src={product.farmer.profilePicture} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[var(--agri-text-muted)]">
+                    <div className="flex h-full w-full items-center justify-center text-(--agri-text-muted)">
                       <i className="ri-user-line" />
                     </div>
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[var(--agri-text)]">
+                  <p className="text-sm font-semibold text-(--agri-text)">
                     {product.farmer?.fullname || product.farmer?.username || "—"}
                   </p>
-                  <p className="text-xs text-[var(--agri-text-muted)]">
+                  <p className="text-xs text-(--agri-text-muted)">
                     @{product.farmer?.username || "—"}
                   </p>
                 </div>
                 <button
                   onClick={handleViewFarmer}
-                  className="ml-auto rounded-lg border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer"
+                  className="ml-auto rounded-lg border border-(--agri-border-subtle) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
                 >
                   {t("adminProduct.viewFarmer")}
                 </button>
@@ -246,9 +246,9 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
             </div>
 
             {/* Reports */}
-            <div className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 p-4">
+            <div className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-[var(--agri-text)]">
+                <h3 className="text-sm font-bold text-(--agri-text)">
                   {t("adminProduct.reports")} ({product.totalReports || 0})
                 </h3>
                 {product.totalReports > 0 && (
@@ -262,7 +262,7 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
               </div>
 
               {product.totalReports === 0 ? (
-                <p className="text-sm text-[var(--agri-text-muted)]">
+                <p className="text-sm text-(--agri-text-muted)">
                   {t("adminProduct.noReports")}
                 </p>
               ) : (
@@ -276,9 +276,9 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
                     </span>
                   </div>
                   {product.reports?.slice(0, 3).map((report) => (
-                    <div key={report.id} className="rounded-lg bg-[var(--agri-card)] p-3 text-xs">
+                    <div key={report.id} className="rounded-lg bg-(--agri-card) p-3 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-[var(--agri-text)]">{report.reason}</span>
+                        <span className="font-semibold text-(--agri-text)">{report.reason}</span>
                         <span className={`rounded-full px-2 py-0.5 font-bold ${
                           report.status === "pending" ? "bg-orange-500/10 text-orange-600" :
                           report.status === "reviewing" ? "bg-blue-500/10 text-blue-600" :
@@ -289,7 +289,7 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
                         </span>
                       </div>
                       {report.description && (
-                        <p className="mt-1 text-[var(--agri-text-muted)] line-clamp-2">{report.description}</p>
+                        <p className="mt-1 text-(--agri-text-muted) line-clamp-2">{report.description}</p>
                       )}
                     </div>
                   ))}
@@ -298,27 +298,27 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
             </div>
 
             {/* Timestamps */}
-            <div className="flex gap-4 text-xs text-[var(--agri-text-muted)]">
+            <div className="flex gap-4 text-xs text-(--agri-text-muted)">
               <span>{t("adminProduct.created")}: {product.createdAt ? formatDate(product.createdAt) : "—"}</span>
               <span>{t("adminProduct.updated")}: {product.updatedAt ? formatDate(product.updatedAt) : "—"}</span>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3 border-t border-[var(--agri-border-subtle)] pt-4">
+            <div className="flex items-center gap-3 border-t border-(--agri-border-subtle) pt-4">
               <button
                 onClick={handleToggle}
                 disabled={actionLoading}
                 className={`rounded-xl px-4 py-2.5 text-sm font-bold transition cursor-pointer disabled:opacity-50 ${
                   product.available
                     ? "bg-red-500/10 text-red-600 hover:bg-red-500/20"
-                    : "bg-[#2D6A4F]/10 text-[#2D6A4F] hover:bg-[#2D6A4F]/20 dark:text-[var(--agri-brand)] dark:hover:bg-[var(--agri-brand)]/20"
+                    : "bg-[#2D6A4F]/10 text-[#2D6A4F] hover:bg-[#2D6A4F]/20 dark:text-(--agri-brand) dark:hover:bg-(--agri-brand)/20"
                 }`}
               >
                 {product.available ? t("adminProduct.disableProduct") : t("adminProduct.enableProduct")}
               </button>
               <button
                 onClick={onClose}
-                className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer"
+                className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-card) px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
               >
                 {t("common.close")}
               </button>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
@@ -378,7 +378,7 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
             centered
               ? "max-w-[24rem] sm:max-w-[28rem] md:max-w-[32rem] lg:max-w-[34rem] p-5 sm:p-6 md:p-7"
               : "max-w-[24rem] sm:max-w-[26rem] md:max-w-[28rem] p-4 sm:p-5"
-          } rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-2xl transition-all`}
+          } rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-2xl transition-all`}
         >
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2D6A4F]/10 dark:bg-[#2D6A4F]/25 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-[#1B4332] dark:text-(--agri-brand)">
@@ -386,16 +386,16 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
               <span>{t("common.fromTo", { count: stepIndex + 1, total: steps.length })}</span>
             </span>
 
-            <h3 className="mt-2 text-base sm:text-lg md:text-xl font-extrabold text-[var(--agri-text)] leading-snug tracking-tight">
+            <h3 className="mt-2 text-base sm:text-lg md:text-xl font-extrabold text-(--agri-text) leading-snug tracking-tight">
               {t(`${stepCopyKey(step)}.title`)}
             </h3>
 
-            <p className="mt-2 text-sm sm:text-[15px] md:text-base leading-relaxed text-[var(--agri-text-secondary)] font-normal">
+            <p className="mt-2 text-sm sm:text-[15px] md:text-base leading-relaxed text-(--agri-text-secondary) font-normal">
               {t(`${stepCopyKey(step)}.body`)}
             </p>
           </div>
 
-          <div className="mt-5 pt-3.5 border-t border-[var(--agri-border)] dark:border-gray-700 flex items-center justify-between gap-2">
+          <div className="mt-5 pt-3.5 border-t border-(--agri-border) dark:border-gray-700 flex items-center justify-between gap-2">
             {/* Left: Skip */}
             <button
               type="button"
@@ -416,7 +416,7 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
                   className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer ${
                     i === stepIndex
                       ? "w-5 sm:w-7 bg-[#2D6A4F] dark:bg-(--agri-brand)"
-                      : "w-1.5 sm:w-2 bg-[var(--agri-border)] hover:bg-[var(--agri-text-muted)]"
+                      : "w-1.5 sm:w-2 bg-(--agri-border) hover:bg-(--agri-text-muted)"
                   }`}
                 />
               ))}
@@ -428,7 +428,7 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
                 <button
                   type="button"
                   onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
-                  className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)]/70 hover:bg-[var(--agri-hover)] px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-[var(--agri-text)] transition cursor-pointer whitespace-nowrap"
+                  className="rounded-xl border border-(--agri-border) bg-(--agri-hover)/70 hover:bg-(--agri-hover) px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-(--agri-text) transition cursor-pointer whitespace-nowrap"
                 >
                   {t("common.back")}
                 </button>

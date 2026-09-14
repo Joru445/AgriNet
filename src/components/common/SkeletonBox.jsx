@@ -1,3 +1,3 @@
-export default function SkeletonBox({ className }) {
-  return <div className={`animate-pulse rounded-xl bg-[var(--agri-hover)] ${className}`} />;
+﻿export default function SkeletonBox({ className }) {
+  return <div className={`animate-pulse rounded-xl bg-(--agri-hover) ${className}`} />;
 }

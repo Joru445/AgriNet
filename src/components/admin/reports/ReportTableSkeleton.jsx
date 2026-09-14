@@ -1,4 +1,4 @@
-import SkeletonBox from "../../common/SkeletonBox";
+﻿import SkeletonBox from "../../common/SkeletonBox";
 
 /**
  * Skeleton that mirrors the admin ReportTable
@@ -7,15 +7,15 @@ import SkeletonBox from "../../common/SkeletonBox";
  */
 export default function ReportTableSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-md shadow-black/5">
+    <div className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-md shadow-black/5">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[800px]">
           <thead>
-            <tr className="border-b border-[var(--agri-border)] bg-[var(--agri-hover)]/90">
+            <tr className="border-b border-(--agri-border) bg-(--agri-hover)/90">
               {[0, 1, 2, 3, 4, 5].map((_, i) => (
                 <th
                   key={i}
-                  className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--agri-text-secondary)]"
+                  className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-secondary)"
                 >
                   <SkeletonBox className="h-3 w-16 rounded" />
                 </th>
@@ -27,7 +27,7 @@ export default function ReportTableSkeleton() {
             {Array.from({ length: 6 }).map((_, rowIndex) => (
               <tr
                 key={rowIndex}
-                className="border-b border-[var(--agri-border-subtle)] last:border-0"
+                className="border-b border-(--agri-border-subtle) last:border-0"
               >
                 {/* Report */}
                 <td className="px-5 py-4">

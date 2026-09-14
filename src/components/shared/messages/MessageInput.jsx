@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+﻿import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { compressImage } from "../../../utils/imageCompression";
 import { useLanguage } from "../../../context/LanguageContext";
@@ -258,12 +258,12 @@ export default function MessageInput({
       />
 
       {inquiryProduct && (
-        <div className="relative mb-3 rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-3">
+        <div className="relative mb-3 rounded-2xl border border-(--agri-border) bg-(--agri-card) p-3">
           {onCancelInquiry && (
             <button
               type="button"
               onClick={onCancelInquiry}
-              className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full text-[var(--agri-text-muted)] hover:text-[var(--agri-text)] transition"
+              className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full text-(--agri-text-muted) hover:text-(--agri-text) transition"
               title={t("messages.cancelInquiry")}
             >
               <i className="ri-close-line text-lg" />
@@ -353,9 +353,9 @@ export default function MessageInput({
                   className="
                     flex h-full w-10 items-center
                     justify-center
-                    text-[var(--agri-text-muted)]
+                    text-(--agri-text-muted)
                     transition
-                    hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)]
+                    hover:text-[#2D6A4F] dark:hover:text-(--agri-brand)
                     disabled:cursor-not-allowed
                     disabled:opacity-30
                   "
@@ -402,7 +402,7 @@ export default function MessageInput({
 
         {/* Selected Image Preview */}
         {selectedImage?.previewUrl && (
-          <div className="p-3 pb-1 flex items-center gap-3 border-b border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 rounded-t-2xl">
+          <div className="p-3 pb-1 flex items-center gap-3 border-b border-(--agri-border-subtle) bg-(--agri-hover)/50 rounded-t-2xl">
             <div className="relative inline-block">
               <img
                 src={selectedImage.previewUrl}
@@ -439,11 +439,11 @@ export default function MessageInput({
               )}
             </div>
 
-            <div className="text-xs text-[var(--agri-text-secondary)]">
-              <p className="font-semibold text-[var(--agri-text)] flex items-center gap-1">
-                 <i className="ri-image-fill text-[#2D6A4F] dark:text-[var(--agri-brand)]" /> {t("messageInput.photoSelected")}
+            <div className="text-xs text-(--agri-text-secondary)">
+              <p className="font-semibold text-(--agri-text) flex items-center gap-1">
+                 <i className="ri-image-fill text-[#2D6A4F] dark:text-(--agri-brand)" /> {t("messageInput.photoSelected")}
               </p>
-              <p className="text-[var(--agri-text-muted)] mt-0.5">
+              <p className="text-(--agri-text-muted) mt-0.5">
                 {uploadingImage
                    ? t("messageInput.uploadingPhoto")
                    : t("messageInput.typeCaption")}
@@ -471,7 +471,7 @@ export default function MessageInput({
               }}
               aria-label={t("messageInput.addAttachment")}
               title={t("messageInput.addPhotoMedia")}
-              className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-[#2D6A4F] dark:text-[var(--agri-brand)] transition hover:text-[#1B4332] dark:hover:text-[var(--agri-brand-light)] hover:bg-black/5 cursor-pointer ${
+              className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-[#2D6A4F] dark:text-(--agri-brand) transition hover:text-[#1B4332] dark:hover:text-(--agri-brand-light) hover:bg-black/5 cursor-pointer ${
                 showMenu ? "rotate-45" : "rotate-0"
               }`}
             >
@@ -482,7 +482,7 @@ export default function MessageInput({
             {showMenu && menuPos && createPortal(
               <div
                 ref={menuRef}
-                className="fixed z-[99999] w-52 bg-[var(--agri-card)] rounded-2xl shadow-xl border border-[var(--agri-border)] p-1.5 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-150"
+                className="fixed z-[99999] w-52 bg-(--agri-card) rounded-2xl shadow-xl border border-(--agri-border) p-1.5 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-150"
                 style={{ left: menuPos.left, bottom: menuPos.bottom }}
               >
                 <button
@@ -492,9 +492,9 @@ export default function MessageInput({
                     setMenuPos(null);
                     cameraInputRef.current?.click();
                   }}
-                  className="flex sm:hidden items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] transition cursor-pointer"
+                  className="flex sm:hidden items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-(--agri-text-secondary) hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) transition cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-(--agri-brand) flex items-center justify-center shrink-0">
                     <i className="ri-camera-fill text-base" />
                   </div>
                    <span>{t("messageInput.takePhoto")}</span>
@@ -507,9 +507,9 @@ export default function MessageInput({
                     setMenuPos(null);
                     galleryInputRef.current?.click();
                   }}
-                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] transition cursor-pointer"
+                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-(--agri-text-secondary) hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) transition cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-(--agri-brand) flex items-center justify-center shrink-0">
                     <i className="ri-image-2-fill text-base" />
                   </div>
                    <span>{t("messageInput.chooseFromGallery")}</span>
@@ -531,7 +531,7 @@ export default function MessageInput({
                 ? t("messageInput.captionPlaceholder")
                 : t("messageInput.messagePlaceholder")
             }
-            className="min-w-0 flex-1 resize-none overflow-y-auto py-3 focus:outline-none bg-transparent text-sm sm:text-base font-semibold text-[var(--agri-text)] placeholder-[var(--agri-text-muted)]"
+            className="min-w-0 flex-1 resize-none overflow-y-auto py-3 focus:outline-none bg-transparent text-sm sm:text-base font-semibold text-(--agri-text) placeholder-(--agri-text-muted)"
           />
 
           <button
@@ -548,12 +548,12 @@ export default function MessageInput({
             aria-label={t("messageInput.sendMessage")}
             className={`h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center transition ${
               canSend
-                ? "text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:text-[#1B4332] dark:hover:text-[var(--agri-brand-light)] hover:bg-[#2D6A4F]/10 cursor-pointer hover:scale-105 active:scale-95"
-                : "text-[var(--agri-border)] cursor-not-allowed"
+                ? "text-[#2D6A4F] dark:text-(--agri-brand) hover:text-[#1B4332] dark:hover:text-(--agri-brand-light) hover:bg-[#2D6A4F]/10 cursor-pointer hover:scale-105 active:scale-95"
+                : "text-(--agri-border) cursor-not-allowed"
             }`}
           >
             {uploadingImage || isSending ? (
-              <i className="ri-loader-4-line text-xl animate-spin text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+              <i className="ri-loader-4-line text-xl animate-spin text-[#2D6A4F] dark:text-(--agri-brand)" />
             ) : (
               <i className="ri-send-plane-fill text-xl" />
             )}

@@ -1,4 +1,4 @@
-import ReviewCardSkeleton from "../../common/ReviewCardSkeleton";
+﻿import ReviewCardSkeleton from "../../common/ReviewCardSkeleton";
 
 /**
  * Skeleton that mirrors the farmer ReviewList
@@ -11,7 +11,7 @@ export default function ReviewSkeleton() {
       {Array.from({ length: 3 }).map((_, index) => (
         <div
           key={index}
-          className="overflow-hidden rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-xs"
+          className="overflow-hidden rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-xs"
         >
           <ReviewCardSkeleton />
         </div>

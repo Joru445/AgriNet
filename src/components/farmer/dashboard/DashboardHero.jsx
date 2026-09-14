@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 
 export default function DashboardHero({ profile, stats = {}, loading = false }) {
   const { t } = useLanguage();
@@ -14,13 +14,13 @@ export default function DashboardHero({ profile, stats = {}, loading = false }) 
             className="h-10 w-10 shrink-0 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2D6A4F]/10 text-base font-semibold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2D6A4F]/10 text-base font-semibold text-[#2D6A4F] dark:text-(--agri-brand)">
             {displayName[0] ?? "?"}
           </div>
         )}
 
         <div className="min-w-0">
-          <p className="text-xs text-[var(--agri-text-muted)]">{t("farmer.welcomeBack")}</p>
+          <p className="text-xs text-(--agri-text-muted)">{t("farmer.welcomeBack")}</p>
 
           <h1 className="truncate text-lg font-bold text-(--agri-text)">{displayName}</h1>
 

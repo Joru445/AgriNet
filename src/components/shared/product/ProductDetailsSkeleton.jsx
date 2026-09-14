@@ -1,4 +1,4 @@
-import SkeletonBox from "../../common/SkeletonBox";
+﻿import SkeletonBox from "../../common/SkeletonBox";
 
 /**
  * Skeleton that mirrors the redesigned ProductDetails page layout:
@@ -35,7 +35,7 @@ export default function ProductDetailsSkeleton() {
             <SkeletonBox className="h-6 w-24 rounded-full" />
           </div>
 
-          <div className="mt-4 pt-3 border-t border-[var(--agri-border-subtle)] flex items-center gap-3">
+          <div className="mt-4 pt-3 border-t border-(--agri-border-subtle) flex items-center gap-3">
             <SkeletonBox className="h-6 w-20 rounded-md" />
             <SkeletonBox className="h-4 w-28 rounded" />
             <SkeletonBox className="h-4 w-32 rounded" />
@@ -53,7 +53,7 @@ export default function ProductDetailsSkeleton() {
         </section>
 
         {/* Seller */}
-        <section className="mx-4 sm:mx-6 mt-4 sm:mt-5 rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)] p-4">
+        <section className="mx-4 sm:mx-6 mt-4 sm:mt-5 rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover) p-4">
           <div className="flex items-center gap-3.5">
             <SkeletonBox className="h-11 w-11 shrink-0 rounded-full" />
             <div className="min-w-0 flex-1 space-y-2">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { RANGE_PRESETS } from "../../utils/analyticsDateRange";
 
 /**
@@ -21,7 +21,7 @@ export default function RangeSelector({ value, onChange, disabled = false }) {
         disabled={disabled}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--agri-border)] bg-[var(--agri-card)] px-2.5 py-1 text-xs font-semibold text-[var(--agri-text-secondary)] shadow-2xs transition hover:bg-[var(--agri-hover)] disabled:opacity-50"
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-(--agri-border) bg-(--agri-card) px-2.5 py-1 text-xs font-semibold text-(--agri-text-secondary) shadow-2xs transition hover:bg-(--agri-hover) disabled:opacity-50"
       >
         <i className="ri-calendar-line text-sm" />
         <span>{RANGE_PRESETS[value]?.label ?? value}</span>
@@ -37,7 +37,7 @@ export default function RangeSelector({ value, onChange, disabled = false }) {
           />
           <div
             role="menu"
-            className="absolute right-0 z-20 mt-1 min-w-28 overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-elevated)] p-1 shadow-lg"
+            className="absolute right-0 z-20 mt-1 min-w-28 overflow-hidden rounded-xl border border-(--agri-border) bg-(--agri-elevated) p-1 shadow-lg"
           >
             {Object.entries(RANGE_PRESETS).map(([key, spec]) => (
               <button
@@ -50,8 +50,8 @@ export default function RangeSelector({ value, onChange, disabled = false }) {
                 }}
                 className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                   key === value
-                    ? "bg-[#2D6A4F]/10 text-[#2D6A4F] dark:bg-[var(--agri-brand)]/15 dark:text-[var(--agri-brand)]"
-                    : "text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]"
+                    ? "bg-[#2D6A4F]/10 text-[#2D6A4F] dark:bg-(--agri-brand)/15 dark:text-(--agri-brand)"
+                    : "text-(--agri-text-secondary) hover:bg-(--agri-hover)"
                 }`}
               >
                 {spec.label}

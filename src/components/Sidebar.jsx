@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
@@ -157,7 +157,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                       data-onboarding={getOnboardingNavKey(item.to)}
                       title={collapsed ? t(item.labelKey) : undefined}
                       className={({ isActive }) =>
-                        `relative flex items-center rounded-lg transition-all duration-150 dark:bg-[var(--agri-surface)] ${
+                        `relative flex items-center rounded-lg transition-all duration-150 dark:bg-(--agri-surface) ${
                           collapsed
                             ? "justify-center w-16 h-12 mx-auto"
                             : "gap-2.5 px-2.5 py-2"
@@ -224,8 +224,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                     {/* Expanded popup notification */}
                     {!collapsed && popupMessage && (
                       <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 pointer-events-none">
-                        <div className="relative flex items-center gap-2 whitespace-nowrap rounded-xl bg-white dark:bg-[var(--agri-card)] px-3 py-2 text-sm font-semibold text-[#1B4332] dark:text-[var(--agri-brand-light)] shadow-xl shadow-black/15 border border-black/5">
-                          <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-white dark:bg-[var(--agri-card)] rotate-45 border-l border-b border-black/5" />
+                        <div className="relative flex items-center gap-2 whitespace-nowrap rounded-xl bg-white dark:bg-(--agri-card) px-3 py-2 text-sm font-semibold text-[#1B4332] dark:text-(--agri-brand-light) shadow-xl shadow-black/15 border border-black/5">
+                          <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-white dark:bg-(--agri-card) rotate-45 border-l border-b border-black/5" />
                           <span className="relative z-10 flex items-center gap-1.5">
                             <PulsingDot />
                             <span>{popupMessage}</span>
@@ -246,7 +246,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         {/* Collapse toggle */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-white/80 hover:bg-white/[0.07] transition-colors duration-150 cursor-pointer ${
+          className={`flex items-center rounded-lg dark:bg-(--agri-surface) text-white/40 hover:text-white/80 hover:bg-white/[0.07] transition-colors duration-150 cursor-pointer ${
             collapsed
               ? "justify-center w-16 h-12 mx-auto"
               : "gap-2.5 px-2.5 py-2 w-full"
@@ -273,7 +273,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         {isAnonymous ? (
           <NavLink
             to="/landing"
-            className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-white/80 hover:bg-white/[0.07] transition-colors duration-150 ${
+            className={`flex items-center rounded-lg dark:bg-(--agri-surface) text-white/40 hover:text-white/80 hover:bg-white/[0.07] transition-colors duration-150 ${
               collapsed
                 ? "justify-center w-16 h-12 mx-auto"
                 : "gap-2.5 px-2.5 py-2 w-full"
@@ -291,7 +291,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         ) : (
           <button
             onClick={() => setShowLogoutModal(true)}
-            className={`flex items-center rounded-lg dark:bg-[var(--agri-surface)] text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-150 cursor-pointer ${
+            className={`flex items-center rounded-lg dark:bg-(--agri-surface) text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-150 cursor-pointer ${
               collapsed
                 ? "justify-center w-16 h-12 mx-auto"
                 : "gap-2.5 px-2.5 py-2 w-full"

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 
 export default function ButtonLink({
   children,
@@ -12,9 +12,9 @@ export default function ButtonLink({
     primary: "bg-[#2D6A4F] text-white hover:bg-[#1B4332]",
 
     secondary:
-      "border border-[#2D6A4F] bg-[var(--agri-card)] text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:bg-green-50",
+      "border border-[#2D6A4F] bg-(--agri-card) text-[#2D6A4F] dark:text-(--agri-brand) hover:bg-green-50",
 
-    ghost: "text-[#2D6A4F] dark:text-[var(--agri-brand)] hover:bg-green-50",
+    ghost: "text-[#2D6A4F] dark:text-(--agri-brand) hover:bg-green-50",
   };
 
   return (

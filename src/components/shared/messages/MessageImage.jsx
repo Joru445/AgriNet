@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
 import productPlaceholder from "../../../assets/img/productPlaceholder.png";
 
@@ -45,7 +45,7 @@ export default function MessageImage({
         className={`relative w-full overflow-hidden ${className}`}
         style={{ aspectRatio: String(ratio) }}
       >
-        <div className="absolute inset-0 animate-pulse rounded-xl bg-[var(--agri-hover)]" />
+        <div className="absolute inset-0 animate-pulse rounded-xl bg-(--agri-hover)" />
       </div>
     );
   }
@@ -61,7 +61,7 @@ export default function MessageImage({
       {!error && (
         <div
           className={[
-            "absolute inset-0 animate-pulse bg-[var(--agri-hover)] transition-opacity duration-300",
+            "absolute inset-0 animate-pulse bg-(--agri-hover) transition-opacity duration-300",
             loaded ? "opacity-0 pointer-events-none" : "opacity-100",
           ].join(" ")}
         />

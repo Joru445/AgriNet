@@ -46,10 +46,10 @@ export default function MobileActionBar({ product, farmer, isOwner }) {
   // Owner sees a simplified bar
   if (isOwner) {
     return (
-      <div className="fixed bottom-0 inset-x-0 z-9996 lg:hidden border-t border-(--agri-border) bg-(--agri-surface) px-4 py-3">
+      <div className="fixed bottom-0 inset-x-0 z-50 lg:hidden border-t border-(--agri-border) bg-(--agri-card) px-4 py-3">
         <button
           onClick={() => navigate("/farmer/products")}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] py-3 text-sm font-bold text-white shadow-lg shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-(--agri-green-mid) py-3 text-sm font-bold text-white shadow-lg shadow-(--agri-green-mid)/20 transition hover:bg-(--agri-green-dark) active:scale-[0.99] cursor-pointer"
         >
           <i className="ri-settings-3-line text-lg" />
           {t("productDetails.manageProduct")}
@@ -59,15 +59,23 @@ export default function MobileActionBar({ product, farmer, isOwner }) {
   }
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-9996 lg:hidden border-t border-(--agri-border) bg-(--agri-surface) px-3 py-2.5">
-      <div className="flex items-center gap-2">
+    <div className="fixed h-16 bottom-0 inset-x-0 z-50 lg:hidden border-t border-(--agri-border) bg-(--agri-card) px-3 py-2.5">
+      <div className="flex items-center px-3 gap-2">
         {/* Farmer identity — clickable */}
         <button
           type="button"
           onClick={handleFarmerClick}
-          className="flex min-w-0 items-center gap-2 shrink-0 rounded-lg px-1 py-1 -ml-1 text-left transition hover:bg-(--agri-hover) cursor-pointer"
+          className="flex min-w-0 max-w-38 items-center gap-2 shrink-0 rounded-lg px-1 py-1 -ml-1 text-left transition cursor-pointer"
         >
           <Avatar src={farmer?.profilePicture} name={farmerName} size="xs" />
+
+          <span className="text-sm truncate whitespace-nowrap">{farmer.fullname}</span>
+          {(farmer?.verificationStatus === "approved" || farmer?.verified) && (
+            <i
+              className="ri-verified-badge-fill text-(--agri-green-mid) dark:text-(--agri-brand) text-sm shrink-0"
+              title={t("productSeller.verifiedFarmer")}
+            />
+          )}
         </button>
 
         <div className="flex-1" />
@@ -92,7 +100,7 @@ export default function MobileActionBar({ product, farmer, isOwner }) {
         <button
           type="button"
           onClick={handleInquiry}
-          className="flex shrink-0 items-center gap-1.5 rounded-xl bg-[#2D6A4F] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#2D6A4F]/20 transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer"
+          className="flex shrink-0 items-center gap-1.5 rounded-xl bg-(--agri-green-mid) px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-(--agri-green-mid)/20 transition hover:bg-(--agri-green-dark) active:scale-[0.99] cursor-pointer"
         >
           <span className="whitespace-nowrap">
             {isSignedIn

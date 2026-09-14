@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+﻿import { useParams } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -71,29 +71,29 @@ export default function TransactionReview() {
         {loading ? (
           <div className="space-y-4 animate-pulse">
             {/* Summary skeleton */}
-            <div className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-5 space-y-4 shadow-2xs">
+            <div className="rounded-2xl border border-(--agri-border) bg-(--agri-card) p-5 space-y-4 shadow-2xs">
               <div className="flex justify-between items-center">
-                <div className="h-6 w-32 bg-[var(--agri-hover)] rounded" />
-                <div className="h-6 w-20 bg-[var(--agri-hover)] rounded-full" />
+                <div className="h-6 w-32 bg-(--agri-hover) rounded" />
+                <div className="h-6 w-20 bg-(--agri-hover) rounded-full" />
               </div>
               <div className="flex gap-3">
-                <div className="w-16 h-16 rounded-xl bg-[var(--agri-hover)] shrink-0" />
+                <div className="w-16 h-16 rounded-xl bg-(--agri-hover) shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-40 bg-[var(--agri-hover)] rounded" />
-                  <div className="h-3 w-24 bg-[var(--agri-hover)]/60 rounded" />
+                  <div className="h-4 w-40 bg-(--agri-hover) rounded" />
+                  <div className="h-3 w-24 bg-(--agri-hover)/60 rounded" />
                 </div>
               </div>
             </div>
 
             {/* Review form skeleton */}
-            <div className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-6 space-y-4 shadow-2xs">
-              <div className="h-5 w-36 bg-[var(--agri-hover)] rounded" />
+            <div className="rounded-2xl border border-(--agri-border) bg-(--agri-card) p-6 space-y-4 shadow-2xs">
+              <div className="h-5 w-36 bg-(--agri-hover) rounded" />
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full bg-[var(--agri-hover)]" />
+                  <div key={i} className="w-8 h-8 rounded-full bg-(--agri-hover)" />
                 ))}
               </div>
-              <div className="h-24 w-full bg-[var(--agri-hover)]/60 rounded-xl" />
+              <div className="h-24 w-full bg-(--agri-hover)/60 rounded-xl" />
             </div>
           </div>
         ) : (
@@ -128,14 +128,14 @@ export default function TransactionReview() {
 
             {/* Completed but user cannot review */}
             {!isReviewed && !canSubmitReview && inquiry.status === "completed" && (
-              <div className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-5 text-center">
-                <i className="ri-star-line text-2xl text-[var(--agri-text-muted)]" />
+              <div className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-5 text-center">
+                <i className="ri-star-line text-2xl text-(--agri-text-muted)" />
 
-                <p className="mt-2 text-sm font-medium text-[var(--agri-text-secondary)]">
+                <p className="mt-2 text-sm font-medium text-(--agri-text-secondary)">
                   {t("transaction.reviewNoSubmitted")}
                 </p>
 
-                <p className="mt-1 text-xs text-[var(--agri-text-muted)]">
+                <p className="mt-1 text-xs text-(--agri-text-muted)">
                   {t("transaction.reviewOnlyOwner")}
                 </p>
               </div>

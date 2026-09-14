@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+﻿import { useCallback, useState } from "react";
 
 import useAdminReports from "../../hooks/useAdminReports";
 import { apiSetUserSuspension, apiSetProductAvailability } from "../../services/admin.service";
@@ -155,10 +155,10 @@ export default function Reports() {
 
       {detailLoading && !selectedReport && (
         <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs">
-          <div className="rounded-2xl bg-[var(--agri-card)] p-8 shadow-2xl border border-[var(--agri-border-subtle)]">
+          <div className="rounded-2xl bg-(--agri-card) p-8 shadow-2xl border border-(--agri-border-subtle)">
             <div className="flex items-center gap-3">
-              <i className="ri-loader-4-line animate-spin text-xl text-[var(--agri-brand)]" />
-              <span className="text-sm font-bold text-[var(--agri-text)]">{t("adminReport.loadingDetails")}</span>
+              <i className="ri-loader-4-line animate-spin text-xl text-(--agri-brand)" />
+              <span className="text-sm font-bold text-(--agri-text)">{t("adminReport.loadingDetails")}</span>
             </div>
           </div>
         </div>

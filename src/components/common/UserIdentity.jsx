@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { getInitials } from "../../utils/getInitials";
 import { applyTransform, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
 import { useLanguage } from "../../context/LanguageContext";
@@ -73,7 +73,7 @@ export default function UserIdentity({
           className={`${currentSize.image} shrink-0 rounded-full object-cover`}
         />
       ) : (
-        <div className={`flex ${currentSize.image} shrink-0 items-center justify-center rounded-full bg-[#2D6A4F]/10 text-sm font-semibold text-[#2D6A4F] dark:text-[var(--agri-brand)]`}>
+        <div className={`flex ${currentSize.image} shrink-0 items-center justify-center rounded-full bg-[#2D6A4F]/10 text-sm font-semibold text-[#2D6A4F] dark:text-(--agri-brand)`}>
           {getInitials(user.fullname)}
         </div>
       )}
@@ -81,7 +81,7 @@ export default function UserIdentity({
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-1.5">
             <p
-              className={`truncate font-semibold ${currentSize.name} ${colorWhite ? "text-white" : "text-[var(--agri-text)]"}`}
+              className={`truncate font-semibold ${currentSize.name} ${colorWhite ? "text-white" : "text-(--agri-text)"}`}
               title={user.fullname}
             >
               {user.fullname || t("common.unknownUser")}
@@ -91,27 +91,27 @@ export default function UserIdentity({
               <span
                 title={t("common.verifiedFarmer")}
                 aria-label={t("common.verifiedFarmer")}
-                className={`inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-[var(--agri-brand)] ${currentSize.badge}`}
+                className={`inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-(--agri-brand) ${currentSize.badge}`}
               >
                 <i className="ri-verified-badge-fill" />
               </span>
             )}
 
             {isCurrentUser && (
-              <span className="shrink-0 rounded-full bg-[var(--agri-hover)] px-2 py-0.5 text-[10px] font-medium text-[var(--agri-text-muted)]">
+              <span className="shrink-0 rounded-full bg-(--agri-hover) px-2 py-0.5 text-[10px] font-medium text-(--agri-text-muted)">
                 {t("common.you")}
               </span>
             )}
           </div>
 
           {showUsername && user.username && (
-            <p className={`truncate ${currentSize.username} ${colorWhite ? "text-white/60" : "text-[var(--agri-text-muted)]"} `}>
+            <p className={`truncate ${currentSize.username} ${colorWhite ? "text-white/60" : "text-(--agri-text-muted)"} `}>
               @{user.username}
             </p>
           )}
 
           {showRole && user.role && (
-            <p className={`truncate ${currentSize.username} ${colorWhite ? "text-white/60" : "text-[var(--agri-text-muted)]"}`}>
+            <p className={`truncate ${currentSize.username} ${colorWhite ? "text-white/60" : "text-(--agri-text-muted)"}`}>
               {roleLabel}
             </p>
           )}

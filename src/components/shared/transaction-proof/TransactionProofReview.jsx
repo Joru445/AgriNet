@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import ConfirmDialog from "../../ui/ConfirmDialog";
@@ -27,20 +27,20 @@ export default function TransactionProofReview({
   };
 
   return (
-    <section className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-5 shadow-sm">
+    <section className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-5 shadow-sm">
       <div>
-        <h2 className="font-semibold text-[var(--agri-text)]">
+        <h2 className="font-semibold text-(--agri-text)">
           {t("transaction.reviewTitle")}
         </h2>
 
-        <p className="mt-1 text-sm leading-6 text-[var(--agri-text-muted)]">
+        <p className="mt-1 text-sm leading-6 text-(--agri-text-muted)">
           {t("transaction.reviewBody")}
         </p>
       </div>
 
       {proofUrl ? (
         <div
-          className="mt-5 overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)] cursor-pointer group relative"
+          className="mt-5 overflow-hidden rounded-xl border border-(--agri-border) bg-(--agri-hover) cursor-pointer group relative"
           onClick={() => setShowFullscreen(true)}
           title={t("transaction.viewFullscreen")}
         >
@@ -56,10 +56,10 @@ export default function TransactionProofReview({
           </div>
         </div>
       ) : (
-        <div className="mt-5 rounded-xl bg-[var(--agri-hover)] p-8 text-center">
-          <i className="ri-image-line text-3xl text-[var(--agri-text-muted)]" />
+        <div className="mt-5 rounded-xl bg-(--agri-hover) p-8 text-center">
+          <i className="ri-image-line text-3xl text-(--agri-text-muted)" />
 
-          <p className="mt-2 text-sm text-[var(--agri-text-muted)]">
+          <p className="mt-2 text-sm text-(--agri-text-muted)">
             {t("transaction.noProofImage")}
           </p>
         </div>

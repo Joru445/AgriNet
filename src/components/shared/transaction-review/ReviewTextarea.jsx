@@ -1,4 +1,4 @@
-export default function ReviewTextarea({
+﻿export default function ReviewTextarea({
   value,
   onChange,
   placeholder,
@@ -16,21 +16,21 @@ export default function ReviewTextarea({
         w-full
         resize-none
         rounded-xl
-        border border-[var(--agri-input-border)]
-        bg-[var(--agri-input-bg)]
+        border border-(--agri-input-border)
+        bg-(--agri-input-bg)
         px-3
         py-3
         text-sm
-        text-[var(--agri-text)]
-        placeholder:text-[var(--agri-text-muted)]
+        text-(--agri-text)
+        placeholder:text-(--agri-text-muted)
         outline-none
         transition
         focus:border-[#2D6A4F]
         focus:ring-2
         focus:ring-[#2D6A4F]/10
         disabled:cursor-not-allowed
-        disabled:bg-[var(--agri-hover)]
-        disabled:text-[var(--agri-text-muted)]
+        disabled:bg-(--agri-hover)
+        disabled:text-(--agri-text-muted)
       "
     />
   );

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useNavigate } from "react-router-dom";
 
 import ProfileHeader from "../../components/shared/me/ProfileHeader";
 import ProfileForm from "../../components/shared/me/ProfileForm";
@@ -112,22 +112,22 @@ export default function Profile() {
                     key={action.id}
                     type="button"
                     onClick={action.onClick}
-                    className="flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-[var(--agri-hover)] cursor-pointer"
+                    className="flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-(--agri-hover) cursor-pointer"
                   >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--agri-hover)] text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--agri-hover) text-[#2D6A4F] dark:text-(--agri-brand)">
                       <i className={`${action.icon} text-lg`} />
                     </div>
 
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-[var(--agri-text)]">
+                      <span className="block text-sm font-semibold text-(--agri-text)">
                         {action.title}
                       </span>
-                      <span className="block text-xs text-[var(--agri-text-muted)]">
+                      <span className="block text-xs text-(--agri-text-muted)">
                         {action.subtitle}
                       </span>
                     </span>
 
-                    <i className="ri-arrow-right-s-line ml-auto text-xl text-[var(--agri-text-muted)]" />
+                    <i className="ri-arrow-right-s-line ml-auto text-xl text-(--agri-text-muted)" />
                   </button>
                 ))}
               </div>

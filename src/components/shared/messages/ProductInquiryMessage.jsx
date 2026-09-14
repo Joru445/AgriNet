@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { useLanguage } from "../../../context/LanguageContext";
 import MessageImage from "./MessageImage";
@@ -36,7 +36,7 @@ export default function ProductInquiryMessage({
           />
         )}
 
-        <div className="w-60 sm:w-72 max-w-[76vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-[var(--agri-card)] shadow-sm border border-[var(--agri-border-subtle)]">
+        <div className="w-60 sm:w-72 max-w-[76vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-(--agri-card) shadow-sm border border-(--agri-border-subtle)">
           <MessageImage
             loading
             alt=""
@@ -45,9 +45,9 @@ export default function ProductInquiryMessage({
             className="w-full max-h-48 sm:max-h-72"
           />
           <div className="p-3 space-y-2">
-            <p className="text-xs font-medium text-[#2D6A4F] dark:text-[var(--agri-brand)]">{t("productInquiryMsg.title")}</p>
-            <div className="h-4 w-3/4 animate-pulse rounded bg-[var(--agri-hover)]" />
-            <div className="h-3 w-1/2 animate-pulse rounded bg-[var(--agri-hover)]" />
+            <p className="text-xs font-medium text-[#2D6A4F] dark:text-(--agri-brand)">{t("productInquiryMsg.title")}</p>
+            <div className="h-4 w-3/4 animate-pulse rounded bg-(--agri-hover)" />
+            <div className="h-3 w-1/2 animate-pulse rounded bg-(--agri-hover)" />
           </div>
         </div>
       </div>
@@ -56,18 +56,18 @@ export default function ProductInquiryMessage({
 
   if (!product) {
     return (
-      <div className="w-72 rounded-xl bg-[var(--agri-card)] p-4">
-        <p className="text-xs font-medium text-[#2D6A4F] dark:text-[var(--agri-brand)]">{t("productInquiryMsg.title")}</p>
+      <div className="w-72 rounded-xl bg-(--agri-card) p-4">
+        <p className="text-xs font-medium text-[#2D6A4F] dark:text-(--agri-brand)">{t("productInquiryMsg.title")}</p>
 
-        <p className="mt-1 text-sm text-[var(--agri-text-muted)]">
+        <p className="mt-1 text-sm text-(--agri-text-muted)">
           {t("productInquiryMsg.noLongerAvailable")}
         </p>
 
         {message.quantity != null && (
-          <div className="mt-3 rounded-lg bg-[var(--agri-hover)] px-3 py-2">
-            <p className="text-xs text-[var(--agri-text-muted)]">{t("productInquiryMsg.quantityRequested")}</p>
+          <div className="mt-3 rounded-lg bg-(--agri-hover) px-3 py-2">
+            <p className="text-xs text-(--agri-text-muted)">{t("productInquiryMsg.quantityRequested")}</p>
 
-            <p className="mt-0.5 text-sm font-semibold text-[var(--agri-text)]">
+            <p className="mt-0.5 text-sm font-semibold text-(--agri-text)">
               {message.quantity}
             </p>
           </div>
@@ -95,7 +95,7 @@ export default function ProductInquiryMessage({
           }`}
         />
 
-        <div className={`w-60 sm:w-72 max-w-[76vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-[var(--agri-card)] shadow-sm border border-[var(--agri-border-subtle)] ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-[var(--agri-brand)]/40" : ""}`}>
+        <div className={`w-60 sm:w-72 max-w-[76vw] sm:max-w-xs min-w-0 overflow-hidden rounded-xl bg-(--agri-card) shadow-sm border border-(--agri-border-subtle) ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-(--agri-brand)/40" : ""}`}>
           <MessageImage
             src={productImage}
             alt={product.name}
@@ -106,12 +106,12 @@ export default function ProductInquiryMessage({
           />
 
           <div className="p-3">
-            <p className="text-xs font-medium text-[#2D6A4F] dark:text-[var(--agri-brand)]">{t("productInquiryMsg.title")}</p>
+            <p className="text-xs font-medium text-[#2D6A4F] dark:text-(--agri-brand)">{t("productInquiryMsg.title")}</p>
 
-            <h3 className="mt-1 font-semibold text-[var(--agri-text)] truncate">{product.name}</h3>
+            <h3 className="mt-1 font-semibold text-(--agri-text) truncate">{product.name}</h3>
 
             {product.price != null && (
-              <p className="mt-1 text-sm font-medium text-[var(--agri-text-secondary)]">
+              <p className="mt-1 text-sm font-medium text-(--agri-text-secondary)">
                 ₱{product.price}
                 {product.unit ? ` / ${product.unit}` : ""}
               </p>
@@ -119,19 +119,19 @@ export default function ProductInquiryMessage({
 
             {/* Quantity */}
             {message.quantity && (
-              <div className="mt-3 rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)] px-3 py-2.5">
-                <p className="text-xs font-medium text-[var(--agri-text-muted)]">
+              <div className="mt-3 rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover) px-3 py-2.5">
+                <p className="text-xs font-medium text-(--agri-text-muted)">
                   {t("productInquiryMsg.quantityRequested")}
                 </p>
 
-                <p className="mt-0.5 text-base font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+                <p className="mt-0.5 text-base font-bold text-[#2D6A4F] dark:text-(--agri-brand)">
                   {Number.isFinite(quantity) ? quantity : message.quantity}{" "}
                   {product.unit || t("productInquiryMsg.units")}
                 </p>
               </div>
             )}
 
-            <p className="mt-3 text-sm text-[var(--agri-text-secondary)] break-words [overflow-wrap:anywhere] [word-break:break-word]">{message.text}</p>
+            <p className="mt-3 text-sm text-(--agri-text-secondary) break-words [overflow-wrap:anywhere] [word-break:break-word]">{message.text}</p>
 
             {showAccept && (
               <button
@@ -177,7 +177,7 @@ export default function ProductInquiryMessage({
             )}
 
             {message.inquiryStatus === "rejected" && (
-              <div className="mt-3 rounded-lg bg-[var(--agri-hover)] px-3 py-2 text-center text-sm font-medium text-[var(--agri-text-secondary)]">
+              <div className="mt-3 rounded-lg bg-(--agri-hover) px-3 py-2 text-center text-sm font-medium text-(--agri-text-secondary)">
                 {t("productInquiryMsg.inquiryRejected")}
               </div>
             )}
@@ -186,7 +186,7 @@ export default function ProductInquiryMessage({
       </div>
 
       {statusText && isOwn && (
-        <span className="text-[11px] text-[var(--agri-text-muted)] font-normal px-1 mt-1 select-none leading-none">
+        <span className="text-[11px] text-(--agri-text-muted) font-normal px-1 mt-1 select-none leading-none">
           {statusText}
         </span>
       )}

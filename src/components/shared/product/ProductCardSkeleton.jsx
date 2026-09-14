@@ -1,4 +1,4 @@
-import SkeletonBox from "../../common/SkeletonBox";
+﻿import SkeletonBox from "../../common/SkeletonBox";
 
 /**
  * Skeleton that mirrors the shared consumer ProductCard
@@ -7,16 +7,16 @@ import SkeletonBox from "../../common/SkeletonBox";
  */
 export default function ProductCardSkeleton({ showFooter = true }) {
   return (
-    <div className="flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-md">
+    <div className="flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-md">
       {/* Top Image Container */}
-      <div className="relative aspect-square w-full overflow-hidden bg-[var(--agri-hover)]">
+      <div className="relative aspect-square w-full overflow-hidden bg-(--agri-hover)">
         {/* Category pill - top left */}
-        <div className="absolute left-1.5 top-1.5 sm:left-2.5 sm:top-2.5 flex w-20 items-center gap-1 rounded-full bg-[var(--agri-card)] px-1.5 py-0.5 sm:px-2.5 sm:py-1">
+        <div className="absolute left-1.5 top-1.5 sm:left-2.5 sm:top-2.5 flex w-20 items-center gap-1 rounded-full bg-(--agri-card) px-1.5 py-0.5 sm:px-2.5 sm:py-1">
           <SkeletonBox className="h-3 w-3 rounded-full" />
         </div>
 
         {/* Stock badge - top right corner */}
-        <div className="absolute top-0 right-0 rounded-bl-xl sm:rounded-bl-2xl bg-[var(--agri-hover)] px-2 py-0.5 sm:px-3 sm:py-1">
+        <div className="absolute top-0 right-0 rounded-bl-xl sm:rounded-bl-2xl bg-(--agri-hover) px-2 py-0.5 sm:px-3 sm:py-1">
           <SkeletonBox className="h-2.5 sm:h-3 w-12 rounded-full" />
         </div>
       </div>
@@ -41,7 +41,7 @@ export default function ProductCardSkeleton({ showFooter = true }) {
 
         {/* Footer: rating & distance */}
         {showFooter && (
-          <div className="pt-2 sm:pt-3 border-t border-[var(--agri-border-subtle)] flex items-center justify-between gap-1">
+          <div className="pt-2 sm:pt-3 border-t border-(--agri-border-subtle) flex items-center justify-between gap-1">
             <div className="flex items-center gap-1 sm:gap-2">
               <SkeletonBox className="h-3 sm:h-3.5 w-3 sm:w-3.5 rounded-full" />
               <SkeletonBox className="h-3 sm:h-3.5 w-10 rounded" />

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import Avatar from "../../common/Avatar";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import MessageBubble from "./MessageBubble";
@@ -161,7 +161,7 @@ export default function MessageRow({
               />
 
               {statusText && (
-                <span className="text-[11px] text-[var(--agri-text-muted)] font-normal px-1 mt-1 select-none leading-none">
+                <span className="text-[11px] text-(--agri-text-muted) font-normal px-1 mt-1 select-none leading-none">
                   {statusText}
                 </span>
               )}

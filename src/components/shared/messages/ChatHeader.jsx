@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../../context/AuthContext";
@@ -62,7 +62,7 @@ export default function ChatHeader({ user }) {
   return (
     <>
       <header
-        className="w-full h-16 sm:h-18 shrink-0 bg-[var(--agri-bg)]/90 border-b border-[var(--agri-border-subtle)] px-4 sm:px-6 flex items-center justify-between shadow-xs z-[9996]"
+        className="w-full h-16 sm:h-18 shrink-0 bg-(--agri-page)/90 border-b border-(--agri-border-subtle) px-4 sm:px-6 flex items-center justify-between shadow-xs z-[9996]"
       >
         <div className="flex items-center gap-3 min-w-0">
           <BackButton className="flex sm:hidden" />
@@ -71,14 +71,14 @@ export default function ChatHeader({ user }) {
 
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 min-w-0">
-              <h3 className="font-semibold text-[var(--agri-text)] truncate">
+              <h3 className="font-semibold text-(--agri-text) truncate">
                 {user.fullname}
               </h3>
               {(user.verificationStatus === "approved" || user.verified) && (
                 <span
                   title={t("common.verifiedFarmer")}
                   aria-label={t("common.verifiedFarmer")}
-                  className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-[var(--agri-brand)] text-base"
+                  className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-(--agri-brand) text-base"
                 >
                   <i className="ri-verified-badge-fill" />
                 </span>
@@ -94,7 +94,7 @@ export default function ChatHeader({ user }) {
               )}
             </div>
 
-            <p className="text-sm text-[var(--agri-text-muted)] truncate">
+            <p className="text-sm text-(--agri-text-muted) truncate">
               @{user.username}
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function ChatHeader({ user }) {
             <button
               type="button"
               onClick={() => setMenuOpen((prev) => !prev)}
-              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition cursor-pointer ${menuOpen ? "bg-[var(--agri-hover)] text-[var(--agri-text)]" : "hover:bg-[var(--agri-hover)] text-[var(--agri-text-secondary)]"
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition cursor-pointer ${menuOpen ? "bg-(--agri-hover) text-(--agri-text)" : "hover:bg-(--agri-hover) text-(--agri-text-secondary)"
                 }`}
               title={t("messages.moreOptions")}
               aria-expanded={menuOpen}
@@ -115,19 +115,19 @@ export default function ChatHeader({ user }) {
 
             {/* 3-dots dropdown menu */}
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-40 sm:w-44 rounded-xl bg-[var(--agri-card)] p-1 shadow-lg border border-[var(--agri-border)] ring-1 ring-black/5 z-[9997] anim-scale-in">
+              <div className="absolute right-0 top-full mt-1.5 w-40 sm:w-44 rounded-xl bg-(--agri-card) p-1 shadow-lg border border-(--agri-border) ring-1 ring-black/5 z-[9997] anim-scale-in">
                 <button
                   type="button"
                   onClick={handleAction}
-                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[#2D6A4F]/10 hover:text-[#1B4332] dark:hover:text-[var(--agri-brand-light)] transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-(--agri-text-secondary) hover:bg-[#2D6A4F]/10 hover:text-[#1B4332] dark:hover:text-(--agri-brand-light) transition-colors cursor-pointer"
                 >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-(--agri-brand)">
                     <i className="ri-user-3-line text-sm" />
                   </div>
                   <span className="truncate">{t("messages.viewProfile")}</span>
                 </button>
 
-                <div className="my-1 border-t border-[var(--agri-border-subtle)]" />
+                <div className="my-1 border-t border-(--agri-border-subtle)" />
 
                 <button
                   type="button"

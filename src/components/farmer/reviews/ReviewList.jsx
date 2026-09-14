@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 import ReviewCard from "../../common/ReviewCard";
 
 export default function ReviewList({ reviews }) {
@@ -6,7 +6,7 @@ export default function ReviewList({ reviews }) {
 
   if (!reviews.length) {
     return (
-      <div className="bg-[var(--agri-card)] rounded-2xl border border-[var(--agri-border)] p-12 text-center text-[var(--agri-text-muted)]">
+      <div className="bg-(--agri-card) rounded-2xl border border-(--agri-border) p-12 text-center text-(--agri-text-muted)">
         {t("farmer.noReviewsYet")}
       </div>
     );
@@ -17,7 +17,7 @@ export default function ReviewList({ reviews }) {
       {reviews.map((review) => (
         <div
           key={review.id}
-          className="overflow-hidden rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-xs transition-all hover:shadow-md"
+          className="overflow-hidden rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-xs transition-all hover:shadow-md"
         >
           <ReviewCard review={review} />
         </div>

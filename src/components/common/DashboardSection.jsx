@@ -1,4 +1,4 @@
-export default function DashboardSection({
+﻿export default function DashboardSection({
   title,
   subtitle,
   icon,
@@ -16,17 +16,17 @@ export default function DashboardSection({
 
   return (
     <section
-      className={`rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-lg shadow-black/5 ${
+      className={`rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-lg shadow-black/5 ${
         fill ? "flex min-h-0 flex-col" : ""
       } ${className}`}
     >
       <div
-        className={`border-b border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 ${headerLayoutClass}`}
+        className={`border-b border-(--agri-border-subtle) bg-(--agri-hover)/50 ${headerLayoutClass}`}
       >
         <div className={`flex items-center min-w-0 ${compact ? "gap-2" : "gap-3"}`}>
           {icon && (
             <div
-              className={`flex shrink-0 items-center justify-center rounded-xl bg-[#2D6A4F]/10 border border-[#2D6A4F]/20 text-[#2D6A4F] dark:text-[var(--agri-brand)] ${
+              className={`flex shrink-0 items-center justify-center rounded-xl bg-[#2D6A4F]/10 border border-[#2D6A4F]/20 text-[#2D6A4F] dark:text-(--agri-brand) ${
                 compact ? "h-7 w-7" : "h-9 w-9"
               }`}
             >
@@ -36,7 +36,7 @@ export default function DashboardSection({
 
           <div className="min-w-0 flex-1">
             <h2
-              className={`truncate font-bold text-[var(--agri-text)] ${
+              className={`truncate font-bold text-(--agri-text) ${
                 compact ? "text-sm" : "text-base"
               }`}
             >
@@ -47,7 +47,7 @@ export default function DashboardSection({
               <p
                 className={`${
                   compact ? "mt-0.5 text-[11px]" : "mt-0.5 text-xs"
-                } text-[var(--agri-text-muted)] font-medium`}
+                } text-(--agri-text-muted) font-medium`}
               >
                 {subtitle}
               </p>

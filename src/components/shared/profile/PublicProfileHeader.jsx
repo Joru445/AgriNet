@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import landscape from "../../../assets/img/landscapeCover.jpg";
 
 import ImageViewerModal from "../../common/ImageViewerModal";
@@ -62,7 +62,7 @@ export default function PublicProfileHeader({
   }
 
   return (
-    <section data-onboarding="store-header" className="bg-[var(--agri-card)]">
+    <section data-onboarding="store-header" className="bg-(--agri-card)">
       {/* Cover Photo */}
       <div className="mx-auto max-w-7xl">
         <div
@@ -70,7 +70,7 @@ export default function PublicProfileHeader({
             relative
             h-56
             overflow-hidden
-            bg-[var(--agri-hover)]
+            bg-(--agri-hover)
             sm:h-72
             md:h-80
             lg:h-[380px]
@@ -100,7 +100,7 @@ export default function PublicProfileHeader({
           {/* Left side: Avatar + Info */}
           <div className="flex items-end gap-4">
             {/* Avatar */}
-            <div className="block shrink-0 -mt-8 sm:-mt-16 rounded-full border-4 border-[var(--agri-card)] shadow-md">
+            <div className="block shrink-0 -mt-8 sm:-mt-16 rounded-full border-4 border-(--agri-card) shadow-md">
               {profile.profilePicture ? (
                 <img
                   src={
@@ -116,7 +116,7 @@ export default function PublicProfileHeader({
                   onClick={() => setLightbox({ src: profile.profilePicture, title: name })}
                 />
               ) : (
-                <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-[#2D6A4F]/10 flex items-center justify-center text-[#2D6A4F] dark:text-[var(--agri-brand)] text-3xl font-bold">
+                <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-[#2D6A4F]/10 flex items-center justify-center text-[#2D6A4F] dark:text-(--agri-brand) text-3xl font-bold">
                   {initials}
                 </div>
               )}
@@ -125,20 +125,20 @@ export default function PublicProfileHeader({
             {/* Text Info */}
             <div className="min-w-0 pb-1 sm:pb-3">
               <div className="flex items-center gap-1.5 min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332] dark:text-[var(--agri-brand)] [text-shadow:_0_1px_2px_rgba(255,255,255,0.9),_0_0_8px_rgba(255,255,255,0.8)] dark:[text-shadow:0_1px_3px_rgba(0,0,0,0.8)] truncate">
+                <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332] dark:text-(--agri-brand) [text-shadow:_0_1px_2px_rgba(255,255,255,0.9),_0_0_8px_rgba(255,255,255,0.8)] dark:[text-shadow:0_1px_3px_rgba(0,0,0,0.8)] truncate">
                   {name}
                 </h1>
                 {(profile.verificationStatus === "approved" || profile.verified) && (
                   <span
                     title={t("common.verifiedFarmer")}
                     aria-label={t("common.verifiedFarmer")}
-                    className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-[var(--agri-brand)] text-lg"
+                    className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-(--agri-brand) text-lg"
                   >
                     <i className="ri-verified-badge-fill" />
                   </span>
                 )}
               </div>
-              <p className="text-sm text-[var(--agri-text-muted)] font-medium">
+              <p className="text-sm text-(--agri-text-muted) font-medium">
                 @{profile.username}
               </p>
               <div className="mt-1.5">
@@ -167,7 +167,7 @@ export default function PublicProfileHeader({
                 className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition cursor-pointer
                   ${isFavorite("farmer", targetUid)
                     ? "bg-[#E63946] text-white hover:bg-[#C1121F]"
-                    : "border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)]"
+                    : "border border-(--agri-border) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-(--agri-hover)"
                   }
                 `}
               >
@@ -179,7 +179,7 @@ export default function PublicProfileHeader({
             <button
               type="button"
               onClick={handleShare}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-(--agri-border) bg-(--agri-card) px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) transition hover:bg-(--agri-hover) cursor-pointer"
             >
               <i className="ri-share-line" />
               <span>{t("storeProfile.share")}</span>
@@ -188,7 +188,7 @@ export default function PublicProfileHeader({
             <button
               type="button"
               onClick={() => setShowReportModal(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-(--agri-border) bg-(--agri-card) px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) transition hover:bg-(--agri-hover) cursor-pointer"
             >
               <i className="ri-flag-line" />
               <span>{t("storeProfile.report")}</span>
@@ -197,23 +197,23 @@ export default function PublicProfileHeader({
         </div>
 
         {/* Stats Row */}
-        <div className="flex flex-wrap items-center gap-4 sm:gap-6 py-3 sm:py-4 border-t border-[var(--agri-border-subtle)]">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6 py-3 sm:py-4 border-t border-(--agri-border-subtle)">
           {isFarmer && (
             <div className="flex items-center gap-1.5">
               <i className="ri-star-fill text-amber-500" />
-              <span className="text-sm font-bold text-[var(--agri-text)]">
+              <span className="text-sm font-bold text-(--agri-text)">
                 {averageRating != null && !isNaN(Number(averageRating))
                   ? Number(averageRating).toFixed(1)
                   : "N/A"}
               </span>
-              <span className="text-xs text-[var(--agri-text-muted)]">
+              <span className="text-xs text-(--agri-text-muted)">
                 ({reviewCount || 0})
               </span>
             </div>
           )}
 
           {fullLocation && (
-            <div className="flex items-center gap-1.5 text-sm text-[var(--agri-text-muted)]">
+            <div className="flex items-center gap-1.5 text-sm text-(--agri-text-muted)">
               <i className="ri-map-pin-line" />
               <span className="truncate max-w-[200px]">
                 {fullLocation}
@@ -222,7 +222,7 @@ export default function PublicProfileHeader({
           )}
 
           {joinedDate && (
-            <div className="flex items-center gap-1.5 text-sm text-[var(--agri-text-muted)]">
+            <div className="flex items-center gap-1.5 text-sm text-(--agri-text-muted)">
               <i className="ri-calendar-line" />
               <span>{t("storeProfile.joined", { date: joinedDate })}</span>
             </div>

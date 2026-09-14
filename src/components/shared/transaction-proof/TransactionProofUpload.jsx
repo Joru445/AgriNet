@@ -1,4 +1,4 @@
-import { useRef } from "react";
+﻿import { useRef } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
 
 export default function TransactionProofUpload({
@@ -24,13 +24,13 @@ export default function TransactionProofUpload({
   }
 
   return (
-    <section className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-5 shadow-sm">
+    <section className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-5 shadow-sm">
       <div>
-        <h2 className="font-semibold text-[var(--agri-text)]">
+        <h2 className="font-semibold text-(--agri-text)">
           {t("transaction.uploadTitle")}
         </h2>
 
-        <p className="mt-1 text-sm leading-6 text-[var(--agri-text-muted)]">
+        <p className="mt-1 text-sm leading-6 text-(--agri-text-muted)">
           {t("transaction.uploadBody")}
         </p>
       </div>
@@ -70,8 +70,8 @@ export default function TransactionProofUpload({
             mt-5 flex min-h-56 w-full
             flex-col items-center justify-center
             rounded-xl border-2 border-dashed
-            border-[var(--agri-border)] bg-[var(--agri-hover)]
-            text-[var(--agri-text-muted)] transition
+            border-(--agri-border) bg-(--agri-hover)
+            text-(--agri-text-muted) transition
             hover:border-[#2D6A4F]
             hover:bg-emerald-500/10
             disabled:cursor-not-allowed
@@ -80,17 +80,17 @@ export default function TransactionProofUpload({
         >
           <i className="ri-image-add-line text-3xl" />
 
-          <span className="mt-3 text-sm font-semibold text-[var(--agri-text-secondary)]">
+          <span className="mt-3 text-sm font-semibold text-(--agri-text-secondary)">
             {t("transaction.uploadProofImage")}
           </span>
 
-          <span className="mt-1 text-xs text-[var(--agri-text-muted)]">
+          <span className="mt-1 text-xs text-(--agri-text-muted)">
             {t("transaction.fileFormatHint")}
           </span>
         </button>
       ) : (
         <div className="mt-5">
-          <div className="overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)]">
+          <div className="overflow-hidden rounded-xl border border-(--agri-border) bg-(--agri-hover)">
             <img
               src={previewUrl}
               alt={t("transaction.proofPreviewAlt")}
@@ -99,7 +99,7 @@ export default function TransactionProofUpload({
           </div>
 
           {selectedFile && (
-            <p className="mt-2 truncate text-xs text-[var(--agri-text-muted)]">
+            <p className="mt-2 truncate text-xs text-(--agri-text-muted)">
               {selectedFile.name}
             </p>
           )}

@@ -1,4 +1,4 @@
-import SkeletonBox from "../../common/SkeletonBox";
+﻿import SkeletonBox from "../../common/SkeletonBox";
 
 /**
  * Skeleton that mirrors the TransactionProof page
@@ -9,7 +9,7 @@ export default function TransactionProofSkeleton() {
   return (
     <div className="space-y-5">
       {/* TransactionProduct */}
-      <section className="overflow-hidden rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-sm">
         <div className="flex flex-col sm:flex-row">
           <SkeletonBox className="h-48 w-full shrink-0 rounded-none sm:h-auto sm:w-48" />
 
@@ -28,7 +28,7 @@ export default function TransactionProofSkeleton() {
               </div>
             </div>
 
-            <div className="mt-4 border-t border-[var(--agri-border-subtle)] pt-4 space-y-1.5">
+            <div className="mt-4 border-t border-(--agri-border-subtle) pt-4 space-y-1.5">
               <SkeletonBox className="h-2.5 w-24 rounded" />
               <SkeletonBox className="h-4 w-28 rounded" />
             </div>
@@ -37,7 +37,7 @@ export default function TransactionProofSkeleton() {
       </section>
 
       {/* Generic action section */}
-      <section className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-5 shadow-sm">
+      <section className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-5 shadow-sm">
         <div className="flex items-start gap-3">
           <SkeletonBox className="h-10 w-10 shrink-0 rounded-full" />
           <div className="min-w-0 flex-1 space-y-2">

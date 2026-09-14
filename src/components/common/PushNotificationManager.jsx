@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -78,16 +78,16 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
   // Initial state detection in progress — never render a wrong OFF here.
   if (initializing) {
     return (
-      <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
+      <div className="rounded-xl border border-(--agri-border) bg-(--agri-card) p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--agri-hover) text-(--agri-text-muted)">
             <i className="ri-loader-4-line animate-spin text-lg" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
+            <p className="text-sm font-semibold text-(--agri-text-secondary)">
               {t("pushNotifications.title")}
             </p>
-            <p className="text-xs text-[var(--agri-text-muted)]">
+            <p className="text-xs text-(--agri-text-muted)">
               {t("pushNotifications.checking")}
             </p>
           </div>
@@ -99,16 +99,16 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
   // Not supported in this browser
   if (!supported) {
     return (
-      <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
+      <div className="rounded-xl border border-(--agri-border) bg-(--agri-card) p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--agri-hover) text-(--agri-text-muted)">
             <i className="ri-notification-off-line text-lg" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
+            <p className="text-sm font-semibold text-(--agri-text-secondary)">
               {t("pushNotifications.title")}
             </p>
-            <p className="text-xs text-[var(--agri-text-muted)]">
+            <p className="text-xs text-(--agri-text-muted)">
               {t("pushNotifications.notSupported")}
             </p>
           </div>
@@ -121,16 +121,16 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
   if (permission === "denied") {
     return (
       <div className="space-y-2">
-        <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4">
+        <div className="rounded-xl border border-(--agri-border) bg-(--agri-card) p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10 text-red-500">
               <i className="ri-notification-off-line text-lg" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-[var(--agri-text-secondary)]">
+              <p className="text-sm font-semibold text-(--agri-text-secondary)">
                 {t("pushNotifications.title")}
               </p>
-              <p className="text-xs text-[var(--agri-text-muted)]">
+              <p className="text-xs text-(--agri-text-muted)">
                 {t("pushNotifications.blocked")}
               </p>
             </div>
@@ -149,8 +149,8 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
           <div
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
               subscribed
-                ? "bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)] text-[#2D6A4F] dark:text-[var(--agri-brand)]"
-                : "bg-[var(--agri-hover)] text-[var(--agri-text-muted)]"
+                ? "bg-[#D8F3DC] dark:bg-(--agri-brand-bg) text-[#2D6A4F] dark:text-(--agri-brand)"
+                : "bg-(--agri-hover) text-(--agri-text-muted)"
             }`}
           >
             <i
@@ -160,10 +160,10 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
             />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[var(--agri-text)]">
+            <p className="text-sm font-semibold text-(--agri-text)">
               {t("pushNotifications.title")}
             </p>
-            <p className="text-xs text-[var(--agri-text-muted)]">
+            <p className="text-xs text-(--agri-text-muted)">
               {t("pushNotifications.deviceDescription")}
             </p>
           </div>
@@ -175,7 +175,7 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
           disabled={busy}
           onClick={handleToggle}
           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
-            subscribed ? "bg-[var(--agri-brand)]" : "bg-[var(--agri-border)]"
+            subscribed ? "bg-(--agri-brand)" : "bg-(--agri-border)"
           } ${busy ? "opacity-50" : ""}`}
         >
           <span
@@ -188,7 +188,7 @@ export default function PushNotificationManager({ onSubscriptionChange }) {
 
       {/* Busy indicator while disabling */}
       {busy && lastAction === "disable" && (
-        <div className="flex items-center gap-2 rounded-lg bg-[var(--agri-hover)] border border-[var(--agri-border)] px-3 py-2 text-xs text-[var(--agri-text-muted)] anim-fade-in">
+        <div className="flex items-center gap-2 rounded-lg bg-(--agri-hover) border border-(--agri-border) px-3 py-2 text-xs text-(--agri-text-muted) anim-fade-in">
           <i className="ri-loader-4-line animate-spin text-sm" />
           <span>{t("pushNotifications.disabling")}</span>
         </div>

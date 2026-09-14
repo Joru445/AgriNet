@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import RoleBadge from "../../common/RoleBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 import ResponsiveModal from "../../ui/ResponsiveModal";
@@ -78,7 +78,7 @@ export default function UserEditModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           {/* User Quick Identity Card */}
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-(--agri-hover)/90 border border-(--agri-border-subtle)">
             {user.profilePicture ? (
               <img
                 src={user.profilePicture}
@@ -86,7 +86,7 @@ export default function UserEditModal({
                 className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-[#D8F3DC]"
               />
             ) : (
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)] text-sm font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-(--agri-brand-bg) text-sm font-bold text-[#2D6A4F] dark:text-(--agri-brand)">
                 {user.fullname
                   ?.split(/\s+/)
                   .slice(0, 2)
@@ -97,10 +97,10 @@ export default function UserEditModal({
             )}
 
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-[var(--agri-text)] truncate">
+              <p className="text-sm font-bold text-(--agri-text) truncate">
                 {user.fullname || t("adminUser.unnamedUser")}
               </p>
-              <p className="text-xs text-[var(--agri-text-muted)] font-medium truncate">
+              <p className="text-xs text-(--agri-text-muted) font-medium truncate">
                 {user.email || t("adminUser.noEmail")}
               </p>
             </div>
@@ -108,13 +108,13 @@ export default function UserEditModal({
 
           {/* Role (Read-only) */}
           <div>
-            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
               {t("adminUser.userRole")}
             </label>
 
-            <div className="flex items-center justify-between rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/70 px-3.5 py-2.5">
+            <div className="flex items-center justify-between rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/70 px-3.5 py-2.5">
               <RoleBadge role={user.role || "consumer"} />
-              <span className="text-[11px] font-semibold text-[var(--agri-text-muted)]">
+              <span className="text-[11px] font-semibold text-(--agri-text-muted)">
                 {t("adminUser.fixedRole")}
               </span>
             </div>
@@ -122,7 +122,7 @@ export default function UserEditModal({
 
           {/* Account Status */}
           <div>
-            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
               {t("adminUser.accountStatus")}
             </label>
 
@@ -130,7 +130,7 @@ export default function UserEditModal({
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               disabled={loading}
-              className="w-full rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-3.5 py-2.5 text-sm font-semibold text-[var(--agri-text)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/10 cursor-pointer disabled:opacity-60"
+              className="w-full rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/10 cursor-pointer disabled:opacity-60"
             >
               <option value="active">{t("adminUser.active")}</option>
               <option value="suspended">{t("adminUser.suspended")}</option>
@@ -153,7 +153,7 @@ export default function UserEditModal({
                   value={suspensionDuration}
                   onChange={(e) => setSuspensionDuration(e.target.value)}
                   disabled={loading}
-                  className="w-full rounded-lg border border-amber-200 dark:border-amber-500/30 bg-white dark:bg-[var(--agri-card)] px-3 py-2 text-sm font-semibold text-[var(--agri-text)] outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 cursor-pointer disabled:opacity-60"
+                  className="w-full rounded-lg border border-amber-200 dark:border-amber-500/30 bg-white dark:bg-(--agri-card) px-3 py-2 text-sm font-semibold text-(--agri-text) outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 cursor-pointer disabled:opacity-60"
                 >
                   {DURATION_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -174,7 +174,7 @@ export default function UserEditModal({
                   placeholder={t("adminUser.suspensionReasonPlaceholder")}
                   rows={2}
                   disabled={loading}
-                  className="w-full rounded-lg border border-amber-200 dark:border-amber-500/30 bg-white dark:bg-[var(--agri-card)] px-3 py-2 text-sm text-[var(--agri-text)] outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 resize-none disabled:opacity-60"
+                  className="w-full rounded-lg border border-amber-200 dark:border-amber-500/30 bg-white dark:bg-(--agri-card) px-3 py-2 text-sm text-(--agri-text) outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 resize-none disabled:opacity-60"
                 />
               </div>
             </div>
@@ -183,7 +183,7 @@ export default function UserEditModal({
           {/* Farmer Verification Toggle */}
           {isFarmer && (
             <div>
-              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminUser.farmerVerification")}
               </label>
 
@@ -194,19 +194,19 @@ export default function UserEditModal({
                 className={`flex w-full items-center justify-between rounded-2xl border p-3.5 text-left transition cursor-pointer ${
                   verified
                     ? "border-emerald-200 bg-emerald-50/70"
-                    : "border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/70 hover:bg-[var(--agri-hover)]/70"
+                    : "border-(--agri-border-subtle) bg-(--agri-hover)/70 hover:bg-(--agri-hover)/70"
                 } disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 <div>
                   <p
                     className={`text-xs font-bold uppercase tracking-wider ${
-                      verified ? "text-emerald-800" : "text-[var(--agri-text-secondary)]"
+                      verified ? "text-emerald-800" : "text-(--agri-text-secondary)"
                     }`}
                   >
                     {verified ? t("adminUser.verifiedFarmer") : t("adminUser.notVerified")}
                   </p>
 
-                  <p className="mt-0.5 text-xs text-[var(--agri-text-muted)] font-medium">
+                  <p className="mt-0.5 text-xs text-(--agri-text-muted) font-medium">
                     {verified
                       ? t("adminUser.verifiedBadgeDesc")
                       : t("adminUser.notVerifiedBadgeDesc")}
@@ -215,7 +215,7 @@ export default function UserEditModal({
 
                 <div
                   className={`flex h-6 w-11 shrink-0 items-center rounded-full p-1 transition-colors ${
-                    verified ? "bg-[#2D6A4F]" : "bg-[var(--agri-hover)]"
+                    verified ? "bg-[#2D6A4F]" : "bg-(--agri-hover)"
                   }`}
                 >
                   <div
@@ -229,12 +229,12 @@ export default function UserEditModal({
           )}
 
           {/* Form Actions */}
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--agri-border-subtle)]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-(--agri-border-subtle)">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="py-2.5 px-4 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-xs sm:text-sm font-bold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+              className="py-2.5 px-4 rounded-xl border border-(--agri-border) bg-(--agri-card) text-xs sm:text-sm font-bold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             >
               {t("common.cancel")}
             </button>

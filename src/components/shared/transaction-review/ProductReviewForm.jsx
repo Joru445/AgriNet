@@ -1,4 +1,4 @@
-import RatingStars from "./RatingStars";
+﻿import RatingStars from "./RatingStars";
 import ReviewTextarea from "./ReviewTextarea";
 import { useLanguage } from "../../../context/LanguageContext";
 
@@ -12,13 +12,13 @@ export default function ProductReviewForm({
   const { t } = useLanguage();
 
   return (
-    <section className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-5 sm:p-6 shadow-md">
+    <section className="rounded-2xl border border-(--agri-border) bg-(--agri-card) p-5 sm:p-6 shadow-md">
       <div className="mb-4">
-        <h2 className="text-base font-bold text-[var(--agri-text)]">
+        <h2 className="text-base font-bold text-(--agri-text)">
           {t("transactionReview.rateProduct")}
         </h2>
 
-        <p className="mt-1 text-sm font-medium text-[var(--agri-text-secondary)]">
+        <p className="mt-1 text-sm font-medium text-(--agri-text-secondary)">
           {t("transactionReview.rateProductDesc")}
         </p>
       </div>
@@ -29,14 +29,14 @@ export default function ProductReviewForm({
         disabled={disabled}
       />
 
-      <p className="mt-2 text-xs text-[var(--agri-text-muted)]">
+      <p className="mt-2 text-xs text-(--agri-text-muted)">
         {rating > 0 ? t("transactionReview.outOfStars") : t("transactionReview.selectRating")}
       </p>
 
       <div className="mt-4">
         <label
           htmlFor="product-review"
-          className="mb-2 block text-sm font-medium text-[var(--agri-text-secondary)]"
+          className="mb-2 block text-sm font-medium text-(--agri-text-secondary)"
         >
           {t("transactionReview.commentLabel")}
         </label>

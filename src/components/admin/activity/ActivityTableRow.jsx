@@ -1,4 +1,4 @@
-import { formatFullDateTime } from "../../../utils/date";
+﻿import { formatFullDateTime } from "../../../utils/date";
 
 function getActionConfig(action) {
   switch (action) {
@@ -19,9 +19,9 @@ function getActionConfig(action) {
     case "report_resolved":
       return { color: "text-green-600 dark:text-green-400", bg: "bg-green-500/10", icon: "ri-check-double-line" };
     case "report_dismissed":
-      return { color: "text-[var(--agri-text-secondary)]", bg: "bg-[var(--agri-hover)]", icon: "ri-close-circle-line" };
+      return { color: "text-(--agri-text-secondary)", bg: "bg-(--agri-hover)", icon: "ri-close-circle-line" };
     default:
-      return { color: "text-[var(--agri-text-secondary)]", bg: "bg-[var(--agri-hover)]", icon: "ri-information-line" };
+      return { color: "text-(--agri-text-secondary)", bg: "bg-(--agri-hover)", icon: "ri-information-line" };
   }
 }
 
@@ -33,13 +33,13 @@ export default function ActivityTableRow({ log }) {
   const config = getActionConfig(log.action);
 
   return (
-    <tr className="border-b border-[var(--agri-border-subtle)] last:border-0 hover:bg-[var(--agri-hover)]/60 transition-colors">
+    <tr className="border-b border-(--agri-border-subtle) last:border-0 hover:bg-(--agri-hover)/60 transition-colors">
       <td className="px-5 py-4">
         <div className="flex items-center gap-2.5">
           <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${config.bg} ${config.color}`}>
             <i className={`${config.icon} text-sm`} />
           </div>
-          <span className="text-sm font-bold text-[var(--agri-text)]">
+          <span className="text-sm font-bold text-(--agri-text)">
             {formatAction(log.action)}
           </span>
         </div>
@@ -47,23 +47,23 @@ export default function ActivityTableRow({ log }) {
 
       <td className="px-5 py-4">
         <div>
-          <span className="text-xs font-bold text-[var(--agri-text-muted)] uppercase">
+          <span className="text-xs font-bold text-(--agri-text-muted) uppercase">
             {log.targetType}
           </span>
-          <p className="text-xs text-[var(--agri-text-secondary)] font-mono mt-0.5 truncate max-w-[200px]">
+          <p className="text-xs text-(--agri-text-secondary) font-mono mt-0.5 truncate max-w-[200px]">
             {log.targetId}
           </p>
         </div>
       </td>
 
       <td className="px-5 py-4">
-        <p className="text-xs text-[var(--agri-text-secondary)] font-mono truncate max-w-[150px]">
+        <p className="text-xs text-(--agri-text-secondary) font-mono truncate max-w-[150px]">
           {log.adminId}
         </p>
       </td>
 
       <td className="px-5 py-4 whitespace-nowrap">
-        <span className="text-xs font-semibold text-[var(--agri-text-secondary)]">
+        <span className="text-xs font-semibold text-(--agri-text-secondary)">
           {formatFullDateTime(log.timestamp) || "—"}
         </span>
       </td>

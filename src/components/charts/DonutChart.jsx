@@ -1,4 +1,4 @@
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+﻿import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
 import { useTheme } from "../../context/ThemeContext";
 import { getChartPalette } from "./ChartTheme";
@@ -60,9 +60,9 @@ export default function DonutChart({ items, centerLabel }) {
       </ResponsiveContainer>
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-bold text-[var(--agri-text)]">{total.toLocaleString()}</span>
+        <span className="text-xl font-bold text-(--agri-text)">{total.toLocaleString()}</span>
         {centerLabel && (
-          <span className="text-[11px] font-medium text-[var(--agri-text-muted)]">{centerLabel}</span>
+          <span className="text-[11px] font-medium text-(--agri-text-muted)">{centerLabel}</span>
         )}
       </div>
     </div>

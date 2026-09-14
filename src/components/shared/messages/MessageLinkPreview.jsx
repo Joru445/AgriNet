@@ -1,4 +1,4 @@
-import MessageImage from "./MessageImage";
+﻿import MessageImage from "./MessageImage";
 import { extractDomain, isSafeUrl } from "../../../utils/linkPreview";
 
 /**
@@ -20,7 +20,7 @@ export default function MessageLinkPreview({ url, metadata }) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={(e) => e.stopPropagation()}
-        className="group flex flex-col overflow-hidden rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-left shadow-xs transition hover:border-[#2D6A4F]/60 no-underline cursor-pointer max-w-sm"
+        className="group flex flex-col overflow-hidden rounded-xl border border-(--agri-border) bg-(--agri-card) text-left shadow-xs transition hover:border-[#2D6A4F]/60 no-underline cursor-pointer max-w-sm"
       >
         {metadata.image && (
           <MessageImage
@@ -35,18 +35,18 @@ export default function MessageLinkPreview({ url, metadata }) {
 
         <div className="flex min-w-0 flex-col gap-0.5 p-3">
           {metadata.title && (
-            <span className="line-clamp-1 text-sm font-semibold text-[var(--agri-text)]">
+            <span className="line-clamp-1 text-sm font-semibold text-(--agri-text)">
               {metadata.title}
             </span>
           )}
 
           {metadata.description && (
-            <span className="line-clamp-2 text-xs text-[var(--agri-text-muted)]">
+            <span className="line-clamp-2 text-xs text-(--agri-text-muted)">
               {metadata.description}
             </span>
           )}
 
-          <span className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-[var(--agri-text-secondary)]">
+          <span className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-(--agri-text-secondary)">
             <i className="ri-link" />
             {metadata.domain || extractDomain(url) || "AgriNet"}
           </span>
@@ -62,7 +62,7 @@ export default function MessageLinkPreview({ url, metadata }) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
-      className="text-[#2D6A4F] dark:text-[var(--agri-brand)] underline underline-offset-2 break-all cursor-pointer"
+      className="text-[#2D6A4F] dark:text-(--agri-brand) underline underline-offset-2 break-all cursor-pointer"
     >
       {url}
     </a>

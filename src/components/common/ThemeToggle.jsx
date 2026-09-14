@@ -1,4 +1,4 @@
-import { useTheme } from "../../context/ThemeContext";
+﻿import { useTheme } from "../../context/ThemeContext";
 import { useLanguage } from "../../context/LanguageContext";
 
 const OPTIONS = [
@@ -15,19 +15,19 @@ export default function ThemeToggle({ compact = false }) {
     return (
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--agri-hover) text-(--agri-text-muted)">
             <i className="ri-palette-line text-base" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[var(--agri-text)]">
+            <p className="text-sm font-semibold text-(--agri-text)">
               {t("settings.appearance")}
             </p>
-            <p className="text-xs text-[var(--agri-text-muted)]">
+            <p className="text-xs text-(--agri-text-muted)">
               {t("settings.appearanceDesc")}
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 rounded-lg border border-[var(--agri-border)] bg-[var(--agri-hover)] p-0.5">
+        <div className="flex shrink-0 rounded-lg border border-(--agri-border) bg-(--agri-hover) p-0.5">
           {OPTIONS.map((opt) => {
             const active = preference === opt.value;
             return (
@@ -38,8 +38,8 @@ export default function ThemeToggle({ compact = false }) {
                 title={t(opt.labelKey)}
                 className={`flex h-8 w-8 items-center justify-center rounded-md text-sm transition-all cursor-pointer ${
                   active
-                    ? "bg-[var(--agri-brand)] text-white shadow-sm"
-                    : "text-[var(--agri-text-muted)] hover:text-[var(--agri-text)]"
+                    ? "bg-(--agri-brand) text-white shadow-sm"
+                    : "text-(--agri-text-muted) hover:text-(--agri-text)"
                 }`}
               >
                 <i className={opt.icon} />
@@ -52,16 +52,16 @@ export default function ThemeToggle({ compact = false }) {
   }
 
   return (
-    <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4 shadow-sm">
+    <div className="rounded-xl border border-(--agri-border) bg-(--agri-card) p-4 shadow-sm">
       <div className="flex items-center gap-3 mb-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-secondary)]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--agri-hover) text-(--agri-text-secondary)">
           <i className="ri-palette-line text-lg" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-[var(--agri-text)]">
+          <p className="text-sm font-semibold text-(--agri-text)">
             {t("settings.appearance")}
           </p>
-          <p className="text-xs text-[var(--agri-text-muted)]">
+          <p className="text-xs text-(--agri-text-muted)">
             {t("settings.appearanceDesc")}
           </p>
         </div>
@@ -77,7 +77,7 @@ export default function ThemeToggle({ compact = false }) {
               className={`flex flex-col items-center gap-1.5 rounded-xl px-3 py-3 text-xs font-medium transition-all cursor-pointer ${
                 active
                   ? "bg-[#2D6A4F] text-white shadow-md"
-                  : "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] hover:bg-[var(--agri-active)]"
+                  : "bg-(--agri-hover) text-(--agri-text-secondary) hover:bg-(--agri-active)"
               }`}
             >
               <i className={`${opt.icon} text-lg`} />

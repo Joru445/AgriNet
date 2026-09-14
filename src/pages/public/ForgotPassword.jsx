@@ -79,7 +79,7 @@ export default function ForgotPassword() {
 
       <div
         className="flex-1 relative flex items-center justify-center p-4 sm:p-6 md:p-12 min-h-screen"
-        style={{ backgroundColor: "var(--agri-bg-surface)" }}
+        style={{ backgroundColor: "var(--agri-surface)" }}
       >
         {/* Mobile-only agricultural landscape background */}
         <div className="absolute inset-0 lg:hidden pointer-events-none overflow-hidden">

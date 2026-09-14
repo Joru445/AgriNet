@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 
 import Avatar from "../common/Avatar";
 import ConfirmDialog from "../ui/ConfirmDialog";
@@ -25,7 +25,7 @@ function AccountMetadata({ account, t }) {
   if (account.hasPasskey) parts.push(t("settings.passkey") || "Passkey");
 
   return (
-    <span className="text-xs text-[var(--agri-text-muted)] truncate">
+    <span className="text-xs text-(--agri-text-muted) truncate">
       {parts.join(" \u00b7 ")}
     </span>
   );
@@ -106,25 +106,25 @@ export default function AccountSwitcher() {
 
   return (
     <section>
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--agri-text-muted)] mb-2">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-(--agri-text-muted) mb-2">
         {t("settings.accounts")}
       </h2>
 
-      <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden">
+      <div className="rounded-xl border border-(--agri-border) bg-(--agri-card) overflow-hidden">
         {/* Current account */}
-        <div className="flex items-center gap-3 px-4 py-3 bg-[var(--agri-brand-bg)]/30">
+        <div className="flex items-center gap-3 px-4 py-3 bg-(--agri-brand-bg)/30">
           <Avatar
             src={currentAccount.avatar}
             name={currentAccount.email}
             size="xs"
           />
           <div className="min-w-0 flex-1">
-            <span className="block text-sm font-semibold text-[var(--agri-text)] truncate">
+            <span className="block text-sm font-semibold text-(--agri-text) truncate">
               {currentAccount.email}
             </span>
             <AccountMetadata account={currentAccount} t={t} />
           </div>
-          <span className="shrink-0 rounded-full bg-[var(--agri-brand)] px-2 py-0.5 text-[10px] font-bold text-white">
+          <span className="shrink-0 rounded-full bg-(--agri-brand) px-2 py-0.5 text-[10px] font-bold text-white">
             {t("settings.currentAccount")}
           </span>
         </div>
@@ -133,7 +133,7 @@ export default function AccountSwitcher() {
         {otherAccounts.map((account) => (
           <div
             key={account.uid}
-            className="border-t border-[var(--agri-border-subtle)] pr-4"
+            className="border-t border-(--agri-border-subtle) pr-4"
           >
             <div className="flex w-full items-center gap-3">
               <button
@@ -145,7 +145,7 @@ export default function AccountSwitcher() {
                 <Avatar src={account.avatar} name={account.email} size="xs" />
 
                 <div className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-[var(--agri-text)] truncate">
+                  <span className="block text-sm font-semibold text-(--agri-text) truncate">
                     {account.email}
                   </span>
 
@@ -157,7 +157,7 @@ export default function AccountSwitcher() {
                 type="button"
                 onClick={(e) => handleRemove(e, account)}
                 disabled={switching}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-(--agri-text-muted) transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
                 aria-label={t("settings.removeAccount") || "Remove account"}
               >
                 <i className="ri-close-line text-sm" />
@@ -167,17 +167,17 @@ export default function AccountSwitcher() {
         ))}
 
         {/* Add account */}
-        <div className="border-t border-[var(--agri-border-subtle)]">
+        <div className="border-t border-(--agri-border-subtle)">
           <button
             type="button"
             onClick={handleAddAccount}
             disabled={switching}
-            className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-[var(--agri-hover)] disabled:opacity-50 cursor-pointer"
+            className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-(--agri-hover) disabled:opacity-50 cursor-pointer"
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--agri-brand-bg)] text-[var(--agri-brand)]">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-(--agri-brand-bg) text-(--agri-brand)">
               <i className="ri-add-line text-sm" />
             </div>
-            <span className="text-sm font-medium text-[var(--agri-text-secondary)]">
+            <span className="text-sm font-medium text-(--agri-text-secondary)">
               {t("settings.addAccount")}
             </span>
           </button>

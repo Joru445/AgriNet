@@ -40,7 +40,7 @@ export default function ChatWindow({
         relative flex-1 min-w-0 w-full h-full overflow-hidden flex-col
         ${hasChat ? "flex" : "hidden md:flex"}
       `}
-      style={{ backgroundColor: "var(--agri-bg)" }}
+      style={{ backgroundColor: "var(--agri-page)" }}
     >
       <ChatHeader user={user} />
 

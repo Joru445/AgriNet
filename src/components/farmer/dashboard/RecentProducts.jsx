@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import DashboardSection from "../../common/DashboardSection";
 import SkeletonBox from "../../common/SkeletonBox";
@@ -13,7 +13,7 @@ export default function RecentProducts({ products = [], loading = false }) {
   const headerAction = (
     <Link
       to="/farmer/products"
-      className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] dark:text-[var(--agri-brand)] transition hover:underline"
+      className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] dark:text-(--agri-brand) transition hover:underline"
     >
       {t("farmer.viewAll")}
       <i className="ri-arrow-right-line text-xs" />
@@ -49,41 +49,41 @@ export default function RecentProducts({ products = [], loading = false }) {
         </div>
       ) : products.length === 0 ? (
         <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
-          <i className="ri-store-2-line text-2xl text-[var(--agri-text-muted)]" />
-          <p className="mt-2 text-sm font-medium text-[var(--agri-text-muted)]">
+          <i className="ri-store-2-line text-2xl text-(--agri-text-muted)" />
+          <p className="mt-2 text-sm font-medium text-(--agri-text-muted)">
             {t("farmer.noProductsYet")}
           </p>
         </div>
       ) : (
-        <ul className="divide-y divide-[var(--agri-border-subtle)]">
+        <ul className="divide-y divide-(--agri-border-subtle)">
           {displayedProducts.map((product) => (
             <li key={product.id}>
               <Link
                 to="/farmer/products"
-                className="flex items-center gap-3 p-3 transition hover:bg-[var(--agri-hover)]/60"
+                className="flex items-center gap-3 p-3 transition hover:bg-(--agri-hover)/60"
               >
                 {product.images?.[0]?.url || product.images?.[0] ? (
                   <img
                     src={product.images[0].url || product.images[0]}
                     alt={product.name || "Product"}
-                    className="h-10 w-10 shrink-0 rounded-lg object-cover border border-[var(--agri-border-subtle)]"
+                    className="h-10 w-10 shrink-0 rounded-lg object-cover border border-(--agri-border-subtle)"
                   />
                 ) : (
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-(--agri-brand)">
                     <i className="ri-shopping-basket-line text-base" />
                   </div>
                 )}
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[var(--agri-text)]">
+                  <p className="truncate text-sm font-semibold text-(--agri-text)">
                     {product.name || t("admin.unnamedProduct")}
                   </p>
 
                   <p
                     className={`mt-0.5 text-[11px] font-bold ${
                       product.available
-                        ? "text-[#2D6A4F] dark:text-[var(--agri-brand)]"
-                        : "text-[var(--agri-text-muted)]"
+                        ? "text-[#2D6A4F] dark:text-(--agri-brand)"
+                        : "text-(--agri-text-muted)"
                     }`}
                   >
                     {product.available
@@ -92,7 +92,7 @@ export default function RecentProducts({ products = [], loading = false }) {
                   </p>
                 </div>
 
-                <p className="shrink-0 text-sm font-black text-[#1B4332] dark:text-[var(--agri-brand-light)]">
+                <p className="shrink-0 text-sm font-black text-[#1B4332] dark:text-(--agri-brand-light)">
                   ₱{Number(product.price || 0).toLocaleString()}
                 </p>
               </Link>

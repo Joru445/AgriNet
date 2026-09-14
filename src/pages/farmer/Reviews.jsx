@@ -1,4 +1,4 @@
-import useReviews from "../../hooks/useReviews";
+﻿import useReviews from "../../hooks/useReviews";
 import { useLanguage } from "../../context/LanguageContext";
 
 import ReviewSummary from "../../components/farmer/reviews/ReviewSummary";
@@ -25,9 +25,9 @@ export default function Reviews() {
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-16 md:pb-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">{t("farmer.reviewsTitle")}</h1>
+        <h1 className="text-2xl font-bold text-[#1B4332] dark:text-(--agri-brand-light)">{t("farmer.reviewsTitle")}</h1>
 
-        <p className="mt-1 text-sm text-[var(--agri-text-muted)]">
+        <p className="mt-1 text-sm text-(--agri-text-muted)">
           {t("farmer.reviewsSubtitle")}
         </p>
       </div>
@@ -35,7 +35,7 @@ export default function Reviews() {
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <div className="space-y-6">
           {loading ? (
-            <div className="bg-[var(--agri-card)] rounded-2xl border border-[var(--agri-border)] p-6 animate-pulse flex flex-col items-center justify-center space-y-3 shadow-2xs">
+            <div className="bg-(--agri-card) rounded-2xl border border-(--agri-border) p-6 animate-pulse flex flex-col items-center justify-center space-y-3 shadow-2xs">
               <SkeletonBox className="h-12 w-20" />
               <SkeletonBox className="h-4 w-28" />
               <SkeletonBox className="h-3 w-36" />
@@ -48,7 +48,7 @@ export default function Reviews() {
           )}
 
           {loading ? (
-            <div className="bg-[var(--agri-card)] rounded-2xl border border-[var(--agri-border)] p-6 space-y-4 animate-pulse shadow-2xs">
+            <div className="bg-(--agri-card) rounded-2xl border border-(--agri-border) p-6 space-y-4 animate-pulse shadow-2xs">
               <SkeletonBox className="h-5 w-36" />
               {[5, 4, 3, 2, 1].map((stars) => (
                 <div key={stars} className="flex items-center gap-3">

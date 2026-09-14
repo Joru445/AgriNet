@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+﻿import { useState, useCallback, useRef, useEffect } from "react";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -99,15 +99,15 @@ export default function NotificationPreferences({ pushEnabled = true }) {
 
   return (
     <div className="space-y-2">
-      <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden">
+      <div className="rounded-xl border border-(--agri-border) bg-(--agri-card) overflow-hidden">
         {/* Messages */}
         <div className="flex items-center justify-between gap-3 px-4 py-3.5">
           <div className="flex items-center gap-3 min-w-0">
             <div
               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
                 pushEnabled
-                  ? "bg-[var(--agri-hover)] text-[var(--agri-text-muted)]"
-                  : "bg-[var(--agri-hover)] text-[var(--agri-text-muted)]"
+                  ? "bg-(--agri-hover) text-(--agri-text-muted)"
+                  : "bg-(--agri-hover) text-(--agri-text-muted)"
               }`}
             >
               <i className="ri-message-3-line text-base" />
@@ -115,12 +115,12 @@ export default function NotificationPreferences({ pushEnabled = true }) {
             <div className="min-w-0">
               <p
                 className={`text-sm font-semibold ${
-                  pushEnabled ? "text-[var(--agri-text)]" : "text-[var(--agri-text-muted)]"
+                  pushEnabled ? "text-(--agri-text)" : "text-(--agri-text-muted)"
                 }`}
               >
                 {t("notificationPreferences.messages")}
               </p>
-              <p className="text-xs text-[var(--agri-text-muted)]">
+              <p className="text-xs text-(--agri-text-muted)">
                 {t("notificationPreferences.messagesDescription")}
               </p>
             </div>
@@ -134,7 +134,7 @@ export default function NotificationPreferences({ pushEnabled = true }) {
             onClick={() => handleToggle("messages", messages)}
             className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
               disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"
-            } ${messages && pushEnabled ? "bg-[var(--agri-brand)]" : "bg-[var(--agri-border)]"}`}
+            } ${messages && pushEnabled ? "bg-(--agri-brand)" : "bg-(--agri-border)"}`}
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -145,14 +145,14 @@ export default function NotificationPreferences({ pushEnabled = true }) {
         </div>
 
         {/* Transactions */}
-        <div className="border-t border-[var(--agri-border-subtle)]">
+        <div className="border-t border-(--agri-border-subtle)">
           <div className="flex items-center justify-between gap-3 px-4 py-3.5">
             <div className="flex items-center gap-3 min-w-0">
               <div
               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
                   pushEnabled
-                    ? "bg-[var(--agri-hover)] text-[var(--agri-text-muted)]"
-                    : "bg-[var(--agri-hover)] text-[var(--agri-text-muted)]"
+                    ? "bg-(--agri-hover) text-(--agri-text-muted)"
+                    : "bg-(--agri-hover) text-(--agri-text-muted)"
               }`}
             >
               <i className="ri-exchange-funds-line text-base" />
@@ -160,12 +160,12 @@ export default function NotificationPreferences({ pushEnabled = true }) {
             <div className="min-w-0">
               <p
                 className={`text-sm font-semibold ${
-                    pushEnabled ? "text-[var(--agri-text)]" : "text-[var(--agri-text-muted)]"
+                    pushEnabled ? "text-(--agri-text)" : "text-(--agri-text-muted)"
                   }`}
                 >
                   {t("notificationPreferences.transactions")}
                 </p>
-                <p className="text-xs text-[var(--agri-text-muted)]">
+                <p className="text-xs text-(--agri-text-muted)">
                   {t("notificationPreferences.transactionsDescription")}
                 </p>
               </div>
@@ -179,7 +179,7 @@ export default function NotificationPreferences({ pushEnabled = true }) {
               onClick={() => handleToggle("transactions", transactions)}
               className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
                 disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"
-              } ${transactions && pushEnabled ? "bg-[var(--agri-brand)]" : "bg-[var(--agri-border)]"}`}
+              } ${transactions && pushEnabled ? "bg-(--agri-brand)" : "bg-(--agri-border)"}`}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -192,8 +192,8 @@ export default function NotificationPreferences({ pushEnabled = true }) {
 
         {/* Disabled hint */}
         {!pushEnabled && (
-          <div className="border-t border-[var(--agri-border-subtle)] px-4 py-2.5">
-            <p className="text-xs text-[var(--agri-text-muted)] flex items-center gap-1.5">
+          <div className="border-t border-(--agri-border-subtle) px-4 py-2.5">
+            <p className="text-xs text-(--agri-text-muted) flex items-center gap-1.5">
               <i className="ri-information-line text-sm" />
               {t("notificationPreferences.pushRequired")}
             </p>

@@ -1,4 +1,4 @@
-import RoleBadge from "../../common/RoleBadge";
+﻿import RoleBadge from "../../common/RoleBadge";
 import UserIdentity from "../../common/UserIdentity";
 import { useLanguage } from "../../../context/LanguageContext";
 
@@ -23,7 +23,7 @@ export default function UserTableRow({
       : user;
 
   return (
-    <tr className="border-b border-[var(--agri-border-subtle)] last:border-0 hover:bg-[var(--agri-hover)]/80 transition-colors">
+    <tr className="border-b border-(--agri-border-subtle) last:border-0 hover:bg-(--agri-hover)/80 transition-colors">
       {/* User */}
       <td className="px-5 py-4">
         <UserIdentity
@@ -35,7 +35,7 @@ export default function UserTableRow({
 
       {/* Email */}
       <td className="px-5 py-4">
-        <span className="text-sm font-medium text-[var(--agri-text-secondary)]">
+        <span className="text-sm font-medium text-(--agri-text-secondary)">
           {user.email || t("adminUser.noEmail")}
         </span>
       </td>
@@ -73,8 +73,8 @@ export default function UserTableRow({
             disabled={isAdmin}
             className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border shadow-2xs transition-all ${
               isAdmin
-                ? "border-[var(--agri-border)] bg-[var(--agri-hover)] text-[var(--agri-text-muted)] cursor-not-allowed opacity-50"
-                : "border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[#D8F3DC] dark:hover:bg-[var(--agri-brand-bg)]/40 dark:bg-[var(--agri-brand-bg)]/40 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] hover:border-[#2D6A4F]/30 cursor-pointer"
+                ? "border-(--agri-border) bg-(--agri-hover) text-(--agri-text-muted) cursor-not-allowed opacity-50"
+                : "border-(--agri-border) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-[#D8F3DC] dark:hover:bg-(--agri-brand-bg)/40 dark:bg-(--agri-brand-bg)/40 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) hover:border-[#2D6A4F]/30 cursor-pointer"
             }`}
             title={isAdmin ? t("adminUser.adminDetailsDisabled") : t("adminUser.viewDetails")}
           >
@@ -87,8 +87,8 @@ export default function UserTableRow({
             disabled={isAdmin}
             className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border shadow-2xs transition-all ${
               isAdmin
-                ? "border-[var(--agri-border)] bg-[var(--agri-hover)] text-[var(--agri-text-muted)] cursor-not-allowed opacity-50"
-                : "border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] hover:bg-[#D8F3DC] dark:hover:bg-[var(--agri-brand-bg)]/40 dark:bg-[var(--agri-brand-bg)]/40 hover:text-[#2D6A4F] dark:hover:text-[var(--agri-brand)] hover:border-[#2D6A4F]/30 cursor-pointer"
+                ? "border-(--agri-border) bg-(--agri-hover) text-(--agri-text-muted) cursor-not-allowed opacity-50"
+                : "border-(--agri-border) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-[#D8F3DC] dark:hover:bg-(--agri-brand-bg)/40 dark:bg-(--agri-brand-bg)/40 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) hover:border-[#2D6A4F]/30 cursor-pointer"
             }`}
             title={isAdmin ? t("adminUser.adminEditDisabled") : t("adminUser.editUser")}
           >

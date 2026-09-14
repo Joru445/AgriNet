@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import DashboardSection from "../../common/DashboardSection";
 import ReviewCard from "../../common/ReviewCard";
@@ -11,7 +11,7 @@ export default function RecentReviews({ reviews = [], loading = false }) {
   const headerAction = (
     <Link
       to="/farmer/reviews"
-      className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] dark:text-[var(--agri-brand)] transition hover:underline"
+      className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] dark:text-(--agri-brand) transition hover:underline"
     >
       {t("farmer.viewAll")}
       <i className="ri-arrow-right-line text-xs" />
@@ -28,7 +28,7 @@ export default function RecentReviews({ reviews = [], loading = false }) {
       {loading ? (
         <div className="space-y-3 p-3">
           {[1, 2].map((i) => (
-            <div key={i} className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-3 space-y-2">
+            <div key={i} className="rounded-xl border border-(--agri-border) bg-(--agri-card) p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <SkeletonBox className="h-8 w-8 rounded-full" />
                 <div className="flex-1 space-y-1">
@@ -43,13 +43,13 @@ export default function RecentReviews({ reviews = [], loading = false }) {
         </div>
       ) : reviews.length === 0 ? (
         <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
-          <i className="ri-star-line text-2xl text-[var(--agri-text-muted)]" />
-          <p className="mt-2 text-sm font-medium text-[var(--agri-text-muted)]">
+          <i className="ri-star-line text-2xl text-(--agri-text-muted)" />
+          <p className="mt-2 text-sm font-medium text-(--agri-text-muted)">
             {t("farmer.noReviewsYet")}
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-[var(--agri-border-subtle)]">
+        <div className="divide-y divide-(--agri-border-subtle)">
           {displayedReviews.map((review) => (
             <ReviewCard key={review.id} review={review} />
           ))}

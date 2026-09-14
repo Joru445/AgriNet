@@ -45,6 +45,10 @@
   --agri-brand-bg: #1a2b22;
   --agri-brand-bg-alt: #1f3329;
 
+  --agri-green-mid: #52B788;
+  --agri-green-dark: #2D6A4F;
+  --agri-green-light: #95D5B2;
+
   color-scheme: dark;
 }
 
@@ -74,6 +78,10 @@
   --agri-brand-dark: #1B4332;
   --agri-brand-bg: #D8F3DC;
   --agri-brand-bg-alt: #E8F5EE;
+
+  --agri-green-mid: #2D6A4F;
+  --agri-green-dark: #1B4332;
+  --agri-green-light: #52B788;
 
   color-scheme: light;
 }

@@ -69,7 +69,7 @@ export default function Messages() {
 
   return (
     <main className="flex-1 h-full flex flex-col overflow-hidden">
-      <div className="h-full flex flex-1 overflow-hidden" style={{ backgroundColor: 'var(--agri-bg)' }}>
+      <div className="h-full flex flex-1 overflow-hidden" style={{ backgroundColor: 'var(--agri-page)' }}>
         <ConversationList
           conversations={filteredConversations}
           users={userResults}

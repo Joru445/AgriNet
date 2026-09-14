@@ -1,4 +1,4 @@
-export default function StarRating({
+﻿export default function StarRating({
   rating = 0,
   size = "text-base",
   showValue = true,
@@ -15,7 +15,7 @@ export default function StarRating({
               className={`${
                 filled
                   ? "ri-star-fill text-amber-400"
-                  : "ri-star-line text-[var(--agri-border)]"
+                  : "ri-star-line text-(--agri-border)"
               } ${size}`}
             />
           );
@@ -23,7 +23,7 @@ export default function StarRating({
       </div>
 
       {showValue && (
-        <span className="text-sm text-[var(--agri-text-muted)]">{rating.toFixed(1)}</span>
+        <span className="text-sm text-(--agri-text-muted)">{rating.toFixed(1)}</span>
       )}
     </div>
   );

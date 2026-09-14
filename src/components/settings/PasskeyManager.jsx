@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -92,9 +92,9 @@ export default function PasskeyManager({ embedded = false }) {
           type="button"
           onClick={handleRegister}
           disabled={loading || supported === false}
-          className="flex w-full items-center gap-3 text-left transition hover:bg-[var(--agri-hover)] rounded-lg px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          className="flex w-full items-center gap-3 text-left transition hover:bg-(--agri-hover) rounded-lg px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--agri-brand-bg)] text-[var(--agri-brand)]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--agri-brand-bg) text-(--agri-brand)">
             {loading ? (
               <i className="ri-loader-4-line animate-spin text-base" />
             ) : (
@@ -102,32 +102,32 @@ export default function PasskeyManager({ embedded = false }) {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <span className="block text-sm font-semibold text-[var(--agri-text)]">
+            <span className="block text-sm font-semibold text-(--agri-text)">
               {t("settings.registerPasskey") || "Register a Passkey"}
             </span>
-            <span className="block text-xs text-[var(--agri-text-muted)]">
+            <span className="block text-xs text-(--agri-text-muted)">
               {supported === false
                 ? (t("settings.passkeyNotSupported") || "Not supported on this device")
                 : (t("settings.registerPasskeyDesc") || "Add a passkey for faster sign-in")}
             </span>
           </div>
-          <i className="ri-add-line text-[var(--agri-text-muted)]" />
+          <i className="ri-add-line text-(--agri-text-muted)" />
         </button>
       </div>
 
       {/* Existing passkeys */}
       {passkeys.length > 0 && (
-        <div className="border-t border-[var(--agri-border-subtle)]">
+        <div className="border-t border-(--agri-border-subtle)">
           {passkeys.map((key) => (
             <div
               key={key.credentialId}
               className="flex items-center gap-3 px-4 py-2.5"
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-(--agri-hover) text-(--agri-text-muted)">
                 <i className={`ri-${key.deviceType === "multiDevice" ? "smartphone" : "computer"}-line text-sm`} />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-sm text-[var(--agri-text)] truncate">
+                <span className="block text-sm text-(--agri-text) truncate">
                   {key.backedUp ? "Synced" : "Device"} &middot; {new Date(key.createdAt).toLocaleDateString()}
                 </span>
               </div>
@@ -135,7 +135,7 @@ export default function PasskeyManager({ embedded = false }) {
                 type="button"
                 onClick={() => handleRequestRemove(key.credentialId)}
                 disabled={removingId !== null}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-(--agri-text-muted) transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
                 aria-label={t("settings.removePasskey") || "Remove passkey"}
               >
                 {removingId === key.credentialId ? (
@@ -151,8 +151,8 @@ export default function PasskeyManager({ embedded = false }) {
 
       {/* Empty state */}
       {passkeys.length === 0 && !loading && (
-        <div className="border-t border-[var(--agri-border-subtle)] px-4 py-2.5">
-          <p className="text-xs text-[var(--agri-text-muted)]">
+        <div className="border-t border-(--agri-border-subtle) px-4 py-2.5">
+          <p className="text-xs text-(--agri-text-muted)">
             {t("settings.noPasskeys") || "No passkeys registered"}
           </p>
         </div>
@@ -175,10 +175,10 @@ export default function PasskeyManager({ embedded = false }) {
 
   return (
     <section className="mb-6">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--agri-text-muted)] mb-2">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-(--agri-text-muted) mb-2">
         {t("settings.passkeys") || "Passkeys"}
       </h2>
-      <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] overflow-hidden">
+      <div className="rounded-xl border border-(--agri-border) bg-(--agri-card) overflow-hidden">
         {content}
       </div>
     </section>

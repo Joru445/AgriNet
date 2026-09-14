@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 import InquiryRow from "./InquiryRow";
 
 export default function InquiryTable({
@@ -13,13 +13,13 @@ export default function InquiryTable({
 
   if (!inquiries.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-[var(--agri-border)] bg-[var(--agri-card)] px-5 py-14 text-center shadow-xs">
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--agri-hover)] text-[var(--agri-text-muted)]">
+      <div className="rounded-2xl border border-dashed border-(--agri-border) bg-(--agri-card) px-5 py-14 text-center shadow-xs">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-(--agri-hover) text-(--agri-text-muted)">
           <i className="ri-inbox-line text-2xl" />
         </div>
-        <p className="text-base font-bold text-[var(--agri-text-secondary)]">{t("transactions.emptyTitle")}</p>
+        <p className="text-base font-bold text-(--agri-text-secondary)">{t("transactions.emptyTitle")}</p>
 
-        <p className="mt-1 text-xs text-[var(--agri-text-muted)]">
+        <p className="mt-1 text-xs text-(--agri-text-muted)">
           {t("transactions.emptySubtitle")}
         </p>
       </div>

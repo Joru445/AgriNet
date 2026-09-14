@@ -1,4 +1,4 @@
-import { useRef } from "react";
+﻿import { useRef } from "react";
 
 import { useLanguage } from "../../../context/LanguageContext";
 
@@ -32,17 +32,17 @@ export default function ProductImageUploader({ images, onChange }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <label className="text-sm font-bold text-[var(--agri-text)] flex items-center gap-1.5">
-            <i className="ri-image-line text-[#2D6A4F] dark:text-[var(--agri-brand)] text-base" />
+          <label className="text-sm font-bold text-(--agri-text) flex items-center gap-1.5">
+            <i className="ri-image-line text-[#2D6A4F] dark:text-(--agri-brand) text-base" />
             <span>{t("products.productImages")}</span>
             <span className="text-red-500">*</span>
           </label>
-          <p className="text-[11px] text-[var(--agri-text-muted)] mt-0.5">
+          <p className="text-[11px] text-(--agri-text-muted) mt-0.5">
             PNG, JPG, WebP up to 5MB
           </p>
         </div>
 
-        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] border border-gray-300 dark:border-gray-600">
+        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-(--agri-hover) text-(--agri-text-secondary) border border-gray-300 dark:border-gray-600">
           {images.length}/{MAX_IMAGES}
         </span>
       </div>
@@ -60,7 +60,7 @@ export default function ProductImageUploader({ images, onChange }) {
         {images.map((image, index) => (
           <div
             key={index}
-            className="group relative aspect-square rounded-xl overflow-hidden border border-gray-300 dark:border-gray-600 bg-[var(--agri-card)] shadow-xs"
+            className="group relative aspect-square rounded-xl overflow-hidden border border-gray-300 dark:border-gray-600 bg-(--agri-card) shadow-xs"
           >
             <img
               src={image.preview || image?.url}
@@ -89,13 +89,13 @@ export default function ProductImageUploader({ images, onChange }) {
           <button
             type="button"
             onClick={() => inputRef.current.click()}
-            className="aspect-square border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-[#2D6A4F] dark:hover:border-[var(--agri-brand)] bg-[var(--agri-hover)]/30 hover:bg-[#E8F5EE]/40 dark:hover:bg-[var(--agri-brand-bg-alt)]/40 rounded-xl flex flex-col items-center justify-center p-2.5 transition-all group cursor-pointer"
+            className="aspect-square border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-[#2D6A4F] dark:hover:border-(--agri-brand) bg-(--agri-hover)/30 hover:bg-[#E8F5EE]/40 dark:hover:bg-(--agri-brand-bg-alt)/40 rounded-xl flex flex-col items-center justify-center p-2.5 transition-all group cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-xl bg-white dark:bg-[var(--agri-card)] flex items-center justify-center shadow-xs border border-gray-300 dark:border-gray-600 group-hover:scale-110 group-hover:border-[#2D6A4F] transition-all mb-1.5">
-              <i className="ri-image-add-line text-lg text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+            <div className="w-9 h-9 rounded-xl bg-white dark:bg-(--agri-card) flex items-center justify-center shadow-xs border border-gray-300 dark:border-gray-600 group-hover:scale-110 group-hover:border-[#2D6A4F] transition-all mb-1.5">
+              <i className="ri-image-add-line text-lg text-[#2D6A4F] dark:text-(--agri-brand)" />
             </div>
 
-            <span className="text-xs font-semibold text-[var(--agri-text)] group-hover:text-[#2D6A4F] dark:group-hover:text-[var(--agri-brand)] transition-colors">
+            <span className="text-xs font-semibold text-(--agri-text) group-hover:text-[#2D6A4F] dark:group-hover:text-(--agri-brand) transition-colors">
               {t("products.addImage")}
             </span>
           </button>

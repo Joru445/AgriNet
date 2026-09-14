@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { useLanguage } from "../../context/LanguageContext";
@@ -66,23 +66,23 @@ export default function ConfirmDialog({
       />
 
       <div
-        className={`relative w-full max-w-sm overflow-hidden rounded-2xl bg-[var(--agri-card)] p-6 shadow-2xl ${isClosing ? "anim-fade-out" : "anim-scale-in"}`}
+        className={`relative w-full max-w-sm overflow-hidden rounded-2xl bg-(--agri-card) p-6 shadow-2xl ${isClosing ? "anim-fade-out" : "anim-scale-in"}`}
       >
         <div className="flex items-start gap-4">
           <div
             className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
               danger
                 ? "bg-red-100/80 text-red-600"
-                : "bg-[var(--agri-hover)] text-[var(--agri-text-muted)]"
+                : "bg-(--agri-hover) text-(--agri-text-muted)"
             }`}
           >
             <i className={`${icon} text-2xl`} />
           </div>
 
           <div>
-            <h3 className="text-base font-bold text-[var(--agri-text)]">{title}</h3>
+            <h3 className="text-base font-bold text-(--agri-text)">{title}</h3>
             {description && (
-              <p className="mt-1 text-sm text-[var(--agri-text-secondary)] font-medium">
+              <p className="mt-1 text-sm text-(--agri-text-secondary) font-medium">
                 {description}
               </p>
             )}
@@ -94,7 +94,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="rounded-xl border border-[var(--agri-border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] cursor-pointer disabled:opacity-50"
+            className="rounded-xl border border-(--agri-border) bg-transparent px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) transition hover:bg-(--agri-hover) cursor-pointer disabled:opacity-50"
           >
             {resolvedCancel}
           </button>
@@ -106,7 +106,7 @@ export default function ConfirmDialog({
             className={`rounded-xl px-5 py-2.5 text-sm font-bold text-white transition shadow-xs cursor-pointer disabled:opacity-50 ${
               danger
                 ? "bg-[#dc2626] hover:bg-[#b91c1c]"
-                : "bg-[var(--agri-brand)] hover:opacity-90"
+                : "bg-(--agri-brand) hover:opacity-90"
             }`}
           >
             {loading ? t("common.loading") : resolvedConfirm}

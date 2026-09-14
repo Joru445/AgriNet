@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import { formatFullDateTime, formatDate } from "../../../utils/date";
@@ -106,10 +106,10 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
           <div className="space-y-6">
             {/* Header */}
             <div>
-              <h2 className="text-lg font-bold text-[var(--agri-text)]">
+              <h2 className="text-lg font-bold text-(--agri-text)">
                 {t("adminTransaction.detailsTitle")}
               </h2>
-              <p className="text-sm text-[var(--agri-text-muted)]">
+              <p className="text-sm text-(--agri-text-muted)">
                 {t("adminTransaction.detailsSubtitle")}
               </p>
             </div>
@@ -128,12 +128,12 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
             {/* Participants */}
             <div className="grid grid-cols-2 gap-4">
               {/* Farmer */}
-              <div className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 p-4">
-                <h3 className="mb-3 text-sm font-bold text-[var(--agri-text)]">
+              <div className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 p-4">
+                <h3 className="mb-3 text-sm font-bold text-(--agri-text)">
                   {t("adminTransaction.farmer")}
                 </h3>
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[var(--agri-hover)]">
+                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-(--agri-hover)">
                     {inquiry.farmer?.profilePicture || inquiry.farmerSnapshot?.profilePicture ? (
                       <img
                         src={inquiry.farmer?.profilePicture || inquiry.farmerSnapshot?.profilePicture}
@@ -141,35 +141,35 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-[var(--agri-text-muted)]">
+                      <div className="flex h-full w-full items-center justify-center text-(--agri-text-muted)">
                         <i className="ri-user-line" />
                       </div>
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[var(--agri-text)]">
+                    <p className="truncate text-sm font-semibold text-(--agri-text)">
                       {inquiry.farmer?.fullname || inquiry.farmerSnapshot?.fullname || "—"}
                     </p>
-                    <p className="truncate text-xs text-[var(--agri-text-muted)]">
+                    <p className="truncate text-xs text-(--agri-text-muted)">
                       @{inquiry.farmer?.username || inquiry.farmerSnapshot?.username || "—"}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={handleViewFarmer}
-                  className="mt-3 w-full rounded-lg border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer"
+                  className="mt-3 w-full rounded-lg border border-(--agri-border-subtle) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
                 >
                   {t("adminTransaction.viewFarmer")}
                 </button>
               </div>
 
               {/* Consumer */}
-              <div className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 p-4">
-                <h3 className="mb-3 text-sm font-bold text-[var(--agri-text)]">
+              <div className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 p-4">
+                <h3 className="mb-3 text-sm font-bold text-(--agri-text)">
                   {t("adminTransaction.consumer")}
                 </h3>
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[var(--agri-hover)]">
+                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-(--agri-hover)">
                     {inquiry.consumer?.profilePicture || inquiry.consumerSnapshot?.profilePicture ? (
                       <img
                         src={inquiry.consumer?.profilePicture || inquiry.consumerSnapshot?.profilePicture}
@@ -177,23 +177,23 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-[var(--agri-text-muted)]">
+                      <div className="flex h-full w-full items-center justify-center text-(--agri-text-muted)">
                         <i className="ri-user-line" />
                       </div>
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[var(--agri-text)]">
+                    <p className="truncate text-sm font-semibold text-(--agri-text)">
                       {inquiry.consumer?.fullname || inquiry.consumerSnapshot?.fullname || "—"}
                     </p>
-                    <p className="truncate text-xs text-[var(--agri-text-muted)]">
+                    <p className="truncate text-xs text-(--agri-text-muted)">
                       @{inquiry.consumer?.username || inquiry.consumerSnapshot?.username || "—"}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={handleViewConsumer}
-                  className="mt-3 w-full rounded-lg border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-3 py-1.5 text-xs font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer"
+                  className="mt-3 w-full rounded-lg border border-(--agri-border-subtle) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
                 >
                   {t("adminTransaction.viewConsumer")}
                 </button>
@@ -201,9 +201,9 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
             </div>
 
             {/* Product Info */}
-            <div className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 p-4">
+            <div className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-[var(--agri-text)]">
+                <h3 className="text-sm font-bold text-(--agri-text)">
                   {t("adminTransaction.productInformation")}
                 </h3>
                 <button
@@ -215,37 +215,37 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.productName")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">
+                  <span className="text-(--agri-text-muted)">{t("adminTransaction.productName")}</span>
+                  <p className="font-semibold text-(--agri-text)">
                     {inquiry.productSnapshot?.name || product?.name || "—"}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.category")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">
+                  <span className="text-(--agri-text-muted)">{t("adminTransaction.category")}</span>
+                  <p className="font-semibold text-(--agri-text)">
                     {product?.category || "—"}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.quantity")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">
+                  <span className="text-(--agri-text-muted)">{t("adminTransaction.quantity")}</span>
+                  <p className="font-semibold text-(--agri-text)">
                     {inquiry.quantity} {inquiry.productSnapshot?.unit || product?.unit || "kg"}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.price")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">
+                  <span className="text-(--agri-text-muted)">{t("adminTransaction.price")}</span>
+                  <p className="font-semibold text-(--agri-text)">
                     ₱{(inquiry.productSnapshot?.price || product?.price || 0).toLocaleString()}/{inquiry.productSnapshot?.unit || product?.unit || "kg"}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.sellingMode")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">
+                  <span className="text-(--agri-text-muted)">{t("adminTransaction.sellingMode")}</span>
+                  <p className="font-semibold text-(--agri-text)">
                     {isPreorder ? t("adminTransaction.typePreorder") : t("adminTransaction.typeStandard")}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.productStatus")}</span>
+                  <span className="text-(--agri-text-muted)">{t("adminTransaction.productStatus")}</span>
                   <p className={`font-semibold ${product?.available ? "text-green-600" : "text-red-500"}`}>
                     {product?.available ? t("adminTransaction.available") : t("adminTransaction.unavailable")}
                   </p>
@@ -302,69 +302,69 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
             )}
 
             {/* Timestamps */}
-            <div className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 p-4">
-              <h3 className="mb-3 text-sm font-bold text-[var(--agri-text)]">
+            <div className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 p-4">
+              <h3 className="mb-3 text-sm font-bold text-(--agri-text)">
                 {t("adminTransaction.timestamps")}
               </h3>
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.created")}</span>
-                  <p className="font-semibold text-[var(--agri-text)]">
+                  <span className="text-(--agri-text-muted)">{t("adminTransaction.created")}</span>
+                  <p className="font-semibold text-(--agri-text)">
                     {inquiry.createdAt ? formatFullDateTime(inquiry.createdAt) : "—"}
                   </p>
                 </div>
                 {inquiry.acceptedAt && (
                   <div>
-                    <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.accepted")}</span>
-                    <p className="font-semibold text-[var(--agri-text)]">
+                    <span className="text-(--agri-text-muted)">{t("adminTransaction.accepted")}</span>
+                    <p className="font-semibold text-(--agri-text)">
                       {formatFullDateTime(inquiry.acceptedAt)}
                     </p>
                   </div>
                 )}
                 {inquiry.reservedAt && (
                   <div>
-                    <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.reserved")}</span>
-                    <p className="font-semibold text-[var(--agri-text)]">
+                    <span className="text-(--agri-text-muted)">{t("adminTransaction.reserved")}</span>
+                    <p className="font-semibold text-(--agri-text)">
                       {formatFullDateTime(inquiry.reservedAt)}
                     </p>
                   </div>
                 )}
                 {inquiry.ongoingAt && (
                   <div>
-                    <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.started")}</span>
-                    <p className="font-semibold text-[var(--agri-text)]">
+                    <span className="text-(--agri-text-muted)">{t("adminTransaction.started")}</span>
+                    <p className="font-semibold text-(--agri-text)">
                       {formatFullDateTime(inquiry.ongoingAt)}
                     </p>
                   </div>
                 )}
                 {inquiry.completionRequestedAt && (
                   <div>
-                    <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.completionRequested")}</span>
-                    <p className="font-semibold text-[var(--agri-text)]">
+                    <span className="text-(--agri-text-muted)">{t("adminTransaction.completionRequested")}</span>
+                    <p className="font-semibold text-(--agri-text)">
                       {formatFullDateTime(inquiry.completionRequestedAt)}
                     </p>
                   </div>
                 )}
                 {inquiry.proofSubmittedAt && (
                   <div>
-                    <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.proofSubmitted")}</span>
-                    <p className="font-semibold text-[var(--agri-text)]">
+                    <span className="text-(--agri-text-muted)">{t("adminTransaction.proofSubmitted")}</span>
+                    <p className="font-semibold text-(--agri-text)">
                       {formatFullDateTime(inquiry.proofSubmittedAt)}
                     </p>
                   </div>
                 )}
                 {inquiry.completedAt && (
                   <div>
-                    <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.completed")}</span>
-                    <p className="font-semibold text-[var(--agri-text)]">
+                    <span className="text-(--agri-text-muted)">{t("adminTransaction.completed")}</span>
+                    <p className="font-semibold text-(--agri-text)">
                       {formatFullDateTime(inquiry.completedAt)}
                     </p>
                   </div>
                 )}
                 {inquiry.cancelledAt && (
                   <div>
-                    <span className="text-[var(--agri-text-muted)]">{t("adminTransaction.cancelled")}</span>
-                    <p className="font-semibold text-[var(--agri-text)]">
+                    <span className="text-(--agri-text-muted)">{t("adminTransaction.cancelled")}</span>
+                    <p className="font-semibold text-(--agri-text)">
                       {formatFullDateTime(inquiry.cancelledAt)}
                     </p>
                   </div>
@@ -374,12 +374,12 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
 
             {/* Proof */}
             {inquiry.proof && (
-              <div className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 p-4">
-                <h3 className="mb-3 text-sm font-bold text-[var(--agri-text)]">
+              <div className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 p-4">
+                <h3 className="mb-3 text-sm font-bold text-(--agri-text)">
                   {t("adminTransaction.proof")}
                 </h3>
                 <div className="flex items-center gap-3">
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[var(--agri-hover)]">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-(--agri-hover)">
                     <img
                       src={inquiry.proof.url}
                       alt="Transaction proof"
@@ -388,7 +388,7 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
                     />
                   </div>
                   <div>
-                    <p className="text-xs text-[var(--agri-text-muted)]">
+                    <p className="text-xs text-(--agri-text-muted)">
                       {t("adminTransaction.submittedAt")}: {inquiry.proofSubmittedAt ? formatFullDateTime(inquiry.proofSubmittedAt) : "—"}
                     </p>
                   </div>
@@ -397,10 +397,10 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
             )}
 
             {/* Close */}
-            <div className="flex justify-end border-t border-[var(--agri-border-subtle)] pt-4">
+            <div className="flex justify-end border-t border-(--agri-border-subtle) pt-4">
               <button
                 onClick={onClose}
-                className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-semibold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer"
+                className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-card) px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
               >
                 {t("common.close")}
               </button>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import ReviewRating from "../farmer/reviews/ReviewRating";
 import { formatTimestamp } from "../../utils/date";
 import ImageViewerModal from "./ImageViewerModal";
@@ -42,7 +42,7 @@ export default function ReviewCard({ review, type = "product" }) {
             title={t("reviews.clickToViewPhoto")}
           />
         ) : (
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)] text-sm font-semibold text-[var(--agri-text-muted)]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--agri-hover) text-sm font-semibold text-(--agri-text-muted)">
             {reviewerName.charAt(0).toUpperCase()}
           </div>
         )}
@@ -50,17 +50,17 @@ export default function ReviewCard({ review, type = "product" }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="text-sm font-semibold text-[var(--agri-text)]">
+              <p className="text-sm font-semibold text-(--agri-text)">
                 {reviewerName}
               </p>
 
               {reviewer.username && reviewer.fullname && (
-                <p className="text-xs text-[var(--agri-text-muted)]">@{reviewer.username}</p>
+                <p className="text-xs text-(--agri-text-muted)">@{reviewer.username}</p>
               )}
             </div>
 
             {review.createdAt && (
-              <span className="text-xs text-[var(--agri-text-muted)]">
+              <span className="text-xs text-(--agri-text-muted)">
                 {formatTimestamp(review.createdAt)}
               </span>
             )}
@@ -75,14 +75,14 @@ export default function ReviewCard({ review, type = "product" }) {
 
       {/* Comment */}
       {review.comment && (
-        <p className="mt-2.5 text-sm leading-6 text-[var(--agri-text-secondary)]">{review.comment}</p>
+        <p className="mt-2.5 text-sm leading-6 text-(--agri-text-secondary)">{review.comment}</p>
       )}
 
       {/* Product transaction proof — small thumbnail */}
       {proofImage && (
         <button
           type="button"
-          className="mt-3 overflow-hidden rounded-lg border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)] cursor-pointer group inline-flex"
+          className="mt-3 overflow-hidden rounded-lg border border-(--agri-border-subtle) bg-(--agri-hover) cursor-pointer group inline-flex"
           onClick={() => setActiveImage({ src: proofImage, title: t("reviews.transactionProof") })}
           title={t("reviews.clickToViewFullScreen")}
         >
@@ -97,7 +97,7 @@ export default function ReviewCard({ review, type = "product" }) {
 
       {/* Transaction indicator */}
       {isProduct && review.inquiryId && (
-        <div className="mt-2.5 flex items-center gap-1.5 text-xs text-[var(--agri-text-muted)]">
+        <div className="mt-2.5 flex items-center gap-1.5 text-xs text-(--agri-text-muted)">
           <i className="ri-checkbox-circle-line text-[#2D6A4F]" />
           {t("reviews.verifiedTransactionReview")}
         </div>

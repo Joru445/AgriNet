@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 import InlineSearchInput from "../../ui/InlineSearchInput";
 
 export default function TransactionFilters({
@@ -16,7 +16,7 @@ export default function TransactionFilters({
   const { t } = useLanguage();
 
   return (
-    <div className="mb-6 rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-4.5 shadow-md shadow-black/5">
+    <div className="mb-6 rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-4.5 shadow-md shadow-black/5">
       <div className="flex flex-col gap-3">
         {/* Row 1: Search */}
         <InlineSearchInput
@@ -31,7 +31,7 @@ export default function TransactionFilters({
           <select
             value={status}
             onChange={(e) => onStatusChange(e.target.value)}
-            className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-3 py-2 text-sm font-semibold text-[var(--agri-text-secondary)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3 py-2 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
           >
             <option value="">{t("adminTransaction.allStatuses")}</option>
             <option value="pending">{t("adminTransaction.statusPending")}</option>
@@ -48,7 +48,7 @@ export default function TransactionFilters({
           <select
             value={type}
             onChange={(e) => onTypeChange(e.target.value)}
-            className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-3 py-2 text-sm font-semibold text-[var(--agri-text-secondary)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3 py-2 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
           >
             <option value="">{t("adminTransaction.allTypes")}</option>
             <option value="standard">{t("adminTransaction.typeStandard")}</option>
@@ -61,7 +61,7 @@ export default function TransactionFilters({
             value={dateFrom}
             onChange={(e) => onDateFromChange(e.target.value)}
             placeholder={t("adminTransaction.dateFrom")}
-            className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-3 py-2 text-sm font-semibold text-[var(--agri-text-secondary)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3 py-2 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
           />
 
           {/* Date To */}
@@ -70,7 +70,7 @@ export default function TransactionFilters({
             value={dateTo}
             onChange={(e) => onDateToChange(e.target.value)}
             placeholder={t("adminTransaction.dateTo")}
-            className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-3 py-2 text-sm font-semibold text-[var(--agri-text-secondary)] outline-none transition focus:border-[#2D6A4F] focus:bg-[var(--agri-card)] focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3 py-2 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
           />
 
           {/* Clear dates */}
@@ -78,7 +78,7 @@ export default function TransactionFilters({
             <button
               type="button"
               onClick={() => { onDateFromChange(""); onDateToChange(""); }}
-              className="rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-3 py-2 text-xs font-semibold text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] transition cursor-pointer"
+              className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3 py-2 text-xs font-semibold text-(--agri-text-muted) hover:bg-(--agri-hover) transition cursor-pointer"
             >
               <i className="ri-close-line mr-1" />
               {t("adminTransaction.clearDates")}

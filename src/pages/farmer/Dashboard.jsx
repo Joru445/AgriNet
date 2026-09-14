@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 
 import DashboardHeader from "../../components/farmer/dashboard/DashboardHeader";
 import KpiRow from "../../components/farmer/dashboard/KpiRow";
@@ -33,7 +33,7 @@ export default function Dashboard() {
   const pendingCount = stats.pendingInquiries ?? 0;
 
   return (
-    <main className="bg-[var(--agri-page)] overflow-x-hidden">
+    <main className="bg-(--agri-page) overflow-x-hidden">
       {/* ── Tier 1: Header ────────────────────────────────────── */}
       <DashboardHeader
         profile={profile}

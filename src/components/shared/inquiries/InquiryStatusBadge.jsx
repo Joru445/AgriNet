@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 
 export default function InquiryStatusBadge({ status }) {
   const { t } = useLanguage();
@@ -19,7 +19,7 @@ export default function InquiryStatusBadge({ status }) {
 
     completed: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold",
 
-    cancelled: "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] font-semibold",
+    cancelled: "bg-(--agri-hover) text-(--agri-text-secondary) font-semibold",
   };
 
   const labels = {
@@ -37,7 +37,7 @@ export default function InquiryStatusBadge({ status }) {
   return (
     <span
       className={`rounded-full px-2.5 py-1 text-xs ${
-        styles[status] || "bg-[var(--agri-hover)] text-[var(--agri-text-secondary)] font-semibold"
+        styles[status] || "bg-(--agri-hover) text-(--agri-text-secondary) font-semibold"
       }`}
     >
       {labels[status] || t("transactions.status.unknown")}

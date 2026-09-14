@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function LoginRequired({ title, description }) {
@@ -6,7 +6,7 @@ export default function LoginRequired({ title, description }) {
 
   return (
     <main className="mx-auto max-w-lg px-4 py-12 md:py-20 text-center animate-in fade-in duration-300">
-      <div className="relative overflow-hidden rounded-3xl border border-gray-200/90 dark:border-gray-700/80 bg-[var(--agri-card)] p-8 sm:p-12 shadow-2xl shadow-emerald-950/15 dark:shadow-black/60 ring-1 ring-black/5 dark:ring-white/10">
+      <div className="relative overflow-hidden rounded-3xl border border-gray-200/90 dark:border-gray-700/80 bg-(--agri-card) p-8 sm:p-12 shadow-2xl shadow-emerald-950/15 dark:shadow-black/60 ring-1 ring-black/5 dark:ring-white/10">
         {/* Subtle top accent highlight */}
         <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-[#2D6A4F] dark:via-emerald-400 to-transparent" />
 
@@ -18,11 +18,11 @@ export default function LoginRequired({ title, description }) {
           </div>
         </div>
 
-        <h1 className="text-xl sm:text-2xl font-extrabold text-[var(--agri-text)] mb-2.5 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-(--agri-text) mb-2.5 tracking-tight">
           {title || t("loginRequired.title")}
         </h1>
 
-        <p className="text-sm sm:text-base text-[var(--agri-text-muted)] mb-8 max-w-sm mx-auto leading-relaxed">
+        <p className="text-sm sm:text-base text-(--agri-text-muted) mb-8 max-w-sm mx-auto leading-relaxed">
           {description || t("loginRequired.description")}
         </p>
 
@@ -37,7 +37,7 @@ export default function LoginRequired({ title, description }) {
 
           <Link
             to="/register"
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-300 dark:border-gray-600 hover:border-[#2D6A4F]/50 bg-gray-50/80 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 px-6 py-3 text-sm font-bold text-[var(--agri-text)] transition-all shadow-xs hover:shadow-sm active:scale-98 w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-300 dark:border-gray-600 hover:border-[#2D6A4F]/50 bg-gray-50/80 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 px-6 py-3 text-sm font-bold text-(--agri-text) transition-all shadow-xs hover:shadow-sm active:scale-98 w-full sm:w-auto"
           >
             {t("loginRequired.register")}
           </Link>

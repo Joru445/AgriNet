@@ -1,4 +1,4 @@
-import SkeletonBox from "../../common/SkeletonBox";
+﻿import SkeletonBox from "../../common/SkeletonBox";
 
 /**
  * Skeleton that mirrors the PublicProfileHeader component
@@ -7,10 +7,10 @@ import SkeletonBox from "../../common/SkeletonBox";
  */
 export default function PublicProfileSkeleton() {
   return (
-    <div className="bg-[var(--agri-card)]">
+    <div className="bg-(--agri-card)">
       {/* Cover */}
       <div className="mx-auto max-w-7xl">
-        <div className="relative h-56 overflow-hidden bg-[var(--agri-hover)] sm:h-72 md:h-80 lg:h-[380px] sm:rounded-b-2xl" />
+        <div className="relative h-56 overflow-hidden bg-(--agri-hover) sm:h-72 md:h-80 lg:h-[380px] sm:rounded-b-2xl" />
       </div>
 
       {/* Profile info */}
@@ -19,7 +19,7 @@ export default function PublicProfileSkeleton() {
           {/* Avatar + text */}
           <div className="flex items-end gap-4">
             <div className="block shrink-0 -mt-8 sm:-mt-16">
-              <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full border-4 border-[var(--agri-card)] bg-[var(--agri-hover)] shadow-md" />
+              <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full border-4 border-(--agri-card) bg-(--agri-hover) shadow-md" />
             </div>
 
             <div className="min-w-0 pb-1 sm:pb-3 space-y-2">
@@ -40,7 +40,7 @@ export default function PublicProfileSkeleton() {
         </div>
 
         {/* Stats row */}
-        <div className="flex flex-wrap items-center gap-4 sm:gap-6 py-3 sm:py-4 border-t border-[var(--agri-border-subtle)]">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6 py-3 sm:py-4 border-t border-(--agri-border-subtle)">
           <SkeletonBox className="h-4 w-16 rounded" />
           <SkeletonBox className="h-4 w-32 rounded" />
           <SkeletonBox className="h-4 w-24 rounded" />

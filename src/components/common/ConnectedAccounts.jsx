@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -79,26 +79,26 @@ export default function ConnectedAccounts() {
   }
 
   return (
-    <div className="divide-y divide-[var(--agri-border-subtle)]">
+    <div className="divide-y divide-(--agri-border-subtle)">
       {PROVIDERS.map(({ method, providerId }) => {
         const connected = isProviderLinked(providerId, user);
         const busy = linking === method;
 
         return (
           <div key={method} className="flex items-center gap-3 px-4 py-3.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--agri-hover)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--agri-hover)">
               {method === "google" ? <GoogleIcon /> : <FacebookIcon />}
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-[var(--agri-text)]">
+              <p className="text-sm font-semibold text-(--agri-text)">
                 {t(`settings.${method}`)}
               </p>
               <p
                 className={`text-xs ${
                   connected
-                    ? "font-semibold text-[var(--agri-brand)]"
-                    : "text-[var(--agri-text-muted)]"
+                    ? "font-semibold text-(--agri-brand)"
+                    : "text-(--agri-text-muted)"
                 }`}
               >
                 {connected
@@ -112,7 +112,7 @@ export default function ConnectedAccounts() {
                 type="button"
                 onClick={() => handleConnect(method)}
                 disabled={busy}
-                className="shrink-0 rounded-lg bg-[var(--agri-brand-bg)] px-3 py-1.5 text-xs font-bold text-[var(--agri-brand)] transition hover:bg-[var(--agri-brand)]/15 cursor-pointer disabled:opacity-50"
+                className="shrink-0 rounded-lg bg-(--agri-brand-bg) px-3 py-1.5 text-xs font-bold text-(--agri-brand) transition hover:bg-(--agri-brand)/15 cursor-pointer disabled:opacity-50"
               >
                 {busy ? (
                   <i className="ri-loader-4-line animate-spin" />

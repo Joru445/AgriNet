@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 
 import { useLanguage } from "../../../context/LanguageContext";
 import { getMyVerification, submitVerification } from "../../../services/farmer.service";
@@ -6,9 +6,9 @@ import { showToast } from "../../../utils/toast";
 
 const STATUS_CONFIG = {
   not_applied: {
-    color: "text-[var(--agri-text-muted)]",
-    bgColor: "bg-[var(--agri-hover)]",
-    borderColor: "border-[var(--agri-border-subtle)]",
+    color: "text-(--agri-text-muted)",
+    bgColor: "bg-(--agri-hover)",
+    borderColor: "border-(--agri-border-subtle)",
     icon: "ri-shield-line",
     labelKey: "farmerVerification.notApplied",
   },
@@ -89,13 +89,13 @@ export default function FarmerVerification() {
   if (loading) {
     return (
       <section className="mb-6">
-        <h2 className="text-sm font-bold text-[var(--agri-text)] mb-3">
+        <h2 className="text-sm font-bold text-(--agri-text) mb-3">
           {t("farmerVerification.title")}
         </h2>
-        <div className="rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] p-4 shadow-sm">
+        <div className="rounded-xl border border-(--agri-border) bg-(--agri-card) p-4 shadow-sm">
           <div className="animate-pulse space-y-3">
-            <div className="h-4 w-32 rounded bg-[var(--agri-hover)]" />
-            <div className="h-3 w-48 rounded bg-[var(--agri-hover)]" />
+            <div className="h-4 w-32 rounded bg-(--agri-hover)" />
+            <div className="h-3 w-48 rounded bg-(--agri-hover)" />
           </div>
         </div>
       </section>
@@ -105,7 +105,7 @@ export default function FarmerVerification() {
   if (error) {
     return (
       <section className="mb-6">
-        <h2 className="text-sm font-bold text-[var(--agri-text)] mb-3">
+        <h2 className="text-sm font-bold text-(--agri-text) mb-3">
           {t("farmerVerification.title")}
         </h2>
         <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-4">
@@ -128,7 +128,7 @@ export default function FarmerVerification() {
 
   return (
     <section className="mb-6">
-      <h2 className="text-sm font-bold text-[var(--agri-text)] mb-3">
+      <h2 className="text-sm font-bold text-(--agri-text) mb-3">
         {t("farmerVerification.title")}
       </h2>
 
@@ -145,24 +145,24 @@ export default function FarmerVerification() {
                   {t(config.labelKey)}
                 </p>
                 {(verification?.verificationStatus === "approved" || verification?.verified) && (
-                  <i className="ri-verified-badge-fill text-[#2D6A4F] dark:text-[var(--agri-brand)] text-sm" />
+                  <i className="ri-verified-badge-fill text-[#2D6A4F] dark:text-(--agri-brand) text-sm" />
                 )}
               </div>
 
               {status === "not_applied" && (
-                <p className="mt-1 text-xs text-[var(--agri-text-muted)]">
+                <p className="mt-1 text-xs text-(--agri-text-muted)">
                   {t("farmerVerification.notAppliedDesc")}
                 </p>
               )}
 
               {status === "pending" && verification?.verificationSubmittedAt && (
-                <p className="mt-1 text-xs text-[var(--agri-text-muted)]">
+                <p className="mt-1 text-xs text-(--agri-text-muted)">
                   {t("farmerVerification.submittedOn", { date: formatDate(verification.verificationSubmittedAt) })}
                 </p>
               )}
 
               {status === "approved" && verification?.verificationReviewedAt && (
-                <p className="mt-1 text-xs text-[var(--agri-text-muted)]">
+                <p className="mt-1 text-xs text-(--agri-text-muted)">
                   {t("farmerVerification.approvedOn", { date: formatDate(verification.verificationReviewedAt) })}
                 </p>
               )}
@@ -180,7 +180,7 @@ export default function FarmerVerification() {
                     </div>
                   )}
                   {verification?.verificationReviewedAt && (
-                    <p className="text-xs text-[var(--agri-text-muted)]">
+                    <p className="text-xs text-(--agri-text-muted)">
                       {t("farmerVerification.rejectedOn", { date: formatDate(verification.verificationReviewedAt) })}
                     </p>
                   )}
@@ -215,7 +215,7 @@ export default function FarmerVerification() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="w-full rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] px-4 py-2.5 text-sm font-bold text-[var(--agri-text)] transition hover:bg-[var(--agri-hover)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-xl border border-(--agri-border) bg-(--agri-card) px-4 py-2.5 text-sm font-bold text-(--agri-text) transition hover:bg-(--agri-hover) cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">

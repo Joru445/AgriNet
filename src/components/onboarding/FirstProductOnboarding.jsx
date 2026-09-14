@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -231,7 +231,7 @@ export default function FirstProductOnboarding({ hasProducts, loading, onCreate 
             {t("onboarding.steps.farmer-first-product.body")}
           </p>
 
-          <div className="mt-5 pt-3.5 border-t border-[var(--agri-border)] dark:border-gray-700 flex items-center justify-end gap-2.5">
+          <div className="mt-5 pt-3.5 border-t border-(--agri-border) dark:border-gray-700 flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={finish}

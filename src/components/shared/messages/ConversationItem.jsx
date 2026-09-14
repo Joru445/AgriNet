@@ -1,4 +1,4 @@
-import Avatar from "../../common/Avatar";
+﻿import Avatar from "../../common/Avatar";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import { formatTimestamp } from "../../../utils/date";
 import { useAuth } from "../../../context/AuthContext";
@@ -77,7 +77,7 @@ export default function ConversationItem({
       onClick={handleClick}
       className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-all duration-150 cursor-pointer ${
         isSelected
-          ? "bg-[var(--agri-card)]/45 border-r-4 border-agri-primary shadow-xs"
+          ? "bg-(--agri-card)/45 border-r-4 border-agri-primary shadow-xs"
           : "hover:bg-black/3 border-r-4 border-transparent"
       }`}
     >
@@ -85,7 +85,7 @@ export default function ConversationItem({
         <Avatar src={user?.profilePicture} name={user?.fullname} onClick={handleAvatarClick(user)} />
 
         {user?.online && (
-          <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-[var(--agri-card)]" />
+          <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-(--agri-card)" />
         )}
       </div>
 
@@ -95,10 +95,10 @@ export default function ConversationItem({
             <h3
               className={`truncate ${
                 isSelected
-                  ? "font-semibold text-agri-dark dark:text-(--agri-dark)"
+                  ? "font-semibold text-agri-dark dark:text-(--agri-brand-light)"
                   : !searching && !isMine && item.unreadCount > 0
-                    ? "font-bold text-[var(--agri-text)]"
-                    : "font-semibold text-[var(--agri-text)]"
+                    ? "font-bold text-(--agri-text)"
+                    : "font-semibold text-(--agri-text)"
               }`}
             >
               {user?.fullname}
@@ -107,7 +107,7 @@ export default function ConversationItem({
               <span
                 title={t("common.verifiedFarmer")}
                 aria-label={t("common.verifiedFarmer")}
-                className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-[var(--agri-brand)] text-sm"
+                className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-(--agri-brand) text-sm"
               >
                 <i className="ri-verified-badge-fill" />
               </span>
@@ -124,7 +124,7 @@ export default function ConversationItem({
           </div>
 
           {!searching && (
-            <span className="text-xs text-[var(--agri-text-muted)] whitespace-nowrap">
+            <span className="text-xs text-(--agri-text-muted) whitespace-nowrap">
               {formatTimestamp(item.lastMessageAt)}
             </span>
           )}
@@ -133,27 +133,27 @@ export default function ConversationItem({
         {hasDraft ? (
           <p className="text-sm truncate">
             <span className="text-red-900/75 font-bold">{t("messages.draft")}</span>
-            <span className="text-[var(--agri-text-secondary)]">{draft}</span>
+            <span className="text-(--agri-text-secondary)">{draft}</span>
           </p>
         ) : searching ? (
-          <p className="text-sm text-[var(--agri-text-muted)] truncate">@{user?.username}</p>
+          <p className="text-sm text-(--agri-text-muted) truncate">@{user?.username}</p>
         ) : isMine ? (
           <div className="flex items-center justify-between gap-1.5 min-w-0">
-            <p className="text-sm text-[var(--agri-text-muted)] truncate flex-1 min-w-0">
-              <span className="text-[var(--agri-text-secondary)] font-medium">{t("common.you")}: </span>
+            <p className="text-sm text-(--agri-text-muted) truncate flex-1 min-w-0">
+              <span className="text-(--agri-text-secondary) font-medium">{t("common.you")}: </span>
               {item.lastMessage || t("messages.sentMessage")}
             </p>
             <span className="shrink-0 flex items-center gap-0.5 text-[11px] font-bold">
               {isSeen ? (
                 <span
-                  className="text-[var(--agri-text-muted)] flex items-center gap-0.5"
+                  className="text-(--agri-text-muted) flex items-center gap-0.5"
                   title={t("messages.seen")}
                 >
                   {t("messages.seen")}
                 </span>
               ) : (
                 <span
-                  className="text-[var(--agri-text-muted)] flex items-center gap-0.5 font-semibold"
+                  className="text-(--agri-text-muted) flex items-center gap-0.5 font-semibold"
                   title={t("messages.sent")}
                 >
                   {t("messages.sent")}
@@ -164,7 +164,7 @@ export default function ConversationItem({
         ) : (
           <p
             className={`text-sm truncate ${
-              item.unreadCount > 0 ? "font-bold text-[var(--agri-text)]" : "text-[var(--agri-text-muted)]"
+              item.unreadCount > 0 ? "font-bold text-(--agri-text)" : "text-(--agri-text-muted)"
             }`}
           >
             {item.lastMessage || t("messages.startConversation")}

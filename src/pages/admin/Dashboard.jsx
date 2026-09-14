@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link } from "react-router-dom";
 import StatCard from "../../components/common/StatCard";
 import DashboardSection from "../../components/common/DashboardSection";
@@ -58,13 +58,13 @@ export default function Dashboard() {
   return (
     <main className="bg-(--agri-page) overflow-x-hidden">
       {/* ── Header ─────────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-4 py-2.5">
+      <div className="flex items-center justify-between gap-3 border-b border-(--agri-border-subtle) bg-(--agri-card) px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-2.5">
           <div className="min-w-0">
-            <h1 className="text-base font-bold text-[var(--agri-text)]">
+            <h1 className="text-base font-bold text-(--agri-text)">
               {t("admin.dashboard")}
             </h1>
-            <p className="text-[11px] text-[var(--agri-text-muted)] font-medium">
+            <p className="text-[11px] text-(--agri-text-muted) font-medium">
               {t("admin.dashboardSubtitle")}
             </p>
           </div>
@@ -74,7 +74,7 @@ export default function Dashboard() {
           type="button"
           onClick={refresh}
           disabled={loading}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-(--agri-border) bg-(--agri-card) px-2.5 py-1 text-xs font-semibold text-[var(--agri-text-secondary)] shadow-2xs hover:bg-[var(--agri-hover)] disabled:opacity-50 transition cursor-pointer"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-(--agri-border) bg-(--agri-card) px-2.5 py-1 text-xs font-semibold text-(--agri-text-secondary) shadow-2xs hover:bg-(--agri-hover) disabled:opacity-50 transition cursor-pointer"
         >
           <i className={`ri-refresh-line text-sm ${loading ? "animate-spin" : ""}`} />
           <span className="hidden sm:inline">{t("admin.refresh")}</span>
@@ -220,12 +220,12 @@ export default function Dashboard() {
                 {/* Total */}
                 <a
                   href="/admin/transactions"
-                  className="mb-2 flex items-baseline gap-2 rounded-lg border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/40 px-3 py-2 transition hover:border-[#2D6A4F]/40 hover:bg-[var(--agri-hover)]"
+                  className="mb-2 flex items-baseline gap-2 rounded-lg border border-(--agri-border-subtle) bg-(--agri-hover)/40 px-3 py-2 transition hover:border-[#2D6A4F]/40 hover:bg-(--agri-hover)"
                 >
-                  <span className="text-2xl font-black text-[var(--agri-text)]">
+                  <span className="text-2xl font-black text-(--agri-text)">
                     {stats?.inquiries?.total ?? 0}
                   </span>
-                  <span className="text-xs font-semibold text-[var(--agri-text-muted)]">
+                  <span className="text-xs font-semibold text-(--agri-text-muted)">
                     {t("admin.totalInquiries")}
                   </span>
                 </a>
@@ -236,12 +236,12 @@ export default function Dashboard() {
                     <a
                       key={key}
                       href="/admin/transactions"
-                      className="flex items-center justify-between rounded-lg border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/30 px-2.5 py-1.5 text-xs transition hover:border-[#2D6A4F]/40 hover:bg-[var(--agri-hover)]"
+                      className="flex items-center justify-between rounded-lg border border-(--agri-border-subtle) bg-(--agri-hover)/30 px-2.5 py-1.5 text-xs transition hover:border-[#2D6A4F]/40 hover:bg-(--agri-hover)"
                     >
-                      <span className="font-medium text-[var(--agri-text-muted)]">
+                      <span className="font-medium text-(--agri-text-muted)">
                         {t(labelKey)}
                       </span>
-                      <span className="font-bold text-[var(--agri-text)]">
+                      <span className="font-bold text-(--agri-text)">
                         {stats?.inquiries?.[key] ?? 0}
                       </span>
                     </a>
@@ -342,7 +342,7 @@ export default function Dashboard() {
             compact
             fill
             headerAction={
-              <div className="flex shrink-0 items-center rounded-lg bg-[var(--agri-hover)] p-0.5">
+              <div className="flex shrink-0 items-center rounded-lg bg-(--agri-hover) p-0.5">
                 <TabButton
                   active={tabular === "users"}
                   onClick={() => setTabular("users")}
@@ -376,16 +376,16 @@ function ShortcutCard({ to, icon, title, subtitle, styles }) {
   return (
     <Link
       to={to}
-      className="flex items-center gap-3 rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] px-3.5 py-3 shadow-2xs transition hover:border-[#2D6A4F]/40 hover:bg-[var(--agri-hover)]"
+      className="flex items-center gap-3 rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) px-3.5 py-3 shadow-2xs transition hover:border-[#2D6A4F]/40 hover:bg-(--agri-hover)"
     >
       <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${styles}`}>
         <i className={`${icon} text-base`} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-bold text-[var(--agri-text)]">{title}</p>
-        <p className="truncate text-[11px] text-[var(--agri-text-muted)]">{subtitle}</p>
+        <p className="truncate text-sm font-bold text-(--agri-text)">{title}</p>
+        <p className="truncate text-[11px] text-(--agri-text-muted)">{subtitle}</p>
       </div>
-      <i className="ri-arrow-right-line shrink-0 text-sm text-[var(--agri-text-muted)]" />
+      <i className="ri-arrow-right-line shrink-0 text-sm text-(--agri-text-muted)" />
     </Link>
   );
 }

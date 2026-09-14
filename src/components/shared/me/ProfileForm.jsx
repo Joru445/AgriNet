@@ -1,25 +1,25 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 
 function InfoRow({ icon, label, value, empty, visibility }) {
   return (
     <div className="flex items-start gap-3 px-4 py-3.5 sm:px-5">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--agri-hover)] text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-(--agri-hover) text-[#2D6A4F] dark:text-(--agri-brand)">
         <i className={`${icon} text-base`} />
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
           {label}
         </p>
 
-        <p className="mt-0.5 truncate text-sm font-medium text-[var(--agri-text)]">
+        <p className="mt-0.5 truncate text-sm font-medium text-(--agri-text)">
           {value || empty}
         </p>
       </div>
 
       {visibility && (
         <div className="shrink-0 mt-0.5" title={visibility === "public" ? "Public" : "Only me"}>
-          <i className={`${visibility === "public" ? "ri-earth-line" : "ri-lock-line"} text-sm text-[var(--agri-text-muted)]`} />
+          <i className={`${visibility === "public" ? "ri-earth-line" : "ri-lock-line"} text-sm text-(--agri-text-muted)`} />
         </div>
       )}
     </div>
@@ -31,12 +31,12 @@ function VisibilitySelect({ value, onChange, disabled }) {
 
   return (
     <div className="flex items-center gap-1.5 mt-1.5">
-      <i className={`${value === "public" ? "ri-earth-line" : "ri-lock-line"} text-xs text-[var(--agri-text-muted)]`} />
+      <i className={`${value === "public" ? "ri-earth-line" : "ri-lock-line"} text-xs text-(--agri-text-muted)`} />
       <select
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         disabled={disabled}
-        className="text-xs font-medium rounded-lg border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)] text-[var(--agri-text-secondary)] px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#2D6A4F] cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+        className="text-xs font-medium rounded-lg border border-(--agri-input-border) bg-(--agri-input-bg) text-(--agri-text-secondary) px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#2D6A4F] cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
       >
         <option value="public">{t("profile.visibility.public")}</option>
         <option value="private">{t("profile.visibility.private")}</option>
@@ -46,10 +46,10 @@ function VisibilitySelect({ value, onChange, disabled }) {
 }
 
 const inputClass =
-  "w-full px-3.5 py-2.5 rounded-xl border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)] text-sm text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent transition-colors";
+  "w-full px-3.5 py-2.5 rounded-xl border border-(--agri-input-border) bg-(--agri-input-bg) text-sm text-(--agri-text) placeholder-(--agri-text-muted) focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent transition-colors";
 
 const labelClass =
-  "block text-sm font-medium text-[var(--agri-text-secondary)] mb-1.5";
+  "block text-sm font-medium text-(--agri-text-secondary) mb-1.5";
 
 export default function ProfileForm({ form, editing, onChange, onVisibilityChange }) {
   const { t } = useLanguage();
@@ -57,10 +57,10 @@ export default function ProfileForm({ form, editing, onChange, onVisibilityChang
   const vis = form.profileVisibility || {};
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
-      <div className="border-b border-[var(--agri-border-subtle)] px-5 py-4 sm:px-6">
-        <h2 className="flex items-center gap-2 text-base font-bold text-[var(--agri-text)]">
-          <i className="ri-user-settings-line text-lg text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+    <div className="overflow-hidden rounded-3xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-sm">
+      <div className="border-b border-(--agri-border-subtle) px-5 py-4 sm:px-6">
+        <h2 className="flex items-center gap-2 text-base font-bold text-(--agri-text)">
+          <i className="ri-user-settings-line text-lg text-[#2D6A4F] dark:text-(--agri-brand)" />
           {t("profile.personalInfo")}
         </h2>
       </div>
@@ -110,7 +110,7 @@ export default function ProfileForm({ form, editing, onChange, onVisibilityChang
                 value={form.email}
                 disabled
                 readOnly
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-hover)] text-sm text-[var(--agri-text-muted)] cursor-not-allowed"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-(--agri-border) bg-(--agri-hover) text-sm text-(--agri-text-muted) cursor-not-allowed"
               />
               <VisibilitySelect
                 value={vis.email || "private"}
@@ -150,12 +150,12 @@ export default function ProfileForm({ form, editing, onChange, onVisibilityChang
               value={form.bio}
               onChange={onChange}
               placeholder={t("profile.formLabels.bioPlaceholder")}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--agri-input-border)] bg-[var(--agri-input-bg)] text-sm text-[var(--agri-text)] placeholder-[var(--agri-text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-(--agri-input-border) bg-(--agri-input-bg) text-sm text-(--agri-text) placeholder-(--agri-text-muted) resize-none focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent transition-colors"
             />
           </div>
         </div>
       ) : (
-        <div className="divide-y divide-[var(--agri-border-subtle)]">
+        <div className="divide-y divide-(--agri-border-subtle)">
           <InfoRow
             icon="ri-user-line"
             label={t("profile.formLabels.fullName")}

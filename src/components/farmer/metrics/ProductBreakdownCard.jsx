@@ -1,4 +1,4 @@
-import ChartCard from "../../charts/ChartCard";
+﻿import ChartCard from "../../charts/ChartCard";
 import DonutChart from "../../charts/DonutChart";
 import { useTheme } from "../../../context/ThemeContext";
 import { colorAt } from "../../charts/ChartTheme";
@@ -47,7 +47,7 @@ export default function ProductBreakdownCard({ analytics, className = "" }) {
       <DonutChart items={items} centerLabel={t("farmerMetrics.products")} />
 
       {!empty && (
-        <div className="mt-2.5 flex items-center justify-center gap-3 pt-2.5 border-t border-[var(--agri-border-subtle)] text-xs font-semibold">
+        <div className="mt-2.5 flex items-center justify-center gap-3 pt-2.5 border-t border-(--agri-border-subtle) text-xs font-semibold">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 px-2.5 py-0.5 shadow-2xs">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
             <span>{t("farmerMetrics.seriesAvailable")}: {sellingMode.available ?? 0}</span>

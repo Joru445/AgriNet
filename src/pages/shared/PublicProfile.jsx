@@ -1,4 +1,4 @@
-import usePublicProfile from "../../hooks/usePublicProfile";
+﻿import usePublicProfile from "../../hooks/usePublicProfile";
 import useStartConversation from "../../hooks/useStartConversation";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -62,8 +62,8 @@ export default function PublicProfile() {
       {/* Farmer: products */}
       {isFarmer &&
         (loadingProducts ? (
-          <section className="px-4 sm:px-6 py-6 border-t border-[var(--agri-border-subtle)]">
-            <div className="h-6 w-32 bg-[var(--agri-hover)] rounded mb-5 animate-pulse" />
+          <section className="px-4 sm:px-6 py-6 border-t border-(--agri-border-subtle)">
+            <div className="h-6 w-32 bg-(--agri-hover) rounded mb-5 animate-pulse" />
             <ProductGridSkeleton
               count={4}
               gridClassName="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6"
@@ -75,7 +75,7 @@ export default function PublicProfile() {
 
       {/* Farmer: reviews */}
       {isFarmer && (
-        <div className="px-4 sm:px-6 py-6 border-t border-[var(--agri-border-subtle)]">
+        <div className="px-4 sm:px-6 py-6 border-t border-(--agri-border-subtle)">
           <ReviewSection
             title={t("reviews.farmerTitle")}
             reviews={reviews}

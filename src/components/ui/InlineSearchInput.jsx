@@ -1,4 +1,4 @@
-export default function InlineSearchInput({
+﻿export default function InlineSearchInput({
   value,
   onChange,
   placeholder,
@@ -12,13 +12,13 @@ export default function InlineSearchInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] py-2.5 pl-10 pr-10 text-sm text-[var(--agri-text)] placeholder:text-[var(--agri-text-muted)] focus:border-[#2D6A4F] focus:outline-none"
+        className="w-full rounded-xl border border-(--agri-border) bg-(--agri-card) py-2.5 pl-10 pr-10 text-sm text-(--agri-text) placeholder:text-(--agri-text-muted) focus:border-[#2D6A4F] focus:outline-none"
       />
       {value && (
         <button
           type="button"
           onClick={() => onChange("")}
-          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-[var(--agri-text-muted)] hover:text-[var(--agri-text-secondary)]"
+          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-(--agri-text-muted) hover:text-(--agri-text-secondary)"
         >
           <i className="ri-close-circle-fill text-lg" />
         </button>

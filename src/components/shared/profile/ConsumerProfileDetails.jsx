@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ConsumerProfileDetails({ profile, stats }) {
   const { t } = useLanguage();
@@ -13,15 +13,15 @@ export default function ConsumerProfileDetails({ profile, stats }) {
     totalDeals > 0 ? Math.round((completedDeals / totalDeals) * 100) : 100;
 
   return (
-    <section className="flex-1 px-4 sm:px-6 py-6 border-t border-[var(--agri-border-subtle)] flex flex-col gap-4">
+    <section className="flex-1 px-4 sm:px-6 py-6 border-t border-(--agri-border-subtle) flex flex-col gap-4">
       {/* About / Bio */}
-      <div className="rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-sm p-5 sm:p-6">
-        <h2 className="flex items-center gap-2 text-lg font-bold text-[var(--agri-text)] mb-3">
-          <i className="ri-user-3-line text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+      <div className="rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-sm p-5 sm:p-6">
+        <h2 className="flex items-center gap-2 text-lg font-bold text-(--agri-text) mb-3">
+          <i className="ri-user-3-line text-[#2D6A4F] dark:text-(--agri-brand)" />
           {t("consumerProfile.about")}
         </h2>
 
-        <p className="leading-relaxed text-sm sm:text-base text-[var(--agri-text-secondary)] whitespace-pre-wrap font-normal">
+        <p className="leading-relaxed text-sm sm:text-base text-(--agri-text-secondary) whitespace-pre-wrap font-normal">
           {profile.bio || t("consumerProfile.noBioYet")}
         </p>
       </div>
@@ -29,8 +29,8 @@ export default function ConsumerProfileDetails({ profile, stats }) {
       {/* Buyer Trust Summary */}
       <div className="mt-4 p-3 rounded-2xl bg-[#E8F5EE]/70 border border-[#CDE5D6]">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] sm:text-xs font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)] flex items-center gap-1">
-            <i className="ri-shield-user-line text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+          <span className="text-[11px] sm:text-xs font-bold text-[#1B4332] dark:text-(--agri-brand-light) flex items-center gap-1">
+            <i className="ri-shield-user-line text-sm text-[#2D6A4F] dark:text-(--agri-brand)" />
             <span>{t("userProfileModal.buyerTrustTitle")}</span>
           </span>
 
@@ -42,26 +42,26 @@ export default function ConsumerProfileDetails({ profile, stats }) {
         </div>
 
         {statsLoading ? (
-          <div className="py-2.5 text-center text-xs text-[var(--agri-text-muted)] flex items-center justify-center gap-2">
-            <i className="ri-loader-4-line animate-spin text-sm text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
+          <div className="py-2.5 text-center text-xs text-(--agri-text-muted) flex items-center justify-center gap-2">
+            <i className="ri-loader-4-line animate-spin text-sm text-[#2D6A4F] dark:text-(--agri-brand)" />
             <span>{t("userProfileModal.checkingHistory")}</span>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2">
-            <div className="p-2 bg-[var(--agri-card)] rounded-xl border border-[var(--agri-border-subtle)] text-center">
-              <p className="text-lg font-black text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+            <div className="p-2 bg-(--agri-card) rounded-xl border border-(--agri-border-subtle) text-center">
+              <p className="text-lg font-black text-[#2D6A4F] dark:text-(--agri-brand)">
                 {completedDeals}
               </p>
-              <p className="text-[10px] font-bold text-[var(--agri-text-secondary)] uppercase tracking-tight">
+              <p className="text-[10px] font-bold text-(--agri-text-secondary) uppercase tracking-tight">
                 {t("userProfileModal.completedDeals")}
               </p>
             </div>
 
-            <div className="p-2 bg-[var(--agri-card)] rounded-xl border border-[var(--agri-border-subtle)] text-center">
-              <p className="text-lg font-black text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+            <div className="p-2 bg-(--agri-card) rounded-xl border border-(--agri-border-subtle) text-center">
+              <p className="text-lg font-black text-[#2D6A4F] dark:text-(--agri-brand)">
                 {completionRate}%
               </p>
-              <p className="text-[10px] font-bold text-[var(--agri-text-secondary)] uppercase tracking-tight">
+              <p className="text-[10px] font-bold text-(--agri-text-secondary) uppercase tracking-tight">
                 {t("userProfileModal.successRate")}
               </p>
             </div>

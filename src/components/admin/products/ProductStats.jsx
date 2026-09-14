@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ProductStats({ stats }) {
   const { t } = useLanguage();
@@ -8,7 +8,7 @@ export default function ProductStats({ stats }) {
       label: t("adminProduct.totalProducts"),
       value: stats.total,
       icon: "ri-archive-line",
-      color: "text-[#2D6A4F] dark:text-[var(--agri-brand)]",
+      color: "text-[#2D6A4F] dark:text-(--agri-brand)",
       bg: "bg-[#2D6A4F]/10",
     },
     {
@@ -46,17 +46,17 @@ export default function ProductStats({ stats }) {
       {cards.map((card) => (
         <div
           key={card.label}
-          className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-4 shadow-md shadow-black/5"
+          className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-4 shadow-md shadow-black/5"
         >
           <div className="flex items-center gap-3">
             <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${card.bg} ${card.color}`}>
               <i className={`${card.icon} text-lg`} />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-medium text-[var(--agri-text-muted)] truncate">
+              <p className="text-xs font-medium text-(--agri-text-muted) truncate">
                 {card.label}
               </p>
-              <p className="text-lg font-bold text-[var(--agri-text)]">
+              <p className="text-lg font-bold text-(--agri-text)">
                 {card.value}
               </p>
             </div>

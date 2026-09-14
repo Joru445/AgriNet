@@ -1,4 +1,4 @@
-import productPlaceholder from "../../../assets/img/productPlaceholder.png";
+﻿import productPlaceholder from "../../../assets/img/productPlaceholder.png";
 import { useLanguage } from "../../../context/LanguageContext";
 
 export default function TransactionProduct({ inquiry }) {
@@ -12,7 +12,7 @@ export default function TransactionProduct({ inquiry }) {
   const unit = product.unit || "units";
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] shadow-sm">
+    <section className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-sm">
       <div className="flex flex-col sm:flex-row">
         <img
           src={imageUrl}
@@ -21,9 +21,9 @@ export default function TransactionProduct({ inquiry }) {
         />
 
         <div className="flex-1 p-5">
-          <p className="text-xs font-medium text-[#2D6A4F] dark:text-[var(--agri-brand)]">{t("transactionProduct.title")}</p>
+          <p className="text-xs font-medium text-[#2D6A4F] dark:text-(--agri-brand)">{t("transactionProduct.title")}</p>
 
-          <h2 className="mt-1 text-lg font-bold text-[var(--agri-text)]">
+          <h2 className="mt-1 text-lg font-bold text-(--agri-text)">
             {product.name || "Product"}
           </h2>
 
@@ -36,7 +36,7 @@ export default function TransactionProduct({ inquiry }) {
             />
           </div>
 
-          <div className="mt-4 border-t border-[var(--agri-border-subtle)] pt-4">
+          <div className="mt-4 border-t border-(--agri-border-subtle) pt-4">
             <Info
               label={t("transactionProduct.estimatedTotal")}
               value={`₱${(
@@ -53,9 +53,9 @@ export default function TransactionProduct({ inquiry }) {
 function Info({ label, value }) {
   return (
     <div>
-      <p className="text-xs text-[var(--agri-text-muted)]">{label}</p>
+      <p className="text-xs text-(--agri-text-muted)">{label}</p>
 
-      <p className="mt-1 text-sm font-semibold text-[var(--agri-text)]">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-(--agri-text)">{value}</p>
     </div>
   );
 }

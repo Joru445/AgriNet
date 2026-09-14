@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import { useLanguage } from "../../../context/LanguageContext";
@@ -48,7 +48,7 @@ export default function InquiryOverview({ loading = false }) {
   const headerAction = (
     <Link
       to="/farmer/transactions"
-      className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] dark:text-[var(--agri-brand)] transition hover:underline"
+      className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] dark:text-(--agri-brand) transition hover:underline"
     >
       {t("farmer.viewAll")}
       <i className="ri-arrow-right-line text-xs" />
@@ -64,17 +64,17 @@ export default function InquiryOverview({ loading = false }) {
         compact
         headerAction={headerAction}
       >
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 p-3 border-b border-[var(--agri-border-subtle)] animate-pulse">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 p-3 border-b border-(--agri-border-subtle) animate-pulse">
           {BREAKDOWN.map((key) => (
             <div key={key} className="space-y-2">
-              <div className="h-7 w-10 mx-auto bg-[var(--agri-hover)] rounded-lg" />
-              <div className="h-2.5 w-14 mx-auto bg-[var(--agri-hover)] rounded" />
+              <div className="h-7 w-10 mx-auto bg-(--agri-hover) rounded-lg" />
+              <div className="h-2.5 w-14 mx-auto bg-(--agri-hover) rounded" />
             </div>
           ))}
         </div>
         <div className="space-y-2 p-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-12 bg-[var(--agri-hover)]/60 rounded-xl" />
+            <div key={i} className="h-12 bg-(--agri-hover)/60 rounded-xl" />
           ))}
         </div>
       </DashboardSection>
@@ -90,13 +90,13 @@ export default function InquiryOverview({ loading = false }) {
       headerAction={headerAction}
     >
       {/* Status breakdown */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 p-3 border-b border-[var(--agri-border-subtle)]">
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 p-3 border-b border-(--agri-border-subtle)">
         {BREAKDOWN.map((key) => (
           <div key={key} className="flex flex-col items-center text-center">
-            <span className="text-xl font-bold text-[var(--agri-text)]">
+            <span className="text-xl font-bold text-(--agri-text)">
               {counts[key]}
             </span>
-            <span className="mt-1 text-[11px] font-semibold text-[var(--agri-text-muted)]">
+            <span className="mt-1 text-[11px] font-semibold text-(--agri-text-muted)">
               {t(`transactions.status.${key}`)}
             </span>
           </div>
@@ -117,7 +117,7 @@ export default function InquiryOverview({ loading = false }) {
           description={t("farmer.noTransactionsDesc")}
         />
       ) : (
-        <ul className="divide-y divide-[var(--agri-border-subtle)]">
+        <ul className="divide-y divide-(--agri-border-subtle)">
           {recentInquiries.map((inquiry) => (
             <li key={inquiry.id}>
               <InquiryOverviewRow inquiry={inquiry} />
@@ -144,34 +144,34 @@ function InquiryOverviewRow({ inquiry }) {
   return (
     <Link
       to="/farmer/transactions"
-      className="flex items-center gap-3 p-3 transition hover:bg-[var(--agri-hover)]/60"
+      className="flex items-center gap-3 p-3 transition hover:bg-(--agri-hover)/60"
     >
       {image ? (
         <img
           src={image}
           alt={name}
-          className="h-10 w-10 shrink-0 rounded-lg object-cover bg-[var(--agri-hover)] border border-[var(--agri-border-subtle)]"
+          className="h-10 w-10 shrink-0 rounded-lg object-cover bg-(--agri-hover) border border-(--agri-border-subtle)"
           onError={(e) => {
             e.currentTarget.style.visibility = "hidden";
           }}
         />
       ) : (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-(--agri-brand)">
           <i className="ri-shopping-basket-line text-base" />
         </div>
       )}
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-[var(--agri-text)]">
+        <p className="truncate text-sm font-semibold text-(--agri-text)">
           {name}
         </p>
 
-        <p className="mt-0.5 truncate text-xs text-[var(--agri-text-muted)]">
+        <p className="mt-0.5 truncate text-xs text-(--agri-text-muted)">
           {quantity > 0 && product.unit
             ? `${quantity} ${product.unit}`
             : t("farmer.totalTransactions")}
           {total > 0 && (
-            <span className="font-semibold text-[var(--agri-text-secondary)]">
+            <span className="font-semibold text-(--agri-text-secondary)">
               {" "}
               · ₱{total.toLocaleString()}
             </span>

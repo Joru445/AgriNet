@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function ResponsiveModal({
   open,
@@ -96,20 +96,20 @@ export default function ResponsiveModal({
       {/* Desktop: centered modal */}
       <div className="hidden lg:fixed lg:inset-0 lg:z-[9999] lg:flex lg:items-center lg:justify-center lg:p-4">
         <div
-          className={`relative w-full ${maxWidth} rounded-2xl bg-[var(--agri-card)] shadow-2xl ${isClosing ? "anim-fade-out" : "anim-scale-in"}`}
+          className={`relative w-full ${maxWidth} rounded-2xl bg-(--agri-card) shadow-2xl ${isClosing ? "anim-fade-out" : "anim-scale-in"}`}
           onClick={(e) => e.stopPropagation()}
         >
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between border-b border-[var(--agri-border-subtle)] px-5 py-4">
+            <div className="flex items-center justify-between border-b border-(--agri-border-subtle) px-5 py-4">
               {title && (
-                <h2 className="text-lg font-bold text-[var(--agri-text)]">{title}</h2>
+                <h2 className="text-lg font-bold text-(--agri-text)">{title}</h2>
               )}
 
               {showCloseButton && (
                 <button
                   type="button"
                   onClick={onClose}
-                  className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] cursor-pointer"
+                  className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-(--agri-text-secondary) cursor-pointer"
                   aria-label="Close"
                 >
                   <i className="ri-close-line text-xl" />
@@ -131,7 +131,7 @@ export default function ResponsiveModal({
 
         <div
           ref={drawerRef}
-          className={`relative w-full rounded-t-3xl bg-[var(--agri-card)] shadow-2xl ${isClosing ? "anim-slide-down-out" : "anim-slide-up"}`}
+          className={`relative w-full rounded-t-3xl bg-(--agri-card) shadow-2xl ${isClosing ? "anim-slide-down-out" : "anim-slide-up"}`}
           style={{
             transform: isClosing
               ? undefined
@@ -145,20 +145,20 @@ export default function ResponsiveModal({
         >
           {/* Drag handle */}
           <div className="flex justify-center pt-3 pb-1">
-            <div className="h-1 w-10 rounded-full bg-[var(--agri-border)]" />
+            <div className="h-1 w-10 rounded-full bg-(--agri-border)" />
           </div>
 
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between border-b border-[var(--agri-border-subtle)] px-5 py-3">
+            <div className="flex items-center justify-between border-b border-(--agri-border-subtle) px-5 py-3">
               {title && (
-                <h2 className="text-lg font-bold text-[var(--agri-text)]">{title}</h2>
+                <h2 className="text-lg font-bold text-(--agri-text)">{title}</h2>
               )}
 
               {showCloseButton && (
                 <button
                   type="button"
                   onClick={onClose}
-                  className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-[var(--agri-text-muted)] transition-colors hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] cursor-pointer"
+                  className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-(--agri-text-secondary) cursor-pointer"
                   aria-label="Close"
                 >
                   <i className="ri-close-line text-xl" />

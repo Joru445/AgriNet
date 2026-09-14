@@ -1,4 +1,4 @@
-import { t } from "../../i18n";
+﻿import { t } from "../../i18n";
 
 function getRoleLabel(role) {
   switch (role) {
@@ -28,7 +28,7 @@ function getRoleClasses(role) {
       return "bg-white text-blue-900 border border-blue-300 shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-blue-950 dark:text-blue-200 dark:border-blue-700/60";
 
     default:
-      return "bg-white text-[var(--agri-text)] border border-[var(--agri-border)] shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-[var(--agri-card)] dark:text-[var(--agri-text)]";
+      return "bg-white text-(--agri-text) border border-(--agri-border) shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-(--agri-card) dark:text-(--agri-text)";
   }
 }
 

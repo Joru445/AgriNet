@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 
 import DashboardSection from "../../components/common/DashboardSection";
 import SkeletonBox from "../../components/common/SkeletonBox";
@@ -18,9 +18,9 @@ const STATUS_TABS = ["pending", "approved", "rejected"];
 
 const STATUS_COLORS = {
   not_applied: {
-    color: "text-[var(--agri-text-muted)]",
-    bg: "bg-[var(--agri-hover)]",
-    border: "border-[var(--agri-border-subtle)]",
+    color: "text-(--agri-text-muted)",
+    bg: "bg-(--agri-hover)",
+    border: "border-(--agri-border-subtle)",
   },
   pending: {
     color: "text-amber-600 dark:text-amber-400",
@@ -58,7 +58,7 @@ function VerificationRow({ verification, onView }) {
 
   return (
     <div
-      className="flex items-center gap-3 border-b border-[var(--agri-border-subtle)] px-4 py-3 transition hover:bg-[var(--agri-hover)]/60 last:border-b-0 cursor-pointer"
+      className="flex items-center gap-3 border-b border-(--agri-border-subtle) px-4 py-3 transition hover:bg-(--agri-hover)/60 last:border-b-0 cursor-pointer"
       onClick={() => onView(verification)}
       role="button"
       tabIndex={0}
@@ -71,21 +71,21 @@ function VerificationRow({ verification, onView }) {
           className="h-10 w-10 shrink-0 rounded-full object-cover"
         />
       ) : (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)] text-sm font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-(--agri-brand-bg) text-sm font-bold text-[#2D6A4F] dark:text-(--agri-brand)">
           {(verification.fullname || "?")[0].toUpperCase()}
         </div>
       )}
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <p className="truncate text-sm font-semibold text-[var(--agri-text)]">
+          <p className="truncate text-sm font-semibold text-(--agri-text)">
             {verification.fullname || t("adminUser.unnamedUser")}
           </p>
           {verification.verified && (
-            <i className="ri-verified-badge-fill text-[#2D6A4F] dark:text-[var(--agri-brand)] text-sm shrink-0" />
+            <i className="ri-verified-badge-fill text-[#2D6A4F] dark:text-(--agri-brand) text-sm shrink-0" />
           )}
         </div>
-        <p className="text-xs text-[var(--agri-text-muted)] truncate">
+        <p className="text-xs text-(--agri-text-muted) truncate">
           {verification.email || verification.username || ""}
         </p>
       </div>
@@ -95,7 +95,7 @@ function VerificationRow({ verification, onView }) {
           {t(`farmerVerification.${status}`)}
         </span>
         {verification.verificationSubmittedAt && (
-          <p className="mt-0.5 text-[10px] text-[var(--agri-text-muted)]">
+          <p className="mt-0.5 text-[10px] text-(--agri-text-muted)">
             {formatDate(verification.verificationSubmittedAt)}
           </p>
         )}
@@ -137,7 +137,7 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
     >
         {/* Farmer Info */}
         <div className="mt-4 space-y-3">
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-[var(--agri-hover)]/90 border border-[var(--agri-border-subtle)]">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-(--agri-hover)/90 border border-(--agri-border-subtle)">
             {verification.profilePicture ? (
               <img
                 src={verification.profilePicture}
@@ -145,25 +145,25 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
                 className="h-12 w-12 shrink-0 rounded-full object-cover"
               />
             ) : (
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-[var(--agri-brand-bg)] text-base font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-(--agri-brand-bg) text-base font-bold text-[#2D6A4F] dark:text-(--agri-brand)">
                 {(verification.fullname || "?")[0].toUpperCase()}
               </div>
             )}
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <p className="text-sm font-bold text-[var(--agri-text)] truncate">
+                <p className="text-sm font-bold text-(--agri-text) truncate">
                   {verification.fullname || t("adminUser.unnamedUser")}
                 </p>
                 {verification.verified && (
-                  <i className="ri-verified-badge-fill text-[#2D6A4F] dark:text-[var(--agri-brand)] text-sm" />
+                  <i className="ri-verified-badge-fill text-[#2D6A4F] dark:text-(--agri-brand) text-sm" />
                 )}
               </div>
-              <p className="text-xs text-[var(--agri-text-muted)] truncate">
+              <p className="text-xs text-(--agri-text-muted) truncate">
                 {verification.email || ""}
               </p>
               {verification.storeName && (
-                <p className="text-xs text-[var(--agri-text-muted)]">
+                <p className="text-xs text-(--agri-text-muted)">
                   {verification.storeName}
                 </p>
               )}
@@ -172,7 +172,7 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
 
           {/* Status */}
           <div>
-            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
               {t("farmerVerification.status")}
             </label>
             <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${colors.bg} ${colors.color} ${colors.border} border`}>
@@ -183,10 +183,10 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
           {/* Timestamps */}
           {verification.verificationSubmittedAt && (
             <div>
-              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("farmerVerification.submittedAt")}
               </label>
-              <p className="text-sm text-[var(--agri-text)]">
+              <p className="text-sm text-(--agri-text)">
                 {formatDate(verification.verificationSubmittedAt)}
               </p>
             </div>
@@ -194,10 +194,10 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
 
           {verification.verificationReviewedAt && (
             <div>
-              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("farmerVerification.reviewedAt")}
               </label>
-              <p className="text-sm text-[var(--agri-text)]">
+              <p className="text-sm text-(--agri-text)">
                 {formatDate(verification.verificationReviewedAt)}
               </p>
             </div>
@@ -205,7 +205,7 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
 
           {verification.verificationRejectionReason && (
             <div>
-              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("farmerVerification.rejectionReason")}
               </label>
               <div className="rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 p-2">
@@ -218,7 +218,7 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
 
           {/* Actions */}
           {status === "pending" && (
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--agri-border-subtle)]">
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-(--agri-border-subtle)">
               {!showRejectForm ? (
                 <>
                   <button
@@ -250,7 +250,7 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
                     onChange={(e) => setRejectReason(e.target.value)}
                     placeholder={t("farmerVerification.rejectionReasonPlaceholder")}
                     rows={3}
-                    className="w-full rounded-xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 px-3.5 py-2.5 text-sm text-[var(--agri-text)] outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-400/10 resize-none"
+                    className="w-full rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-sm text-(--agri-text) outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-400/10 resize-none"
                   />
                   <div className="flex items-center justify-end gap-2">
                     <button
@@ -260,7 +260,7 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
                         setRejectReason("");
                       }}
                       disabled={loading}
-                      className="py-2 px-3 rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-xs font-bold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] transition cursor-pointer disabled:opacity-50"
+                      className="py-2 px-3 rounded-xl border border-(--agri-border) bg-(--agri-card) text-xs font-bold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer disabled:opacity-50"
                     >
                       {t("common.cancel")}
                     </button>
@@ -348,16 +348,16 @@ export default function FarmerVerifications() {
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[var(--agri-text)]">
+          <h1 className="text-2xl font-bold text-(--agri-text)">
             {t("farmerVerification.adminTitle")}
           </h1>
-          <p className="mt-1 text-sm text-[var(--agri-text-muted)]">
+          <p className="mt-1 text-sm text-(--agri-text-muted)">
             {t("farmerVerification.adminSubtitle")}
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="mb-4 flex items-center gap-1 rounded-lg bg-[var(--agri-hover)] p-0.5">
+        <div className="mb-4 flex items-center gap-1 rounded-lg bg-(--agri-hover) p-0.5">
           {STATUS_TABS.map((statusTab) => (
             <TabButton
               key={statusTab}
@@ -393,10 +393,10 @@ export default function FarmerVerifications() {
             </div>
           ) : verifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
-              <i className={`text-3xl text-[var(--agri-text-muted)] ${
+              <i className={`text-3xl text-(--agri-text-muted) ${
                 tab === "pending" ? "ri-time-line" : tab === "approved" ? "ri-shield-check-line" : "ri-shield-cross-line"
               }`} />
-              <p className="mt-2 text-sm font-medium text-[var(--agri-text-muted)]">
+              <p className="mt-2 text-sm font-medium text-(--agri-text-muted)">
                 {t(`farmerVerification.no${tab.charAt(0).toUpperCase() + tab.slice(1)}`)}
               </p>
             </div>

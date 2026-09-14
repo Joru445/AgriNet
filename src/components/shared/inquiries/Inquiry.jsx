@@ -1,4 +1,4 @@
-import { getProductImage } from "../../../utils/getProductImage";
+﻿import { getProductImage } from "../../../utils/getProductImage";
 import { useLanguage } from "../../../context/LanguageContext";
 
 export default function Inquiry({ productData, counterparty }) {
@@ -42,10 +42,10 @@ export default function Inquiry({ productData, counterparty }) {
           <span className="text-xs text-(--agri-text-muted) font-medium">{t("transactions.total")}</span>
         </div>
 
-        <div className="mt-2.5 flex items-center gap-1.5 text-xs text-[var(--agri-text-secondary)] min-w-0">
-          <i className="ri-user-3-line text-[var(--agri-text-muted)] shrink-0 text-sm" />
+        <div className="mt-2.5 flex items-center gap-1.5 text-xs text-(--agri-text-secondary) min-w-0">
+          <i className="ri-user-3-line text-(--agri-text-muted) shrink-0 text-sm" />
 
-          <span className="font-semibold text-[var(--agri-text-secondary)] truncate">
+          <span className="font-semibold text-(--agri-text-secondary) truncate">
             {counterparty?.fullname ||
               (counterparty?.username
                 ? `@${counterparty.username}`

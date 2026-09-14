@@ -28,7 +28,7 @@ export default function LandingFooter() {
   return (
     <footer
       className="border-t text-gray-800"
-      style={{ backgroundColor: "var(--agri-bg)", borderColor: "var(--agri-border)" }}
+      style={{ backgroundColor: "var(--agri-page)", borderColor: "var(--agri-border)" }}
     >
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 flex justify-center">
         <div className="flex flex-col md:flex-row items-start justify-center gap-10 md:gap-16 lg:gap-24 w-full max-w-5xl">
@@ -99,7 +99,7 @@ export default function LandingFooter() {
 
       <div
         className="border-t border-gray-300 dark:border-gray-700"
-        style={{ backgroundColor: "var(--agri-bg-surface)" }}
+        style={{ backgroundColor: "var(--agri-surface)" }}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex items-center justify-center text-center">
           <p className="text-gray-500 text-xs text-center">

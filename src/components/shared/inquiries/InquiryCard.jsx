@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useNavigate } from "react-router-dom";
 import { getProductImage } from "../../../utils/getProductImage";
 import { getInquiriesPath, getMessagesPath } from "../../../utils/routes";
 import { formatFullDateTime } from "../../../utils/date";
@@ -71,7 +71,7 @@ export default function InquiryCard({
   const primaryLabel = getPrimaryLabel(status, userRole, isReviewed, t);
 
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--agri-border)] bg-[var(--agri-card)] shadow-md transition-all hover:shadow-xl hover:-translate-y-1">
+    <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-md transition-all hover:shadow-xl hover:-translate-y-1">
       {/* Red dot */}
       {showDot && (
         <span className="absolute top-3 right-3 flex h-3.5 w-3.5 z-20">
@@ -81,7 +81,7 @@ export default function InquiryCard({
       )}
 
       {/* Product image */}
-      <div className="relative h-44 w-full overflow-hidden bg-[var(--agri-hover)]">
+      <div className="relative h-44 w-full overflow-hidden bg-(--agri-hover)">
         <img
           src={getProductImage(productData)}
           alt={productData?.name || "Product"}
@@ -108,18 +108,18 @@ export default function InquiryCard({
         {/* Product Title + Quantity */}
         <div>
           <div className="flex items-start justify-between gap-2">
-            <h3 className="truncate text-base font-bold text-[var(--agri-text)]" title={productData?.name}>
+            <h3 className="truncate text-base font-bold text-(--agri-text)" title={productData?.name}>
               {productData?.name || t("transactions.productUnavailable")}
             </h3>
             {productData?.quantity != null && productData?.unit && (
-              <span className="shrink-0 inline-flex items-center rounded-md bg-[var(--agri-hover)] px-2 py-0.5 text-xs font-semibold text-[var(--agri-text-secondary)]">
+              <span className="shrink-0 inline-flex items-center rounded-md bg-(--agri-hover) px-2 py-0.5 text-xs font-semibold text-(--agri-text-secondary)">
                 {productData.quantity} {productData.unit}
               </span>
             )}
           </div>
 
           {productData?.unit && (
-            <p className="mt-0.5 text-xs font-medium text-[var(--agri-text-muted)]">
+            <p className="mt-0.5 text-xs font-medium text-(--agri-text-muted)">
               {t("transactions.perUnit", { price: price.toLocaleString(), unit: productData.unit })}
             </p>
           )}
@@ -128,24 +128,24 @@ export default function InquiryCard({
         {/* Price & Total */}
         <div className="rounded-xl bg-[#2D6A4F]/5 border border-[#2D6A4F]/10 p-2.5">
           <div className="flex items-baseline justify-between">
-            <span className="text-xs font-bold text-[var(--agri-text-secondary)] uppercase tracking-wider">
+            <span className="text-xs font-bold text-(--agri-text-secondary) uppercase tracking-wider">
               {t("transactions.totalAmount")}
             </span>
-            <span className="text-lg font-black text-[#1B4332] dark:text-[var(--agri-brand-light)]">
+            <span className="text-lg font-black text-[#1B4332] dark:text-(--agri-brand-light)">
               ₱{total.toLocaleString()}
             </span>
           </div>
         </div>
 
         {/* Counterparty & Date */}
-        <div className="flex items-center justify-between border-t border-[var(--agri-border-subtle)] pt-2.5 text-xs text-[var(--agri-text-muted)]">
+        <div className="flex items-center justify-between border-t border-(--agri-border-subtle) pt-2.5 text-xs text-(--agri-text-muted)">
           <div className="flex items-center gap-2 min-w-0">
             <img
               src={counterparty?.profilePicture || defaultAvatar}
               alt=""
-              className="h-6 w-6 rounded-full object-cover border border-[var(--agri-border)] shrink-0"
+              className="h-6 w-6 rounded-full object-cover border border-(--agri-border) shrink-0"
             />
-            <span className="truncate font-bold text-[var(--agri-text)]">
+            <span className="truncate font-bold text-(--agri-text)">
               {counterparty?.fullname ||
                 (counterparty?.username ? `@${counterparty.username}` : t("transactions.unknownUser"))}
             </span>
@@ -153,27 +153,27 @@ export default function InquiryCard({
               <span
                 title={t("common.verifiedFarmer")}
                 aria-label={t("common.verifiedFarmer")}
-                className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-[var(--agri-brand)] text-sm"
+                className="inline-flex shrink-0 items-center text-[#2D6A4F] dark:text-(--agri-brand) text-sm"
               >
                 <i className="ri-verified-badge-fill" />
               </span>
             )}
           </div>
 
-          <span className="text-[11px] font-semibold text-[var(--agri-text-muted)] shrink-0 ml-2">
+          <span className="text-[11px] font-semibold text-(--agri-text-muted) shrink-0 ml-2">
             {formatFullDateTime(getInquiryDisplayTime(inquiry))}
           </span>
         </div>
       </div>
 
       {/* Action row */}
-      <div className="flex items-center gap-2 border-t border-[var(--agri-border-subtle)] bg-[var(--agri-hover)] p-3">
+      <div className="flex items-center gap-2 border-t border-(--agri-border-subtle) bg-(--agri-hover) p-3">
         {/* Message button */}
         <button
           type="button"
           disabled={!inquiry.conversationId}
           onClick={openConversation}
-          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--agri-border)] bg-[var(--agri-card)] text-[var(--agri-text-secondary)] transition hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text)] disabled:opacity-40"
+          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-(--agri-border) bg-(--agri-card) text-(--agri-text-secondary) transition hover:bg-(--agri-hover) hover:text-(--agri-text) disabled:opacity-40"
           title={t("transactions.viewConversation")}
         >
           <i className="ri-message-3-line text-base" />

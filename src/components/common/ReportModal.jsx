@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { createReport, getActiveReportForTarget } from "../../services/report.service";
@@ -53,7 +53,7 @@ const REPORT_REASONS = [
     labelKey: "reportModal.reasons.other",
     descKey: "reportModal.reasons.other_desc",
     icon: "ri-more-line",
-    color: "text-[var(--agri-text-secondary)] bg-[var(--agri-hover)]",
+    color: "text-(--agri-text-secondary) bg-(--agri-hover)",
   },
 ];
 
@@ -236,11 +236,11 @@ export default function ReportModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg rounded-3xl bg-[var(--agri-card)] shadow-2xl border border-[var(--agri-border-subtle)] overflow-hidden my-auto anim-scale-in"
+        className="relative w-full max-w-lg rounded-3xl bg-(--agri-card) shadow-2xl border border-(--agri-border-subtle) overflow-hidden my-auto anim-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/90">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-(--agri-border-subtle) bg-(--agri-hover)/90">
           <div className="flex items-center gap-3">
             <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-xs ${
               activeReport ? "bg-amber-100 text-amber-800 border border-amber-200" : "bg-red-100 text-red-700 border border-red-200"
@@ -248,10 +248,10 @@ export default function ReportModal({
               <i className={activeReport ? "ri-shield-check-line text-xl" : "ri-alert-line text-xl font-bold"} />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-[var(--agri-text)] leading-tight">
+              <h2 className="text-base sm:text-lg font-bold text-(--agri-text) leading-tight">
                 {activeReport ? t("reportModal.titleUnderReview") : t("reportModal.title")}
               </h2>
-              <p className="text-xs text-[var(--agri-text-muted)] font-medium mt-0.5">
+              <p className="text-xs text-(--agri-text-muted) font-medium mt-0.5">
                 {activeReport ? t("reportModal.subtitleActive") : t("reportModal.subtitle")}
               </p>
             </div>
@@ -260,7 +260,7 @@ export default function ReportModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--agri-text-muted)] hover:bg-[var(--agri-hover)] hover:text-[var(--agri-text-secondary)] transition cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-(--agri-text-muted) hover:bg-(--agri-hover) hover:text-(--agri-text-secondary) transition cursor-pointer"
             aria-label={t("reportModal.closeAria")}
           >
             <i className="ri-close-line text-xl" />
@@ -270,19 +270,19 @@ export default function ReportModal({
         {/* Modal Body */}
         {checkingActive ? (
           <div className="p-10 text-center flex flex-col items-center justify-center space-y-3">
-            <i className="ri-loader-4-line animate-spin text-3xl text-[#2D6A4F] dark:text-[var(--agri-brand)]" />
-            <p className="text-xs text-[var(--agri-text-muted)] font-medium">{t("reportModal.checkingStatus")}</p>
+            <i className="ri-loader-4-line animate-spin text-3xl text-[#2D6A4F] dark:text-(--agri-brand)" />
+            <p className="text-xs text-(--agri-text-muted) font-medium">{t("reportModal.checkingStatus")}</p>
           </div>
         ) : activeReport ? (
           /* Active Report Already Exists Screen */
           <div className="p-5 sm:p-6 space-y-4">
             {/* Target Info Summary */}
-            <div className="flex items-center justify-between rounded-2xl bg-[var(--agri-card)] border border-[var(--agri-border-subtle)] shadow-xs p-3.5">
+            <div className="flex items-center justify-between rounded-2xl bg-(--agri-card) border border-(--agri-border-subtle) shadow-xs p-3.5">
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F] dark:text-(--agri-brand)">
                   {t("reportModal.targetLabel", { type: getTargetLabel() })}
                 </span>
-                <p className="text-xs sm:text-sm font-bold text-[var(--agri-text)] truncate mt-0.5">
+                <p className="text-xs sm:text-sm font-bold text-(--agri-text) truncate mt-0.5">
                   {displayTargetTitle}
                 </p>
               </div>
@@ -292,44 +292,44 @@ export default function ReportModal({
             </div>
 
             {/* Submitted Report Summary */}
-            <div className="rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-card)] p-4 shadow-xs space-y-2.5">
+            <div className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-4 shadow-xs space-y-2.5">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
                   {t("reportModal.submittedReason")}
                 </p>
-                <p className="text-sm font-bold text-[var(--agri-text)] mt-0.5">
+                <p className="text-sm font-bold text-(--agri-text) mt-0.5">
                   {activeReport.reason}
                 </p>
               </div>
 
               {activeReport.description && (
-                <div className="pt-2.5 border-t border-[var(--agri-border-subtle)]">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)]">
+                <div className="pt-2.5 border-t border-(--agri-border-subtle)">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
                     {t("reportModal.yourExplanation")}
                   </p>
-                  <p className="text-xs sm:text-sm text-[var(--agri-text)] mt-1 leading-relaxed font-medium">
+                  <p className="text-xs sm:text-sm text-(--agri-text) mt-1 leading-relaxed font-medium">
                     {activeReport.description}
                   </p>
                 </div>
               )}
 
               {activeReport.evidenceUrl && (
-                <div className="pt-2.5 border-t border-[var(--agri-border-subtle)]">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--agri-text-muted)] mb-1.5">
+                <div className="pt-2.5 border-t border-(--agri-border-subtle)">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted) mb-1.5">
                     {t("reportModal.attachedEvidence")}
                   </p>
                   <img
                     src={activeReport.evidenceUrl}
                     alt={t("reportModal.submittedProof")}
-                    className="h-24 w-auto max-w-[200px] object-cover rounded-xl border border-[var(--agri-border)] shadow-xs"
+                    className="h-24 w-auto max-w-[200px] object-cover rounded-xl border border-(--agri-border) shadow-xs"
                   />
                 </div>
               )}
             </div>
 
             {/* Moderator Contact Notice Banner */}
-            <div className="rounded-2xl border border-[#2D6A4F]/25 bg-[#E8F5EE] dark:bg-[var(--agri-brand-bg-alt)] p-4 shadow-xs text-xs sm:text-sm text-[#1B4332] dark:text-[var(--agri-brand-light)] space-y-1.5">
-              <div className="flex items-center gap-2 font-bold text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+            <div className="rounded-2xl border border-[#2D6A4F]/25 bg-[#E8F5EE] dark:bg-(--agri-brand-bg-alt) p-4 shadow-xs text-xs sm:text-sm text-[#1B4332] dark:text-(--agri-brand-light) space-y-1.5">
+              <div className="flex items-center gap-2 font-bold text-[#2D6A4F] dark:text-(--agri-brand)">
                 <i className="ri-information-fill text-base" />
                 <span>{t("reportModal.noticeTitle")}</span>
               </div>
@@ -337,7 +337,7 @@ export default function ReportModal({
                 {t("reportModal.noticeBody")}
                 <strong> {t("reportModal.noticeStrong")}</strong>
               </p>
-              <p className="text-[11px] text-[#2D6A4F] dark:text-[var(--agri-brand)]/80 pt-1">
+              <p className="text-[11px] text-[#2D6A4F] dark:text-(--agri-brand)/80 pt-1">
                 {t("reportModal.noticeLimit")}
               </p>
             </div>
@@ -357,17 +357,17 @@ export default function ReportModal({
           /* Normal Submission Form */
           <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4.5 max-h-[75vh] overflow-y-auto">
             {/* Target Info Summary */}
-            <div className="flex items-center justify-between rounded-2xl bg-[var(--agri-card)] border border-[var(--agri-border-subtle)] shadow-xs p-3.5">
+            <div className="flex items-center justify-between rounded-2xl bg-(--agri-card) border border-(--agri-border-subtle) shadow-xs p-3.5">
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F] dark:text-[var(--agri-brand)]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A4F] dark:text-(--agri-brand)">
                   {t("reportModal.reporting", { type: getTargetLabel() })}
                 </span>
-                <p className="text-xs sm:text-sm font-bold text-[var(--agri-text)] truncate mt-0.5">
+                <p className="text-xs sm:text-sm font-bold text-(--agri-text) truncate mt-0.5">
                   {displayTargetTitle}
                 </p>
               </div>
               {reportedUser?.username && (
-                <span className="text-xs font-semibold text-[var(--agri-text-secondary)] bg-[var(--agri-hover)] border border-[var(--agri-border)] px-2.5 py-1 rounded-lg shrink-0 ml-2 shadow-2xs">
+                <span className="text-xs font-semibold text-(--agri-text-secondary) bg-(--agri-hover) border border-(--agri-border) px-2.5 py-1 rounded-lg shrink-0 ml-2 shadow-2xs">
                   @{reportedUser.username}
                 </span>
               )}
@@ -375,7 +375,7 @@ export default function ReportModal({
 
             {/* Reason Selection */}
             <div>
-              <label className="block text-xs sm:text-sm font-bold text-[var(--agri-text)] mb-2 uppercase tracking-wide">
+              <label className="block text-xs sm:text-sm font-bold text-(--agri-text) mb-2 uppercase tracking-wide">
                 {t("reportModal.whyReporting")} <span className="text-red-500">*</span>
               </label>
 
@@ -387,8 +387,8 @@ export default function ReportModal({
                       key={item.id}
                       className={`flex items-start gap-3 p-3.5 rounded-2xl border transition-all cursor-pointer select-none shadow-2xs ${
                         isSelected
-                          ? "border-[#2D6A4F] bg-[#E8F5EE]/40 dark:bg-[var(--agri-brand-bg-alt)]/40 ring-2 ring-[#2D6A4F]/20 shadow-xs"
-                          : "border-[var(--agri-border-subtle)] bg-[var(--agri-card)] hover:bg-[var(--agri-hover)] hover:border-[var(--agri-border)] hover:shadow-xs"
+                          ? "border-[#2D6A4F] bg-[#E8F5EE]/40 dark:bg-(--agri-brand-bg-alt)/40 ring-2 ring-[#2D6A4F]/20 shadow-xs"
+                          : "border-(--agri-border-subtle) bg-(--agri-card) hover:bg-(--agri-hover) hover:border-(--agri-border) hover:shadow-xs"
                       }`}
                     >
                       <input
@@ -400,16 +400,16 @@ export default function ReportModal({
                           setSelectedReason(item.id);
                           setError(null);
                         }}
-                        className="mt-0.5 h-4 w-4 text-[#2D6A4F] dark:text-[var(--agri-brand)] focus:ring-[#2D6A4F] cursor-pointer"
+                        className="mt-0.5 h-4 w-4 text-[#2D6A4F] dark:text-(--agri-brand) focus:ring-[#2D6A4F] cursor-pointer"
                       />
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs sm:text-sm font-bold text-[var(--agri-text)]">
+                          <span className="text-xs sm:text-sm font-bold text-(--agri-text)">
                             {t(item.labelKey)}
                           </span>
                         </div>
-                        <p className="text-[11px] sm:text-xs text-[var(--agri-text-muted)] mt-0.5 leading-normal">
+                        <p className="text-[11px] sm:text-xs text-(--agri-text-muted) mt-0.5 leading-normal">
                           {t(item.descKey)}
                         </p>
                       </div>
@@ -421,8 +421,8 @@ export default function ReportModal({
 
             {/* Additional Details */}
             <div>
-              <label htmlFor="report-description" className="block text-xs sm:text-sm font-bold text-[var(--agri-text)] mb-1.5 uppercase tracking-wide">
-                {t("reportModal.additionalDetails")} <span className="text-[var(--agri-text-muted)] font-normal lowercase">{t("reportModal.optional")}</span>
+              <label htmlFor="report-description" className="block text-xs sm:text-sm font-bold text-(--agri-text) mb-1.5 uppercase tracking-wide">
+                {t("reportModal.additionalDetails")} <span className="text-(--agri-text-muted) font-normal lowercase">{t("reportModal.optional")}</span>
               </label>
               <textarea
                 id="report-description"
@@ -430,17 +430,17 @@ export default function ReportModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={t("reportModal.detailsPlaceholder")}
-                className="w-full rounded-2xl border border-[var(--agri-border-subtle)] bg-[var(--agri-hover)]/50 p-3.5 text-xs sm:text-sm text-[var(--agri-text)] font-medium placeholder-[var(--agri-text-muted)] focus:bg-[var(--agri-input-bg)] focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/20 focus:outline-none shadow-2xs transition resize-none"
+                className="w-full rounded-2xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 p-3.5 text-xs sm:text-sm text-(--agri-text) font-medium placeholder-(--agri-text-muted) focus:bg-(--agri-input-bg) focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/20 focus:outline-none shadow-2xs transition resize-none"
               />
             </div>
 
             {/* Evidence / Screenshot Upload */}
             <div>
-              <label className="block text-xs sm:text-sm font-bold text-[var(--agri-text)] mb-1.5 uppercase tracking-wide">
-                {t("reportModal.attachScreenshot")} <span className="text-[var(--agri-text-muted)] font-normal lowercase">{t("reportModal.optional")}</span>
+              <label className="block text-xs sm:text-sm font-bold text-(--agri-text) mb-1.5 uppercase tracking-wide">
+                {t("reportModal.attachScreenshot")} <span className="text-(--agri-text-muted) font-normal lowercase">{t("reportModal.optional")}</span>
               </label>
               {evidencePreview ? (
-                <div className="relative inline-block rounded-2xl overflow-hidden border border-[var(--agri-border)] bg-[var(--agri-hover)] shadow-xs">
+                <div className="relative inline-block rounded-2xl overflow-hidden border border-(--agri-border) bg-(--agri-hover) shadow-xs">
                   <img
                     src={evidencePreview}
                     alt={t("reportModal.proofPreview")}
@@ -460,7 +460,7 @@ export default function ReportModal({
                   </button>
                 </div>
               ) : (
-                <label className="flex items-center gap-3.5 p-3.5 rounded-2xl border-2 border-dashed border-[var(--agri-border)] hover:border-[#2D6A4F] bg-[var(--agri-hover)]/70 hover:bg-[#E8F5EE] dark:hover:bg-[var(--agri-brand-bg-alt)]/30 dark:bg-[var(--agri-brand-bg-alt)]/30 cursor-pointer shadow-2xs transition select-none">
+                <label className="flex items-center gap-3.5 p-3.5 rounded-2xl border-2 border-dashed border-(--agri-border) hover:border-[#2D6A4F] bg-(--agri-hover)/70 hover:bg-[#E8F5EE] dark:hover:bg-(--agri-brand-bg-alt)/30 dark:bg-(--agri-brand-bg-alt)/30 cursor-pointer shadow-2xs transition select-none">
                   <input
                     type="file"
                     accept="image/*"
@@ -473,12 +473,12 @@ export default function ReportModal({
                       }
                     }}
                   />
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--agri-card)] text-[#2D6A4F] dark:text-[var(--agri-brand)] shadow-xs border border-[var(--agri-border)]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--agri-card) text-[#2D6A4F] dark:text-(--agri-brand) shadow-xs border border-(--agri-border)">
                     <i className="ri-image-add-line text-xl font-bold" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs sm:text-sm font-bold text-[var(--agri-text)]">{t("reportModal.uploadProof")}</span>
-                    <p className="text-[11px] text-[var(--agri-text-muted)] mt-0.5">{t("reportModal.proofFormats")}</p>
+                    <span className="text-xs sm:text-sm font-bold text-(--agri-text)">{t("reportModal.uploadProof")}</span>
+                    <p className="text-[11px] text-(--agri-text-muted) mt-0.5">{t("reportModal.proofFormats")}</p>
                   </div>
                 </label>
               )}
@@ -493,12 +493,12 @@ export default function ReportModal({
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--agri-border-subtle)]">
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-(--agri-border-subtle)">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-4 py-2.5 rounded-xl border border-[var(--agri-border)] text-xs sm:text-sm font-bold text-[var(--agri-text-secondary)] hover:bg-[var(--agri-hover)] active:scale-95 transition shadow-2xs cursor-pointer disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl border border-(--agri-border) text-xs sm:text-sm font-bold text-(--agri-text-secondary) hover:bg-(--agri-hover) active:scale-95 transition shadow-2xs cursor-pointer disabled:opacity-50"
               >
                 {t("reportModal.cancel")}
               </button>

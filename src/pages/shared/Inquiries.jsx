@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -39,22 +39,22 @@ export default function Inquiries() {
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-[#1B4332] dark:text-[var(--agri-brand-light)]">{t("transactions.title")}</h2>
+          <h2 className="text-xl font-bold text-[#1B4332] dark:text-(--agri-brand-light)">{t("transactions.title")}</h2>
 
-          <p className="text-sm text-[var(--agri-text-muted)]">
+          <p className="text-sm text-(--agri-text-muted)">
             {t("transactions.subtitle")}
           </p>
         </div>
 
         {/* View toggle — hidden on mobile */}
-        <div className="hidden sm:flex items-center bg-[var(--agri-hover)] rounded-2xl p-1.5 shrink-0 border border-[var(--agri-border)] shadow-2xs gap-1">
+        <div className="hidden sm:flex items-center bg-(--agri-hover) rounded-2xl p-1.5 shrink-0 border border-(--agri-border) shadow-2xs gap-1">
           <button
             type="button"
             onClick={() => setView("grid")}
             className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${
               view === "grid"
-                ? "bg-[var(--agri-card)] shadow-xs text-[#2D6A4F] dark:text-[var(--agri-brand)] font-bold ring-1 ring-black/5"
-                : "text-[var(--agri-text-secondary)] hover:text-[var(--agri-text)] hover:bg-[var(--agri-card)]/50 font-semibold"
+                ? "bg-(--agri-card) shadow-xs text-[#2D6A4F] dark:text-(--agri-brand) font-bold ring-1 ring-black/5"
+                : "text-(--agri-text-secondary) hover:text-(--agri-text) hover:bg-(--agri-card)/50 font-semibold"
             }`}
             title={t("transactions.gridView")}
           >
@@ -67,8 +67,8 @@ export default function Inquiries() {
             onClick={() => setView("vertical")}
             className={`px-4 py-2 rounded-xl transition flex items-center gap-2 text-xs sm:text-sm cursor-pointer ${
               view === "vertical"
-                ? "bg-[var(--agri-card)] shadow-xs text-[#2D6A4F] dark:text-[var(--agri-brand)] font-bold ring-1 ring-black/5"
-                : "text-[var(--agri-text-secondary)] hover:text-[var(--agri-text)] hover:bg-[var(--agri-card)]/50 font-semibold"
+                ? "bg-(--agri-card) shadow-xs text-[#2D6A4F] dark:text-(--agri-brand) font-bold ring-1 ring-black/5"
+                : "text-(--agri-text-secondary) hover:text-(--agri-text) hover:bg-(--agri-card)/50 font-semibold"
             }`}
             title={t("transactions.verticalView")}
           >
