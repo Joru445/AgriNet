@@ -55,7 +55,7 @@ export function UnreadMessagesProvider({ children }) {
                 conv.rawUnreadCount?.[profile.uid] ??
                 0);
         if (count > 0) {
-          totalUnread += 1;
+          totalUnread += count;
           unreads.push(conv);
         }
       }

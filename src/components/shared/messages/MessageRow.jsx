@@ -38,6 +38,7 @@ export default function MessageRow({
   onJumpToMessage,
   onRetry,
   onDeleteFailed,
+  onStopLiveLocation,
 }) {
   const mine = message.senderId === profile?.uid;
   const isTouch = useIsTouch();
@@ -107,6 +108,13 @@ export default function MessageRow({
     return null;
   })();
 
+  const isLocationMsg =
+    message.type === "live_location" ||
+    message.type === "location" ||
+    message.locationType === "live_location" ||
+    message.locationType === "location" ||
+    Boolean(message.location);
+
   return (
     <>
     <div
@@ -114,9 +122,11 @@ export default function MessageRow({
       className={`group/swipe relative flex w-full min-w-0 scroll-mt-6 scroll-mb-6 ${mine ? "justify-end" : "justify-start"} ${groupSpacing}`}
     >
       <div
-        className={`relative flex min-w-0 max-w-[85%] sm:max-w-[75%] md:max-w-[68%] lg:max-w-[62%] ${
-          mine ? "flex-row-reverse" : "flex-row"
-        }`}
+        className={`relative flex min-w-0 ${
+          isLocationMsg
+            ? "max-w-[95%] sm:max-w-[85%] md:max-w-[75%]"
+            : "max-w-[85%] sm:max-w-[75%] md:max-w-[68%] lg:max-w-[62%]"
+        } ${mine ? "flex-row-reverse" : "flex-row"}`}
       >
         {/* Reply Action Affordance - only for messages from the other user */}
         {canReply && (
@@ -158,6 +168,7 @@ export default function MessageRow({
                 onRetry={onRetry}
                 onDeleteFailed={onDeleteFailed}
                 onJumpToMessage={onJumpToMessage}
+                onStopLiveLocation={onStopLiveLocation}
               />
 
               {statusText && (

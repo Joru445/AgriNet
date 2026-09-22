@@ -5,6 +5,7 @@ import MessageImage from "./MessageImage";
 import MessageLinkPreview from "./MessageLinkPreview";
 import MessageReplyContent from "./MessageReplyContent";
 import { extractFirstUrl } from "../../../utils/linkPreview";
+import LiveLocationCard from "./LiveLocationCard";
 import {
   applyTransform,
   MESSAGE_IMG_TF,
@@ -22,12 +23,34 @@ export default function MessageBubble({
   onRetry,
   onDeleteFailed,
   onJumpToMessage,
+  onStopLiveLocation,
 }) {
   const { t } = useLanguage();
   const [showLightbox, setShowLightbox] = useState(false);
 
   const isFailed = message.status === "failed";
   const isImage = message.type === "image" || Boolean(message.imageUrl);
+  const isLocation =
+    message.type === "live_location" ||
+    message.type === "location" ||
+    message.locationType === "live_location" ||
+    message.locationType === "location" ||
+    Boolean(message.location);
+  const isDefaultLocationText = isLocation && (
+    !message.text ||
+    message.text === "📍 Live Location" ||
+    message.text === "📍 Shared Location" ||
+    message.text === "📍 Farm Address" ||
+    message.text === "Live Location" ||
+    message.text === "Shared Location" ||
+    message.text === "Farm Address" ||
+    Boolean(
+      message.location?.address &&
+      (message.text === `📍 ${message.location.address}` ||
+        message.text === message.location.address)
+    )
+  );
+  const showTextMessage = Boolean(message.text && !isDefaultLocationText);
 
   // Use resolved reply from parent, fallback to legacy replyToSnapshot
   const replyTo =
@@ -37,7 +60,7 @@ export default function MessageBubble({
       ? message.replyTo
       : null);
   const messageUrl = extractFirstUrl(message.text);
-  const showLinkPreview = Boolean(messageUrl && !isImage);
+  const showLinkPreview = Boolean(messageUrl && !isImage && !isLocation);
 
   const textRadius =
     {
@@ -122,10 +145,10 @@ export default function MessageBubble({
         </div>
       )}
 
-      {message.text && (
+      {showTextMessage && (
         <p
           className={`w-fit max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-2 shadow-md ${textRadius}
-            ${isImage ? "text-sm font-medium" : ""}
+            ${isImage || isLocation ? "text-sm font-medium mb-1.5" : ""}
             ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-(--agri-brand)/40" : ""}
             ${
               mine
@@ -136,6 +159,19 @@ export default function MessageBubble({
         >
           {message.text}
         </p>
+      )}
+
+      {/* Location Attachment */}
+      {isLocation && (
+        <div className={`w-fit max-w-full min-w-0 mb-0 ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-(--agri-brand)/40 rounded-2xl" : ""}`}>
+          <LiveLocationCard
+            message={message}
+            mine={mine}
+            user={user}
+            profile={profile}
+            onStopLiveLocation={onStopLiveLocation}
+          />
+        </div>
       )}
 
       {showLinkPreview && (

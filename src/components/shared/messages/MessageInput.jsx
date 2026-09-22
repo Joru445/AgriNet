@@ -1,8 +1,10 @@
-﻿import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { compressImage } from "../../../utils/imageCompression";
 import { useLanguage } from "../../../context/LanguageContext";
 import MessageReplyPreview from "./MessageReplyPreview";
+
+const ShareLocationModal = lazy(() => import("./ShareLocationModal"));
 
 export default function MessageInput({
   value,
@@ -18,8 +20,13 @@ export default function MessageInput({
   isSending = false,
   replyTo,
   onClearReply,
+  onSendLocation,
+  onStopLiveLocation,
+  hasActiveLiveLocation = false,
+  activeLiveMessageId = null,
 }) {
   const textareaRef = useRef(null);
+  const plusButtonRef = useRef(null);
   const menuRef = useRef(null);
   const galleryInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -28,14 +35,29 @@ export default function MessageInput({
   const [quantity, setQuantity] = useState(1);
   const [showMenu, setShowMenu] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
+  const [showLocationModal, setShowLocationModal] = useState(false);
 
-  // Close menu on click outside
+  // Helper to compute portal menu position safely relative to plus button
+  const computeMenuPos = useCallback(() => {
+    const btn = plusButtonRef.current;
+    if (!btn) return null;
+    const rect = btn.getBoundingClientRect();
+    const menuWidth = 208; // w-52 is 13rem = 208px
+    const safeLeft = Math.max(8, Math.min(rect.left, window.innerWidth - menuWidth - 8));
+    const safeBottom = Math.max(8, window.innerHeight - rect.top + 6);
+    return { left: safeLeft, bottom: safeBottom };
+  }, []);
+
+  // Close menu on click outside (ignoring clicks on the plus button itself)
   useEffect(() => {
     function handleClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setShowMenu(false);
-        setMenuPos(null);
+      if (
+        menuRef.current?.contains(e.target) ||
+        plusButtonRef.current?.contains(e.target)
+      ) {
+        return;
       }
+      setShowMenu(false);
     }
 
     if (showMenu) {
@@ -48,6 +70,24 @@ export default function MessageInput({
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [showMenu]);
+
+  // Keep menu positioned accurately if screen resizes
+  useEffect(() => {
+    if (!showMenu) return;
+
+    function handleResizeOrScroll() {
+      const pos = computeMenuPos();
+      if (pos) setMenuPos(pos);
+    }
+
+    window.addEventListener("resize", handleResizeOrScroll);
+    window.addEventListener("scroll", handleResizeOrScroll, true);
+
+    return () => {
+      window.removeEventListener("resize", handleResizeOrScroll);
+      window.removeEventListener("scroll", handleResizeOrScroll, true);
+    };
+  }, [showMenu, computeMenuPos]);
 
   // Auto-grow textarea up to 3 lines
   useEffect(() => {
@@ -454,24 +494,24 @@ export default function MessageInput({
 
         <div className="flex w-full items-end">
           {/* + Attachment Button with Menu */}
-          <div className="relative" ref={menuRef}>
+          <div className="relative">
             <button
+              ref={plusButtonRef}
               type="button"
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 if (showMenu) {
                   setShowMenu(false);
-                  setMenuPos(null);
                 } else {
-                  const rect = menuRef.current?.getBoundingClientRect();
-                  if (rect) {
-                    setMenuPos({ left: rect.left, bottom: window.innerHeight - rect.top + 4 });
-                  }
+                  const pos = computeMenuPos();
+                  if (pos) setMenuPos(pos);
                   setShowMenu(true);
                 }
               }}
               aria-label={t("messageInput.addAttachment")}
               title={t("messageInput.addPhotoMedia")}
-              className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-[#2D6A4F] dark:text-(--agri-brand) transition hover:text-[#1B4332] dark:hover:text-(--agri-brand-light) hover:bg-black/5 cursor-pointer ${
+              className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-[#2D6A4F] dark:text-(--agri-brand) transition hover:text-[#1B4332] dark:hover:text-(--agri-brand-light) hover:bg-black/5 cursor-pointer active:scale-95 ${
                 showMenu ? "rotate-45" : "rotate-0"
               }`}
             >
@@ -489,7 +529,6 @@ export default function MessageInput({
                   type="button"
                   onClick={() => {
                     setShowMenu(false);
-                    setMenuPos(null);
                     cameraInputRef.current?.click();
                   }}
                   className="flex sm:hidden items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-(--agri-text-secondary) hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) transition cursor-pointer"
@@ -504,7 +543,6 @@ export default function MessageInput({
                   type="button"
                   onClick={() => {
                     setShowMenu(false);
-                    setMenuPos(null);
                     galleryInputRef.current?.click();
                   }}
                   className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-(--agri-text-secondary) hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) transition cursor-pointer"
@@ -513,6 +551,20 @@ export default function MessageInput({
                     <i className="ri-image-2-fill text-base" />
                   </div>
                    <span>{t("messageInput.chooseFromGallery")}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMenu(false);
+                    setShowLocationModal(true);
+                  }}
+                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-(--agri-text-secondary) hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) transition cursor-pointer"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <i className="ri-map-pin-2-fill text-base" />
+                  </div>
+                  <span>{t("messages.shareLocation")}</span>
                 </button>
               </div>,
               document.body,
@@ -560,6 +612,19 @@ export default function MessageInput({
           </button>
         </div>
       </div>
+
+      {showLocationModal && (
+        <Suspense fallback={null}>
+          <ShareLocationModal
+            isOpen={showLocationModal}
+            onClose={() => setShowLocationModal(false)}
+            onSendLocation={onSendLocation}
+            onStopLiveLocation={onStopLiveLocation}
+            hasActiveLiveLocation={hasActiveLiveLocation}
+            activeLiveMessageId={activeLiveMessageId}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

@@ -62,18 +62,12 @@ export default function useMessageSubscription(uid, conversationId) {
         setMessages(sorted);
 
         if (document.visibilityState === "visible") {
-          const hasUnreadFromOther = incomingMessages.some(
-            (m) => m.senderId !== uid && m.read !== true,
-          );
-
-          if (hasUnreadFromOther) {
-            apiMarkConversationRead(conversationId).catch((error) => {
-              console.error(
-                "Failed to mark conversation as read:",
-                error,
-              );
-            });
-          }
+          apiMarkConversationRead(conversationId).catch((error) => {
+            console.error(
+              "Failed to mark conversation as read:",
+              error,
+            );
+          });
         }
       },
       DEFAULT_MESSAGE_LIMIT,

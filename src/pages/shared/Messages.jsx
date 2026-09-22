@@ -53,6 +53,10 @@ export default function Messages() {
     selectUser,
 
     sendMessage,
+    sendLocation,
+    stopLiveLocation,
+    hasActiveLiveLocation,
+    activeLiveMessageId,
     retryMessage,
     deleteFailedMessage,
   } = useMessages();
@@ -112,6 +116,10 @@ export default function Messages() {
             onRemoveImage={() => setSelectedImage(null)}
             uploadingImage={uploadingImage}
             isSending={isSending}
+            onSendLocation={sendLocation}
+            onStopLiveLocation={stopLiveLocation}
+            hasActiveLiveLocation={hasActiveLiveLocation}
+            activeLiveMessageId={activeLiveMessageId}
           />
         ) : (
           <EmptyConversation hasChat/>

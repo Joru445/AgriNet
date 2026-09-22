@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
@@ -11,6 +11,7 @@ import UserIdentity from "./common/UserIdentity";
 import LogoutConfirmModal from "./common/LogoutConfirmModal";
 import { PulsingDot } from "./ui/Badge";
 
+import { useUnreadMessages } from "../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../context/UnreadInquiriesContext";
 import { useUnreadReports } from "../context/UnreadReportsContext";
 
@@ -24,6 +25,7 @@ const NAV_GROUPS = [
 export default function Sidebar({ collapsed, setCollapsed }) {
   const { user, profile, authInitializing, identity, logout } = useAuth();
   const { t } = useLanguage();
+  const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } =
     useUnreadInquiries();
   const { pendingReportsCount, showReportPopup, reportPopupMessage } =
@@ -54,7 +56,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   function getBadgeCount(item) {
     if (isAnonymous) return 0;
-    if (item.to.includes("messages")) return 0;
+    if (item.to.includes("messages")) return unreadCount;
     if (item.to.includes("transactions")) return inquiryActionCount;
     if (item.to.includes("reports")) return pendingReportsCount;
     return 0;
@@ -62,6 +64,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   function getPopupInfo(item) {
     if (isAnonymous) return null;
+    if (item.to.includes("messages") && showPopup) {
+      return t("sidebar.newMessages");
+    }
     if (item.to.includes("transactions") && showInquiryPopup) {
       return inquiryPopupMessage;
     }

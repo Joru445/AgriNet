@@ -8,10 +8,8 @@ import {
 import { useAuth } from "./AuthContext";
 import { subscribeUserConversations } from "../services/conversation.service";
 import { getUserProfile } from "../services/user.service";
-import {
-  getCachedUserProfile,
-  setCachedUserProfile,
-} from "../utils/userProfileCache";
+import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
+import { getTimestampMs } from "../utils/chat";
 
 const ConversationsContext = createContext({
   conversations: [],
@@ -80,6 +78,33 @@ export function ConversationsProvider({ children }) {
             missingProfileUids.push(otherUid);
           }
 
+          let unread = 0;
+          let hasExplicitUnread = false;
+
+          if (typeof conversation.unreadCount === "number") {
+            unread = conversation.lastMessageSender !== listenerUid ? conversation.unreadCount : 0;
+            hasExplicitUnread = true;
+          } else if (conversation.unreadCount && typeof conversation.unreadCount === "object" && listenerUid in conversation.unreadCount) {
+            unread = Number(conversation.unreadCount[listenerUid]) || 0;
+            hasExplicitUnread = true;
+          } else if (conversation.rawUnreadCount && typeof conversation.rawUnreadCount === "object" && listenerUid in conversation.rawUnreadCount) {
+            unread = Number(conversation.rawUnreadCount[listenerUid]) || 0;
+            hasExplicitUnread = true;
+          }
+
+          // Fallback ONLY when unreadCount field is completely missing from document
+          if (!hasExplicitUnread) {
+            const isFromOther = Boolean(conversation.lastMessageSender && conversation.lastMessageSender !== listenerUid);
+            if (isFromOther && conversation.lastMessageAt) {
+              const myLastRead = conversation.lastRead?.[listenerUid];
+              const readMs = getTimestampMs(myLastRead);
+              const msgMs = getTimestampMs(conversation.lastMessageAt);
+              if (!readMs || (msgMs && msgMs > readMs)) {
+                unread = 1;
+              }
+            }
+          }
+
           return {
             ...conversation,
             otherUser: {
@@ -100,7 +125,7 @@ export function ConversationsProvider({ children }) {
                 (cachedProfile?.verified ??
                 otherInfo.verified === true),
             },
-            unreadCount: conversation.unreadCount?.[listenerUid] ?? 0,
+            unreadCount: unread,
             rawUnreadCount: conversation.unreadCount || {},
           };
         });

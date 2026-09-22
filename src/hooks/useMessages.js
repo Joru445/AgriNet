@@ -2,11 +2,22 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
+import { showToast } from "../utils/toast";
+
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase/firestore";
 
 import {
   apiGetConversationById,
   apiFindOrCreateConversation,
+  updateConversationEndedLocations,
 } from "../services/conversation.service";
+import { stopLiveLocation as apiStopLiveLocation } from "../services/message.service";
+import {
+  getPermanentlyEndedLocations,
+  markLocationPermanentlyEnded,
+} from "../utils/endedLocations";
 
 import { getUserProfile } from "../services/user.service";
 
@@ -22,9 +33,11 @@ import useUserSearch from "./messages/useUserSearch";
 import useMessageSubscription from "./messages/useMessageSubscription";
 import useMessageActions from "./messages/useMessageActions";
 import useInquiryFlow from "./messages/useInquiryFlow";
+import useLiveLocationTracker from "./messages/useLiveLocationTracker";
 
 export default function useMessages() {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [activeConversation, setActiveConversation] = useState(null);
@@ -46,6 +59,34 @@ export default function useMessages() {
     userResults,
     searching,
   } = useUserSearch(profile?.uid, conversations);
+
+  const filteredConversations = useMemo(() => {
+    if (!search.trim()) return conversations;
+
+    const keyword = search.toLowerCase();
+
+    return conversations.filter(
+      ({ otherUser }) =>
+        otherUser?.fullname?.toLowerCase().includes(keyword) ||
+        otherUser?.username?.toLowerCase().includes(keyword),
+    );
+  }, [conversations, search]);
+
+  const activeConversationLive = useMemo(() => {
+    if (!activeConversation?.id) return activeConversation;
+
+    const found = conversations.find(
+      (c) => c.id === activeConversation.id,
+    );
+
+    if (!found) return activeConversation;
+
+    return {
+      ...activeConversation,
+      ...found,
+      otherUser: found.otherUser || activeConversation.otherUser,
+    };
+  }, [activeConversation, conversations]);
   const {
     messages,
     loadingMessages,
@@ -59,6 +100,7 @@ export default function useMessages() {
     uploadingImage,
     isSending,
     sendMessage: sendAction,
+    sendLocationMessage: sendLocationAction,
     retryMessage,
     deleteFailedMessage,
   } = useMessageActions({
@@ -71,6 +113,13 @@ export default function useMessages() {
     message,
     clearCurrentDraft,
   });
+
+  const {
+    startTracking,
+    stopTracking: trackerStopTracking,
+    isTracking: isTrackingLocation,
+    activeSession: activeLiveSession,
+  } = useLiveLocationTracker();
 
   const {
     inquiryProduct,
@@ -91,7 +140,42 @@ export default function useMessages() {
   const [selectedImage, setSelectedImage] = useState(null);
 
   const [replyTo, setReplyTo] = useState(null);
+  const [locallyEndedIds, setLocallyEndedIds] = useState(() => getPermanentlyEndedLocations());
+  const [conversationEndedLocations, setConversationEndedLocations] = useState({});
   const clearReply = useCallback(() => setReplyTo(null), []);
+
+  // Real-time listener on active conversation document for ended locations
+  useEffect(() => {
+    const convId = activeConversation?.id;
+    if (!convId) {
+      setConversationEndedLocations({});
+      return;
+    }
+
+    const convRef = doc(db, "conversations", convId);
+    const unsubscribe = onSnapshot(
+      convRef,
+      (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data?.endedLocations) {
+            setConversationEndedLocations(data.endedLocations);
+            // Sync to permanent local storage
+            Object.keys(data.endedLocations).forEach((id) => {
+              if (data.endedLocations[id]) {
+                markLocationPermanentlyEnded(id);
+              }
+            });
+          }
+        }
+      },
+      (err) => {
+        console.warn("[useMessages] onSnapshot for conversation doc error:", err);
+      },
+    );
+
+    return () => unsubscribe();
+  }, [activeConversation?.id]);
 
   // Clear pending reply when switching conversations
   useEffect(() => {
@@ -105,6 +189,136 @@ export default function useMessages() {
       clearReply();
     },
     [sendAction, selectedImage, replyTo, clearReply],
+  );
+
+  const activeLocationMessages = useMemo(() => {
+    if (!messages?.length || !profile?.uid) return [];
+    const now = Date.now();
+    const permanentlyEnded = getPermanentlyEndedLocations();
+    const convEnded = {
+      ...(activeConversationLive?.endedLocations || {}),
+      ...conversationEndedLocations,
+    };
+    return messages.filter((m) => {
+      if (locallyEndedIds.has(m.id) || permanentlyEnded.has(m.id) || Boolean(convEnded[m.id])) return false;
+      if (m.senderId !== profile.uid) return false;
+      const isLocationMsg =
+        Boolean(m.location) ||
+        m.type === "location" ||
+        m.type === "live_location" ||
+        m.locationType === "location" ||
+        m.locationType === "live_location";
+      if (!isLocationMsg) return false;
+      if (m.isEnded === true || Boolean(m.endedAt) || m.isLive === false) return false;
+      if (m.liveUntil && now >= Number(m.liveUntil)) return false;
+      return true;
+    });
+  }, [
+    messages,
+    profile?.uid,
+    locallyEndedIds,
+    activeConversationLive?.endedLocations,
+    conversationEndedLocations,
+  ]);
+
+  const hasActiveLiveLocation = Boolean(
+    activeLocationMessages.length > 0 ||
+      (isTrackingLocation &&
+        (!activeLiveSession?.conversationId ||
+          activeLiveSession.conversationId === activeConversation?.id))
+  );
+
+  const activeLiveMessageId =
+    activeLocationMessages[0]?.id || activeLiveSession?.messageId || null;
+
+  const stopLiveLocation = useCallback(
+    async (targetMessageId, explicitConvId = null) => {
+      const idsToStop = new Set();
+      if (targetMessageId) idsToStop.add(targetMessageId);
+      if (activeLiveSession?.messageId) idsToStop.add(activeLiveSession.messageId);
+
+      // Also stop all active location messages for this user in this conversation
+      activeLocationMessages.forEach((m) => idsToStop.add(m.id));
+
+      // Permanently mark all these IDs in localStorage
+      idsToStop.forEach((id) => markLocationPermanentlyEnded(id));
+
+      // Optimistically mark all these IDs as ended locally!
+      setLocallyEndedIds((prev) => {
+        const next = new Set(prev);
+        idsToStop.forEach((id) => next.add(id));
+        return next;
+      });
+
+      // Unconditionally stop GPS tracking & session storage
+      await trackerStopTracking();
+
+      const convId =
+        explicitConvId ||
+        activeConversationLive?.id ||
+        activeConversation?.id ||
+        activeLiveSession?.conversationId;
+
+      // Real-time sync to conversation document for all participants
+      if (convId && idsToStop.size > 0) {
+        try {
+          await updateConversationEndedLocations(convId, Array.from(idsToStop));
+        } catch (convErr) {
+          console.error("[useMessages] Failed to update conversation endedLocations:", convErr);
+        }
+      }
+
+      // Mark all stopped in Firestore messages
+      for (const id of idsToStop) {
+        try {
+          await apiStopLiveLocation(id, convId);
+        } catch (err) {
+          console.error("[useMessages] Error stopping location for message:", id, err);
+        }
+      }
+    },
+    [
+      activeLiveSession?.messageId,
+      activeLiveSession?.conversationId,
+      activeLocationMessages,
+      trackerStopTracking,
+      activeConversationLive?.id,
+      activeConversation?.id,
+    ],
+  );
+
+  const sendLocation = useCallback(
+    async ({ type, location, liveUntil, isLive }) => {
+      if (hasActiveLiveLocation) {
+        showToast.warning(
+          t("messages.endLiveLocationToShareAnother") ||
+            "Please end your active live location before sending another location."
+        );
+        return;
+      }
+
+      const result = await sendLocationAction({
+        type,
+        location,
+        liveUntil,
+        isLive,
+        replyTo,
+      });
+
+      if (result?.messageId && type === "live_location" && liveUntil) {
+        startTracking(result.messageId, liveUntil, result.conversationId);
+      }
+
+      clearReply();
+    },
+    [
+      hasActiveLiveLocation,
+      t,
+      sendLocationAction,
+      replyTo,
+      startTracking,
+      clearReply,
+    ],
   );
 
   /*
@@ -327,42 +541,13 @@ export default function useMessages() {
     setSearchParams({ user: user.uid });
   }
 
-  /*
-   * ==================================================
-   * FILTERED & LIVE CONVERSATIONS
-   * ==================================================
-   */
-
-  const filteredConversations = useMemo(() => {
-    if (!search.trim()) return conversations;
-
-    const keyword = search.toLowerCase();
-
-    return conversations.filter(
-      ({ otherUser }) =>
-        otherUser?.fullname?.toLowerCase().includes(keyword) ||
-        otherUser?.username?.toLowerCase().includes(keyword),
-    );
-  }, [conversations, search]);
-
-  const activeConversationLive = useMemo(() => {
-    if (!activeConversation?.id) return activeConversation;
-
-    const found = conversations.find(
-      (c) => c.id === activeConversation.id,
-    );
-
-    if (!found) return activeConversation;
-
-    return {
-      ...activeConversation,
-      ...found,
-      otherUser: found.otherUser || activeConversation.otherUser,
-    };
-  }, [activeConversation, conversations]);
-
   const combinedMessages = useMemo(() => {
-    const targetConversationId = activeConversation?.id;
+    const targetConversationId = activeConversationLive?.id || activeConversation?.id;
+    const permanentlyEnded = getPermanentlyEndedLocations();
+    const convEnded = {
+      ...(activeConversationLive?.endedLocations || {}),
+      ...conversationEndedLocations,
+    };
 
     const currentFailed = failedMessages.filter(
       (m) =>
@@ -371,12 +556,26 @@ export default function useMessages() {
         (m.conversationId === "temp" && Boolean(activeUser)),
     );
 
-    return [...messages, ...currentFailed];
+    return [...messages, ...currentFailed].map((m) => {
+      const isEndedInConv = Boolean(convEnded[m.id]);
+      if (locallyEndedIds.has(m.id) || permanentlyEnded.has(m.id) || isEndedInConv) {
+        return {
+          ...m,
+          isLive: false,
+          isEnded: true,
+          endedAt: m.endedAt || Date.now(),
+        };
+      }
+      return m;
+    });
   }, [
     messages,
     failedMessages,
+    activeConversationLive,
     activeConversation?.id,
     activeUser,
+    locallyEndedIds,
+    conversationEndedLocations,
   ]);
 
   return {
@@ -413,6 +612,11 @@ export default function useMessages() {
     selectConversation,
     selectUser,
     sendMessage,
+    sendLocation,
+    stopLiveLocation,
+    isTrackingLocation,
+    hasActiveLiveLocation,
+    activeLiveMessageId,
     retryMessage,
     deleteFailedMessage,
   };
