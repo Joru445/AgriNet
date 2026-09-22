@@ -223,7 +223,13 @@ export function subscribeMessages(
       const permanentlyEnded = getPermanentlyEndedLocations();
       const docs = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
-        if (permanentlyEnded.has(docSnap.id)) {
+        const isLiveType =
+          (data.type === "live_location" ||
+            data.locationType === "live_location" ||
+            Boolean(data.liveUntil)) &&
+          data.locationType !== "location";
+
+        if (isLiveType && docSnap.id && permanentlyEnded.has(docSnap.id)) {
           return {
             id: docSnap.id,
             ...data,
@@ -290,7 +296,13 @@ export async function fetchOlderMessages(
     const permanentlyEnded = getPermanentlyEndedLocations();
     const docs = snapshot.docs.map((docSnap) => {
       const data = docSnap.data();
-      if (permanentlyEnded.has(docSnap.id)) {
+      const isLiveType =
+        (data.type === "live_location" ||
+          data.locationType === "live_location" ||
+          Boolean(data.liveUntil)) &&
+        data.locationType !== "location";
+
+      if (isLiveType && docSnap.id && permanentlyEnded.has(docSnap.id)) {
         return {
           id: docSnap.id,
           ...data,
@@ -343,17 +355,9 @@ export async function apiSendMessage(data) {
 
   // For location messages, write directly to Firestore using sendMessage
   // to ensure location coordinates, address, and live status are 100% preserved
-  // on production without backend schema omissions.
+  // on production without backend schema omissions and without duplicate plain-text messages.
   if (isLocationMsg) {
-    const messageId = await sendMessage(data);
-    // Background notification to backend API if available
-    try {
-      apiRequest("/v1/messages", {
-        method: "POST",
-        body: JSON.stringify(data),
-      }).catch(() => {});
-    } catch (_) {}
-    return messageId;
+    return await sendMessage(data);
   }
 
   try {

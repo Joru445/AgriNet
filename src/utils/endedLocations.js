@@ -11,7 +11,9 @@ export function getPermanentlyEndedLocations() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return new Set();
     const list = JSON.parse(raw);
-    return new Set(Array.isArray(list) ? list : []);
+    if (!Array.isArray(list)) return new Set();
+    const valid = list.filter((id) => id && id !== "undefined" && id !== "null" && id !== "temp");
+    return new Set(valid);
   } catch {
     return new Set();
   }
@@ -23,7 +25,7 @@ export function getPermanentlyEndedLocations() {
  * @param {string} messageId
  */
 export function markLocationPermanentlyEnded(messageId) {
-  if (!messageId) return;
+  if (!messageId || messageId === "undefined" || messageId === "null" || messageId === "temp") return;
   try {
     const current = getPermanentlyEndedLocations();
     current.add(String(messageId));

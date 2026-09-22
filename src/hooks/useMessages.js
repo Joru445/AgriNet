@@ -200,15 +200,14 @@ export default function useMessages() {
       ...conversationEndedLocations,
     };
     return messages.filter((m) => {
-      if (locallyEndedIds.has(m.id) || permanentlyEnded.has(m.id) || Boolean(convEnded[m.id])) return false;
+      if (!m.id || locallyEndedIds.has(m.id) || permanentlyEnded.has(m.id) || Boolean(convEnded[m.id])) return false;
       if (m.senderId !== profile.uid) return false;
-      const isLocationMsg =
-        Boolean(m.location) ||
-        m.type === "location" ||
-        m.type === "live_location" ||
-        m.locationType === "location" ||
-        m.locationType === "live_location";
-      if (!isLocationMsg) return false;
+      const isLiveLocationMsg =
+        (m.type === "live_location" ||
+          m.locationType === "live_location" ||
+          Boolean(m.liveUntil)) &&
+        m.locationType !== "location";
+      if (!isLiveLocationMsg) return false;
       if (m.isEnded === true || Boolean(m.endedAt) || m.isLive === false) return false;
       if (m.liveUntil && now >= Number(m.liveUntil)) return false;
       return true;
@@ -557,8 +556,19 @@ export default function useMessages() {
     );
 
     return [...messages, ...currentFailed].map((m) => {
-      const isEndedInConv = Boolean(convEnded[m.id]);
-      if (locallyEndedIds.has(m.id) || permanentlyEnded.has(m.id) || isEndedInConv) {
+      const isLiveType =
+        (m.type === "live_location" ||
+          m.locationType === "live_location" ||
+          Boolean(m.liveUntil)) &&
+        m.locationType !== "location";
+
+      if (!isLiveType) return m;
+
+      const isEndedInConv = Boolean(m.id && convEnded[m.id]);
+      if (
+        (m.id && (locallyEndedIds.has(m.id) || permanentlyEnded.has(m.id) || isEndedInConv)) ||
+        (m.liveUntil && Date.now() >= Number(m.liveUntil))
+      ) {
         return {
           ...m,
           isLive: false,

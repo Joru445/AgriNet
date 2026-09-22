@@ -28,33 +28,41 @@ export default function LiveLocationCard({
   const { t } = useLanguage();
   const [now, setNow] = useState(() => Date.now());
   const [showMapModal, setShowMapModal] = useState(false);
-  const isPermanentlyEnded = getPermanentlyEndedLocations().has(message.id);
+  const isPermanentlyEnded = Boolean(message?.id) && getPermanentlyEndedLocations().has(message.id);
   const [localEnded, setLocalEnded] = useState(() => isPermanentlyEnded);
 
-  const location = message.location || {};
+  const location = message?.location || {};
   const lat = Number(location.lat);
   const lng = Number(location.lng);
   const hasCoordinates = !isNaN(lat) && !isNaN(lng);
 
   const isStaticLocation =
-    message.locationType === "location" ||
-    (message.type === "location" && message.locationType !== "live_location");
+    message?.locationType === "location" ||
+    (message?.type === "location" && message?.locationType !== "live_location");
 
   const isLiveType =
     !isStaticLocation &&
-    (message.type === "live_location" ||
-      message.locationType === "live_location" ||
-      Boolean(message.liveUntil));
+    (message?.type === "live_location" ||
+      message?.locationType === "live_location" ||
+      Boolean(message?.liveUntil));
 
-  const liveUntil = message.liveUntil ? Number(message.liveUntil) : null;
+  const liveUntil = message?.liveUntil ? Number(message.liveUntil) : null;
   const isExpired = liveUntil ? now >= liveUntil : false;
-  const isLiveActive = !localEnded && !isPermanentlyEnded && isLiveType && message.isLive !== false && !isExpired;
-  const isEnded =
-    localEnded ||
-    isPermanentlyEnded ||
-    message.isEnded === true ||
-    Boolean(message.endedAt) ||
-    (isLiveType ? !isLiveActive : message.isLive === false);
+  const isLiveActive =
+    !localEnded &&
+    !isPermanentlyEnded &&
+    isLiveType &&
+    message?.isLive !== false &&
+    !isExpired;
+
+  const isEnded = isLiveType
+    ? localEnded ||
+      isPermanentlyEnded ||
+      message?.isEnded === true ||
+      Boolean(message?.endedAt) ||
+      message?.isLive === false ||
+      isExpired
+    : message?.isEnded === true || message?.isLive === false || Boolean(message?.endedAt);
 
 
   // Auto-close map modal if it was open when location ended
