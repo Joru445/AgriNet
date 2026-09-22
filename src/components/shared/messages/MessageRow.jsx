@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Avatar from "../../common/Avatar";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import MessageBubble from "./MessageBubble";
@@ -132,7 +132,7 @@ export default function MessageRow({
         <div className="relative min-w-0 flex-1">
           {/* Swipe-translated portion: avatar + bubble. */}
           <div
-            className="flex min-w-0 items-end gap-2"
+            className={`flex min-w-0 items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
             {...swipe.bind}
             style={swipeStyle}
           >

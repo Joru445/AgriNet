@@ -86,17 +86,17 @@ export default function MessageBubble({
     >
       {/* Reply quote */}
       {replyTo && (
-        <div className={`flex flex-col ${mine ? "items-end" : "items-start"} max-w-full mb-1`}>
+        <div className={`flex flex-col ${mine ? "items-end" : "items-start"} max-w-full min-w-0 mb-1`}>
           {/* Subtle header: ↩ You replied to Name (when mine) / ↩ Name replied to you (when other) */}
           {showReplyHeader && (
             <button
               type="button"
               onClick={() => onJumpToMessage?.(replyTo.messageId || replyTo.id)}
-              className="flex items-center gap-1 text-[11px] text-(--agri-text-muted) hover:text-(--agri-text) font-medium mb-1 px-1 select-none cursor-pointer transition"
+              className="flex items-center gap-1 text-[11px] text-(--agri-text-muted) hover:text-(--agri-text) font-medium mb-1 px-1 select-none cursor-pointer transition max-w-full min-w-0"
               aria-label={t("messages.replyToLabel")}
             >
-              <i className="ri-reply-line text-xs" />
-              <span>
+              <i className="ri-reply-line text-xs shrink-0" />
+              <span className="truncate">
                 {mine
                   ? t("messages.youRepliedTo", { name: targetReplyName })
                   : t("messages.repliedToYou", { name: otherUserName || targetReplyName })}
@@ -108,7 +108,7 @@ export default function MessageBubble({
           <button
             type="button"
             onClick={() => onJumpToMessage?.(replyTo.messageId || replyTo.id)}
-            className={`flex items-center gap-2 rounded-2xl px-3 py-1.5 text-xs text-left cursor-pointer transition hover:opacity-85 max-w-full w-fit shadow-xs
+            className={`flex items-center gap-2 rounded-2xl px-3 py-1.5 text-xs text-left cursor-pointer transition hover:opacity-85 max-w-[240px] sm:max-w-xs md:max-w-sm min-w-0 w-fit overflow-hidden shadow-xs
               ${
                 mine
                   ? "bg-black/10 dark:bg-white/10 text-(--agri-text) border border-black/5 dark:border-white/5"
