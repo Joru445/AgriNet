@@ -214,8 +214,14 @@ export default function useMessageActions({
           conversationId = await apiFindOrCreateConversation(activeUser.uid);
         }
 
-        stage = "send-message";
-        const otherUid = activeConversation?.otherUser?.uid || activeUser?.uid;
+        const otherUid =
+          activeConversation?.otherUser?.uid ||
+          activeConversation?.otherUser?.id ||
+          activeUser?.uid ||
+          activeUser?.id ||
+          (conversationId?.includes("_")
+            ? conversationId.split("_").find((id) => id !== profile?.uid)
+            : null);
 
         const isLiveLocation = type === "live_location";
         const fallbackText = isLiveLocation
@@ -224,6 +230,7 @@ export default function useMessageActions({
 
         const messagePayload = {
           conversationId,
+          senderId: profile.uid,
           receiverId: otherUid || null,
           text: fallbackText,
           type: "text",
@@ -233,7 +240,6 @@ export default function useMessageActions({
           isLive: isLiveLocation ? (isLive != null ? isLive : true) : null,
           replyTo: replyTo?.messageId || replyTo || null,
         };
-
 
         const messageId = await apiSendMessage(messagePayload);
 

@@ -334,6 +334,28 @@ export async function fetchOlderMessages(
  * Send a message via the backend API.
  */
 export async function apiSendMessage(data) {
+  const isLocationMsg =
+    data.type === "location" ||
+    data.type === "live_location" ||
+    data.locationType === "location" ||
+    data.locationType === "live_location" ||
+    Boolean(data.location);
+
+  // For location messages, write directly to Firestore using sendMessage
+  // to ensure location coordinates, address, and live status are 100% preserved
+  // on production without backend schema omissions.
+  if (isLocationMsg) {
+    const messageId = await sendMessage(data);
+    // Background notification to backend API if available
+    try {
+      apiRequest("/v1/messages", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }).catch(() => {});
+    } catch (_) {}
+    return messageId;
+  }
+
   try {
     const result = await apiRequest("/v1/messages", {
       method: "POST",
