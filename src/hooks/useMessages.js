@@ -205,16 +205,17 @@ export default function useMessages() {
     return messages.filter((m) => {
       if (!m.id || locallyEndedIds.has(m.id) || permanentlyEnded.has(m.id) || Boolean(convEnded[m.id])) return false;
       const mSender = m.senderId || m.sender?.uid;
-      if (mSender !== currentUid) return false;
-      const isLocationMsg =
-        Boolean(m.location) ||
-        m.type === "location" ||
-        m.type === "live_location" ||
-        m.locationType === "location" ||
-        m.locationType === "live_location";
-      if (!isLocationMsg) return false;
+      // Must be sent by the CURRENT user
+      if (!mSender || mSender !== currentUid) return false;
+
+      // Only active LIVE location messages count as running location
+      const isLiveLocation =
+        (m.type === "live_location" || m.locationType === "live_location") &&
+        m.locationType !== "location";
+      if (!isLiveLocation) return false;
+
       if (m.isEnded === true || Boolean(m.endedAt) || m.isLive === false) return false;
-      if (m.liveUntil && now >= Number(m.liveUntil)) return false;
+      if (!m.liveUntil || now >= Number(m.liveUntil)) return false;
       return true;
     });
   }, [
@@ -226,29 +227,50 @@ export default function useMessages() {
   ]);
 
   const hasActiveLiveLocation = Boolean(
-    activeLocationMessages.length > 0 ||
-      (isTrackingLocation &&
-        (!activeLiveSession?.userId || activeLiveSession.userId === currentUid) &&
-        (!activeLiveSession?.conversationId ||
-          activeLiveSession.conversationId === activeConversation?.id))
+    currentUid &&
+      (activeLocationMessages.length > 0 ||
+        (isTrackingLocation &&
+          activeLiveSession?.userId === currentUid &&
+          activeLiveSession?.messageId &&
+          (!activeLiveSession?.conversationId ||
+            activeLiveSession.conversationId === activeConversation?.id)))
   );
 
   const activeLiveMessageId =
-    activeLocationMessages[0]?.id ||
-    ((!activeLiveSession?.userId || activeLiveSession.userId === currentUid)
-      ? activeLiveSession?.messageId
+    (currentUid && activeLocationMessages.length > 0
+      ? activeLocationMessages[0].id
+      : null) ||
+    (currentUid &&
+    activeLiveSession?.userId === currentUid &&
+    activeLiveSession?.messageId
+      ? activeLiveSession.messageId
       : null) ||
     null;
 
   const stopLiveLocation = useCallback(
     async (targetMessageId, explicitConvId = null) => {
+      if (!currentUid) return;
       const idsToStop = new Set();
 
       // Only allow stopping messages sent by the current user
       if (targetMessageId && targetMessageId !== "undefined" && targetMessageId !== "null") {
         const found = messages.find((m) => m.id === targetMessageId);
-        const mSender = found?.senderId || found?.sender?.uid;
-        if (!found || mSender === currentUid) {
+        if (found) {
+          const mSender = found?.senderId || found?.sender?.uid;
+          if (mSender === currentUid) {
+            idsToStop.add(targetMessageId);
+          } else {
+            console.warn("[useMessages] Denied stopping live location: message does not belong to current user", {
+              targetMessageId,
+              mSender,
+              currentUid,
+            });
+            return;
+          }
+        } else if (
+          activeLiveSession?.userId === currentUid &&
+          activeLiveSession.messageId === targetMessageId
+        ) {
           idsToStop.add(targetMessageId);
         }
       }
@@ -257,7 +279,7 @@ export default function useMessages() {
         activeLiveSession?.messageId &&
         activeLiveSession.messageId !== "undefined" &&
         activeLiveSession.messageId !== "null" &&
-        (!activeLiveSession.userId || activeLiveSession.userId === currentUid)
+        activeLiveSession.userId === currentUid
       ) {
         idsToStop.add(activeLiveSession.messageId);
       }

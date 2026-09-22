@@ -1,9 +1,36 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { updateLiveLocation, stopLiveLocation as apiStopLiveLocation } from "../../services/message.service";
 
-const STORAGE_KEY = "agri_active_live_location";
+const STORAGE_KEY_PREFIX = "agri_active_live_location_";
+const LEGACY_STORAGE_KEY = "agri_active_live_location";
 const MIN_UPDATE_INTERVAL_MS = 12000; // 12 seconds minimum between updates
 const MIN_DISTANCE_DELTA_METERS = 15; // 15 meters
+
+function getStoredSession(userId) {
+  if (!userId) return null;
+  try {
+    // Clear any legacy un-scoped key to avoid cross-user session leaks
+    sessionStorage.removeItem(LEGACY_STORAGE_KEY);
+
+    const userKey = `${STORAGE_KEY_PREFIX}${userId}`;
+    const stored = sessionStorage.getItem(userKey);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    if (
+      parsed?.userId === userId &&
+      parsed?.messageId &&
+      parsed?.liveUntil &&
+      Date.now() < parsed.liveUntil
+    ) {
+      return parsed;
+    }
+    // Expired or invalid -> cleanup
+    sessionStorage.removeItem(userKey);
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 function getDistanceInMeters(lat1, lon1, lat2, lon2) {
   if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return Infinity;
@@ -22,24 +49,7 @@ function getDistanceInMeters(lat1, lon1, lat2, lon2) {
 }
 
 export default function useLiveLocationTracker(userId = null) {
-  const [activeSession, setActiveSession] = useState(() => {
-    try {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (!stored) return null;
-      const parsed = JSON.parse(stored);
-      if (
-        parsed?.liveUntil &&
-        Date.now() < parsed.liveUntil &&
-        parsed.messageId &&
-        (!parsed.userId || !userId || parsed.userId === userId)
-      ) {
-        return parsed;
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  });
+  const [activeSession, setActiveSession] = useState(() => getStoredSession(userId));
 
   const watchIdRef = useRef(null);
   const lastUpdateTimeRef = useRef(0);
@@ -64,20 +74,11 @@ export default function useLiveLocationTracker(userId = null) {
       setActiveSession(null);
       return;
     }
-    try {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (!stored) {
-        setActiveSession(null);
-        return;
-      }
-      const parsed = JSON.parse(stored);
-      if (parsed?.userId && parsed.userId !== userId) {
-        clearCurrentWatch();
-        setActiveSession(null);
-      } else if (parsed?.liveUntil && Date.now() < parsed.liveUntil && parsed.messageId) {
-        setActiveSession(parsed);
-      }
-    } catch {}
+    const session = getStoredSession(userId);
+    setActiveSession(session);
+    if (!session) {
+      clearCurrentWatch();
+    }
   }, [userId, clearCurrentWatch]);
 
   const stopTracking = useCallback(async (messageIdToStop) => {
@@ -88,7 +89,14 @@ export default function useLiveLocationTracker(userId = null) {
     const targetId = messageIdToStop || activeSession?.messageId;
     const convId = activeSession?.conversationId;
     clearCurrentWatch();
-    sessionStorage.removeItem(STORAGE_KEY);
+    if (userId) {
+      try {
+        sessionStorage.removeItem(`${STORAGE_KEY_PREFIX}${userId}`);
+      } catch {}
+    }
+    try {
+      sessionStorage.removeItem(LEGACY_STORAGE_KEY);
+    } catch {}
     setActiveSession(null);
     lastPositionRef.current = null;
     lastUpdateTimeRef.current = 0;
@@ -103,18 +111,19 @@ export default function useLiveLocationTracker(userId = null) {
   }, [activeSession?.messageId, activeSession?.conversationId, activeSession?.userId, userId, clearCurrentWatch]);
 
   const startTracking = useCallback((messageId, liveUntil, conversationId = null) => {
-    if (!messageId || !liveUntil) return;
+    if (!messageId || !liveUntil || !userId) return;
 
     const session = {
       messageId,
       liveUntil,
       conversationId,
-      userId: userId || null,
+      userId,
       startedAt: Date.now(),
     };
 
     try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+      sessionStorage.setItem(`${STORAGE_KEY_PREFIX}${userId}`, JSON.stringify(session));
+      sessionStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch (e) {
       console.warn("[useLiveLocationTracker] Unable to save to sessionStorage:", e);
     }

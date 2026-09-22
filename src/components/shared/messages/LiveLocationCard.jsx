@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { auth } from "../../../firebase/auth";
 import { useLanguage } from "../../../context/LanguageContext";
 import useUserLocation from "../../../hooks/useUserLocation";
 import LeafletMapPreview from "./LeafletMapPreview";
@@ -25,6 +26,7 @@ export default function LiveLocationCard({
   profile = null,
   onStopLiveLocation,
 }) {
+  const currentUid = profile?.uid || auth.currentUser?.uid;
   const { t } = useLanguage();
   const [now, setNow] = useState(() => Date.now());
   const [showMapModal, setShowMapModal] = useState(false);
@@ -295,7 +297,10 @@ export default function LiveLocationCard({
               <span>{t("messages.viewMap")}</span>
             </button>
 
-            {Boolean(mine && (profile?.uid || message?.senderId) && (profile?.uid === message?.senderId || !message?.senderId)) && (
+            {Boolean(
+              (mine || (currentUid && (message?.senderId === currentUid || message?.sender?.uid === currentUid))) &&
+              (currentUid && (message?.senderId === currentUid || message?.sender?.uid === currentUid))
+            ) && (
               <button
                 type="button"
                 onClick={async () => {
@@ -338,7 +343,7 @@ export default function LiveLocationCard({
             isLiveType={isLiveType}
             isEnded={isEnded}
             timeLeftString={timeLeftString}
-            mine={mine}
+            mine={Boolean(currentUid && (message?.senderId === currentUid || message?.sender?.uid === currentUid))}
             onStopLiveLocation={onStopLiveLocation}
             messageId={message.id}
             conversationId={message.conversationId}

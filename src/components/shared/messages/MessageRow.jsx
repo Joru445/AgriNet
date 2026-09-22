@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { auth } from "../../../firebase/auth";
 import Avatar from "../../common/Avatar";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import MessageBubble from "./MessageBubble";
@@ -40,7 +41,11 @@ export default function MessageRow({
   onDeleteFailed,
   onStopLiveLocation,
 }) {
-  const mine = message.senderId === profile?.uid;
+  const currentUid = profile?.uid || auth.currentUser?.uid;
+  const mine = Boolean(
+    currentUid &&
+    (message.senderId === currentUid || message.sender?.uid === currentUid)
+  );
   const isTouch = useIsTouch();
   const reducedMotion = prefersReducedMotion();
   const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();

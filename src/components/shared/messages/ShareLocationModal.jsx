@@ -93,11 +93,10 @@ export default function ShareLocationModal({
   const activeCoords = mode === "farm_address" ? farmLocation : coords;
 
   const handleEndLiveLocation = async () => {
+    if (!activeLiveMessageId) return;
     setIsEnding(true);
     try {
-      if (activeLiveMessageId) {
-        markLocationPermanentlyEnded(activeLiveMessageId);
-      }
+      markLocationPermanentlyEnded(activeLiveMessageId);
       if (onStopLiveLocation) {
         await onStopLiveLocation(activeLiveMessageId);
       }
@@ -261,7 +260,7 @@ export default function ShareLocationModal({
           </div>
 
           {/* Active Live Location Running Warning */}
-          {hasActiveLiveLocation && (
+          {hasActiveLiveLocation && activeLiveMessageId && (
             <div className="p-2.5 sm:p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-2 shrink-0 animate-in fade-in duration-200">
               <div className="flex items-center gap-2 min-w-0">
                 <i className="ri-error-warning-fill text-amber-600 dark:text-amber-400 text-base shrink-0" />
