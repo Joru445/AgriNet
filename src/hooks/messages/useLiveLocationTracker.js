@@ -21,16 +21,20 @@ function getDistanceInMeters(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-export default function useLiveLocationTracker() {
+export default function useLiveLocationTracker(userId = null) {
   const [activeSession, setActiveSession] = useState(() => {
     try {
       const stored = sessionStorage.getItem(STORAGE_KEY);
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      if (parsed?.liveUntil && Date.now() < parsed.liveUntil && parsed.messageId) {
+      if (
+        parsed?.liveUntil &&
+        Date.now() < parsed.liveUntil &&
+        parsed.messageId &&
+        (!parsed.userId || !userId || parsed.userId === userId)
+      ) {
         return parsed;
       }
-      sessionStorage.removeItem(STORAGE_KEY);
       return null;
     } catch {
       return null;
@@ -53,7 +57,34 @@ export default function useLiveLocationTracker() {
     }
   }, []);
 
+  // Sync session if userId changes (e.g. logging in as receiver)
+  useEffect(() => {
+    if (!userId) {
+      clearCurrentWatch();
+      setActiveSession(null);
+      return;
+    }
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (!stored) {
+        setActiveSession(null);
+        return;
+      }
+      const parsed = JSON.parse(stored);
+      if (parsed?.userId && parsed.userId !== userId) {
+        clearCurrentWatch();
+        setActiveSession(null);
+      } else if (parsed?.liveUntil && Date.now() < parsed.liveUntil && parsed.messageId) {
+        setActiveSession(parsed);
+      }
+    } catch {}
+  }, [userId, clearCurrentWatch]);
+
   const stopTracking = useCallback(async (messageIdToStop) => {
+    // Only stop if the active session belongs to this user
+    if (activeSession?.userId && userId && activeSession.userId !== userId) {
+      return;
+    }
     const targetId = messageIdToStop || activeSession?.messageId;
     const convId = activeSession?.conversationId;
     clearCurrentWatch();
@@ -62,14 +93,14 @@ export default function useLiveLocationTracker() {
     lastPositionRef.current = null;
     lastUpdateTimeRef.current = 0;
 
-    if (targetId) {
+    if (targetId && targetId !== "undefined" && targetId !== "null") {
       try {
         await apiStopLiveLocation(targetId, convId);
       } catch (err) {
         console.error("[useLiveLocationTracker] Error stopping live location:", err);
       }
     }
-  }, [activeSession?.messageId, activeSession?.conversationId, clearCurrentWatch]);
+  }, [activeSession?.messageId, activeSession?.conversationId, activeSession?.userId, userId, clearCurrentWatch]);
 
   const startTracking = useCallback((messageId, liveUntil, conversationId = null) => {
     if (!messageId || !liveUntil) return;
@@ -78,6 +109,7 @@ export default function useLiveLocationTracker() {
       messageId,
       liveUntil,
       conversationId,
+      userId: userId || null,
       startedAt: Date.now(),
     };
 
@@ -88,7 +120,7 @@ export default function useLiveLocationTracker() {
     }
 
     setActiveSession(session);
-  }, []);
+  }, [userId]);
 
   // Effect to manage GPS watchPosition and countdown when activeSession is set
   useEffect(() => {

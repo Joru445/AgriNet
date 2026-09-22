@@ -55,14 +55,13 @@ export default function LiveLocationCard({
     message?.isLive !== false &&
     !isExpired;
 
-  const isEnded = isLiveType
-    ? localEnded ||
-      isPermanentlyEnded ||
-      message?.isEnded === true ||
-      Boolean(message?.endedAt) ||
-      message?.isLive === false ||
-      isExpired
-    : message?.isEnded === true || message?.isLive === false || Boolean(message?.endedAt);
+  const isEnded =
+    localEnded ||
+    isPermanentlyEnded ||
+    message?.isEnded === true ||
+    Boolean(message?.endedAt) ||
+    message?.isLive === false ||
+    (isLiveType && isExpired);
 
 
   // Auto-close map modal if it was open when location ended
@@ -296,7 +295,7 @@ export default function LiveLocationCard({
               <span>{t("messages.viewMap")}</span>
             </button>
 
-            {mine && (
+            {Boolean(mine && (profile?.uid || message?.senderId) && (profile?.uid === message?.senderId || !message?.senderId)) && (
               <button
                 type="button"
                 onClick={async () => {

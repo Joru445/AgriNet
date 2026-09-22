@@ -222,14 +222,19 @@ export function subscribeMessages(
     (snapshot) => {
       const permanentlyEnded = getPermanentlyEndedLocations();
       const docs = snapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        const isLiveType =
-          (data.type === "live_location" ||
-            data.locationType === "live_location" ||
-            Boolean(data.liveUntil)) &&
-          data.locationType !== "location";
+        const rawData = docSnap.data();
+        const data = {
+          ...rawData,
+          createdAt: rawData.createdAt || { seconds: Math.floor(Date.now() / 1000) },
+        };
+        const isLocationMsg =
+          Boolean(data.location) ||
+          data.type === "location" ||
+          data.type === "live_location" ||
+          data.locationType === "location" ||
+          data.locationType === "live_location";
 
-        if (isLiveType && docSnap.id && permanentlyEnded.has(docSnap.id)) {
+        if (isLocationMsg && docSnap.id && permanentlyEnded.has(docSnap.id)) {
           return {
             id: docSnap.id,
             ...data,
@@ -296,13 +301,14 @@ export async function fetchOlderMessages(
     const permanentlyEnded = getPermanentlyEndedLocations();
     const docs = snapshot.docs.map((docSnap) => {
       const data = docSnap.data();
-      const isLiveType =
-        (data.type === "live_location" ||
-          data.locationType === "live_location" ||
-          Boolean(data.liveUntil)) &&
-        data.locationType !== "location";
+      const isLocationMsg =
+        Boolean(data.location) ||
+        data.type === "location" ||
+        data.type === "live_location" ||
+        data.locationType === "location" ||
+        data.locationType === "live_location";
 
-      if (isLiveType && docSnap.id && permanentlyEnded.has(docSnap.id)) {
+      if (isLocationMsg && docSnap.id && permanentlyEnded.has(docSnap.id)) {
         return {
           id: docSnap.id,
           ...data,

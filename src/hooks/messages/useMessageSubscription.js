@@ -61,7 +61,13 @@ export default function useMessageSubscription(uid, conversationId) {
 
         setMessages(sorted);
 
-        if (document.visibilityState === "visible") {
+        const newestMsg = sorted[sorted.length - 1];
+        if (
+          document.visibilityState === "visible" &&
+          newestMsg &&
+          newestMsg.senderId &&
+          newestMsg.senderId !== uid
+        ) {
           apiMarkConversationRead(conversationId).catch((error) => {
             console.error(
               "Failed to mark conversation as read:",

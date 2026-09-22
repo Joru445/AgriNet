@@ -6,6 +6,7 @@ import { useLanguage } from "../context/LanguageContext";
 import { showToast } from "../utils/toast";
 
 import { doc, onSnapshot } from "firebase/firestore";
+import { auth } from "../firebase/auth";
 import { db } from "../firebase/firestore";
 
 import {
@@ -114,12 +115,14 @@ export default function useMessages() {
     clearCurrentDraft,
   });
 
+  const currentUid = profile?.uid || auth.currentUser?.uid;
+
   const {
     startTracking,
     stopTracking: trackerStopTracking,
     isTracking: isTrackingLocation,
     activeSession: activeLiveSession,
-  } = useLiveLocationTracker();
+  } = useLiveLocationTracker(currentUid);
 
   const {
     inquiryProduct,
@@ -192,7 +195,7 @@ export default function useMessages() {
   );
 
   const activeLocationMessages = useMemo(() => {
-    if (!messages?.length || !profile?.uid) return [];
+    if (!messages?.length || !currentUid) return [];
     const now = Date.now();
     const permanentlyEnded = getPermanentlyEndedLocations();
     const convEnded = {
@@ -201,20 +204,22 @@ export default function useMessages() {
     };
     return messages.filter((m) => {
       if (!m.id || locallyEndedIds.has(m.id) || permanentlyEnded.has(m.id) || Boolean(convEnded[m.id])) return false;
-      if (m.senderId !== profile.uid) return false;
-      const isLiveLocationMsg =
-        (m.type === "live_location" ||
-          m.locationType === "live_location" ||
-          Boolean(m.liveUntil)) &&
-        m.locationType !== "location";
-      if (!isLiveLocationMsg) return false;
+      const mSender = m.senderId || m.sender?.uid;
+      if (mSender !== currentUid) return false;
+      const isLocationMsg =
+        Boolean(m.location) ||
+        m.type === "location" ||
+        m.type === "live_location" ||
+        m.locationType === "location" ||
+        m.locationType === "live_location";
+      if (!isLocationMsg) return false;
       if (m.isEnded === true || Boolean(m.endedAt) || m.isLive === false) return false;
       if (m.liveUntil && now >= Number(m.liveUntil)) return false;
       return true;
     });
   }, [
     messages,
-    profile?.uid,
+    currentUid,
     locallyEndedIds,
     activeConversationLive?.endedLocations,
     conversationEndedLocations,
@@ -223,21 +228,49 @@ export default function useMessages() {
   const hasActiveLiveLocation = Boolean(
     activeLocationMessages.length > 0 ||
       (isTrackingLocation &&
+        (!activeLiveSession?.userId || activeLiveSession.userId === currentUid) &&
         (!activeLiveSession?.conversationId ||
           activeLiveSession.conversationId === activeConversation?.id))
   );
 
   const activeLiveMessageId =
-    activeLocationMessages[0]?.id || activeLiveSession?.messageId || null;
+    activeLocationMessages[0]?.id ||
+    ((!activeLiveSession?.userId || activeLiveSession.userId === currentUid)
+      ? activeLiveSession?.messageId
+      : null) ||
+    null;
 
   const stopLiveLocation = useCallback(
     async (targetMessageId, explicitConvId = null) => {
       const idsToStop = new Set();
-      if (targetMessageId) idsToStop.add(targetMessageId);
-      if (activeLiveSession?.messageId) idsToStop.add(activeLiveSession.messageId);
+
+      // Only allow stopping messages sent by the current user
+      if (targetMessageId && targetMessageId !== "undefined" && targetMessageId !== "null") {
+        const found = messages.find((m) => m.id === targetMessageId);
+        const mSender = found?.senderId || found?.sender?.uid;
+        if (!found || mSender === currentUid) {
+          idsToStop.add(targetMessageId);
+        }
+      }
+
+      if (
+        activeLiveSession?.messageId &&
+        activeLiveSession.messageId !== "undefined" &&
+        activeLiveSession.messageId !== "null" &&
+        (!activeLiveSession.userId || activeLiveSession.userId === currentUid)
+      ) {
+        idsToStop.add(activeLiveSession.messageId);
+      }
 
       // Also stop all active location messages for this user in this conversation
-      activeLocationMessages.forEach((m) => idsToStop.add(m.id));
+      activeLocationMessages.forEach((m) => {
+        const mSender = m.senderId || m.sender?.uid;
+        if (m.id && mSender === currentUid) {
+          idsToStop.add(m.id);
+        }
+      });
+
+      if (idsToStop.size === 0) return;
 
       // Permanently mark all these IDs in localStorage
       idsToStop.forEach((id) => markLocationPermanentlyEnded(id));
@@ -277,7 +310,10 @@ export default function useMessages() {
       }
     },
     [
+      currentUid,
+      messages,
       activeLiveSession?.messageId,
+      activeLiveSession?.userId,
       activeLiveSession?.conversationId,
       activeLocationMessages,
       trackerStopTracking,
@@ -556,19 +592,28 @@ export default function useMessages() {
     );
 
     return [...messages, ...currentFailed].map((m) => {
+      const isLocationMsg =
+        Boolean(m.location) ||
+        m.type === "location" ||
+        m.type === "live_location" ||
+        m.locationType === "location" ||
+        m.locationType === "live_location";
+
+      if (!isLocationMsg) return m;
+
       const isLiveType =
         (m.type === "live_location" ||
           m.locationType === "live_location" ||
           Boolean(m.liveUntil)) &&
         m.locationType !== "location";
 
-      if (!isLiveType) return m;
-
       const isEndedInConv = Boolean(m.id && convEnded[m.id]);
-      if (
-        (m.id && (locallyEndedIds.has(m.id) || permanentlyEnded.has(m.id) || isEndedInConv)) ||
-        (m.liveUntil && Date.now() >= Number(m.liveUntil))
-      ) {
+      const isPermanentlyMarked = Boolean(
+        m.id && (locallyEndedIds.has(m.id) || permanentlyEnded.has(m.id) || isEndedInConv)
+      );
+      const isExpired = Boolean(isLiveType && m.liveUntil && Date.now() >= Number(m.liveUntil));
+
+      if (isPermanentlyMarked || isExpired || m.isEnded === true || m.isLive === false) {
         return {
           ...m,
           isLive: false,
