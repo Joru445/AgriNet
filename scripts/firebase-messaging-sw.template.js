@@ -139,7 +139,6 @@ if (messaging) {
       body,
       // senderAvatar as the notification icon.
       icon: data.senderAvatar || null,
-      badge: "/notification-badge.png",
       data,
       tag,
       vibrate: [100, 50, 100],
