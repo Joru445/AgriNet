@@ -45,6 +45,10 @@ function maskToken(token) {
   return `${token.slice(0, 8)}...${token.slice(-4)}`;
 }
 
+function logPush(...args) {
+  if (import.meta.env.DEV) console.log("[Push]", ...args);
+}
+
 /**
  * Manages the full FCM push notification lifecycle.
  *
@@ -128,11 +132,13 @@ export default function usePushNotifications() {
       const token = await getFCMToken(registration);
       if (!token) {
         fcmTokenRef.current = null;
+        logPush("subscribe: token failed");
         setSubscribed(false);
         return { ok: false, reason: "token" };
       }
 
       fcmTokenRef.current = token;
+      logPush("subscribe: token obtained", maskToken(token));
 
       if (profile?.uid && !registeredRef.current) {
         try {
@@ -141,8 +147,10 @@ export default function usePushNotifications() {
             installationId: installationIdRef.current || getInstallationId(),
           });
           registeredRef.current = true;
+          logPush("subscribe: backend registration success");
         } catch (err) {
           console.error("[Push] Backend installation registration failed:", err);
+          logPush("subscribe: backend registration FAILED");
           registeredRef.current = false;
           setSubscribed(false);
           return { ok: false, reason: "backend" };
@@ -154,6 +162,7 @@ export default function usePushNotifications() {
         if (markChoice) markPushChoice(profile.uid);
       }
       setSubscribed(true);
+      logPush("subscribe: complete — subscribed=true");
       return { ok: true };
     },
     [profile?.uid],
@@ -173,22 +182,35 @@ export default function usePushNotifications() {
     async function initFCM() {
       setInitializing(true);
       try {
+        logPush("init: starting, permission=", getNotificationPermission());
         const reg = await ensureRegistration();
-        if (cancelled || !reg) return;
+        if (cancelled || !reg) {
+          logPush("init: SW registration failed");
+          return;
+        }
 
         registrationRef.current = reg;
         installationIdRef.current = getInstallationId();
+        logPush(
+          "init: FCM SW scope=",
+          reg.scope,
+          "active=",
+          Boolean(reg.active),
+        );
 
         const permissionState = getNotificationPermission();
         setPermission(permissionState);
+        logPush("init: permission=", permissionState);
 
         if (permissionState === "granted") {
           const liveSub = await reg.pushManager.getSubscription().catch(() => null);
           if (cancelled) return;
+          logPush("init: pushSubscription=", Boolean(liveSub));
 
           // One-time adoption: legacy subscribers who never made an explicit
           // choice but already have a granted permission + live subscription.
           if (liveSub && !hasOptedIn(uid) && !hasMadePushChoice(uid)) {
+            logPush("init: one-time adoption for legacy subscriber");
             markOptedIn(uid);
           }
 
@@ -201,17 +223,19 @@ export default function usePushNotifications() {
             const outcome = await performSubscribe(reg, { markChoice: false });
             if (cancelled) return;
 
-            console.log(
-              "[Push] Cold-start reconcile:",
-              outcome.ok ? "on" : outcome.reason,
+            logPush(
+              "init: cold-start reconcile:",
+              outcome.ok ? "success" : `failed (${outcome.reason})`,
               maskToken(fcmTokenRef.current),
             );
 
             if (!outcome.ok) setSubscribed(false);
           } else {
+            logPush("init: not opted-in, subscribed=false");
             setSubscribed(false);
           }
         } else {
+          logPush("init: permission not granted, subscribed=false");
           setSubscribed(false);
         }
       } catch (err) {
@@ -228,9 +252,37 @@ export default function usePushNotifications() {
     const handleOptedIn = () => initFCM();
     window.addEventListener("agrinet:push-opted-in", handleOptedIn);
 
+    // Handle onboarding permission grant: the onboarding context requests
+    // permission during the user gesture, then dispatches this event so the
+    // hook can run the full subscribe flow (SW + token + backend).
+    const handleSubscribeRequested = () => {
+      if (busyRef.current) return;
+      busyRef.current = true;
+      setBusy(true);
+      ensureRegistration()
+        .then((reg) => {
+          if (!reg) return;
+          return performSubscribe(reg, { markChoice: true });
+        })
+        .then((outcome) => {
+          if (outcome && !outcome.ok) {
+            logPush("subscribe-requested failed:", outcome.reason);
+          }
+        })
+        .catch((err) => {
+          console.error("[Push] subscribe-requested error:", err);
+        })
+        .finally(() => {
+          busyRef.current = false;
+          setBusy(false);
+        });
+    };
+    window.addEventListener("agrinet:push-subscribe-requested", handleSubscribeRequested);
+
     return () => {
       cancelled = true;
       window.removeEventListener("agrinet:push-opted-in", handleOptedIn);
+      window.removeEventListener("agrinet:push-subscribe-requested", handleSubscribeRequested);
     };
   }, [profile?.uid, supported, ensureRegistration, performSubscribe]);
 

@@ -15,6 +15,13 @@
 // shares the "/" registration slot held by the Workbox PWA SW. Push
 // events are delivered to the ACTIVE worker of the registration that
 // owns the push subscription — not to the page controller.
+//
+// ARCHITECTURE: DATA-ONLY FCM.
+// The backend sends data-only payloads (no `notification` field).
+// This SW renders the OS notification via showNotification() exactly
+// once. Do NOT add a `notification` field to the backend payload —
+// that would cause FCM to auto-display AND this SW to display,
+// producing duplicate notifications.
 // ============================================================
 
 importScripts(
@@ -38,6 +45,7 @@ let messaging = null;
 try {
   const app = firebase.initializeApp(firebaseConfig);
   messaging = firebase.messaging();
+  console.log("[FCM SW] initialized, projectId:", firebaseConfig.projectId);
 } catch (err) {
   console.error("[FCM SW] Firebase initialization failed:", err);
 }
@@ -62,22 +70,89 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+/**
+ * Resolve the notification target URL from the FCM data payload.
+ *
+ * The backend sends:
+ *   - conversationId: for message notifications
+ *   - inquiryId / eventKey: for inquiry/transaction notifications
+ *   - entityType + entityId: generic deep-link info
+ *   - url: optional direct URL override
+ */
+function resolveTargetUrl(data) {
+  if (!data) return "/";
+
+  // Direct URL takes priority
+  if (data.url && typeof data.url === "string") {
+    if (data.url.startsWith("/") && !data.url.startsWith("//")) {
+      return data.url;
+    }
+  }
+
+  // Message notification → open the conversation directly
+  if (data.conversationId) {
+    return `/messages?conversation=${data.conversationId}`;
+  }
+
+  // Inquiry/transaction notification
+  if (data.inquiryId || data.entityType === "inquiry") {
+    return "/transactions";
+  }
+
+  if (data.entityType === "message") {
+    return "/messages";
+  }
+
+  if (data.entityType === "transaction") {
+    return "/transactions";
+  }
+
+  if (data.entityType === "product" && data.entityId) {
+    return `/product/${data.entityId}`;
+  }
+
+  if (data.entityType === "notification") {
+    return "/notifications";
+  }
+
+  return "/";
+}
+
 // Handle background FCM messages
 if (messaging) {
   messaging.onBackgroundMessage((payload) => {
-    const title = payload.data?.title || payload.notification?.title || "AgriNet";
+    const data = payload.data || {};
+
+    // Title: backend sends it in data.title (data-only FCM).
+    // Fallback to notification.title for any legacy payloads.
+    const title = data.title || payload.notification?.title || "AgriNet";
+
+    // Body: backend sends it in data.body
+    const body = data.body || payload.notification?.body || "";
+
+    // Tag: deterministic per-event deduplication.
+    // Messages use message-{messageId}, others use eventKey or type-based tag.
+    // Prevents duplicate notifications without collapsing unrelated events.
+    const tag = data.tag || "agrinet-notification";
+
     const options = {
-      body: payload.data?.body || payload.notification?.body || "",
-      icon: payload.data?.senderAvatar || "/icon-192x192.png",
+      body,
+      // senderAvatar → icon (NOT image). Image is a large attachment,
+      // not an avatar. Use icon for profile pictures.
+      icon: data.senderAvatar || "/icon-192x192.png",
       badge: "/icon-192x192.png",
-      image: payload.data?.senderAvatar || payload.notification?.image || undefined,
-      data: payload.data || {},
-      tag: payload.data?.tag || "agrinet-notification",
-      renotify: true,
+      data,
+      tag,
+      // renotify is NOT needed when using unique deterministic tags.
+      // Each unique tag replaces only its own previous notification.
       vibrate: [100, 50, 100],
     };
 
-    console.log("[FCM SW] background push:", { title, tag: options.tag });
+    console.log("[FCM SW] background message:", {
+      title,
+      tag,
+      type: data.type || data.entityType || "unknown",
+    });
 
     self.registration.showNotification(title, options);
   });
@@ -88,31 +163,26 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const data = event.notification.data || {};
+  const targetUrl = resolveTargetUrl(data);
 
-  let targetUrl = data.url || "/";
-  if (!data.url) {
-    if (data.conversationId) {
-      targetUrl = "/messages";
-    } else if (data.inquiryId) {
-      targetUrl = "/transactions";
-    } else if (data.type === "message") {
-      targetUrl = "/messages";
-    } else if (data.type === "inquiry" || data.type === "transaction") {
-      targetUrl = "/transactions";
-    }
-  }
+  console.log("[FCM SW] notification clicked:", {
+    tag: event.notification.tag,
+    targetUrl,
+  });
 
   event.waitUntil(
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
+        // Try to find an existing AgriNet window to focus
         for (const client of clientList) {
-          if ("focus" in client) {
+          if ("focus" in client && client.url.includes(self.location.origin)) {
             client.focus();
             client.navigate(targetUrl);
             return;
           }
         }
+        // No existing window — open a new one
         if (self.clients.openWindow) {
           return self.clients.openWindow(targetUrl);
         }

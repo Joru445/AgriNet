@@ -90,6 +90,13 @@ export async function registerMessagingSW(
       scope,
     });
 
+    console.log(
+      "[FCM] SW registered: scope=",
+      registration.scope,
+      "active=",
+      Boolean(registration.active),
+    );
+
     // If a newer SW version is waiting, invite it to activate immediately.
     // Safe no-op when there is no waiting/installing worker.
     const pending = registration.waiting || registration.installing;
@@ -97,10 +104,11 @@ export async function registerMessagingSW(
       pending.postMessage({ type: "SKIP_WAITING" });
     }
 
-    // Just wait for the SW to become active — delivery does not depend
-    // on page-controller state.
+    // Wait for the SW to become active. Rejects on timeout — an inactive
+    // SW means push events will be silently dropped on Android PWA.
     await waitForActive(registration);
 
+    console.log("[FCM] SW active:", Boolean(registration.active));
     return registration;
   } catch (error) {
     console.error("[FCM] Service worker registration failed:", error);
@@ -111,28 +119,38 @@ export async function registerMessagingSW(
 /**
  * Wait for the registration's service worker to reach the "activated"
  * state. Resolves immediately if an active worker already exists.
+ * REJECTS if the SW fails to activate within the timeout — an inactive
+ * SW means push events will be silently dropped on Android.
  *
  * @param {ServiceWorkerRegistration} registration
  * @param {number} timeoutMs
  * @returns {Promise<void>}
  */
-function waitForActive(registration, timeoutMs = 5000) {
-  return new Promise((resolve) => {
+function waitForActive(registration, timeoutMs = 10000) {
+  return new Promise((resolve, reject) => {
     if (registration.active) {
       resolve();
       return;
     }
 
     let settled = false;
-    const finish = () => {
+    const finish = (success) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      resolve();
+      if (success) {
+        resolve();
+      } else {
+        reject(
+          new Error(
+            `[FCM] Service worker did not activate within ${timeoutMs}ms`,
+          ),
+        );
+      }
     };
 
     const onStateChange = () => {
-      if (registration.active) finish();
+      if (registration.active) finish(true);
     };
 
     const onUpdateFound = () => {
@@ -149,9 +167,9 @@ function waitForActive(registration, timeoutMs = 5000) {
       console.warn(
         "[FCM] Service worker did not become active within",
         timeoutMs,
-        "ms",
+        "ms — push delivery will fail",
       );
-      finish();
+      finish(false);
     }, timeoutMs);
   });
 }
@@ -207,6 +225,18 @@ export async function requestFCMToken(registration) {
         }, 15000),
       ),
     ]);
+
+    // Verify PushSubscription exists — an FCM token alone does not prove
+    // the browser registration is healthy.
+    const pushSubscription = await registration.pushManager
+      .getSubscription()
+      .catch(() => null);
+
+    if (!pushSubscription) {
+      console.warn(
+        "[FCM] Token obtained but PushSubscription missing — push may not work",
+      );
+    }
 
     return token;
   } catch (error) {

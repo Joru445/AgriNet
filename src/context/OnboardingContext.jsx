@@ -9,7 +9,7 @@ import {
 
 import { useAuth } from "./AuthContext";
 import OnboardingTour from "../components/onboarding/OnboardingTour";
-import { markOptedIn } from "../services/pushSubscription.service";
+import { requestNotificationPermission } from "../services/pushSubscription.service";
 
 const OnboardingContext = createContext(null);
 
@@ -80,13 +80,16 @@ export function OnboardingProvider({ children }) {
 
     // One-time notification permission prompt on first login.
     // Called from the Finish button click (user gesture) so Chrome allows it.
+    // ONLY requests permission here — the usePushNotifications hook handles
+    // the full subscribe flow (FCM SW, token, backend registration) via the
+    // agrinet:push-subscribe-requested event. This avoids the race condition
+    // where opted-in is marked before push is actually operational.
     if (uid && !hasPromptedPush(uid) && typeof Notification !== "undefined" && Notification.permission === "default") {
       markPushPrompted(uid);
-      Notification.requestPermission()
+      requestNotificationPermission()
         .then((result) => {
           if (result === "granted") {
-            markOptedIn(uid);
-            window.dispatchEvent(new Event("agrinet:push-opted-in"));
+            window.dispatchEvent(new Event("agrinet:push-subscribe-requested"));
           }
         })
         .catch(() => {});
