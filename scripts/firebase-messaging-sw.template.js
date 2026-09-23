@@ -135,19 +135,13 @@ if (messaging) {
     // Prevents duplicate notifications without collapsing unrelated events.
     const tag = data.tag || "agrinet-notification";
 
-    const isMessage = Boolean(data.conversationId || data.entityType === "message");
-
     const options = {
       body,
-      // Message notifications: senderAvatar as icon (profile picture).
-      // Non-message notifications: AgriNet app icon.
-      icon: isMessage ? (data.senderAvatar || "/icon-192x192.png") : "/icon-192x192.png",
-      // Dedicated monochrome badge for the status bar notification area.
+      // senderAvatar as the notification icon.
+      icon: data.senderAvatar || null,
       badge: "/notification-badge.png",
       data,
       tag,
-      // renotify is NOT needed when using unique deterministic tags.
-      // Each unique tag replaces only its own previous notification.
       vibrate: [100, 50, 100],
     };
 
