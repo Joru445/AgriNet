@@ -1,6 +1,8 @@
-﻿import usePublicProfile from "../../hooks/usePublicProfile";
+﻿import { useEffect, useState } from "react";
+import usePublicProfile from "../../hooks/usePublicProfile";
 import useStartConversation from "../../hooks/useStartConversation";
 import { useLanguage } from "../../context/LanguageContext";
+import { getUserApprovedGroups } from "../../services/group.service";
 
 import PublicProfileHeader from "../../components/profile/PublicProfileHeader";
 import PublicProfileSkeleton from "../../components/profile/PublicProfileSkeleton";
@@ -9,10 +11,13 @@ import StoreProducts from "../../components/store/StoreProducts";
 import ReviewSection from "../../components/reviews/ReviewSection";
 import ProductGridSkeleton from "../../components/products/ProductGridSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
+import GroupBadge from "../../components/groups/GroupBadge";
 
 export default function PublicProfile() {
   const startConversation = useStartConversation();
   const { t } = useLanguage();
+
+  const [groups, setGroups] = useState([]);
 
   const {
     loading,
@@ -29,6 +34,13 @@ export default function PublicProfile() {
 
     stats,
   } = usePublicProfile();
+
+  useEffect(() => {
+    if (!profile?.uid) return;
+    getUserApprovedGroups(profile.uid)
+      .then(setGroups)
+      .catch(() => setGroups([]));
+  }, [profile?.uid]);
 
   if (!loading && !profile) {
     return (
@@ -57,6 +69,27 @@ export default function PublicProfile() {
           stats={stats}
           onMessage={() => startConversation(profile)}
         />
+      )}
+
+      {/* Group memberships */}
+      {groups.length > 0 && (
+        <section className="px-4 sm:px-6 py-4 border-t border-(--agri-border-subtle)">
+          <h3 className="flex items-center gap-2 text-sm font-bold text-(--agri-text) mb-3">
+            <i className="ri-team-line text-[#2D6A4F] dark:text-(--agri-brand)" />
+            {t("profile.groups")}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {groups.map((g) => (
+              <GroupBadge
+                key={g.groupId}
+                groupId={g.groupId}
+                groupName={g.groupName}
+                groupImageUrl={g.groupImageUrl}
+                size="md"
+              />
+            ))}
+          </div>
+        </section>
       )}
 
       {/* Farmer: products */}

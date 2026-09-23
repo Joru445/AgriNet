@@ -18,6 +18,17 @@ export function getNotificationTarget(notification) {
     case "report":
       return "/";
 
+    case "group": {
+      const event = notification.data?.event;
+      if (
+        event === "manager_assigned" ||
+        event === "manager_permissions_updated"
+      ) {
+        return `/manage/groups/${notification.entityId}`;
+      }
+      return `/groups/${notification.entityId}`;
+    }
+
     default:
       return "/";
   }

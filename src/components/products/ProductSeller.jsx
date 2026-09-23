@@ -1,21 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Avatar from "../ui/Avatar";
 import ImageViewerModal from "../ui/ImageViewerModal";
+import GroupBadge from "../groups/GroupBadge";
 import { useLanguage } from "../../context/LanguageContext";
 import useProfileViewer from "../../hooks/useProfileViewer";
+import { getUserApprovedGroups } from "../../services/group.service";
 
 export default function ProductSeller({ farmer, isOwner }) {
   const { t } = useLanguage();
   const [expandedAddress, setExpandedAddress] = useState(false);
   const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
+  const [groups, setGroups] = useState([]);
+
+  const farmerId = farmer?.uid || farmer?.id;
+
+  useEffect(() => {
+    if (!farmerId) return;
+    getUserApprovedGroups(farmerId)
+      .then(setGroups)
+      .catch(() => setGroups([]));
+  }, [farmerId]);
 
   if (!farmer) return null;
 
   const farmerName =
     farmer.fullname || farmer.storeName || farmer.username || t("productDetails.farmerFallback");
   const farmerAvatar = farmer.profilePicture || "";
-  const farmerId = farmer.uid || farmer.id;
   const address = farmer.location?.address || farmer.address || "";
   const isLongAddress = address.length > 28;
 
@@ -52,6 +63,20 @@ export default function ProductSeller({ farmer, isOwner }) {
               </span>
             )}
           </div>
+
+          {groups.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {groups.map((g) => (
+                <GroupBadge
+                  key={g.groupId}
+                  groupId={g.groupId}
+                  groupName={g.groupName}
+                  groupImageUrl={g.groupImageUrl}
+                  size="sm"
+                />
+              ))}
+            </div>
+          )}
 
           {address && (
             <div className="mt-0.5 flex items-start gap-1 text-xs text-(--agri-text-muted)">

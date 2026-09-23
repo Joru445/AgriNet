@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { consumerNavigation, navigationByRole } from "../../constants/navigation";
 import { getOnboardingNavKey } from "../../constants/onboardingSteps";
+import useManagedGroups from "../../hooks/useManagedGroups";
 
 import logo from "../../assets/favicon.ico";
 import UserIdentity from "../ui/UserIdentity";
@@ -40,7 +41,13 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const [loggingOut, setLoggingOut] = useState(false);
 
   const role = identity?.role || profile?.role;
-  const items = role ? (navigationByRole[role] ?? []) : consumerNavigation;
+  const baseItems = role ? (navigationByRole[role] ?? []) : consumerNavigation;
+  const { hasManagedGroups } = useManagedGroups();
+
+  // Conditionally add "Manage Groups" entry if user manages any groups
+  const items = hasManagedGroups
+    ? [...baseItems, { to: "/manage/groups", icon: "ri-shield-user-line", labelKey: "nav.manageGroups", bottom: false, group: "main" }]
+    : baseItems;
 
   async function handleLogout() {
     try {

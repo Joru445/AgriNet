@@ -171,8 +171,8 @@ export function subscribeUsers(callback, onError) {
  * ============================================================
  */
 
-export async function searchUsers(search) {
-  const keyword = String(search || "").trim();
+export async function searchUsers(search, { includeSelf = false } = {}) {
+  const keyword = String(search || "").trim().toLowerCase();
 
   if (!keyword) {
     return [];
@@ -180,6 +180,10 @@ export async function searchUsers(search) {
 
   const params = new URLSearchParams();
   params.set("q", keyword);
+
+  if (includeSelf) {
+    params.set("includeSelf", "true");
+  }
 
   const result = await apiRequest(`/v1/users/search?${params.toString()}`);
 

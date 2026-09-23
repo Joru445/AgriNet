@@ -133,7 +133,7 @@ export default function InquiryCard({
               {t("transactions.totalAmount")}
             </span>
             <span className="text-lg font-black text-[#1B4332] dark:text-(--agri-brand-light)">
-              ?{total.toLocaleString()}
+              P{total.toLocaleString()}
             </span>
           </div>
         </div>

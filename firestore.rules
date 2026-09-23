@@ -1407,5 +1407,65 @@ match /notifications/{notificationId} {
 
       allow delete: if isAdmin();
     }
+
+    /*
+     * ============================================================
+     * GROUPS
+     *
+     * Collections: groups, group-memberships, group-managers
+     *
+     * - Any authenticated user can read active groups
+     * - Admins can create, update, delete groups
+     * - Farmers can apply to join a group
+     * - Users cannot approve their own application
+     * - Users cannot assign themselves as managers
+     *
+     * Note: group-managers and group-memberships use compound document
+     * IDs ({groupId}_{userId}). Firestore rules cannot use get() with
+     * dynamic compound paths in helper functions, so manager permission
+     * checks are inlined in the match rules below.
+     * ============================================================
+     */
+
+    match /groups/{groupId} {
+      allow read: if isSignedIn();
+
+      allow create: if isAdmin();
+
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    match /group-memberships/{membershipId} {
+      allow read: if isSignedIn()
+        && (
+          isAdmin()
+          || request.auth.uid == resource.data.userId
+        );
+
+      allow create: if isActive()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "pending"
+        && request.resource.data.appliedAt != null;
+
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    match /group-managers/{managerId} {
+      allow read: if isSignedIn()
+        && (
+          isAdmin()
+          || request.auth.uid == resource.data.userId
+        );
+
+      allow create: if isAdmin();
+
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
   }
 }

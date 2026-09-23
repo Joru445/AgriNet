@@ -14,6 +14,13 @@ export const farmerNavigation = [
     group: "marketplace",
   },
   {
+    to: "/groups",
+    icon: "ri-team-line",
+    labelKey: "nav.groups",
+    bottom: false,
+    group: "marketplace",
+  },
+  {
     to: "/farmer/transactions",
     icon: "ri-file-list-3-line",
     labelKey: "nav.transactions",
@@ -87,6 +94,13 @@ export const adminNavigation = [
     labelKey: "nav.dashboard",
     icon: "ri-dashboard-line",
     bottom: true,
+    group: "main",
+  },
+  {
+    to: "/admin/groups",
+    labelKey: "nav.groups",
+    icon: "ri-team-line",
+    bottom: false,
     group: "main",
   },
   {

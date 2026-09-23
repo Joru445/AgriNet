@@ -1,14 +1,17 @@
-﻿import { useNavigate } from "react-router-dom";
+﻿import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import ProfileHeader from "../../components/me/ProfileHeader";
 import ProfileForm from "../../components/me/ProfileForm";
 import FarmerSection from "../../components/me/FarmerSection";
 import ProfileSkeleton from "../../components/me/ProfileSkeleton";
+import GroupBadge from "../../components/groups/GroupBadge";
 
 import { useAuth } from "../../context/AuthContext";
 import { useOnboarding } from "../../context/OnboardingContext";
 import { useLanguage } from "../../context/LanguageContext";
 import useProfile from "../../hooks/useProfile";
+import { getUserApprovedGroups } from "../../services/group.service";
 
 import { getSettingsPath } from "../../utils/routes";
 import LoginRequired from "../../components/ui/LoginRequired";
@@ -18,6 +21,18 @@ export default function Profile() {
   const { startTour } = useOnboarding();
   const { t } = useLanguage();
   const navigate = useNavigate();
+
+  const [groups, setGroups] = useState([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    setLoadingGroups(true);
+    getUserApprovedGroups(user.uid)
+      .then(setGroups)
+      .catch(() => setGroups([]))
+      .finally(() => setLoadingGroups(false));
+  }, [user?.uid]);
 
   const {
     loading,
@@ -93,6 +108,37 @@ export default function Profile() {
                 onChange={handleChange}
                 onVisibilityChange={handleVisibilityChange}
               />
+            )}
+
+            {/* Group memberships */}
+            {groups.length > 0 && (
+              <div className="overflow-hidden rounded-3xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-sm">
+                <div className="border-b border-(--agri-border-subtle) px-5 py-4">
+                  <h2 className="flex items-center gap-2 text-base font-bold text-(--agri-text)">
+                    <i className="ri-team-line text-lg text-[#2D6A4F] dark:text-(--agri-brand)" />
+                    {t("profile.myGroups")}
+                  </h2>
+                </div>
+                <div className="px-5 py-3 flex flex-wrap gap-2">
+                  {groups.map((g) => (
+                    <GroupBadge
+                      key={g.groupId}
+                      groupId={g.groupId}
+                      groupName={g.groupName}
+                      groupImageUrl={g.groupImageUrl}
+                      size="md"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+            {loadingGroups && (
+              <div className="overflow-hidden rounded-3xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-sm p-5">
+                <div className="flex items-center gap-2 text-sm text-(--agri-text-muted)">
+                  <i className="ri-team-line text-lg" />
+                  <span>{t("common.loading")}</span>
+                </div>
+              </div>
             )}
           </div>
 

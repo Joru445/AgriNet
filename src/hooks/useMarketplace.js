@@ -51,6 +51,7 @@ const DEFAULT_FILTERS = {
   sort: "relevant",
   showUnavailable: false,
   sellingMode: "all",
+  group: "",
 };
 
 /**
@@ -134,6 +135,7 @@ export default function useMarketplace() {
       sort: searchParams.get("sort") ?? DEFAULT_FILTERS.sort,
       showUnavailable: searchParams.get("showUnavailable") === "true",
       sellingMode: searchParams.get("sellingMode") ?? DEFAULT_FILTERS.sellingMode,
+      group: searchParams.get("group") ?? DEFAULT_FILTERS.group,
     }),
     [searchParams],
   );
@@ -142,8 +144,8 @@ export default function useMarketplace() {
   // only when the server-relevant filters change.  It is used to detect
   // when a full reset is needed versus when we can keep the current data.
   const backendFilterKey = useMemo(
-    () => `${filters.category}|${filters.sellingMode}|${filters.showUnavailable}`,
-    [filters.category, filters.sellingMode, filters.showUnavailable],
+    () => `${filters.category}|${filters.sellingMode}|${filters.showUnavailable}|${filters.group}`,
+    [filters.category, filters.sellingMode, filters.showUnavailable, filters.group],
   );
   const prevBackendFilterKeyRef = useRef(backendFilterKey);
 
@@ -170,6 +172,9 @@ export default function useMarketplace() {
       }
       if (!filters.showUnavailable) {
         apiFilters.available = true;
+      }
+      if (filters.group) {
+        apiFilters.groupId = filters.group;
       }
 
       if (reset) {
@@ -264,7 +269,8 @@ export default function useMarketplace() {
     filters.maxPrice > 0 ||
     filters.rating > 0 ||
     filters.showUnavailable ||
-    filters.sellingMode !== "all";
+    filters.sellingMode !== "all" ||
+    filters.group !== "";
 
   // Re-fetch when ANY filter changes.  Both server-side filters
   // (category, sellingMode, showUnavailable) and client-side filters
@@ -378,6 +384,8 @@ export default function useMarketplace() {
       value ? params.set(key, "true") : params.delete(key);
     } else if (key === "sellingMode") {
       value && value !== "all" ? params.set(key, value) : params.delete(key);
+    } else if (key === "group") {
+      value ? params.set(key, value) : params.delete(key);
     } else if (key === "rating" || key === "minPrice" || key === "maxPrice") {
       Number(value) > 0 ? params.set(key, value) : params.delete(key);
     } else if (value !== defaultValue && Number(value) !== defaultValue) {

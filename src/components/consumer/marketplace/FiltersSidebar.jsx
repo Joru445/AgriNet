@@ -1,4 +1,6 @@
-﻿import { useLanguage } from "../../../context/LanguageContext";
+﻿import { useEffect, useState } from "react";
+import { useLanguage } from "../../../context/LanguageContext";
+import { getGroups } from "../../../services/group.service";
 import Button from "../../ui/Button";
 
 export default function FiltersSidebar({
@@ -8,6 +10,13 @@ export default function FiltersSidebar({
   mobile = false,
 }) {
   const { t } = useLanguage();
+  const [groups, setGroups] = useState([]);
+
+  useEffect(() => {
+    getGroups()
+      .then(setGroups)
+      .catch(() => setGroups([]));
+  }, []);
   const hasActiveFilters =
     Boolean(filters.search) ||
     (filters.category && filters.category !== "All") ||
@@ -16,7 +25,8 @@ export default function FiltersSidebar({
     filters.maxPrice > 0 ||
     filters.rating > 0 ||
     Boolean(filters.showUnavailable) ||
-    (filters.sellingMode && filters.sellingMode !== "all");
+    (filters.sellingMode && filters.sellingMode !== "all") ||
+    (filters.group && filters.group !== "");
 
   const content = (
     <div className="space-y-6">
@@ -62,6 +72,29 @@ export default function FiltersSidebar({
           ))}
         </div>
       </div>
+
+      {/* Group Filter */}
+      {groups.length > 0 && (
+        <div>
+          <label className="block mb-2 text-xs font-bold text-(--agri-text) flex items-center gap-1.5">
+            <i className="ri-team-line text-[#2D6A4F] dark:text-(--agri-brand)" />
+            {t("nearby.group")}
+          </label>
+
+          <select
+            value={filters.group || ""}
+            onChange={(e) => onChange("group", e.target.value)}
+            className="w-full border border-(--agri-border) rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F] bg-(--agri-card) text-(--agri-text) cursor-pointer"
+          >
+            <option value="">{t("nearby.allGroups")}</option>
+            {groups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Distance Filter */}
       <div>

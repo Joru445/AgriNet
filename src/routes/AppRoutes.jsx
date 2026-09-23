@@ -37,6 +37,8 @@ const FarmerVerifications = lazy(() => import("../pages/admin/FarmerVerification
 const AdminProducts = lazy(() => import("../pages/admin/Products"));
 const AdminTransactions = lazy(() => import("../pages/admin/Transactions"));
 const AdminActivity = lazy(() => import("../pages/admin/Activity"));
+const AdminGroups = lazy(() => import("../pages/admin/Groups"));
+const AdminGroupDetails = lazy(() => import("../pages/admin/GroupDetails"));
 
 // Shared Pages
 const ProductDetails = lazy(() => import("../pages/shared/ProductDetails"));
@@ -49,6 +51,12 @@ const Profile = lazy(() => import("../pages/shared/Profile"));
 const Settings = lazy(() => import("../pages/shared/Settings"));
 const Notifications = lazy(() => import("../pages/shared/Notifications"));
 const Favorites = lazy(() => import("../pages/shared/Favorites"));
+const Groups = lazy(() => import("../pages/shared/Groups"));
+const GroupDetails = lazy(() => import("../pages/shared/GroupDetails"));
+
+// Manager Pages
+const ManagedGroups = lazy(() => import("../pages/manager/ManagedGroups"));
+const ManagerGroupDetails = lazy(() => import("../pages/manager/ManagerGroupDetails"));
 
 // Test Pages (PoC)
 const PasskeyTest = lazy(() => import("../pages/test/PasskeyTest"));
@@ -108,6 +116,22 @@ export default function AppRoutes() {
           <Route path="/favorites" element={<Favorites />} />
         </Route>
 
+        {/* ── SHARED AUTHENTICATED (groups) ─────────────────── */}
+        <Route element={<VerificationRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/groups" element={<Groups />} />
+            <Route path="/groups/:groupId" element={<GroupDetails />} />
+          </Route>
+        </Route>
+
+        {/* ── MANAGER (group managers, any platform role) ──── */}
+        <Route element={<VerificationRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/manage/groups" element={<ManagedGroups />} />
+            <Route path="/manage/groups/:groupId" element={<ManagerGroupDetails />} />
+          </Route>
+        </Route>
+
         {/* ── FARMER ──────────────────────────────────────── */}
         <Route element={<VerificationRoute />}>
           <Route element={<RoleRoute allowedRole="farmer" />}>
@@ -150,6 +174,9 @@ export default function AppRoutes() {
           <Route element={<RoleRoute allowedRole="admin" />}>
             <Route element={<AppLayout />}>
               <Route path="/admin" element={<AdminDashboard />} />
+
+              <Route path="/admin/groups" element={<AdminGroups />} />
+              <Route path="/admin/groups/:groupId" element={<AdminGroupDetails />} />
 
               <Route path="/admin/users" element={<Users />} />
 

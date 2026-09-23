@@ -41,6 +41,7 @@ const notificationIcons = {
   review: "ri-star-line",
   verification: "ri-shield-check-line",
   product: "ri-shopping-basket-line",
+  group: "ri-team-line",
 };
 
 export default function NotificationItem({ notification }) {
