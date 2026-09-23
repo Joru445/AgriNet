@@ -5,13 +5,13 @@ export function parseDate(timestamp) {
     try {
       const d = timestamp.toDate();
       if (d instanceof Date && !isNaN(d.getTime())) return d;
-    } catch (_) {}
+    } catch { /* Firebase timestamp .toDate() may throw */ }
   }
   if (typeof timestamp?.toMillis === "function") {
     try {
       const d = new Date(timestamp.toMillis());
       if (!isNaN(d.getTime())) return d;
-    } catch (_) {}
+    } catch { /* Firebase timestamp .toMillis() may throw */ }
   }
   if (typeof timestamp?.seconds === "number") {
     return new Date(timestamp.seconds * 1000);

@@ -281,6 +281,7 @@ export default function usePublicProfile() {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadConsumerStats is stable, deps intentionally curated
   }, [uid, loadConsumerStats, authProfile?.uid]);
 
   useEffect(() => {

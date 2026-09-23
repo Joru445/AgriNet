@@ -1,8 +1,8 @@
 ﻿import { useAuth } from "../../context/AuthContext";
 import { useNotificationsContext } from "../../context/NotificationsContext";
 import { useLanguage } from "../../context/LanguageContext";
-import Loading from "../../components/Loading";
-import NotificationList from "../../components/shared/notifications/NotificationList";
+import Loading from "../../components/ui/Loading";
+import NotificationList from "../../components/notifications/NotificationList";
 import LoginRequired from "../../components/ui/LoginRequired";
 
 export default function Notifications() {

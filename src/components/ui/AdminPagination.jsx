@@ -1,4 +1,5 @@
 ﻿import { useLanguage } from "../../context/LanguageContext";
+import Button from "./Button";
 
 export default function AdminPagination({
   page,
@@ -18,23 +19,15 @@ export default function AdminPagination({
         {t(`${i18nPrefix}.showingCount`, { count, total })}
       </p>
       <div className="flex items-center gap-2">
-        <button
-          onClick={() => onPageChange(page - 1)}
-          disabled={page <= 1}
-          className="rounded-lg border border-(--agri-border-subtle) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) transition hover:bg-(--agri-hover) disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        <Button variant="ghost" size="sm" onClick={() => onPageChange(page - 1)} disabled={page <= 1}>
           {t(`${i18nPrefix}.previousPage`)}
-        </button>
+        </Button>
         <span className="text-xs font-semibold text-(--agri-text-muted)">
           {page} / {totalPages}
         </span>
-        <button
-          onClick={() => onPageChange(page + 1)}
-          disabled={page >= totalPages}
-          className="rounded-lg border border-(--agri-border-subtle) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) transition hover:bg-(--agri-hover) disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        <Button variant="ghost" size="sm" onClick={() => onPageChange(page + 1)} disabled={page >= totalPages}>
           {t(`${i18nPrefix}.nextPage`)}
-        </button>
+        </Button>
       </div>
     </div>
   );

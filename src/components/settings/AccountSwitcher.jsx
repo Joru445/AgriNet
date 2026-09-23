@@ -1,6 +1,6 @@
 ﻿import { useState } from "react";
 
-import Avatar from "../common/Avatar";
+import Avatar from "../ui/Avatar";
 import ConfirmDialog from "../ui/ConfirmDialog";
 
 import { useSavedAccounts } from "../../hooks/useSavedAccounts";

@@ -4,8 +4,6 @@ import { useAuth } from "../context/AuthContext";
 
 import { getFarmerReviews, enrichFarmerReviews } from "../services/farmer-review.service";
 
-import { showToast } from "../utils/toast";
-
 export default function useReviews() {
   const { profile } = useAuth();
 

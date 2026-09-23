@@ -1,10 +1,11 @@
 ﻿import { useEffect, useState } from "react";
-import ImageViewerModal from "../../common/ImageViewerModal";
+import ImageViewerModal from "../../ui/ImageViewerModal";
 import { formatFullDateTime } from "../../../utils/date";
 import useStartConversation from "../../../hooks/useStartConversation";
 import { useLanguage } from "../../../context/LanguageContext";
 import ResponsiveModal from "../../ui/ResponsiveModal";
 import { DURATION_OPTIONS } from "../../../utils/suspensionOptions";
+import Button from "../../ui/Button";
 
 function getStatusClasses(status) {
   switch (status) {
@@ -263,19 +264,16 @@ export default function ReportDetailsModal({
                 </div>
 
                 {onToggleUserSuspension && !suspendMode && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    icon="ri-forbid-line"
                     onClick={handleUserSuspension}
                     disabled={actionLoading}
-                    className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 ${
-                      isUserSuspended
-                        ? "bg-green-600 text-white hover:bg-green-700"
-                        : "bg-red-600 text-white hover:bg-red-700"
-                    }`}
+                    className="w-full"
                   >
-                    <i className={isUserSuspended ? "ri-user-follow-line" : "ri-user-unfollow-line"} />
                     {isUserSuspended ? t("adminReport.reactivateUser") : t("adminReport.suspendUser")}
-                  </button>
+                  </Button>
                 )}
 
                 {onToggleUserSuspension && suspendMode && (
@@ -317,36 +315,32 @@ export default function ReportDetailsModal({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
+                      <Button
+                        variant="cancel"
+                        size="sm"
                         onClick={() => {
                           setSuspendMode(false);
                           setSuspensionDuration("7d");
                           setSuspensionReason("");
                         }}
                         disabled={actionLoading}
-                        className="flex-1 py-2 px-3 rounded-xl border border-amber-300 dark:border-amber-500/30 text-xs font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition cursor-pointer disabled:opacity-60"
+                        className="flex-1"
                       >
                         {t("common.cancel")}
-                      </button>
-                      <button
-                        type="button"
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        loading={actionLoading}
                         onClick={handleConfirmSuspend}
-                        disabled={actionLoading || !suspensionReason.trim()}
-                        className="flex-1 py-2 px-3 rounded-xl bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition cursor-pointer shadow-xs active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={!suspensionReason.trim()}
+                        className="flex-1"
                       >
-                        {actionLoading ? (
-                          <span className="flex items-center justify-center gap-1.5">
-                            <i className="ri-loader-4-line animate-spin text-sm" />
-                            {t("adminUser.saving")}
-                          </span>
-                        ) : (
-                          <span className="flex items-center justify-center gap-1.5">
-                            <i className="ri-user-unfollow-line" />
-                            {t("adminReport.suspendUser")}
-                          </span>
+                        {!actionLoading && (
+                          <i className="ri-user-unfollow-line" />
                         )}
-                      </button>
+                        {t("adminReport.suspendUser")}
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -375,31 +369,29 @@ export default function ReportDetailsModal({
 
                 <div className="space-y-2">
                   {report.reporterId && (
-                    <button
-                      type="button"
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon="ri-chat-1-line"
                       onClick={handleChatReporter}
-                      className="w-full py-2 px-3 rounded-xl text-xs font-bold text-[#2D6A4F] dark:text-(--agri-brand) bg-[#E8F5EE] dark:bg-(--agri-brand-bg-alt) hover:bg-[#D8F3DC] dark:hover:bg-(--agri-brand-bg) border border-[#2D6A4F]/20 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
+                      className="w-full"
                       title={t("adminReport.openChat")}
                     >
-                      <i className="ri-chat-1-line text-sm font-bold" />
                       {t("adminReport.chatReporter")}
-                    </button>
+                    </Button>
                   )}
 
                   {targetType === "product" && onToggleProductAvailability && (
-                    <button
-                      type="button"
+                    <Button
+                      variant={isProductAvailable ? "danger" : "primary"}
+                      size="sm"
                       onClick={handleProductAvailability}
                       disabled={actionLoading}
-                      className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 ${
-                        isProductAvailable
-                          ? "border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
-                          : "border border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-300 hover:bg-green-500/20"
-                      }`}
+                      className="w-full"
                     >
                       <i className={isProductAvailable ? "ri-eye-off-line" : "ri-eye-line"} />
                       {isProductAvailable ? t("adminReport.unpublishListing") : t("adminReport.republishListing")}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -465,46 +457,47 @@ export default function ReportDetailsModal({
             <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-(--agri-border-subtle)">
               <div className="flex flex-wrap items-center gap-2">
                 {report.status === "pending" && onReview && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon="ri-search-eye-line"
                     onClick={() => onReview(report.id)}
-                    className="px-3.5 py-2 rounded-xl bg-blue-500/10 text-xs font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-500/20 transition cursor-pointer"
                   >
-                    <i className="ri-search-eye-line mr-1.5" />
                     {t("adminReport.markReviewing")}
-                  </button>
+                  </Button>
                 )}
 
                 {report.status !== "resolved" && onResolve && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    icon="ri-check-line"
                     onClick={() => onResolve(report.id, adminNotes)}
-                    className="px-3.5 py-2 rounded-xl bg-[#2D6A4F] text-xs font-bold text-white hover:bg-[#1B4332] transition cursor-pointer"
                   >
-                    <i className="ri-check-line mr-1.5" />
                     {t("adminReport.resolveCase")}
-                  </button>
+                  </Button>
                 )}
 
                 {report.status !== "dismissed" && onDismiss && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon="ri-close-circle-line"
                     onClick={() => onDismiss(report.id, adminNotes)}
-                    className="px-3.5 py-2 rounded-xl border border-(--agri-border) text-xs font-bold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
                   >
-                    <i className="ri-close-circle-line mr-1.5" />
                     {t("adminReport.dismiss")}
-                  </button>
+                  </Button>
                 )}
               </div>
 
-              <button
-                type="button"
+              <Button
+                variant="cancel"
+                size="md"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-(--agri-hover) text-xs sm:text-sm font-bold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer ml-auto"
+                className="ml-auto"
               >
                 {t("adminReport.close")}
-              </button>
+              </Button>
             </div>
           </div>
       </ResponsiveModal>

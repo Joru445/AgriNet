@@ -1,6 +1,7 @@
 ﻿import { useState } from "react";
 
 import { useLanguage } from "../../../context/LanguageContext";
+import Button from "../../ui/Button";
 import ProductForm from "./ProductForm";
 import ProductImageUploader from "./ProductImageUploader";
 
@@ -114,41 +115,23 @@ function ProductModalContent({ product, saving, onClose, onSubmit }) {
 
             {/* Bottom Actions inside scrollable content */}
             <div className="pt-3 border-t border-gray-300 dark:border-gray-700 flex justify-end items-center gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 hover:bg-(--agri-hover) text-(--agri-text-secondary) hover:text-(--agri-text) font-semibold text-sm transition-colors cursor-pointer"
-              >
+              <Button variant="cancel" size="md" onClick={onClose}>
                 {t("common.cancel")}
-              </button>
+              </Button>
 
-              <button
-                type="button"
-                disabled={saving || !isValid}
+              <Button
+                variant="primary"
+                size="md"
+                disabled={!isValid}
+                loading={saving}
                 onClick={handleSubmit}
-                className={`inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                  saving || !isValid
-                    ? "bg-(--agri-hover) text-(--agri-text-muted) border border-(--agri-border-subtle) cursor-not-allowed opacity-75"
-                    : "bg-[#2D6A4F] hover:bg-[#1B4332] text-white shadow-md hover:shadow-lg active:scale-98 cursor-pointer"
-                }`}
               >
-                {saving ? (
-                  <>
-                    <i className="ri-loader-4-line animate-spin text-base" />
-                    <span>{t("products.saving")}</span>
-                  </>
-                ) : product ? (
-                  <>
-                    <i className="ri-check-line text-base" />
-                    <span>{t("products.saveChanges")}</span>
-                  </>
-                ) : (
-                  <>
-                    <i className="ri-add-line text-base" />
-                    <span>{t("products.createProduct")}</span>
-                  </>
-                )}
-              </button>
+                {saving
+                  ? t("products.saving")
+                  : product
+                    ? t("products.saveChanges")
+                    : t("products.createProduct")}
+              </Button>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-﻿import SkeletonBox from "../../common/SkeletonBox";
+﻿import SkeletonBox from "../../ui/SkeletonBox";
 
 /**
  * Skeleton that mirrors the admin UserTable

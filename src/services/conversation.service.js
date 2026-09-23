@@ -51,7 +51,7 @@ export async function markConversationRead(conversationId, uid, currentUnreadCou
         [`lastRead.${uid}`]: Date.now(),
         [`unreadCount.${uid}`]: 0,
       });
-    } catch (updateErr) {
+    } catch {
       await setDoc(
         conversationRef,
         {
@@ -249,7 +249,7 @@ export async function updateConversationEndedLocations(conversationId, messageId
   try {
     const conversationRef = doc(db, "conversations", conversationId);
     await updateDoc(conversationRef, updates);
-  } catch (error) {
+  } catch {
     try {
       const conversationRef = doc(db, "conversations", conversationId);
       await setDoc(
@@ -313,7 +313,7 @@ export async function apiFindOrCreateConversation(otherUserId, { findOnly = fals
     console.warn("[Conversations] Backend API apiFindOrCreateConversation failed, falling back to deterministic ID:", err.message);
     const currentUid = auth.currentUser?.uid;
     if (!currentUid || !otherUserId) {
-      throw new Error("Missing participant IDs to create conversation.");
+      throw new Error("Missing participant IDs to create conversation.", { cause: err });
     }
     const conversationId = getConversationId(currentUid, otherUserId);
     const convRef = doc(db, "conversations", conversationId);

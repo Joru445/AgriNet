@@ -6,7 +6,7 @@ import RatingDistribution from "../../components/farmer/reviews/RatingDistributi
 import ReviewList from "../../components/farmer/reviews/ReviewList";
 import ReviewSkeleton from "../../components/farmer/reviews/ReviewSkeleton";
 
-import SkeletonBox from "../../components/common/SkeletonBox";
+import SkeletonBox from "../../components/ui/SkeletonBox";
 
 export default function Reviews() {
   const { t } = useLanguage();

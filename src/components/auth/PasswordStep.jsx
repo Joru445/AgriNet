@@ -1,8 +1,5 @@
 import PasswordInput from "./PasswordInput";
-import {
-  authPrimaryButtonClass,
-  authSecondaryButtonClass,
-} from "./authStyles";
+import Button from "../ui/Button";
 import { getPasswordChecks } from "../../utils/registerValidation";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -121,21 +118,23 @@ export default function PasswordStep({
 
       {/* Navigation Buttons */}
       <div className="flex gap-3 pt-2">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="md"
           onClick={onBack}
-          className={`flex-1 ${authSecondaryButtonClass}`}
+          className="flex-1"
         >
           {t("common.back")}
-        </button>
+        </Button>
 
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="md"
           onClick={onContinue}
-          className={`flex-1 ${authPrimaryButtonClass}`}
+          className="flex-1"
         >
           {t("auth.continue")}
-        </button>
+        </Button>
       </div>
     </div>
   );

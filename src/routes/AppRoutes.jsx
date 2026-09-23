@@ -12,10 +12,10 @@ import AppLayout from "../layouts/AppLayout";
 
 // Public Pages
 const Landing = lazy(() => import("../pages/public/Landing"));
-const Login = lazy(() => import("../pages/public/Login"));
-const Register = lazy(() => import("../pages/public/Register"));
-const ForgotPassword = lazy(() => import("../pages/public/ForgotPassword"));
-const VerifyAccount = lazy(() => import("../pages/public/VerifyAccount"));
+const Login = lazy(() => import("../pages/auth/Login"));
+const Register = lazy(() => import("../pages/auth/Register"));
+const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
+const VerifyAccount = lazy(() => import("../pages/auth/VerifyAccount"));
 
 // Suspended Page
 const Suspended = lazy(() => import("../pages/Suspended.jsx"));

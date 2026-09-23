@@ -1,6 +1,7 @@
 import { useLanguage } from "../../context/LanguageContext";
 
 import LocationMap from "./LocationMap";
+import Button from "../ui/Button";
 
 import useUserLocation from "../../hooks/useUserLocation";
 
@@ -38,19 +39,16 @@ export default function LocationPicker({
         onChange={onChange}
         actionButton={
           editing ? (
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="sm"
+              icon="ri-focus-3-line"
+              loading={loadingLocation}
               onClick={handleUseCurrentLocation}
               disabled={loadingLocation}
               aria-label={t("location.useMyLocationAria")}
-              className="px-3 h-10 rounded-xl bg-[#2D6A4F] text-white hover:bg-[#24563f] disabled:opacity-50 shadow-lg"
-            >
-              {loadingLocation ? (
-                <i className="ri-loader-4-line animate-spin" />
-              ) : (
-                <i className="ri-crosshair-2-line" />
-              )}
-            </button>
+              className="h-10 rounded-xl shadow-lg"
+            />
           ) : null
         }
       />

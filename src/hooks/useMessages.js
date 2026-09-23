@@ -196,6 +196,7 @@ export default function useMessages() {
 
   const activeLocationMessages = useMemo(() => {
     if (!messages?.length || !currentUid) return [];
+    // eslint-disable-next-line react-hooks/purity -- Date.now() for live-location expiry check is intentionally time-dependent
     const now = Date.now();
     const permanentlyEnded = getPermanentlyEndedLocations();
     const convEnded = {
@@ -650,6 +651,7 @@ export default function useMessages() {
       const isPermanentlyMarked = Boolean(
         m.id && (locallyEndedIds.has(m.id) || permanentlyEnded.has(m.id) || isEndedInConv)
       );
+      // eslint-disable-next-line react-hooks/purity -- Date.now() for live-location expiry is intentionally time-dependent
       const isExpired = Boolean(isLiveType && m.liveUntil && Date.now() >= Number(m.liveUntil));
 
       if (isPermanentlyMarked || isExpired || m.isEnded === true || m.isLive === false) {
@@ -657,6 +659,7 @@ export default function useMessages() {
           ...m,
           isLive: false,
           isEnded: true,
+          // eslint-disable-next-line react-hooks/purity -- Date.now() fallback for endedAt timestamp
           endedAt: m.endedAt || Date.now(),
         };
       }

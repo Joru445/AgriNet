@@ -1,4 +1,5 @@
 ﻿import { useLanguage } from "../../context/LanguageContext";
+import Button from "./Button";
 
 export default function EmptyState({
   icon = "ri-inbox-line",
@@ -24,13 +25,9 @@ export default function EmptyState({
       )}
 
       {action && onAction && (
-        <button
-          type="button"
-          onClick={onAction}
-          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#2D6A4F] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1B4332] cursor-pointer"
-        >
+        <Button variant="primary" size="md" onClick={onAction} className="mt-5">
           {action}
-        </button>
+        </Button>
       )}
     </div>
   );

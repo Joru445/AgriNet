@@ -1,5 +1,5 @@
-import ProductGridSkeleton from "../../shared/product/ProductGridSkeleton";
-import SkeletonBox from "../../common/SkeletonBox";
+import ProductGridSkeleton from "../../products/ProductGridSkeleton";
+import SkeletonBox from "../../ui/SkeletonBox";
 
 function SectionHeaderSkeleton({ alignItems = "items-end" }) {
   return (

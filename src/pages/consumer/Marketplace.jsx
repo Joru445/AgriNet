@@ -15,8 +15,8 @@ import {
   RecentProductsSkeleton,
   RelevantProductsSkeleton,
 } from "../../components/consumer/marketplace/SectionSkeletons";
-import ProductGridSkeleton from "../../components/shared/product/ProductGridSkeleton";
-import ProductLoadError from "../../components/shared/product/ProductLoadError";
+import ProductGridSkeleton from "../../components/products/ProductGridSkeleton";
+import ProductLoadError from "../../components/products/ProductLoadError";
 import MarketplaceSubHeader from "../../components/consumer/layout/MarketplaceSubHeader";
 
 const DISCOVERY_GRID =

@@ -157,7 +157,7 @@ export async function getAverageFarmerRating(farmerId) {
   try {
     const result = await apiRequest(`/v1/reviews/farmers/${encodeURIComponent(farmerId)}/summary`);
     return result.data?.average ?? 0;
-  } catch (err) {
+  } catch {
     const all = await getFarmerReviews(farmerId);
     if (!all.length) return 0;
     const total = all.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
@@ -170,7 +170,7 @@ export async function getFarmerReviewCount(farmerId) {
   try {
     const result = await apiRequest(`/v1/reviews/farmers/${encodeURIComponent(farmerId)}/summary`);
     return result.data?.count ?? 0;
-  } catch (err) {
+  } catch {
     const all = await getFarmerReviews(farmerId);
     return all.length;
   }

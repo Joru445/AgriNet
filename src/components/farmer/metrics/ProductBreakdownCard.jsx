@@ -8,12 +8,12 @@ const CATEGORY_LABEL_KEY = {
   vegetables: "products.categories.vegetables",
   fruits: "products.categories.fruits",
   grains: "products.categories.grains",
-  "root crops": "products.categories.rootCrops",
+  "root-crops": "products.categories.rootCrops",
   herbs: "products.categories.herbs",
-  livestock: "products.categories.livestock",
+  livestocks: "products.categories.livestock",
   poultry: "products.categories.poultry",
-  seafood: "products.categories.seafood",
-  meat: "products.categories.meat",
+  seafoods: "products.categories.seafood",
+  meats: "products.categories.meat",
   other: "products.categories.others",
 };
 

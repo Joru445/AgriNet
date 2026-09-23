@@ -4,9 +4,9 @@ import { useLanguage } from "../../context/LanguageContext";
 
 import useInquiries from "../../hooks/useInquiries";
 
-import InquirySkeleton from "../../components/shared/inquiries/InquirySkeleton";
-import InquiryTabs from "../../components/shared/inquiries/InquiryTabs";
-import InquiryTable from "../../components/shared/inquiries/InquiryTable";
+import InquirySkeleton from "../../components/inquiries/InquirySkeleton";
+import InquiryTabs from "../../components/inquiries/InquiryTabs";
+import InquiryTable from "../../components/inquiries/InquiryTable";
 import LoginRequired from "../../components/ui/LoginRequired";
 
 export default function Inquiries() {

@@ -92,11 +92,11 @@ export default function useLiveLocationTracker(userId = null) {
     if (userId) {
       try {
         sessionStorage.removeItem(`${STORAGE_KEY_PREFIX}${userId}`);
-      } catch {}
+      } catch { /* sessionStorage may be unavailable */ }
     }
     try {
       sessionStorage.removeItem(LEGACY_STORAGE_KEY);
-    } catch {}
+    } catch { /* sessionStorage may be unavailable */ }
     setActiveSession(null);
     lastPositionRef.current = null;
     lastUpdateTimeRef.current = 0;

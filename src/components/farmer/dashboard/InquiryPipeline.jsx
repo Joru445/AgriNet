@@ -2,8 +2,8 @@
 
 import { useLanguage } from "../../../context/LanguageContext";
 
-import DashboardSection from "../../common/DashboardSection";
-import SkeletonBox from "../../common/SkeletonBox";
+import DashboardSection from "../../ui/DashboardSection";
+import SkeletonBox from "../../ui/SkeletonBox";
 
 const PIPELINE_STATUSES = ["pending", "accepted", "reserved", "ongoing", "completed", "cancelled"];
 

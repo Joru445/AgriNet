@@ -1,5 +1,6 @@
 import { useState } from "react";
-import Avatar from "../common/Avatar";
+import Avatar from "../ui/Avatar";
+import Button from "../ui/Button";
 import { useLanguage } from "../../context/LanguageContext";
 
 function getProviderIcon(provider) {
@@ -117,22 +118,22 @@ export default function SavedAccountSelector({
       </div>
 
       {hasMore && (
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => setExpanded(true)}
-          className="text-xs text-gray-500 hover:text-[#2D6A4F] font-medium"
         >
           {t("auth.login.showMore")} ({accounts.length - MAX_VISIBLE})
-        </button>
+        </Button>
       )}
 
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={onUseAnother}
-        className="text-xs text-gray-500 hover:text-[#2D6A4F] font-medium"
       >
         + {t("auth.login.useAnotherAccount")}
-      </button>
+      </Button>
     </div>
   );
 }

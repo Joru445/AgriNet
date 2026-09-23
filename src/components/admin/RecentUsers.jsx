@@ -1,7 +1,7 @@
 ﻿import { useLanguage } from "../../context/LanguageContext";
 
-import RoleBadge from "../common/RoleBadge";
-import UserIdentity from "../common/UserIdentity";
+import RoleBadge from "../ui/RoleBadge";
+import UserIdentity from "../ui/UserIdentity";
 
 export default function RecentUsers({ users = [], showHeader = true }) {
   const { t } = useLanguage();

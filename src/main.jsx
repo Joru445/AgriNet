@@ -10,7 +10,7 @@ import "remixicon/fonts/remixicon.css";
 
 import App from "./App";
 import AuthHandlerPage from "./pages/auth/AuthHandlerPage";
-import ErrorBoundary from "./components/common/ErrorBoundary";
+import ErrorBoundary from "./components/ui/ErrorBoundary";
 import { ThemeProvider } from "./context/ThemeContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import "./hooks/usePWAUpdate";

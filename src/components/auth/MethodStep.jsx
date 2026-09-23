@@ -1,4 +1,4 @@
-import { authPrimaryButtonClass, authSocialButtonClass } from "./authStyles";
+import Button from "../ui/Button";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function MethodStep({ onSelectMethod, socialAuthInFlight = false }) {
@@ -7,11 +7,12 @@ export default function MethodStep({ onSelectMethod, socialAuthInFlight = false 
   return (
     <div className="space-y-4 w-full">
       {/* Google Option */}
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        size="md"
+        fullWidth
         onClick={() => onSelectMethod?.("google")}
         disabled={socialAuthInFlight}
-        className={`group relative w-full justify-center ${authSocialButtonClass}`}
         aria-label={t("auth.register.continueWithGoogle")}
       >
         <div className="flex items-center gap-3">
@@ -37,14 +38,15 @@ export default function MethodStep({ onSelectMethod, socialAuthInFlight = false 
             {t("auth.register.continueWithGoogle")}
           </span>
         </div>
-      </button>
+      </Button>
 
       {/* Facebook Option */}
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        size="md"
+        fullWidth
         onClick={() => onSelectMethod?.("facebook")}
         disabled={socialAuthInFlight}
-        className={`group relative w-full justify-center ${authSocialButtonClass}`}
         aria-label={t("auth.register.continueWithFacebook")}
       >
         <div className="flex items-center gap-3">
@@ -53,7 +55,7 @@ export default function MethodStep({ onSelectMethod, socialAuthInFlight = false 
             {t("auth.register.continueWithFacebook")}
           </span>
         </div>
-      </button>
+      </Button>
 
       {/* Divider */}
       <div className="flex items-center gap-3 py-1.5 text-xs">
@@ -65,14 +67,15 @@ export default function MethodStep({ onSelectMethod, socialAuthInFlight = false 
       </div>
 
       {/* Continue with Email (Existing Flow) */}
-      <button
-        type="button"
+      <Button
+        variant="primary"
+        size="md"
+        fullWidth
+        icon="ri-mail-line"
         onClick={() => onSelectMethod?.("email")}
-        className={`w-full ${authPrimaryButtonClass}`}
       >
-        <i className="ri-mail-line text-base" />
-        <span>{t("auth.register.continueWithEmail")}</span>
-      </button>
+        {t("auth.register.continueWithEmail")}
+      </Button>
     </div>
   );
 }

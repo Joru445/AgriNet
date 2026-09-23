@@ -1,5 +1,6 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
 import InlineSearchInput from "../../ui/InlineSearchInput";
+import Button from "../../ui/Button";
 
 export default function TransactionFilters({
   search,
@@ -75,14 +76,14 @@ export default function TransactionFilters({
 
           {/* Clear dates */}
           {(dateFrom || dateTo) && (
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => { onDateFromChange(""); onDateToChange(""); }}
-              className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3 py-2 text-xs font-semibold text-(--agri-text-muted) hover:bg-(--agri-hover) transition cursor-pointer"
             >
-              <i className="ri-close-line mr-1" />
+              <i className="ri-close-line" />
               {t("adminTransaction.clearDates")}
-            </button>
+            </Button>
           )}
         </div>
       </div>

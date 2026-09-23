@@ -1,4 +1,4 @@
-import SearchBar from "../../common/SearchBar";
+import SearchBar from "../../ui/SearchBar";
 
 export default function MarketplaceSubHeader({
   searchValue,

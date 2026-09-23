@@ -1,4 +1,5 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
+import Button from "../../ui/Button";
 
 import FiltersSidebar from "./FiltersSidebar";
 
@@ -43,12 +44,9 @@ export default function MobileFiltersDrawer({
         </div>
 
         <div className="border-t border-(--agri-border) p-5">
-          <button
-            onClick={onClose}
-            className="w-full rounded-xl bg-[#2D6A4F] py-3 font-semibold text-white"
-          >
+          <Button variant="primary" size="md" fullWidth onClick={onClose}>
             {t("nearby.applyFilters")}
-          </button>
+          </Button>
         </div>
       </div>
     </>

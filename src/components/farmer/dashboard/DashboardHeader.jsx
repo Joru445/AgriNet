@@ -1,4 +1,5 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
+import Button from "../../ui/Button";
 
 export default function DashboardHeader({ loading, onRefresh }) {
   const { t } = useLanguage();
@@ -9,17 +10,9 @@ export default function DashboardHeader({ loading, onRefresh }) {
         <h1 className="text-(--agri-text)">Dashboard</h1>
       </div>
 
-      <button
-        type="button"
-        onClick={onRefresh}
-        disabled={loading}
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-(--agri-border) bg-(--agri-card) px-3 py-1.5 text-xs font-bold text-(--agri-text-secondary) shadow-2xs hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) disabled:opacity-50 transition cursor-pointer active:scale-95"
-      >
-        <i
-          className={`ri-refresh-line text-sm ${loading ? "animate-spin" : ""}`}
-        />
+      <Button variant="ghost" size="sm" icon="ri-refresh-line" loading={loading} onClick={onRefresh}>
         <span className="hidden sm:inline">{t("admin.refresh")}</span>
-      </button>
+      </Button>
     </div>
   );
 }

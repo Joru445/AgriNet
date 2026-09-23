@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import useUsers from "../../hooks/useUsers";
 
 import UserManagementHeader from "../../components/admin/users/UserManagementHeader";
-import StatCard from "../../components/common/StatCard";
+import StatCard from "../../components/ui/StatCard";
 import UserFilters from "../../components/admin/users/UserFilters";
 import UserTable from "../../components/admin/users/UserTable";
 import UserTableSkeleton from "../../components/admin/users/UserTableSkeleton";

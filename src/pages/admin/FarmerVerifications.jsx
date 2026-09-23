@@ -1,10 +1,11 @@
 ﻿import { useCallback, useEffect, useState } from "react";
 
-import DashboardSection from "../../components/common/DashboardSection";
-import SkeletonBox from "../../components/common/SkeletonBox";
+import DashboardSection from "../../components/ui/DashboardSection";
+import SkeletonBox from "../../components/ui/SkeletonBox";
 import ErrorState from "../../components/ui/ErrorState";
 import ResponsiveModal from "../../components/ui/ResponsiveModal";
 import TabButton from "../../components/ui/TabButton";
+import Button from "../../components/ui/Button";
 
 import { useLanguage } from "../../context/LanguageContext";
 import {
@@ -221,27 +222,26 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
             <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-(--agri-border-subtle)">
               {!showRejectForm ? (
                 <>
-                  <button
+                  <Button
                     type="button"
+                    variant="danger"
+                    size="sm"
                     onClick={() => setShowRejectForm(true)}
                     disabled={loading}
-                    className="py-2.5 px-4 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 text-xs sm:text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition cursor-pointer disabled:opacity-50"
                   >
                     {t("farmerVerification.reject")}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="sm"
                     onClick={handleApprove}
                     disabled={loading}
-                    className="flex items-center gap-1.5 py-2.5 px-5 rounded-xl bg-[#2D6A4F] text-white text-xs sm:text-sm font-bold hover:bg-[#1B4332] active:scale-[0.99] transition cursor-pointer shadow-xs disabled:opacity-50"
+                    loading={loading}
+                    icon={loading ? undefined : "ri-check-line"}
                   >
-                    {loading ? (
-                      <i className="ri-loader-4-line animate-spin text-sm" />
-                    ) : (
-                      <i className="ri-check-line text-sm" />
-                    )}
                     {t("farmerVerification.approve")}
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <div className="w-full space-y-2">
@@ -253,29 +253,28 @@ function VerificationDetailModal({ verification, onClose, onApprove, onReject, l
                     className="w-full rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-sm text-(--agri-text) outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-400/10 resize-none"
                   />
                   <div className="flex items-center justify-end gap-2">
-                    <button
+                    <Button
                       type="button"
+                      variant="cancel"
+                      size="sm"
                       onClick={() => {
                         setShowRejectForm(false);
                         setRejectReason("");
                       }}
                       disabled={loading}
-                      className="py-2 px-3 rounded-xl border border-(--agri-border) bg-(--agri-card) text-xs font-bold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer disabled:opacity-50"
                     >
                       {t("common.cancel")}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="danger"
+                      size="sm"
                       onClick={handleReject}
                       disabled={loading || !rejectReason.trim()}
-                      className="py-2 px-4 rounded-xl bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition cursor-pointer disabled:opacity-50"
+                      loading={loading}
                     >
-                      {loading ? (
-                        <i className="ri-loader-4-line animate-spin" />
-                      ) : (
-                        t("farmerVerification.confirmReject")
-                      )}
-                    </button>
+                      {t("farmerVerification.confirmReject")}
+                    </Button>
                   </div>
                 </div>
               )}

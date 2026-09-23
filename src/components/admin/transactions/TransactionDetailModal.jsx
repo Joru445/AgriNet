@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import { formatFullDateTime, formatDate } from "../../../utils/date";
 import ResponsiveModal from "../../ui/ResponsiveModal";
+import Button from "../../ui/Button";
 
 const STATUS_CONFIG = {
   pending: { color: "bg-gray-500/10 text-gray-600", labelKey: "adminTransaction.statusPending" },
@@ -155,12 +156,14 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
                     </p>
                   </div>
                 </div>
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={handleViewFarmer}
-                  className="mt-3 w-full rounded-lg border border-(--agri-border-subtle) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
+                  className="mt-3 w-full"
                 >
                   {t("adminTransaction.viewFarmer")}
-                </button>
+                </Button>
               </div>
 
               {/* Consumer */}
@@ -191,12 +194,14 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
                     </p>
                   </div>
                 </div>
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={handleViewConsumer}
-                  className="mt-3 w-full rounded-lg border border-(--agri-border-subtle) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
+                  className="mt-3 w-full"
                 >
                   {t("adminTransaction.viewConsumer")}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -206,12 +211,13 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
                 <h3 className="text-sm font-bold text-(--agri-text)">
                   {t("adminTransaction.productInformation")}
                 </h3>
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={handleViewProduct}
-                  className="text-xs font-semibold text-[#2D6A4F] hover:underline cursor-pointer"
                 >
                   {t("adminTransaction.viewProduct")}
-                </button>
+                </Button>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
@@ -398,12 +404,13 @@ export default function TransactionDetailModal({ inquiryId, onClose }) {
 
             {/* Close */}
             <div className="flex justify-end border-t border-(--agri-border-subtle) pt-4">
-              <button
+              <Button
+                variant="cancel"
+                size="md"
                 onClick={onClose}
-                className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-card) px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
               >
                 {t("common.close")}
-              </button>
+              </Button>
             </div>
           </div>
         )}

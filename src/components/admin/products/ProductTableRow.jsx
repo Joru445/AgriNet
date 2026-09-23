@@ -1,4 +1,5 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
+import Button from "../../ui/Button";
 
 export default function ProductTableRow({ product, onView, onToggleAvailability, actionLoading }) {
   const { t } = useLanguage();
@@ -86,16 +87,18 @@ export default function ProductTableRow({ product, onView, onToggleAvailability,
       {/* Reports */}
       <td className="px-5 py-4">
         {isReported ? (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => onView(product)}
-            className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2.5 py-0.5 text-xs font-bold text-orange-600 hover:bg-orange-500/20 transition cursor-pointer"
+            className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 text-orange-600 hover:bg-orange-500/20"
           >
             <i className="ri-alert-line" />
             {product.totalReports}
             {product.pendingReports > 0 && (
               <span className="ml-0.5 text-[10px]">({product.pendingReports} pending)</span>
             )}
-          </button>
+          </Button>
         ) : (
           <span className="text-xs text-(--agri-text-muted)">—</span>
         )}

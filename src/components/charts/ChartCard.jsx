@@ -1,4 +1,4 @@
-import SkeletonBox from "../common/SkeletonBox";
+import SkeletonBox from "../ui/SkeletonBox";
 import RangeSelector from "./RangeSelector";
 
 /**

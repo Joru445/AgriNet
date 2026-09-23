@@ -1,4 +1,5 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
+import Button from "../../ui/Button";
 
 export default function ProductsToolbar({
   total = 0,
@@ -21,14 +22,9 @@ export default function ProductsToolbar({
 
       <div className="flex items-center gap-2 ml-auto">
         {/* Mobile Filters */}
-        <button
-          type="button"
-          onClick={onOpenFilters}
-          className="lg:hidden flex items-center gap-2 px-3 py-2 bg-(--agri-card) border border-(--agri-border) text-xs sm:text-sm rounded-xl font-semibold cursor-pointer"
-        >
-          <i className="ri-filter-3-line text-[#2D6A4F]" />
-          <span>{t("nearby.filters")}</span>
-        </button>
+        <Button variant="secondary" size="sm" icon="ri-filter-3-line" onClick={onOpenFilters} className="lg:hidden">
+          {t("nearby.filters")}
+        </Button>
 
         {/* Sort */}
         <select

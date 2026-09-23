@@ -1,6 +1,6 @@
 import { useLanguage } from "../../../context/LanguageContext";
 
-import StatCard from "../../common/StatCard";
+import StatCard from "../../ui/StatCard";
 
 export default function ReportStats({ stats }) {
   const { t } = useLanguage();

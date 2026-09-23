@@ -1,5 +1,6 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
 import InlineSearchInput from "../../ui/InlineSearchInput";
+import Button from "../../ui/Button";
 
 const AUDIT_ACTIONS = [
   "user_suspended",
@@ -84,19 +85,19 @@ export default function ActivityFilters({
           />
 
           {(action || targetType || dateFrom || dateTo) && (
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 onActionChange("");
                 onTargetTypeChange("");
                 onDateFromChange("");
                 onDateToChange("");
               }}
-              className="whitespace-nowrap rounded-xl border border-(--agri-border) px-4 py-2.5 text-xs font-bold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition shadow-2xs cursor-pointer"
             >
-              <i className="ri-filter-off-line mr-1" />
+              <i className="ri-filter-off-line" />
               {t("adminActivity.clearFilters")}
-            </button>
+            </Button>
           )}
         </div>
       </div>

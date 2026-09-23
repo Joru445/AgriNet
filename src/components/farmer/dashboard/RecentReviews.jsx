@@ -1,8 +1,8 @@
 ﻿import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
-import DashboardSection from "../../common/DashboardSection";
-import ReviewCard from "../../common/ReviewCard";
-import SkeletonBox from "../../common/SkeletonBox";
+import DashboardSection from "../../ui/DashboardSection";
+import ReviewCard from "../../reviews/ReviewCard";
+import SkeletonBox from "../../ui/SkeletonBox";
 
 export default function RecentReviews({ reviews = [], loading = false }) {
   const { t } = useLanguage();

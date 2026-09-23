@@ -135,12 +135,15 @@ if (messaging) {
     // Prevents duplicate notifications without collapsing unrelated events.
     const tag = data.tag || "agrinet-notification";
 
+    const isMessage = Boolean(data.conversationId || data.entityType === "message");
+
     const options = {
       body,
-      // senderAvatar → icon (NOT image). Image is a large attachment,
-      // not an avatar. Use icon for profile pictures.
-      icon: data.senderAvatar || "/icon-192x192.png",
-      badge: "/icon-192x192.png",
+      // Message notifications: senderAvatar as icon (profile picture).
+      // Non-message notifications: AgriNet app icon.
+      icon: isMessage ? (data.senderAvatar || "/icon-192x192.png") : "/icon-192x192.png",
+      // Dedicated monochrome badge for the status bar notification area.
+      badge: "/notification-badge.png",
       data,
       tag,
       // renotify is NOT needed when using unique deterministic tags.

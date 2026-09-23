@@ -2,7 +2,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 
-import Loading from "../components/Loading";
+import Loading from "../components/ui/Loading";
 
 export default function RoleRoute({ allowedRole }) {
   const { user, profile, loading, suspended, phoneVerified } = useAuth();

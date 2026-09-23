@@ -192,7 +192,7 @@ export async function sendMessage({
         },
         { merge: true },
       );
-    } catch (_) {}
+    } catch { /* silent: conversation doc may already exist */ }
     return messageRef.id;
   }
 

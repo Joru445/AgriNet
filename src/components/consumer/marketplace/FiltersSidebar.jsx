@@ -1,4 +1,5 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
+import Button from "../../ui/Button";
 
 export default function FiltersSidebar({
   filters,
@@ -27,13 +28,9 @@ export default function FiltersSidebar({
         </h3>
 
         {hasActiveFilters && (
-          <button
-            type="button"
-            onClick={onReset}
-            className="text-xs font-bold text-[#2D6A4F] dark:text-(--agri-brand) hover:underline flex items-center gap-1 cursor-pointer"
-          >
+          <Button variant="ghost" size="sm" onClick={onReset}>
             {t("nearby.resetAll")}
-          </button>
+          </Button>
         )}
       </div>
 

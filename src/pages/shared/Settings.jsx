@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import ThemeToggle from "../../components/common/ThemeToggle";
-import LanguageSelector from "../../components/common/LanguageSelector";
-import PushNotificationManager from "../../components/common/PushNotificationManager";
-import NotificationPreferences from "../../components/common/NotificationPreferences";
-import LogoutConfirmModal from "../../components/common/LogoutConfirmModal";
-import ConnectedAccounts from "../../components/common/ConnectedAccounts";
-import UserIdentity from "../../components/common/UserIdentity";
+import ThemeToggle from "../../components/settings/ThemeToggle";
+import LanguageSelector from "../../components/settings/LanguageSelector";
+import PushNotificationManager from "../../components/notifications/PushNotificationManager";
+import NotificationPreferences from "../../components/notifications/NotificationPreferences";
+import LogoutConfirmModal from "../../components/settings/LogoutConfirmModal";
+import ConnectedAccounts from "../../components/settings/ConnectedAccounts";
+import UserIdentity from "../../components/ui/UserIdentity";
 import FarmerVerification from "../../components/farmer/verification/FarmerVerification";
 import AccountSwitcher from "../../components/settings/AccountSwitcher";
 import PasskeyManager from "../../components/settings/PasskeyManager";
@@ -18,7 +18,8 @@ import { usePWAUpdate } from "../../hooks/usePWAUpdate";
 import { getMePath } from "../../utils/routes";
 import { showToast } from "../../utils/toast";
 import LoginRequired from "../../components/ui/LoginRequired";
-import Loading from "../../components/Loading";
+import Button from "../../components/ui/Button";
+import Loading from "../../components/ui/Loading";
 
 function SectionHeading({ children, className = "" }) {
   return (
@@ -125,18 +126,16 @@ export default function Settings() {
             </Link>
 
             <div className="border-t border-(--agri-border-subtle)">
-              <button
+              <Button
                 type="button"
+                variant="logout"
                 onClick={() => setShowLogoutModal(true)}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-red-500/10"
+                icon="ri-logout-box-line"
+                fullWidth
+                className="justify-start"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10 text-red-500">
-                  <i className="ri-logout-box-line text-lg" />
-                </div>
-                <span className="text-sm font-semibold text-red-500">
-                  {t("common.logout")}
-                </span>
-              </button>
+                {t("common.logout")}
+              </Button>
             </div>
           </SectionCard>
         </section>
@@ -200,24 +199,17 @@ export default function Settings() {
                     {t("settings.updateDescription")}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleUpdate}
-                  disabled={updating}
-                  className="shrink-0 rounded-lg bg-(--agri-brand-dark) px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
-                >
-                  {updating ? (
-                    <>
-                      <i className="ri-loader-4-line animate-spin" />
-                      <span>{t("settings.updateApp") || t("settings.update") || "Update App"}</span>
-                    </>
-                  ) : (
-                    <>
-                      <i className="ri-download-cloud-2-line text-base" />
-                      <span>{t("settings.updateApp") || t("settings.update") || "Update App"}</span>
-                    </>
-                  )}
-                </button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleUpdate}
+                disabled={updating}
+                loading={updating}
+                icon={updating ? undefined : "ri-download-cloud-2-line"}
+              >
+                {t("settings.updateApp") || t("settings.update") || "Update App"}
+              </Button>
               </div>
             ) : (
               <div className="flex items-center gap-3 px-4 py-3">

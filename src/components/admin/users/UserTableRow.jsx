@@ -1,5 +1,5 @@
-﻿import RoleBadge from "../../common/RoleBadge";
-import UserIdentity from "../../common/UserIdentity";
+﻿import RoleBadge from "../../ui/RoleBadge";
+import UserIdentity from "../../ui/UserIdentity";
 import { useLanguage } from "../../../context/LanguageContext";
 
 export default function UserTableRow({

@@ -6,6 +6,7 @@ import {
   signInWithProvider,
 } from "../../services/auth.service";
 import { t } from "../../i18n";
+import Button from "../../components/ui/Button";
 
 // Firebase popup auth always resolves with a real UserCredential or rejects
 // with a specific code, so a cancelled flow is never ambiguous.
@@ -181,18 +182,19 @@ export default function AuthHandlerPage({ method }) {
               : t("auth.register.continueWithGoogle")}
           </p>
           <p className="mt-1 text-sm text-gray-500">{t("auth.handler.startHint")}</p>
-          <button
+          <Button
             type="button"
             onClick={handleStart}
-            className="mt-4 w-full py-3 bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold rounded-full transition-all duration-200 text-sm flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            icon="ri-refresh-line"
+            fullWidth
+            className="rounded-full"
           >
-            <i className="ri-refresh-line text-base" />
             <span>
               {isFacebook
                 ? t("auth.register.continueWithFacebook")
                 : t("auth.register.continueWithGoogle")}
             </span>
-          </button>
+          </Button>
           <p className="mt-1 text-sm text-gray-500">{t("auth.handler.closeHint")}</p>
         </div>
       </div>
@@ -235,14 +237,15 @@ export default function AuthHandlerPage({ method }) {
             <p className="mt-2 text-sm text-gray-600">
               {t("auth.handler.popupBlocked")}
             </p>
-            <button
+            <Button
               type="button"
               onClick={handleRetry}
-              className="mt-4 w-full py-3 bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold rounded-full transition-all duration-200 text-sm flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              icon="ri-refresh-line"
+              fullWidth
+              className="rounded-full"
             >
-              <i className="ri-refresh-line text-base" />
               <span>{t("auth.handler.retry")}</span>
-            </button>
+            </Button>
           </>
         )}
 

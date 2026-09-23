@@ -6,16 +6,16 @@ import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { isProductExpired } from "../../utils/productExpiration";
 
-import ProductGallery from "../../components/shared/product/ProductGallery";
-import ProductInfo from "../../components/shared/product/ProductInfo";
-import ProductSeller from "../../components/shared/product/ProductSeller";
-import ProductDescription from "../../components/shared/product/ProductDescription";
-import ProductActions from "../../components/shared/product/ProductActions";
-import MobileActionBar from "../../components/shared/product/MobileActionBar";
-import ProductDetailsSkeleton from "../../components/shared/product/ProductDetailsSkeleton";
+import ProductGallery from "../../components/products/ProductGallery";
+import ProductInfo from "../../components/products/ProductInfo";
+import ProductSeller from "../../components/products/ProductSeller";
+import ProductDescription from "../../components/products/ProductDescription";
+import ProductActions from "../../components/products/ProductActions";
+import MobileActionBar from "../../components/products/MobileActionBar";
+import ProductDetailsSkeleton from "../../components/products/ProductDetailsSkeleton";
 
-import ReviewSection from "../../components/common/ReviewSection";
-import ReportModal from "../../components/common/ReportModal";
+import ReviewSection from "../../components/reviews/ReviewSection";
+import ReportModal from "../../components/reports/ReportModal";
 import EmptyState from "../../components/ui/EmptyState";
 
 export default function ProductDetails() {

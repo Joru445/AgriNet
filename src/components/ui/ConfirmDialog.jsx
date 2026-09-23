@@ -2,6 +2,7 @@
 import { createPortal } from "react-dom";
 
 import { useLanguage } from "../../context/LanguageContext";
+import Button from "./Button";
 
 /**
  * Reusable confirmation dialog for destructive or important actions.
@@ -90,27 +91,13 @@ export default function ConfirmDialog({
         </div>
 
         <div className="mt-6 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="rounded-xl border border-(--agri-border) bg-transparent px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) transition hover:bg-(--agri-hover) cursor-pointer disabled:opacity-50"
-          >
+          <Button variant="cancel" size="md" onClick={onClose} disabled={loading}>
             {resolvedCancel}
-          </button>
+          </Button>
 
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={loading}
-            className={`rounded-xl px-5 py-2.5 text-sm font-bold text-white transition shadow-xs cursor-pointer disabled:opacity-50 ${
-              danger
-                ? "bg-[#dc2626] hover:bg-[#b91c1c]"
-                : "bg-(--agri-brand) hover:opacity-90"
-            }`}
-          >
-            {loading ? t("common.loading") : resolvedConfirm}
-          </button>
+          <Button variant={danger ? "danger" : "primary"} size="md" onClick={onConfirm} disabled={loading} loading={loading}>
+            {resolvedConfirm}
+          </Button>
         </div>
       </div>
     </div>,

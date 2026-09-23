@@ -1,9 +1,9 @@
 import { useAuth } from "../../context/AuthContext";
 import useMessages from "../../hooks/useMessages";
-import Loading from "../../components/Loading";
-import ConversationList from "../../components/shared/messages/ConversationList";
-import ChatWindow from "../../components/shared/messages/ChatWindow";
-import EmptyConversation from "../../components/shared/messages/EmptyConversation";
+import Loading from "../../components/ui/Loading";
+import ConversationList from "../../components/messages/ConversationList";
+import ChatWindow from "../../components/messages/ChatWindow";
+import EmptyConversation from "../../components/messages/EmptyConversation";
 import LoginRequired from "../../components/ui/LoginRequired";
 
 

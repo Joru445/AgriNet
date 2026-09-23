@@ -2,12 +2,12 @@
 import useStartConversation from "../../hooks/useStartConversation";
 import { useLanguage } from "../../context/LanguageContext";
 
-import PublicProfileHeader from "../../components/shared/profile/PublicProfileHeader";
-import PublicProfileSkeleton from "../../components/shared/profile/PublicProfileSkeleton";
-import ConsumerProfileDetails from "../../components/shared/profile/ConsumerProfileDetails";
-import StoreProducts from "../../components/shared/store/StoreProducts";
-import ReviewSection from "../../components/common/ReviewSection";
-import ProductGridSkeleton from "../../components/shared/product/ProductGridSkeleton";
+import PublicProfileHeader from "../../components/profile/PublicProfileHeader";
+import PublicProfileSkeleton from "../../components/profile/PublicProfileSkeleton";
+import ConsumerProfileDetails from "../../components/profile/ConsumerProfileDetails";
+import StoreProducts from "../../components/store/StoreProducts";
+import ReviewSection from "../../components/reviews/ReviewSection";
+import ProductGridSkeleton from "../../components/products/ProductGridSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
 
 export default function PublicProfile() {

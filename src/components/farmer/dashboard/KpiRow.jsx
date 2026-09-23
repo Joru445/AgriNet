@@ -1,5 +1,5 @@
-﻿import StatCard from "../../common/StatCard";
-import SkeletonBox from "../../common/SkeletonBox";
+﻿import StatCard from "../../ui/StatCard";
+import SkeletonBox from "../../ui/SkeletonBox";
 import { useLanguage } from "../../../context/LanguageContext";
 
 function KpiSkeleton() {

@@ -7,11 +7,11 @@ import { getFavorites } from "../../services/favorite.service";
 import { getProducts } from "../../services/product.service";
 import { getFarmers } from "../../services/farmer.service";
 
-import ProductCard from "../../components/common/ProductCard";
-import ProductGridSkeleton from "../../components/shared/product/ProductGridSkeleton";
+import ProductCard from "../../components/products/ProductCard";
+import ProductGridSkeleton from "../../components/products/ProductGridSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
 import LoginRequired from "../../components/ui/LoginRequired";
-import Loading from "../../components/Loading";
+import Loading from "../../components/ui/Loading";
 
 import {
   applyTransform,

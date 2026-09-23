@@ -1,4 +1,5 @@
 import { useLanguage } from "../../context/LanguageContext";
+import Button from "./Button";
 
 export default function ErrorState({
   title,
@@ -24,13 +25,9 @@ export default function ErrorState({
           )}
 
           {onRetry && (
-            <button
-              type="button"
-              onClick={onRetry}
-              className="mt-3 rounded-lg bg-red-600 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700 cursor-pointer"
-            >
+            <Button variant="ghost" size="sm" onClick={onRetry} className="mt-3">
               {resolvedRetryLabel}
-            </button>
+            </Button>
           )}
         </div>
       </div>

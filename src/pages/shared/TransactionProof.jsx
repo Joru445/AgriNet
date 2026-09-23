@@ -1,13 +1,14 @@
 ﻿import useTransactionProof from "../../hooks/useTransactionProof";
 import { useLanguage } from "../../context/LanguageContext";
 
-import TransactionProduct from "../../components/shared/transaction-proof/TransactionProduct";
-import TransactionProofReview from "../../components/shared/transaction-proof/TransactionProofReview";
-import TransactionProofStatus from "../../components/shared/transaction-proof/TransactionProofStatus";
-import TransactionProofUpload from "../../components/shared/transaction-proof/TransactionProofUpload";
-import TransactionProofSkeleton from "../../components/shared/transaction-proof/TransactionProofSkeleton";
+import TransactionProduct from "../../components/transactions/TransactionProduct";
+import TransactionProofReview from "../../components/transactions/TransactionProofReview";
+import TransactionProofStatus from "../../components/transactions/TransactionProofStatus";
+import TransactionProofUpload from "../../components/transactions/TransactionProofUpload";
+import TransactionProofSkeleton from "../../components/transactions/TransactionProofSkeleton";
 import PageWrapper from "../../components/ui/PageWrapper";
 import { InlineError } from "../../components/ui/ErrorState";
+import Button from "../../components/ui/Button";
 
 export default function TransactionProof() {
   const { t } = useLanguage();
@@ -88,24 +89,17 @@ export default function TransactionProof() {
                   </div>
                 </div>
 
-                <button
+                <Button
                   type="button"
                   disabled={processing}
+                  loading={processing}
                   onClick={requestCompletion}
-                  className="
-                    mt-5 w-full rounded-xl
-                    bg-[#2D6A4F]
-                    px-4 py-3
-                    text-sm font-semibold text-white
-                    transition hover:bg-[#24583F]
-                    disabled:cursor-not-allowed
-                    disabled:opacity-50
-                  "
+                  fullWidth
                 >
                   {processing
                     ? t("transaction.processing")
                     : t("transaction.yesReceived")}
-                </button>
+                </Button>
               </section>
             )}
 

@@ -1,4 +1,5 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
+import Button from "../../ui/Button";
 
 export default function ProductToolbar({
   view,
@@ -75,16 +76,9 @@ export default function ProductToolbar({
             </button>
           </div>
 
-          {/* Add Product Button */}
-          <button
-            type="button"
-            onClick={onAdd}
-            data-onboarding="add-product"
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold text-sm shadow-sm hover:shadow-md transition cursor-pointer shrink-0"
-          >
-            <i className="ri-add-line text-lg font-bold" />
-            <span>{t("products.addProduct")}</span>
-          </button>
+          <Button variant="primary" size="md" icon="ri-add-line" onClick={onAdd} data-onboarding="add-product">
+            {t("products.addProduct")}
+          </Button>
         </div>
       </div>
     </div>

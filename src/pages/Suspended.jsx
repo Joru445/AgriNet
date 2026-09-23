@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 
+import Button from "../components/ui/Button";
 import logo from "../assets/favicon.ico";
 
 export default function Suspended() {
@@ -107,16 +108,18 @@ export default function Suspended() {
           {/* Action */}
 
           <div className="mt-8 border-t border-(--agri-border-subtle) pt-8">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={handleGoToLanding}
               disabled={loggingOut}
-              className="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-[#2D6A4F] px-5 py-4 font-semibold text-[#2D6A4F] dark:text-(--agri-brand) transition-colors hover:bg-[#2D6A4F] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+              loading={loggingOut}
+              icon={loggingOut ? undefined : "ri-home-4-line"}
+              fullWidth
+              className="py-4 text-base"
             >
-              <i className="ri-home-4-line text-xl" />
-
               {loggingOut ? t("suspended.loggingOut") : t("suspended.goToLanding")}
-            </button>
+            </Button>
           </div>
         </div>
       </section>

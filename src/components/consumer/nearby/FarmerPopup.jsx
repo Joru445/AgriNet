@@ -1,7 +1,7 @@
 ﻿import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
-import Avatar from "../../common/Avatar";
-import ImageViewerModal from "../../common/ImageViewerModal";
+import Avatar from "../../ui/Avatar";
+import ImageViewerModal from "../../ui/ImageViewerModal";
 import useProfileViewer from "../../../hooks/useProfileViewer";
 
 export default function FarmerPopup({ farmer, onMessage }) {

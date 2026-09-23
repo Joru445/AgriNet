@@ -1,6 +1,7 @@
 ﻿import { useCallback, useEffect, useState } from "react";
 
 import { useLanguage } from "../../../context/LanguageContext";
+import Button from "../../ui/Button";
 import { getMyVerification, submitVerification } from "../../../services/farmer.service";
 import { showToast } from "../../../utils/toast";
 
@@ -110,13 +111,9 @@ export default function FarmerVerification() {
         </h2>
         <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-4">
           <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          <button
-            type="button"
-            onClick={loadVerification}
-            className="mt-2 text-xs font-semibold text-red-700 dark:text-red-300 underline"
-          >
+          <Button variant="ghost" size="sm" onClick={loadVerification} className="mt-2">
             {t("common.retry")}
-          </button>
+          </Button>
         </div>
       </section>
     );
@@ -191,41 +188,17 @@ export default function FarmerVerification() {
 
           {canSubmit && (
             <div className="mt-4">
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="w-full rounded-xl bg-[#2D6A4F] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#1B4332] active:scale-[0.99] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <i className="ri-loader-4-line animate-spin" />
-                    {t("farmerVerification.submitting")}
-                  </span>
-                ) : (
-                  t("farmerVerification.submitApplication")
-                )}
-              </button>
+              <Button variant="primary" size="md" fullWidth loading={submitting} onClick={handleSubmit}>
+                {submitting ? t("farmerVerification.submitting") : t("farmerVerification.submitApplication")}
+              </Button>
             </div>
           )}
 
           {status === "rejected" && (
             <div className="mt-3">
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="w-full rounded-xl border border-(--agri-border) bg-(--agri-card) px-4 py-2.5 text-sm font-bold text-(--agri-text) transition hover:bg-(--agri-hover) cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <i className="ri-loader-4-line animate-spin" />
-                    {t("farmerVerification.submitting")}
-                  </span>
-                ) : (
-                  t("farmerVerification.resubmitApplication")
-                )}
-              </button>
+              <Button variant="primary" size="md" fullWidth loading={submitting} onClick={handleSubmit}>
+                {submitting ? t("farmerVerification.submitting") : t("farmerVerification.resubmitApplication")}
+              </Button>
             </div>
           )}
         </div>

@@ -1,8 +1,9 @@
 ﻿import { useEffect, useState } from "react";
-import RoleBadge from "../../common/RoleBadge";
+import RoleBadge from "../../ui/RoleBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 import ResponsiveModal from "../../ui/ResponsiveModal";
 import { DURATION_OPTIONS } from "../../../utils/suspensionOptions";
+import Button from "../../ui/Button";
 
 export default function UserEditModal({
   user,
@@ -230,29 +231,24 @@ export default function UserEditModal({
 
           {/* Form Actions */}
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-(--agri-border-subtle)">
-            <button
-              type="button"
+            <Button
+              variant="cancel"
+              size="md"
               onClick={onClose}
               disabled={loading}
-              className="py-2.5 px-4 rounded-xl border border-(--agri-border) bg-(--agri-card) text-xs sm:text-sm font-bold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             >
               {t("common.cancel")}
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="primary"
+              size="md"
               type="submit"
-              disabled={loading || !hasChanges || (isSuspending && !suspensionReason.trim())}
-              className="flex items-center gap-1.5 py-2.5 px-5 rounded-xl bg-[#2D6A4F] text-white text-xs sm:text-sm font-bold hover:bg-[#1B4332] active:scale-[0.99] transition cursor-pointer shadow-xs disabled:cursor-not-allowed disabled:opacity-50"
+              loading={loading}
+              disabled={!hasChanges || (isSuspending && !suspensionReason.trim())}
             >
-              {loading ? (
-                <>
-                  <i className="ri-loader-4-line animate-spin text-sm" />
-                   <span>{t("adminUser.saving")}</span>
-                </>
-              ) : (
-                <span>{t("adminUser.saveChanges")}</span>
-              )}
-            </button>
+              {t("adminUser.saveChanges")}
+            </Button>
           </div>
         </form>
     </ResponsiveModal>

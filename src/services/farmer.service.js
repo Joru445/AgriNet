@@ -121,9 +121,7 @@ export async function getFarmerDashboard(farmerId = null) {
 
     // 3. Reviews
     let reviews = [];
-    try {
-      reviews = await getFarmerReviews(uid).catch(() => []);
-    } catch (_) {}
+    reviews = await getFarmerReviews(uid).catch(() => []);
 
     const reviewCount = reviews.length;
     const averageRating =

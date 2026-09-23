@@ -1,7 +1,7 @@
 ﻿import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
-import DashboardSection from "../../common/DashboardSection";
-import SkeletonBox from "../../common/SkeletonBox";
+import DashboardSection from "../../ui/DashboardSection";
+import SkeletonBox from "../../ui/SkeletonBox";
 
 // Show max 4 products
 const MAX_DISPLAY = 4;

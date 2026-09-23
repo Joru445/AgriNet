@@ -4,6 +4,7 @@ import { useLanguage } from "../../../context/LanguageContext";
 import { formatDate } from "../../../utils/date";
 import { showToast } from "../../../utils/toast";
 import ResponsiveModal from "../../ui/ResponsiveModal";
+import Button from "../../ui/Button";
 
 export default function ProductDetailModal({ productId, onClose, onToggleAvailability, actionLoading }) {
   const { t } = useLanguage();
@@ -236,12 +237,14 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
                     @{product.farmer?.username || "—"}
                   </p>
                 </div>
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={handleViewFarmer}
-                  className="ml-auto rounded-lg border border-(--agri-border-subtle) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
+                  className="ml-auto"
                 >
                   {t("adminProduct.viewFarmer")}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -252,12 +255,13 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
                   {t("adminProduct.reports")} ({product.totalReports || 0})
                 </h3>
                 {product.totalReports > 0 && (
-                  <button
-                    onClick={handleViewReports}
-                    className="text-xs font-semibold text-[#2D6A4F] hover:underline cursor-pointer"
-                  >
-                    {t("adminProduct.viewAllReports")}
-                  </button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleViewReports}
+                >
+                  {t("adminProduct.viewAllReports")}
+                </Button>
                 )}
               </div>
 
@@ -305,23 +309,21 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
 
             {/* Actions */}
             <div className="flex items-center gap-3 border-t border-(--agri-border-subtle) pt-4">
-              <button
+              <Button
+                variant={product.available ? "danger" : "primary"}
+                size="sm"
                 onClick={handleToggle}
                 disabled={actionLoading}
-                className={`rounded-xl px-4 py-2.5 text-sm font-bold transition cursor-pointer disabled:opacity-50 ${
-                  product.available
-                    ? "bg-red-500/10 text-red-600 hover:bg-red-500/20"
-                    : "bg-[#2D6A4F]/10 text-[#2D6A4F] hover:bg-[#2D6A4F]/20 dark:text-(--agri-brand) dark:hover:bg-(--agri-brand)/20"
-                }`}
               >
                 {product.available ? t("adminProduct.disableProduct") : t("adminProduct.enableProduct")}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="cancel"
+                size="md"
                 onClick={onClose}
-                className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-card) px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition cursor-pointer"
               >
                 {t("common.close")}
-              </button>
+              </Button>
             </div>
           </div>
         )}

@@ -5,15 +5,12 @@ import landscapeBg from "../../assets/img/landscape.jpg";
 
 import { useLanguage } from "../../context/LanguageContext";
 
-import Avatar from "../common/Avatar";
+import Avatar from "../ui/Avatar";
+import Button from "../ui/Button";
 import FormInput from "./FormInput";
 import PasswordInput from "./PasswordInput";
 import ErrorAlert from "./ErrorAlert";
 import SavedAccountSelector from "./SavedAccountSelector";
-import {
-  authPrimaryButtonClass,
-  authSocialButtonClass,
-} from "./authStyles";
 
 function LoginShell({ children, showMobileLogo = true, footer }) {
   return (
@@ -119,20 +116,20 @@ export default function LoginFormPanel({
           <div className="mt-3 flex items-center justify-between gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs">
             <span className="text-red-600 truncate">{passkeyError}</span>
             <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={onPasskeyRetry}
-                className="font-semibold text-[#2D6A4F] hover:underline whitespace-nowrap"
               >
                 {t("common.retry")}
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={onUseAnotherAccount}
-                className="font-semibold text-gray-500 hover:text-gray-700 hover:underline whitespace-nowrap"
               >
                 {t("auth.login.usePasswordInstead")}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -144,14 +141,15 @@ export default function LoginFormPanel({
   if (viewMode === "password" && passwordAccount) {
     return (
       <LoginShell footer={backHomeFooter}>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
+          icon="ri-arrow-left-line"
           onClick={onBackToSaved}
-          className="flex items-center gap-1 text-xs text-gray-500 hover:text-[#2D6A4F] font-medium mb-4 cursor-pointer"
+          className="mb-4"
         >
-          <i className="ri-arrow-left-line" />
           {t("auth.login.backToSaved")}
-        </button>
+        </Button>
 
         <div className="flex items-center gap-3 mb-5">
           <Avatar
@@ -201,14 +199,17 @@ export default function LoginFormPanel({
             </Link>
           </div>
 
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="md"
+            fullWidth
+            icon="ri-login-box-line"
+            loading={loading}
             disabled={loading}
-            className={`w-full ${authPrimaryButtonClass}`}
           >
-            <i className="ri-login-box-line" />
             {loading ? t("auth.login.signingIn") : t("auth.login.signIn")}
-          </button>
+          </Button>
         </form>
       </LoginShell>
     );
@@ -218,14 +219,15 @@ export default function LoginFormPanel({
   return (
     <LoginShell footer={backHomeFooter}>
       {hasSavedAccounts && (
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
+          icon="ri-arrow-left-line"
           onClick={onBackToSaved}
-          className="flex items-center gap-1 text-xs text-gray-500 hover:text-[#2D6A4F] font-medium mb-4 cursor-pointer"
+          className="mb-4"
         >
-          <i className="ri-arrow-left-line" />
           {t("auth.login.backToSaved")}
-        </button>
+        </Button>
       )}
 
       <div className="mb-5">
@@ -281,14 +283,17 @@ export default function LoginFormPanel({
           </Link>
         </div>
 
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size="md"
+          fullWidth
+          icon="ri-login-box-line"
+          loading={loading}
           disabled={loading || passkeyLoading || socialAuthInFlight}
-          className={`w-full ${authPrimaryButtonClass}`}
         >
-          <i className="ri-login-box-line" />
           {loading ? t("auth.login.signingIn") : t("auth.login.signIn")}
-        </button>
+        </Button>
       </form>
 
       <div className="flex items-center gap-3 py-3 text-xs">
@@ -300,11 +305,12 @@ export default function LoginFormPanel({
       </div>
 
       <div className="space-y-2.5">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="md"
+          fullWidth
           onClick={() => onSocialLogin?.("google")}
           disabled={socialAuthInFlight || loading || passkeyLoading}
-          className={`w-full justify-center ${authSocialButtonClass}`}
           aria-label={t("auth.login.continueWithGoogle")}
         >
           <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
@@ -328,20 +334,21 @@ export default function LoginFormPanel({
           <span className="text-gray-800 font-medium">
             {t("auth.login.continueWithGoogle")}
           </span>
-        </button>
+        </Button>
 
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="md"
+          fullWidth
           onClick={() => onSocialLogin?.("facebook")}
           disabled={socialAuthInFlight || loading || passkeyLoading}
-          className={`w-full justify-center ${authSocialButtonClass}`}
           aria-label={t("auth.login.continueWithFacebook")}
         >
           <i className="ri-facebook-circle-fill text-[#1877F2] text-xl shrink-0" />
           <span className="text-gray-800 font-medium">
             {t("auth.login.continueWithFacebook")}
           </span>
-        </button>
+        </Button>
       </div>
 
       <p className="text-center text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6">

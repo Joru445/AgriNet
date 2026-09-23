@@ -1,5 +1,5 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
-import StatCard from "../../common/StatCard";
+import StatCard from "../../ui/StatCard";
 
 export default function DashboardStats({ stats = {}, loading = false }) {
   const { t } = useLanguage();

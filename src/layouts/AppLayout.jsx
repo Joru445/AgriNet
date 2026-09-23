@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import BottomTab from "../components/BottomTab";
-import OfflineIndicator from "../components/common/OfflineIndicator";
+import Header from "../components/layout/Header";
+import Sidebar from "../components/layout/Sidebar";
+import BottomTab from "../components/layout/BottomTab";
+import OfflineIndicator from "../components/ui/OfflineIndicator";
 import PageTransition from "../components/ui/PageTransition";
 import { useAuth } from "../context/AuthContext";
 import useMediaQuery from "../hooks/useMediaQuery";

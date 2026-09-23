@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import { useInquiriesContext } from "../../../context/InquiriesContext";
 
-import DashboardSection from "../../common/DashboardSection";
-import InquiryStatusBadge from "../../shared/inquiries/InquiryStatusBadge";
+import DashboardSection from "../../ui/DashboardSection";
+import InquiryStatusBadge from "../../inquiries/InquiryStatusBadge";
 import EmptyState from "../../ui/EmptyState";
 
 const BREAKDOWN = [

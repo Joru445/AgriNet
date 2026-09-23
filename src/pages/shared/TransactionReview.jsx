@@ -5,9 +5,9 @@ import { useLanguage } from "../../context/LanguageContext";
 
 import useTransactionReview from "../../hooks/useTransactionReview";
 
-import TransactionSummary from "../../components/shared/transaction-review/TransactionSummary";
-import TransactionReviewForm from "../../components/shared/transaction-review/TransactionReviewForm";
-import TransactionReviewView from "../../components/shared/transaction-review/TransactionReviewView";
+import TransactionSummary from "../../components/transactions/TransactionSummary";
+import TransactionReviewForm from "../../components/transactions/TransactionReviewForm";
+import TransactionReviewView from "../../components/transactions/TransactionReviewView";
 
 export default function TransactionReview() {
   const { inquiryId } = useParams();

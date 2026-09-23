@@ -1,8 +1,9 @@
 ﻿import { useState } from "react";
-import RoleBadge from "../../common/RoleBadge";
-import ImageViewerModal from "../../common/ImageViewerModal";
+import RoleBadge from "../../ui/RoleBadge";
+import ImageViewerModal from "../../ui/ImageViewerModal";
 import { useLanguage } from "../../../context/LanguageContext";
 import ResponsiveModal from "../../ui/ResponsiveModal";
+import Button from "../../ui/Button";
 
 export default function UserDetailsModal({ user, onClose }) {
   const { t } = useLanguage();
@@ -239,13 +240,14 @@ export default function UserDetailsModal({ user, onClose }) {
 
         {/* Modal Close Action */}
         <div className="mt-3">
-          <button
-            type="button"
+          <Button
+            variant="cancel"
+            size="md"
             onClick={onClose}
-            className="w-full py-2.5 px-4 rounded-xl bg-[#2D6A4F] text-white text-xs sm:text-sm font-bold hover:bg-[#1B4332] active:scale-[0.99] transition cursor-pointer shadow-xs"
+            fullWidth
           >
             {t("adminUser.closeDetails")}
-          </button>
+          </Button>
         </div>
 
       {/* Fullscreen Zoomable Image Modal */}

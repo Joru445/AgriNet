@@ -1,4 +1,5 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
+import Button from "../../ui/Button";
 
 export default function EmptyProducts({ onAdd }) {
   const { t } = useLanguage();
@@ -15,13 +16,9 @@ export default function EmptyProducts({ onAdd }) {
         {t("products.emptyDesc")}
       </p>
 
-      <button
-        onClick={onAdd}
-        className="mt-6 flex items-center gap-2 px-5 py-3 bg-[#2D6A4F] hover:bg-[#1B4332] rounded-xl text-white font-medium transition-colors cursor-pointer"
-      >
-        <i className="ri-add-line" />
+      <Button variant="primary" size="md" icon="ri-add-line" onClick={onAdd} className="mt-6">
         {t("products.addProduct")}
-      </button>
+      </Button>
     </div>
   );
 }

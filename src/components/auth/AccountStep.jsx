@@ -1,4 +1,5 @@
 import RoleSelector from "./RoleSelector";
+import Button from "../ui/Button";
 import {
   authFieldErrorClass,
   authInputBaseClass,
@@ -6,8 +7,6 @@ import {
   authInputIconClass,
   authInputNormalClass,
   authLabelClass,
-  authPrimaryButtonClass,
-  authSecondaryButtonClass,
 } from "./authStyles";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -140,30 +139,25 @@ export default function AccountStep({
 
       <div className="flex gap-3 pt-2">
         {onBack && (
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="md"
             onClick={onBack}
-            className={`flex-1 ${authSecondaryButtonClass}`}
+            className="flex-1"
           >
             {t("common.back")}
-          </button>
+          </Button>
         )}
 
-        <button
-          type="button"
-          disabled={isCheckingEmail}
+        <Button
+          variant="primary"
+          size="md"
+          loading={isCheckingEmail}
           onClick={onContinue}
-          className={`${onBack ? "flex-1" : "w-full"} ${authPrimaryButtonClass}`}
+          className={onBack ? "flex-1" : "w-full"}
         >
-          {isCheckingEmail ? (
-            <>
-              <i className="ri-loader-4-line animate-spin text-base" />
-              <span>{t("auth.register.checkingEmail")}</span>
-            </>
-          ) : (
-            <span>{t("auth.continue")}</span>
-          )}
-        </button>
+          {isCheckingEmail ? t("auth.register.checkingEmail") : t("auth.continue")}
+        </Button>
       </div>
     </div>
   );

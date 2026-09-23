@@ -1,4 +1,4 @@
-﻿import ReviewCardSkeleton from "../../common/ReviewCardSkeleton";
+﻿import ReviewCardSkeleton from "../../reviews/ReviewCardSkeleton";
 
 /**
  * Skeleton that mirrors the farmer ReviewList

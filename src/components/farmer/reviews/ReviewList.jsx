@@ -1,5 +1,5 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
-import ReviewCard from "../../common/ReviewCard";
+import ReviewCard from "../../reviews/ReviewCard";
 
 export default function ReviewList({ reviews }) {
   const { t } = useLanguage();

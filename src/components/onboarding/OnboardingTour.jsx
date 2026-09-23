@@ -9,7 +9,6 @@ import useMediaQuery from "../../hooks/useMediaQuery";
 const POLL_INTERVAL = 250;
 const TARGET_TIMEOUT = 4000;
 const TIP_MAX_WIDTH = 448;
-const TIP_HEIGHT_ESTIMATE = 280;
 
 function prefersReducedMotion() {
   return (

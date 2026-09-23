@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import { useInquiriesContext } from "../../../context/InquiriesContext";
 import { formatDate } from "../../../utils/date";
-import DashboardSection from "../../common/DashboardSection";
-import SkeletonBox from "../../common/SkeletonBox";
+import DashboardSection from "../../ui/DashboardSection";
+import SkeletonBox from "../../ui/SkeletonBox";
 
 const MAX_ITEMS = 4;
 

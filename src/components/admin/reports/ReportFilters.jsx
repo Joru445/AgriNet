@@ -1,5 +1,6 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
 import InlineSearchInput from "../../ui/InlineSearchInput";
+import Button from "../../ui/Button";
 
 export default function ReportFilters({
   search,
@@ -73,19 +74,19 @@ export default function ReportFilters({
 
           {/* Clear Filters */}
           {(status || targetType || dateFrom || dateTo) && (
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 onStatusChange("");
                 onTargetTypeChange("");
                 onDateFromChange("");
                 onDateToChange("");
               }}
-              className="whitespace-nowrap rounded-xl border border-(--agri-border) px-4 py-2.5 text-xs font-bold text-(--agri-text-secondary) hover:bg-(--agri-hover) transition shadow-2xs cursor-pointer"
             >
-              <i className="ri-filter-off-line mr-1" />
+              <i className="ri-filter-off-line" />
               {t("adminReport.clearFilters")}
-            </button>
+            </Button>
           )}
         </div>
       </div>

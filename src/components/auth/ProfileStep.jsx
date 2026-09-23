@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import LocationPicker from "../location/LocationPicker";
 import useUserLocation from "../../hooks/useUserLocation";
+import Button from "../ui/Button";
 import {
   authFieldErrorClass,
   authInputBaseClass,
@@ -8,8 +9,6 @@ import {
   authInputIconClass,
   authInputNormalClass,
   authLabelClass,
-  authPrimaryButtonClass,
-  authSecondaryButtonClass,
 } from "./authStyles";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -146,30 +145,26 @@ export default function ProfileStep({
 
       {/* Navigation Buttons */}
       <div className="flex gap-3 pt-2">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="md"
           onClick={onBack}
           disabled={loading}
-          className={`flex-1 ${authSecondaryButtonClass}`}
+          className="flex-1"
         >
           {t("common.back")}
-        </button>
+        </Button>
 
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="md"
+          loading={loading}
           disabled={loading}
           onClick={onSubmit}
-          className={`flex-1 ${authPrimaryButtonClass}`}
+          className="flex-1"
         >
-          {loading ? (
-            <>
-              <i className="ri-loader-4-line animate-spin text-base" />
-              <span>{t("auth.register.creating")}</span>
-            </>
-          ) : (
-            <span>{t("auth.register.createAccount")}</span>
-          )}
-        </button>
+          {loading ? t("auth.register.creating") : t("auth.register.createAccount")}
+        </Button>
       </div>
     </div>
   );

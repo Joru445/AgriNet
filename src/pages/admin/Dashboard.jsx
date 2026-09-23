@@ -1,13 +1,14 @@
 ﻿import { useState } from "react";
 import { Link } from "react-router-dom";
-import StatCard from "../../components/common/StatCard";
-import DashboardSection from "../../components/common/DashboardSection";
+import StatCard from "../../components/ui/StatCard";
+import DashboardSection from "../../components/ui/DashboardSection";
 import RecentActivity from "../../components/admin/RecentActivity";
 import RecentProducts from "../../components/admin/RecentProducts";
 import RecentUsers from "../../components/admin/RecentUsers";
 import ErrorState from "../../components/ui/ErrorState";
 import TabButton from "../../components/ui/TabButton";
-import SkeletonBox from "../../components/common/SkeletonBox";
+import Button from "../../components/ui/Button";
+import SkeletonBox from "../../components/ui/SkeletonBox";
 import UserGrowthCard from "../../components/admin/metrics/UserGrowthCard";
 import CategoryDonutCard from "../../components/admin/metrics/CategoryDonutCard";
 import TransactionActivityCard from "../../components/admin/metrics/TransactionActivityCard";
@@ -70,15 +71,17 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="cancel"
+          size="sm"
           onClick={refresh}
           disabled={loading}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-(--agri-border) bg-(--agri-card) px-2.5 py-1 text-xs font-semibold text-(--agri-text-secondary) shadow-2xs hover:bg-(--agri-hover) disabled:opacity-50 transition cursor-pointer"
+          loading={loading}
+          icon={loading ? undefined : "ri-refresh-line"}
         >
-          <i className={`ri-refresh-line text-sm ${loading ? "animate-spin" : ""}`} />
           <span className="hidden sm:inline">{t("admin.refresh")}</span>
-        </button>
+        </Button>
       </div>
 
       {error && (
