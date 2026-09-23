@@ -11,7 +11,7 @@ import StoreProducts from "../../components/store/StoreProducts";
 import ReviewSection from "../../components/reviews/ReviewSection";
 import ProductGridSkeleton from "../../components/products/ProductGridSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
-import GroupBadge from "../../components/groups/GroupBadge";
+import FarmerGroupAffiliation from "../../components/groups/FarmerGroupAffiliation";
 
 export default function PublicProfile() {
   const startConversation = useStartConversation();
@@ -36,11 +36,24 @@ export default function PublicProfile() {
   } = usePublicProfile();
 
   useEffect(() => {
-    if (!profile?.uid) return;
+    if (role !== "farmer" || !profile?.uid) {
+      setGroups([]);
+      return;
+    }
+
+    let cancelled = false;
     getUserApprovedGroups(profile.uid)
-      .then(setGroups)
-      .catch(() => setGroups([]));
-  }, [profile?.uid]);
+      .then((approvedGroups) => {
+        if (!cancelled) setGroups(approvedGroups);
+      })
+      .catch(() => {
+        if (!cancelled) setGroups([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.uid, role]);
 
   if (!loading && !profile) {
     return (
@@ -71,25 +84,13 @@ export default function PublicProfile() {
         />
       )}
 
-      {/* Group memberships */}
-      {groups.length > 0 && (
-        <section className="px-4 sm:px-6 py-4 border-t border-(--agri-border-subtle)">
-          <h3 className="flex items-center gap-2 text-sm font-bold text-(--agri-text) mb-3">
-            <i className="ri-team-line text-[#2D6A4F] dark:text-(--agri-brand)" />
-            {t("profile.groups")}
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {groups.map((g) => (
-              <GroupBadge
-                key={g.groupId}
-                groupId={g.groupId}
-                groupName={g.groupName}
-                groupImageUrl={g.groupImageUrl}
-                size="md"
-              />
-            ))}
-          </div>
-        </section>
+      {/* Approved farmer affiliations */}
+      {isFarmer && (
+        <FarmerGroupAffiliation
+          groups={groups}
+          variant="full"
+          className="border-t border-(--agri-border-subtle) px-4 py-4 sm:px-6"
+        />
       )}
 
       {/* Farmer: products */}

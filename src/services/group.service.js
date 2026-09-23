@@ -12,8 +12,20 @@
 // ============================================================
 
 import { apiRequest } from "./api/api.client";
+import * as pageCache from "../utils/pageCache";
 
 const GROUPS_BASE = "/v1/groups";
+const APPROVED_GROUPS_CACHE_TTL = 2 * 60 * 1000;
+
+function approvedGroupsCacheKey(userId) {
+  return `approvedUserGroups:${userId}`;
+}
+
+function invalidateApprovedGroupsCache(userId) {
+  if (userId) {
+    pageCache.invalidate(approvedGroupsCacheKey(userId));
+  }
+}
 
 // ============================================================
 // GROUP CRUD
@@ -170,6 +182,7 @@ export async function approveApplication(groupId, userId) {
     `${GROUPS_BASE}/${encodeURIComponent(groupId)}/memberships/${encodeURIComponent(userId)}/approve`,
     { method: "POST" },
   );
+  invalidateApprovedGroupsCache(data.data?.userId || userId);
   return data.data;
 }
 
@@ -200,6 +213,7 @@ export async function removeGroupMember(groupId, userId) {
     `${GROUPS_BASE}/${encodeURIComponent(groupId)}/memberships/${encodeURIComponent(userId)}`,
     { method: "DELETE" },
   );
+  invalidateApprovedGroupsCache(data.data?.userId || userId);
   return data.data;
 }
 
@@ -226,10 +240,22 @@ export async function getGroupMemberCount(groupId) {
  * @returns {Promise<Array>} Array of { groupId, groupName, groupImageUrl, appliedAt }
  */
 export async function getUserApprovedGroups(userId) {
+  if (!userId) {
+    return [];
+  }
+
+  const cacheKey = approvedGroupsCacheKey(userId);
+  const cached = pageCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const data = await apiRequest(
     `${GROUPS_BASE}/user/${encodeURIComponent(userId)}/approved-groups`,
   );
-  return data.data ?? [];
+  const groups = data.data ?? [];
+  pageCache.set(cacheKey, groups, APPROVED_GROUPS_CACHE_TTL);
+  return groups;
 }
 
 // ============================================================

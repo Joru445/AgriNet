@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Avatar from "../ui/Avatar";
 import ImageViewerModal from "../ui/ImageViewerModal";
-import GroupBadge from "../groups/GroupBadge";
+import FarmerGroupAffiliation from "../groups/FarmerGroupAffiliation";
 import { useLanguage } from "../../context/LanguageContext";
 import useProfileViewer from "../../hooks/useProfileViewer";
 import { getUserApprovedGroups } from "../../services/group.service";
@@ -16,11 +16,25 @@ export default function ProductSeller({ farmer, isOwner }) {
   const farmerId = farmer?.uid || farmer?.id;
 
   useEffect(() => {
-    if (!farmerId) return;
+    if (!farmerId || isOwner) {
+      setGroups([]);
+      return;
+    }
+
+    let cancelled = false;
+    setGroups([]);
     getUserApprovedGroups(farmerId)
-      .then(setGroups)
-      .catch(() => setGroups([]));
-  }, [farmerId]);
+      .then((approvedGroups) => {
+        if (!cancelled) setGroups(approvedGroups);
+      })
+      .catch(() => {
+        if (!cancelled) setGroups([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [farmerId, isOwner]);
 
   if (!farmer) return null;
 
@@ -64,19 +78,7 @@ export default function ProductSeller({ farmer, isOwner }) {
             )}
           </div>
 
-          {groups.length > 0 && (
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {groups.map((g) => (
-                <GroupBadge
-                  key={g.groupId}
-                  groupId={g.groupId}
-                  groupName={g.groupName}
-                  groupImageUrl={g.groupImageUrl}
-                  size="sm"
-                />
-              ))}
-            </div>
-          )}
+          <FarmerGroupAffiliation groups={groups} className="mt-1.5" />
 
           {address && (
             <div className="mt-0.5 flex items-start gap-1 text-xs text-(--agri-text-muted)">

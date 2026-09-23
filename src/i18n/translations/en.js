@@ -1656,6 +1656,8 @@ export default {
     replayTutorialSubtitle: "See how AgriNet works again",
     myGroups: "My Groups",
     groups: "Groups",
+    organizations: "Organizations",
+    member: "Member",
     coverOf: "Cover photo of {name}",
     viewCover: "Click to view cover photo",
     picOf: "{name}'s Profile Picture",

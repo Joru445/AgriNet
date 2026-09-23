@@ -37,7 +37,7 @@ export default function Inquiry({ productData, counterparty }) {
 
         <div className="mt-2 flex flex-wrap items-baseline gap-2">
           <span className="text-lg font-extrabold text-(--agri-text) dark:text-(--agri-text) sm:text-xl">
-            ?{total.toLocaleString()}
+            Php{total.toLocaleString("en-PH")}
           </span>
           <span className="text-xs text-(--agri-text-muted) font-medium">{t("transactions.total")}</span>
         </div>

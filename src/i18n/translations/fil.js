@@ -1684,6 +1684,8 @@ export default {
     replayTutorialSubtitle: "Tingnan muli kung paano gumagana ang AgriNet",
     myGroups: "Ang Mga Grupo Ko",
     groups: "Mga Grupo",
+    organizations: "Mga Organisasyon",
+    member: "Miyembro",
     coverOf: "Cover photo ni {name}",
     viewCover: "I-click para tingnan ang cover photo",
     picOf: "Profile Picture ni {name}",
