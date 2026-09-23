@@ -153,7 +153,9 @@ export async function sendMessage({
     lastMessage: lastMessagePreview,
     lastMessageSender: actualSenderId,
     lastMessageAt: serverTimestamp(),
-    [`unreadCount.${receiverId}`]: increment(1),
+    unreadCount: {
+      [receiverId]: increment(1),
+    },
   };
 
   const batch = writeBatch(db);
@@ -371,73 +373,6 @@ export async function apiSendMessage(data) {
       method: "POST",
       body: JSON.stringify(data),
     });
-
-    // Real-time Firestore sync for instant receiver unread badge and conversation list update
-    const senderUid = data.senderId || auth.currentUser?.uid;
-    const convId = data.conversationId;
-    let recvId = data.receiverId;
-
-    if (!recvId && convId && convId.includes("_") && senderUid) {
-      const parts = convId.split("_");
-      if (parts.length === 2) {
-        recvId = parts.find((id) => id !== senderUid) || null;
-      }
-    }
-
-    if (convId && senderUid) {
-      const lastPreview =
-        data.type === "image"
-          ? "📷 Photo"
-          : data.type === "product_inquiry"
-            ? "📦 Product Inquiry"
-            : data.locationType === "live_location" || data.type === "live_location"
-              ? "📍 Live Location"
-              : data.location
-                ? "📍 Shared Location"
-                : data.text || "Sent a message";
-
-      const updates = {
-        lastMessage: lastPreview,
-        lastMessageSender: senderUid,
-        lastMessageAt: serverTimestamp(),
-      };
-
-      if (recvId) {
-        updates[`unreadCount.${recvId}`] = increment(1);
-      }
-
-      try {
-        const conversationRef = doc(conversationsRef, convId);
-        await updateDoc(conversationRef, updates);
-      } catch (convErr) {
-        console.warn("[Messages] Direct conversation updateDoc failed, attempting repair read-modify-write:", convErr);
-        try {
-          const conversationRef = doc(conversationsRef, convId);
-          const snap = await getDoc(conversationRef);
-          const currentData = snap.exists() ? snap.data() : {};
-          const existingUnreadMap =
-            typeof currentData.unreadCount === "object" && currentData.unreadCount !== null
-              ? { ...currentData.unreadCount }
-              : {};
-          const currentRecvCount = Number(existingUnreadMap[recvId]) || 0;
-          if (recvId) {
-            existingUnreadMap[recvId] = currentRecvCount + 1;
-          }
-          await setDoc(
-            conversationRef,
-            {
-              lastMessage: lastPreview,
-              lastMessageSender: senderUid,
-              lastMessageAt: serverTimestamp(),
-              unreadCount: existingUnreadMap,
-            },
-            { merge: true },
-          );
-        } catch (setErr) {
-          console.error("[Messages] SetDoc repair failed:", setErr);
-        }
-      }
-    }
 
     return result?.data?.id || result?.data;
   } catch (err) {

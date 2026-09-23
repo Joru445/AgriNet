@@ -20,19 +20,19 @@ export default function useReviews() {
       setLoading(true);
 
       const data = await getFarmerReviews(profile.uid);
+      const safeData = Array.isArray(data) ? data : [];
 
       // Paint base reviews immediately; profiles fill in in the background.
-      setReviews(data);
+      setReviews(safeData);
 
-      enrichFarmerReviews(data)
-        .then((enriched) => setReviews(enriched))
+      enrichFarmerReviews(safeData)
+        .then((enriched) => setReviews(Array.isArray(enriched) ? enriched : safeData))
         .catch(() => {
           /* noop */
         });
     } catch (error) {
-      console.error(error);
-
-      showToast.error("Failed to load reviews.");
+      console.error("[useReviews] Failed to load reviews:", error);
+      setReviews([]);
     } finally {
       setLoading(false);
     }

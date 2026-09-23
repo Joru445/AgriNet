@@ -79,27 +79,38 @@ export function ConversationsProvider({ children }) {
           }
 
           let unread = 0;
-          let hasExplicitUnread = false;
 
           if (typeof conversation.unreadCount === "number") {
             unread = conversation.lastMessageSender !== listenerUid ? conversation.unreadCount : 0;
-            hasExplicitUnread = true;
-          } else if (conversation.unreadCount && typeof conversation.unreadCount === "object" && listenerUid in conversation.unreadCount) {
+          } else if (
+            conversation.unreadCount &&
+            typeof conversation.unreadCount === "object" &&
+            listenerUid in conversation.unreadCount
+          ) {
             unread = Number(conversation.unreadCount[listenerUid]) || 0;
-            hasExplicitUnread = true;
-          } else if (conversation.rawUnreadCount && typeof conversation.rawUnreadCount === "object" && listenerUid in conversation.rawUnreadCount) {
+          } else if (conversation[`unreadCount.${listenerUid}`] != null) {
+            unread = Number(conversation[`unreadCount.${listenerUid}`]) || 0;
+          } else if (
+            conversation.rawUnreadCount &&
+            typeof conversation.rawUnreadCount === "object" &&
+            listenerUid in conversation.rawUnreadCount
+          ) {
             unread = Number(conversation.rawUnreadCount[listenerUid]) || 0;
-            hasExplicitUnread = true;
           }
 
-          // Fallback ONLY when unreadCount field is completely missing from document
-          if (!hasExplicitUnread) {
-            const isFromOther = Boolean(conversation.lastMessageSender && conversation.lastMessageSender !== listenerUid);
-            if (isFromOther && conversation.lastMessageAt) {
-              const myLastRead = conversation.lastRead?.[listenerUid];
-              const readMs = getTimestampMs(myLastRead);
-              const msgMs = getTimestampMs(conversation.lastMessageAt);
-              if (!readMs || (msgMs && msgMs > readMs)) {
+          // Resilient check: If last message was sent by the other party and is newer than our lastRead (or not yet read),
+          // ensure unread is at least 1 even if the unreadCount field was 0, lagged, or missed an increment
+          const isFromMe = Boolean(
+            conversation.lastMessageSender === listenerUid ||
+            (typeof conversation.lastMessage === "string" &&
+              conversation.lastMessage.startsWith("You:"))
+          );
+          if (!isFromMe && (conversation.lastMessageAt || conversation.lastMessage)) {
+            const myLastRead = conversation.lastRead?.[listenerUid];
+            const readMs = getTimestampMs(myLastRead);
+            const msgMs = getTimestampMs(conversation.lastMessageAt);
+            if (!readMs || (msgMs && msgMs > readMs)) {
+              if (unread <= 0) {
                 unread = 1;
               }
             }

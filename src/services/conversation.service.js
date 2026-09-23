@@ -46,10 +46,21 @@ export async function markConversationRead(conversationId, uid, currentUnreadCou
 
   try {
     const conversationRef = doc(db, "conversations", conversationId);
-    await updateDoc(conversationRef, {
-      [`lastRead.${uid}`]: Date.now(),
-      [`unreadCount.${uid}`]: 0,
-    });
+    try {
+      await updateDoc(conversationRef, {
+        [`lastRead.${uid}`]: Date.now(),
+        [`unreadCount.${uid}`]: 0,
+      });
+    } catch (updateErr) {
+      await setDoc(
+        conversationRef,
+        {
+          lastRead: { [uid]: Date.now() },
+          unreadCount: { [uid]: 0 },
+        },
+        { merge: true },
+      );
+    }
   } catch (error) {
     console.error("Failed to mark conversation read:", error);
   }

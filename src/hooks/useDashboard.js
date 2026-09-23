@@ -56,9 +56,9 @@ export default function useDashboard() {
     try {
       setLoading(true);
 
-      // Dashboard statistics are aggregated server-side (GET /farmers/dashboard)
-      // so the client no longer reads whole collections to compute counts.
-      const data = await getFarmerDashboard();
+      // Dashboard statistics are aggregated server-side (GET /v1/farmers/dashboard)
+      // with full real-time Firestore fallback if API is unavailable.
+      const data = await getFarmerDashboard(profile.uid);
       const summary = data?.summary ?? {};
 
       const apiStats = {

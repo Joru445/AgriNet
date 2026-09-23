@@ -9,6 +9,7 @@ import {
 import { useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { useConversationsContext } from "./ConversationsContext";
+import { getTimestampMs } from "../utils/chat";
 
 const UnreadMessagesContext = createContext({
   unreadCount: 0,
@@ -22,6 +23,7 @@ export function UnreadMessagesProvider({ children }) {
   const { conversations } = useConversationsContext();
 
   const [unreadCount, setUnreadCount] = useState(0);
+  const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
 
   const dismissedIdRef = useRef(null);
@@ -34,12 +36,13 @@ export function UnreadMessagesProvider({ children }) {
   const recalculateUnreads = useCallback(() => {
     if (!profile?.uid || !conversations) {
       setUnreadCount(0);
+      setTotalUnreadMessages(0);
       setShowPopup(false);
       return;
     }
 
     let totalUnread = 0;
-    const unreads = [];
+    const unreadConversations = [];
 
     conversations.forEach((conv) => {
       const isCurrentActive =
@@ -48,22 +51,55 @@ export function UnreadMessagesProvider({ children }) {
           (activeUserId && conv.participants?.includes(activeUserId)));
 
       if (!isCurrentActive) {
-        const count =
-          typeof conv.unreadCount === "number"
-            ? conv.unreadCount
-            : (conv.unreadCount?.[profile.uid] ??
-                conv.rawUnreadCount?.[profile.uid] ??
-                0);
+        let count = 0;
+        if (typeof conv.unreadCount === "number") {
+          count = conv.lastMessageSender !== profile.uid ? conv.unreadCount : 0;
+        } else if (
+          conv.unreadCount &&
+          typeof conv.unreadCount === "object" &&
+          profile.uid in conv.unreadCount
+        ) {
+          count = Number(conv.unreadCount[profile.uid]) || 0;
+        } else if (conv[`unreadCount.${profile.uid}`] != null) {
+          count = Number(conv[`unreadCount.${profile.uid}`]) || 0;
+        } else if (
+          conv.rawUnreadCount &&
+          typeof conv.rawUnreadCount === "object" &&
+          profile.uid in conv.rawUnreadCount
+        ) {
+          count = Number(conv.rawUnreadCount[profile.uid]) || 0;
+        }
+
+        const isFromMe = Boolean(
+          conv.lastMessageSender === profile.uid ||
+          (typeof conv.lastMessage === "string" &&
+            conv.lastMessage.startsWith("You:"))
+        );
+        if (!isFromMe && (conv.lastMessageAt || conv.lastMessage)) {
+          const myLastRead = conv.lastRead?.[profile.uid];
+          const readMs = getTimestampMs(myLastRead);
+          const msgMs = getTimestampMs(conv.lastMessageAt);
+          if (!readMs || (msgMs && msgMs > readMs)) {
+            if (count <= 0) {
+              count = 1;
+            }
+          }
+        }
+
         if (count > 0) {
           totalUnread += count;
-          unreads.push(conv);
+          unreadConversations.push(conv);
         }
       }
     });
 
-    setUnreadCount(totalUnread);
+    // The messages icon badge count is based on each user/conversation that has chat:
+    // "it will be based on each user have chat if 6 user have chat it will be 6 be flexible"
+    const unreadUsersCount = unreadConversations.length;
+    setUnreadCount(unreadUsersCount);
+    setTotalUnreadMessages(totalUnread);
 
-    if (totalUnread === 0 || unreads.length === 0) {
+    if (unreadUsersCount === 0 || unreadConversations.length === 0) {
       setShowPopup(false);
       dismissedIdRef.current = null;
       if (popupTimerRef.current) {
@@ -72,7 +108,7 @@ export function UnreadMessagesProvider({ children }) {
       return;
     }
 
-    const newestUnread = unreads[0];
+    const newestUnread = unreadConversations[0];
     const lastTime =
       newestUnread.lastMessageAt?.seconds ||
       (newestUnread.lastMessageAt?.toMillis
@@ -116,6 +152,8 @@ export function UnreadMessagesProvider({ children }) {
     <UnreadMessagesContext.Provider
       value={{
         unreadCount,
+        unreadUsersCount: unreadCount,
+        totalUnreadMessages,
         showPopup,
       }}
     >

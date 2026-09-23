@@ -40,11 +40,14 @@ export default function ConversationItem({
     (activeConversation.id === item.id ||
       activeConversation.otherUser?.uid === user?.uid);
 
-  const isMine = !searching && item?.lastMessageSender === profile?.uid;
+  const isMine = !searching && (
+    item?.lastMessageSender === profile?.uid ||
+    (typeof item?.lastMessage === "string" && item.lastMessage.startsWith("You:"))
+  );
   const otherUid = user?.uid;
   const otherLastRead = item?.lastRead?.[otherUid];
 
-  const hasUnread = !searching && !isMine && Boolean(item.unreadCount > 0);
+  const hasUnread = !searching && !isSelected && !isMine && Boolean(item.unreadCount > 0);
   const unreadDisplayCount = item.unreadCount > 99 ? "99+" : item.unreadCount;
 
   const isSeen = (() => {
@@ -165,7 +168,10 @@ export default function ConversationItem({
           )}
 
           {hasUnread && (
-            <span className="min-w-5 h-5 rounded-full bg-[#2D6A4F] text-white text-xs font-bold flex items-center justify-center px-1.5 shrink-0 shadow-xs animate-in fade-in zoom-in-75 duration-150">
+            <span
+              className="min-w-5 h-5 rounded-full bg-[#2D6A4F] dark:bg-(--agri-brand) text-white text-[11px] font-bold flex items-center justify-center px-1.5 shrink-0 shadow-xs animate-in fade-in zoom-in-75 duration-150 leading-none select-none"
+              title={`${item.unreadCount} unread`}
+            >
               {unreadDisplayCount}
             </span>
           )}
