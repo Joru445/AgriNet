@@ -46,10 +46,21 @@ export async function markConversationRead(conversationId, uid, currentUnreadCou
 
   try {
     const conversationRef = doc(db, "conversations", conversationId);
-    await updateDoc(conversationRef, {
-      [`lastRead.${uid}`]: serverTimestamp(),
-      [`unreadCount.${uid}`]: 0,
-    });
+    try {
+      await updateDoc(conversationRef, {
+        [`lastRead.${uid}`]: Date.now(),
+        [`unreadCount.${uid}`]: 0,
+      });
+    } catch (updateErr) {
+      await setDoc(
+        conversationRef,
+        {
+          lastRead: { [uid]: Date.now() },
+          unreadCount: { [uid]: 0 },
+        },
+        { merge: true },
+      );
+    }
   } catch (error) {
     console.error("Failed to mark conversation read:", error);
   }
@@ -189,6 +200,72 @@ export async function updateConversation(conversationId, data) {
   await updateDoc(conversationRef, data);
 }
 
+/**
+ * Record an ended location message in the conversation document.
+ * This guarantees real-time propagation to all conversation participants via onSnapshot.
+ */
+export async function updateConversationEndedLocation(conversationId, messageId) {
+  if (!conversationId || !messageId) return;
+  try {
+    const conversationRef = doc(db, "conversations", conversationId);
+    await updateDoc(conversationRef, {
+      [`endedLocations.${messageId}`]: true,
+      lastEndedLocationAt: Date.now(),
+    });
+  } catch (error) {
+    console.warn("[Conversations] updateDoc endedLocations failed, attempting setDoc merge:", error);
+    try {
+      const conversationRef = doc(db, "conversations", conversationId);
+      await setDoc(
+        conversationRef,
+        {
+          endedLocations: {
+            [messageId]: true,
+          },
+          lastEndedLocationAt: Date.now(),
+        },
+        { merge: true },
+      );
+    } catch (innerError) {
+      console.error("[Conversations] Failed to set endedLocations in conversation:", innerError);
+    }
+  }
+}
+
+/**
+ * Record multiple ended location messages in the conversation document in a single write.
+ */
+export async function updateConversationEndedLocations(conversationId, messageIds) {
+  if (!conversationId || !messageIds?.length) return;
+  const updates = {
+    lastEndedLocationAt: Date.now(),
+  };
+  const mapUpdates = {};
+  messageIds.forEach((id) => {
+    updates[`endedLocations.${id}`] = true;
+    mapUpdates[id] = true;
+  });
+
+  try {
+    const conversationRef = doc(db, "conversations", conversationId);
+    await updateDoc(conversationRef, updates);
+  } catch (error) {
+    try {
+      const conversationRef = doc(db, "conversations", conversationId);
+      await setDoc(
+        conversationRef,
+        {
+          endedLocations: mapUpdates,
+          lastEndedLocationAt: Date.now(),
+        },
+        { merge: true },
+      );
+    } catch (innerError) {
+      console.error("[Conversations] Failed to update endedLocations in conversation:", innerError);
+    }
+  }
+}
+
 /*
  * ============================================================
  * BACKEND API WRAPPERS
@@ -260,11 +337,15 @@ export async function apiFindOrCreateConversation(otherUserId, { findOnly = fals
 
 export async function apiMarkConversationRead(conversationId) {
   try {
+    const currentUid = auth.currentUser?.uid;
+    if (currentUid && conversationId) {
+      await markConversationRead(conversationId, currentUid);
+    }
     const response = await apiRequest(
       `/v1/conversations/${conversationId}/read`,
       { method: "PATCH" },
     );
-    return response.data;
+    return response?.data;
   } catch (err) {
     console.warn("[Conversations] Backend API mark read failed, falling back to Firestore:", err.message);
     const currentUid = auth.currentUser?.uid;

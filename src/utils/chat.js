@@ -138,3 +138,30 @@ export function formatSeparator(timestamp) {
     minute: "2-digit",
   });
 }
+
+export function getTimestampMs(val) {
+  if (!val) return null;
+  if (typeof val === "number") {
+    return val < 10000000000 ? val * 1000 : val;
+  }
+  if (typeof val.toMillis === "function") {
+    return val.toMillis();
+  }
+  if (typeof val.toDate === "function") {
+    return val.toDate().getTime();
+  }
+  if (val.seconds != null) {
+    return val.seconds * 1000;
+  }
+  if (val._seconds != null) {
+    return val._seconds * 1000;
+  }
+  if (val instanceof Date) {
+    const t = val.getTime();
+    return isNaN(t) ? null : t;
+  }
+  const d = new Date(val);
+  const t = d.getTime();
+  return isNaN(t) ? null : t;
+}
+

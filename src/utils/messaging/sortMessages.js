@@ -1,10 +1,10 @@
 function toSeconds(timestamp) {
-  if (!timestamp) return 0;
+  if (!timestamp) return Date.now() / 1000;
   if (timestamp.seconds != null) return timestamp.seconds;
   if (typeof timestamp.toMillis === "function")
     return timestamp.toMillis() / 1000;
   if (typeof timestamp === "number") return timestamp / 1000;
-  return 0;
+  return Date.now() / 1000;
 }
 
 export function sortByCreatedAt(a, b) {

@@ -1,4 +1,5 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { auth } from "../../../firebase/auth";
 import Avatar from "../../common/Avatar";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import MessageBubble from "./MessageBubble";
@@ -38,8 +39,13 @@ export default function MessageRow({
   onJumpToMessage,
   onRetry,
   onDeleteFailed,
+  onStopLiveLocation,
 }) {
-  const mine = message.senderId === profile?.uid;
+  const currentUid = profile?.uid || auth.currentUser?.uid;
+  const mine = Boolean(
+    currentUid &&
+    (message.senderId === currentUid || message.sender?.uid === currentUid)
+  );
   const isTouch = useIsTouch();
   const reducedMotion = prefersReducedMotion();
   const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
@@ -107,6 +113,13 @@ export default function MessageRow({
     return null;
   })();
 
+  const isLocationMsg =
+    message.type === "live_location" ||
+    message.type === "location" ||
+    message.locationType === "live_location" ||
+    message.locationType === "location" ||
+    Boolean(message.location);
+
   return (
     <>
     <div
@@ -114,9 +127,11 @@ export default function MessageRow({
       className={`group/swipe relative flex w-full min-w-0 scroll-mt-6 scroll-mb-6 ${mine ? "justify-end" : "justify-start"} ${groupSpacing}`}
     >
       <div
-        className={`relative flex min-w-0 max-w-[85%] sm:max-w-[75%] md:max-w-[68%] lg:max-w-[62%] ${
-          mine ? "flex-row-reverse" : "flex-row"
-        }`}
+        className={`relative flex min-w-0 ${
+          isLocationMsg
+            ? "max-w-[95%] sm:max-w-[85%] md:max-w-[75%]"
+            : "max-w-[85%] sm:max-w-[75%] md:max-w-[68%] lg:max-w-[62%]"
+        } ${mine ? "flex-row-reverse" : "flex-row"}`}
       >
         {/* Reply Action Affordance - only for messages from the other user */}
         {canReply && (
@@ -132,7 +147,7 @@ export default function MessageRow({
         <div className="relative min-w-0 flex-1">
           {/* Swipe-translated portion: avatar + bubble. */}
           <div
-            className="flex min-w-0 items-end gap-2"
+            className={`flex min-w-0 items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
             {...swipe.bind}
             style={swipeStyle}
           >
@@ -158,6 +173,7 @@ export default function MessageRow({
                 onRetry={onRetry}
                 onDeleteFailed={onDeleteFailed}
                 onJumpToMessage={onJumpToMessage}
+                onStopLiveLocation={onStopLiveLocation}
               />
 
               {statusText && (

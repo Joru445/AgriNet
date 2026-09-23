@@ -1,9 +1,11 @@
-﻿import Avatar from "../../common/Avatar";
+import Avatar from "../../common/Avatar";
 import ImageViewerModal from "../../common/ImageViewerModal";
 import { formatTimestamp } from "../../../utils/date";
 import { useAuth } from "../../../context/AuthContext";
 import { useLanguage } from "../../../context/LanguageContext";
 import useProfileViewer from "../../../hooks/useProfileViewer";
+
+import { getTimestampMs } from "../../../utils/chat";
 
 export default function ConversationItem({
   item,
@@ -38,35 +40,22 @@ export default function ConversationItem({
     (activeConversation.id === item.id ||
       activeConversation.otherUser?.uid === user?.uid);
 
-  const isMine = !searching && item?.lastMessageSender === profile?.uid;
+  const isMine = !searching && (
+    item?.lastMessageSender === profile?.uid ||
+    (typeof item?.lastMessage === "string" && item.lastMessage.startsWith("You:"))
+  );
   const otherUid = user?.uid;
-  const otherUnread =
-    item?.rawUnreadCount?.[otherUid] ??
-    (typeof item?.unreadCount === "object"
-      ? item?.unreadCount?.[otherUid]
-      : undefined) ??
-    0;
   const otherLastRead = item?.lastRead?.[otherUid];
+
+  const hasUnread = !searching && !isSelected && !isMine && Boolean(item.unreadCount > 0);
+  const unreadDisplayCount = item.unreadCount > 99 ? "99+" : item.unreadCount;
 
   const isSeen = (() => {
     if (!isMine) return false;
-    if (otherUnread === 0 && item?.lastMessageAt) return true;
     if (otherLastRead && item?.lastMessageAt) {
-      const readSec =
-        otherLastRead.seconds ||
-        (otherLastRead.toMillis
-          ? otherLastRead.toMillis() / 1000
-          : typeof otherLastRead === "number"
-            ? otherLastRead / 1000
-            : 0);
-      const msgSec =
-        item.lastMessageAt.seconds ||
-        (item.lastMessageAt.toMillis
-          ? item.lastMessageAt.toMillis() / 1000
-          : typeof item.lastMessageAt === "number"
-            ? item.lastMessageAt / 1000
-            : 0);
-      return readSec >= msgSec && msgSec > 0;
+      const readMs = getTimestampMs(otherLastRead);
+      const msgMs = getTimestampMs(item.lastMessageAt);
+      return Boolean(readMs && msgMs && readMs >= msgMs);
     }
     return false;
   })();
@@ -96,7 +85,7 @@ export default function ConversationItem({
               className={`truncate ${
                 isSelected
                   ? "font-semibold text-agri-dark dark:text-(--agri-brand-light)"
-                  : !searching && !isMine && item.unreadCount > 0
+                  : hasUnread
                     ? "font-bold text-(--agri-text)"
                     : "font-semibold text-(--agri-text)"
               }`}
@@ -124,59 +113,70 @@ export default function ConversationItem({
           </div>
 
           {!searching && (
-            <span className="text-xs text-(--agri-text-muted) whitespace-nowrap">
+            <span
+              className={`text-xs whitespace-nowrap ${
+                hasUnread
+                  ? "text-[#2D6A4F] dark:text-(--agri-brand) font-bold"
+                  : "text-(--agri-text-muted)"
+              }`}
+            >
               {formatTimestamp(item.lastMessageAt)}
             </span>
           )}
         </div>
 
-        {hasDraft ? (
-          <p className="text-sm truncate">
-            <span className="text-red-900/75 font-bold">{t("messages.draft")}</span>
-            <span className="text-(--agri-text-secondary)">{draft}</span>
-          </p>
-        ) : searching ? (
-          <p className="text-sm text-(--agri-text-muted) truncate">@{user?.username}</p>
-        ) : isMine ? (
-          <div className="flex items-center justify-between gap-1.5 min-w-0">
-            <p className="text-sm text-(--agri-text-muted) truncate flex-1 min-w-0">
-              <span className="text-(--agri-text-secondary) font-medium">{t("common.you")}: </span>
-              {item.lastMessage || t("messages.sentMessage")}
+        <div className="flex items-center justify-between gap-2 mt-0.5">
+          {hasDraft ? (
+            <p className="text-sm truncate flex-1 min-w-0">
+              <span className="text-red-900/75 font-bold">{t("messages.draft")}</span>
+              <span className="text-(--agri-text-secondary)">{draft}</span>
             </p>
-            <span className="shrink-0 flex items-center gap-0.5 text-[11px] font-bold">
-              {isSeen ? (
-                <span
-                  className="text-(--agri-text-muted) flex items-center gap-0.5"
-                  title={t("messages.seen")}
-                >
-                  {t("messages.seen")}
-                </span>
-              ) : (
-                <span
-                  className="text-(--agri-text-muted) flex items-center gap-0.5 font-semibold"
-                  title={t("messages.sent")}
-                >
-                  {t("messages.sent")}
-                </span>
-              )}
-            </span>
-          </div>
-        ) : (
-          <p
-            className={`text-sm truncate ${
-              item.unreadCount > 0 ? "font-bold text-(--agri-text)" : "text-(--agri-text-muted)"
-            }`}
-          >
-            {item.lastMessage || t("messages.startConversation")}
-          </p>
-        )}
-      </div>
+          ) : searching ? (
+            <p className="text-sm text-(--agri-text-muted) truncate flex-1 min-w-0">@{user?.username}</p>
+          ) : isMine ? (
+            <div className="flex items-center justify-between gap-1.5 min-w-0 flex-1">
+              <p className="text-sm text-(--agri-text-muted) truncate flex-1 min-w-0">
+                <span className="text-(--agri-text-secondary) font-medium">{t("common.you")}: </span>
+                {item.lastMessage || t("messages.sentMessage")}
+              </p>
+              <span className="shrink-0 flex items-center gap-0.5 text-[11px] font-bold">
+                {isSeen ? (
+                  <span
+                    className="text-(--agri-text-muted) flex items-center gap-0.5"
+                    title={t("messages.seen")}
+                  >
+                    {t("messages.seen")}
+                  </span>
+                ) : (
+                  <span
+                    className="text-(--agri-text-muted) flex items-center gap-0.5 font-semibold"
+                    title={t("messages.sent")}
+                  >
+                    {t("messages.sent")}
+                  </span>
+                )}
+              </span>
+            </div>
+          ) : (
+            <p
+              className={`text-sm truncate flex-1 min-w-0 ${
+                hasUnread ? "font-bold text-(--agri-text)" : "text-(--agri-text-muted)"
+              }`}
+            >
+              {item.lastMessage || t("messages.startConversation")}
+            </p>
+          )}
 
-      {!searching && !isMine && item.unreadCount > 0 && (
-        <span className="min-w-5 h-5 rounded-full bg-[#2D6A4F] text-white text-xs font-bold flex items-center justify-center px-1 shrink-0">
-          {item.unreadCount}
-        </span>
-      )}
+          {hasUnread && (
+            <span
+              className="min-w-5 h-5 rounded-full bg-[#2D6A4F] dark:bg-(--agri-brand) text-white text-[11px] font-bold flex items-center justify-center px-1.5 shrink-0 shadow-xs animate-in fade-in zoom-in-75 duration-150 leading-none select-none"
+              title={`${item.unreadCount} unread`}
+            >
+              {unreadDisplayCount}
+            </span>
+          )}
+        </div>
+      </div>
     </button>
     <ImageViewerModal
       isOpen={Boolean(lightbox)}

@@ -1,8 +1,9 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { useLanguage } from "../../../context/LanguageContext";
 import { useInquiriesContext } from "../../../context/InquiriesContext";
+import { formatDate } from "../../../utils/date";
 import DashboardSection from "../../common/DashboardSection";
 import SkeletonBox from "../../common/SkeletonBox";
 
@@ -190,41 +191,62 @@ function RecentInquiriesList() {
 
   return (
     <ul className="divide-y divide-(--agri-border-subtle)">
-      {displayed.map((inquiry) => (
-        <li key={inquiry.id}>
-          <Link
-            to="/farmer/transactions"
-            className="group flex items-center justify-between gap-3 px-3.5 py-3 transition hover:bg-(--agri-hover)/60"
-          >
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-(--agri-brand)">
-                <i className="ri-file-list-3-line text-lg" />
-              </div>
+      {displayed.map((inquiry) => {
+        const productName =
+          inquiry.productSnapshot?.name ||
+          inquiry.productName ||
+          inquiry.product?.name ||
+          t("admin.unnamedProduct");
+        const productImg =
+          inquiry.productSnapshot?.imageUrl ||
+          inquiry.product?.images?.[0]?.url ||
+          inquiry.product?.images?.[0];
+        const dateStr = formatDate(inquiry.createdAt);
 
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-(--agri-text) group-hover:text-[#2D6A4F] dark:group-hover:text-(--agri-brand) transition-colors">
-                  {inquiry.productName || inquiry.product?.name || t("admin.unnamedProduct")}
-                </p>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-(--agri-text-muted)">
-                    <span className={`h-2 w-2 rounded-full ${STATUS_COLORS[inquiry.status] || "bg-gray-400"}`} />
-                    {t(`transactions.status.${inquiry.status}`)}
-                  </span>
-                  {inquiry.createdAt && (
-                    <span className="text-[11px] text-(--agri-text-muted)">
-                      • {new Date(inquiry.createdAt).toLocaleDateString()}
+        return (
+          <li key={inquiry.id}>
+            <Link
+              to="/farmer/transactions"
+              className="group flex items-center justify-between gap-3 px-3.5 py-3 transition hover:bg-(--agri-hover)/60"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {productImg ? (
+                  <img
+                    src={productImg}
+                    alt={productName}
+                    className="h-11 w-11 shrink-0 rounded-xl object-cover border border-(--agri-border-subtle) shadow-2xs"
+                  />
+                ) : (
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-(--agri-brand)">
+                    <i className="ri-file-list-3-line text-lg" />
+                  </div>
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-(--agri-text) group-hover:text-[#2D6A4F] dark:group-hover:text-(--agri-brand) transition-colors">
+                    {productName}
+                  </p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-(--agri-text-muted)">
+                      <span className={`h-2 w-2 rounded-full ${STATUS_COLORS[inquiry.status] || "bg-gray-400"}`} />
+                      {t(`transactions.status.${inquiry.status}`)}
                     </span>
-                  )}
+                    {dateStr && (
+                      <span className="text-[11px] text-(--agri-text-muted)">
+                        • {dateStr}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="shrink-0 flex items-center gap-2">
-              <i className="ri-arrow-right-s-line text-base text-(--agri-text-muted) group-hover:text-[#2D6A4F] dark:group-hover:text-(--agri-brand) transition-colors" />
-            </div>
-          </Link>
-        </li>
-      ))}
+              <div className="shrink-0 flex items-center gap-2">
+                <i className="ri-arrow-right-s-line text-base text-(--agri-text-muted) group-hover:text-[#2D6A4F] dark:group-hover:text-(--agri-brand) transition-colors" />
+              </div>
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 }

@@ -109,10 +109,18 @@ export default function useMessageActions({
         stage = "send-message";
 
         // --- Normal message: Plain text in Firestore ---
-        const otherUid = activeConversation?.otherUser?.uid || activeUser?.uid;
+        const otherUid =
+          activeConversation?.otherUser?.uid ||
+          activeConversation?.otherUser?.id ||
+          activeUser?.uid ||
+          activeUser?.id ||
+          (conversationId?.includes("_")
+            ? conversationId.split("_").find((id) => id !== profile?.uid)
+            : null);
 
         const messagePayload = {
           conversationId,
+          senderId: profile.uid,
           receiverId: otherUid || null,
           text: text || "",
           type: activeImg ? "image" : "text",
@@ -177,6 +185,90 @@ export default function useMessageActions({
       setSearchParams,
       clearCurrentDraft,
       enqueueMessage,
+    ],
+  );
+
+  const sendLocationMessage = useCallback(
+    async ({ type, location, liveUntil, isLive, replyTo = null }) => {
+      if (!profile?.uid) {
+        showToast.error("You must be logged in to send a message.");
+        return null;
+      }
+
+      let conversationId = activeConversation?.id;
+      let stage = "prepare";
+
+      if (!conversationId && !activeUser?.uid) {
+        showToast.error("No user selected.");
+        return null;
+      }
+
+      if (!navigator.onLine) {
+        showToast.error("Unable to share location. No internet connection.");
+        return null;
+      }
+
+      try {
+        if (!conversationId) {
+          stage = "create-conversation";
+          conversationId = await apiFindOrCreateConversation(activeUser.uid);
+        }
+
+        const otherUid =
+          activeConversation?.otherUser?.uid ||
+          activeConversation?.otherUser?.id ||
+          activeUser?.uid ||
+          activeUser?.id ||
+          (conversationId?.includes("_")
+            ? conversationId.split("_").find((id) => id !== profile?.uid)
+            : null);
+
+        const isLiveLocation = type === "live_location";
+        const fallbackText = isLiveLocation
+          ? "📍 Live Location"
+          : "📍 Shared Location";
+
+        const messagePayload = {
+          conversationId,
+          senderId: profile.uid,
+          receiverId: otherUid || null,
+          text: fallbackText,
+          type: "text",
+          locationType: isLiveLocation ? "live_location" : "location",
+          location,
+          liveUntil: isLiveLocation ? (liveUntil || null) : null,
+          isLive: isLiveLocation ? (isLive != null ? isLive : true) : null,
+          replyTo: replyTo?.messageId || replyTo || null,
+        };
+
+        const messageId = await apiSendMessage(messagePayload);
+
+        if (!activeConversation?.id) {
+          setActiveConversation(
+            buildOptimisticConversation({
+              conversationId,
+              currentUser: profile,
+              otherUser: activeUser,
+            }),
+          );
+          setActiveUser(null);
+          setSearchParams({ conversation: conversationId }, { replace: true });
+        }
+
+        return { messageId, conversationId };
+      } catch (error) {
+        console.error(`[Messages] Failed to send location during "${stage}":`, error);
+        showToast.error(error.message || "Failed to share location.");
+        return null;
+      }
+    },
+    [
+      profile,
+      activeConversation,
+      activeUser,
+      setActiveConversation,
+      setActiveUser,
+      setSearchParams,
     ],
   );
 
@@ -314,6 +406,7 @@ export default function useMessageActions({
     uploadingImage,
     isSending,
     sendMessage,
+    sendLocationMessage,
     retryMessage,
     deleteFailedMessage,
   };

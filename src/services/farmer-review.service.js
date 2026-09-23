@@ -1,3 +1,11 @@
+import {
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
 import { getUserProfile } from "./user.service";
 import { getCachedUserProfile } from "../utils/userProfileCache";
@@ -61,43 +69,111 @@ export async function enrichFarmerReviews(reviews) {
 }
 
 export async function getFarmerReviews(farmerId) {
-  const result = await apiRequest(`/v1/reviews/farmers/${farmerId}`);
-  const reviews = result.data || [];
+  if (!farmerId) return [];
 
-  return reviews.map((r) => ({
-    ...r,
-    reviewer: {
-      fullname: r.reviewerName || "Anonymous",
-      profilePicture: r.reviewerAvatar || "",
-    },
-  }));
-}
+  try {
+    const result = await apiRequest(`/v1/reviews/farmers/${encodeURIComponent(farmerId)}`);
+    const reviews = result?.data || [];
 
-export async function getRecentFarmerReviews(farmerId, maxLimit = 3) {
-  const result = await apiRequest(
-    `/v1/reviews/farmers/${farmerId}?limit=${maxLimit}`,
-  );
-  const reviews = result.data || [];
-
-  return enrichFarmerReviews(
-    reviews.map((r) => ({
+    return reviews.map((r) => ({
       ...r,
       reviewer: {
         fullname: r.reviewerName || "Anonymous",
         profilePicture: r.reviewerAvatar || "",
       },
-    })),
-  );
+    }));
+  } catch (err) {
+    console.warn("[Reviews] Backend API failed, loading from Firestore fallback:", err?.message);
+    try {
+      const revRef = collection(db, "reviews");
+      const q = query(
+        revRef,
+        where("farmerId", "==", farmerId),
+        orderBy("createdAt", "desc"),
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+        reviewer: {
+          fullname: docSnap.data().reviewerName || "Anonymous",
+          profilePicture: docSnap.data().reviewerAvatar || "",
+        },
+      }));
+    } catch (firestoreErr) {
+      console.warn("[Reviews] Firestore ordered query failed, trying un-ordered query:", firestoreErr?.message);
+      try {
+        const revRef = collection(db, "reviews");
+        const q = query(revRef, where("farmerId", "==", farmerId));
+        const snapshot = await getDocs(q);
+        const docs = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data(),
+          reviewer: {
+            fullname: docSnap.data().reviewerName || "Anonymous",
+            profilePicture: docSnap.data().reviewerAvatar || "",
+          },
+        }));
+        return docs.sort((a, b) => {
+          const tA = a.createdAt?.seconds || (typeof a.createdAt === "number" ? a.createdAt / 1000 : 0);
+          const tB = b.createdAt?.seconds || (typeof b.createdAt === "number" ? b.createdAt / 1000 : 0);
+          return tB - tA;
+        });
+      } catch (fallbackErr) {
+        console.error("[Reviews] Both API and Firestore failed:", fallbackErr);
+        return [];
+      }
+    }
+  }
+}
+
+export async function getRecentFarmerReviews(farmerId, maxLimit = 3) {
+  if (!farmerId) return [];
+
+  try {
+    const result = await apiRequest(
+      `/v1/reviews/farmers/${encodeURIComponent(farmerId)}?limit=${maxLimit}`,
+    );
+    const reviews = result?.data || [];
+
+    return enrichFarmerReviews(
+      reviews.map((r) => ({
+        ...r,
+        reviewer: {
+          fullname: r.reviewerName || "Anonymous",
+          profilePicture: r.reviewerAvatar || "",
+        },
+      })),
+    );
+  } catch (err) {
+    console.warn("[Reviews] getRecentFarmerReviews falling back to getFarmerReviews:", err?.message);
+    const all = await getFarmerReviews(farmerId);
+    return enrichFarmerReviews(all.slice(0, maxLimit));
+  }
 }
 
 export async function getAverageFarmerRating(farmerId) {
-  const result = await apiRequest(`/v1/reviews/farmers/${farmerId}/summary`);
-  return result.data?.average ?? 0;
+  if (!farmerId) return 0;
+  try {
+    const result = await apiRequest(`/v1/reviews/farmers/${encodeURIComponent(farmerId)}/summary`);
+    return result.data?.average ?? 0;
+  } catch (err) {
+    const all = await getFarmerReviews(farmerId);
+    if (!all.length) return 0;
+    const total = all.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
+    return Number((total / all.length).toFixed(1));
+  }
 }
 
 export async function getFarmerReviewCount(farmerId) {
-  const result = await apiRequest(`/v1/reviews/farmers/${farmerId}/summary`);
-  return result.data?.count ?? 0;
+  if (!farmerId) return 0;
+  try {
+    const result = await apiRequest(`/v1/reviews/farmers/${encodeURIComponent(farmerId)}/summary`);
+    return result.data?.count ?? 0;
+  } catch (err) {
+    const all = await getFarmerReviews(farmerId);
+    return all.length;
+  }
 }
 
 export async function getInquiryFarmerReview(inquiryId) {

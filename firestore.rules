@@ -543,8 +543,14 @@ service cloud.firestore {
         (
           isConversationParticipant(resource.data)
 
-          && request.resource.data.participants
-             == resource.data.participants
+          && (
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(["participants"])
+            || request.resource.data.participants == resource.data.participants
+            || (
+              request.resource.data.participants.hasAll(resource.data.participants)
+              && resource.data.participants.hasAll(request.resource.data.participants)
+            )
+          )
         )
         || isAdmin();
 
@@ -630,6 +636,48 @@ service cloud.firestore {
             && request.resource.data.inquiryStatus
                == "pending"
           )
+
+          /*
+           * Static location message.
+           */
+          ||
+          (
+            request.resource.data.type
+               == "location"
+
+            && request.resource.data.location
+               is map
+
+            && request.resource.data.location.lat
+               is number
+
+            && request.resource.data.location.lng
+               is number
+          )
+
+          /*
+           * Live location message.
+           */
+          ||
+          (
+            request.resource.data.type
+               == "live_location"
+
+            && request.resource.data.location
+               is map
+
+            && request.resource.data.location.lat
+               is number
+
+            && request.resource.data.location.lng
+               is number
+
+            && request.resource.data.isLive
+               is bool
+
+            && request.resource.data.liveUntil
+               is number
+          )
         );
 
 
@@ -684,6 +732,31 @@ service cloud.firestore {
 
           && request.resource.data.acceptedAt
              != null
+        )
+
+        /*
+         * Sender updates their live location coordinates or stops sharing.
+         */
+        ||
+        (
+          isSignedIn()
+
+          && (
+            resource.data.type == "live_location"
+            || resource.data.type == "location"
+            || resource.data.type == "text"
+            || resource.data.keys().hasAny(["locationType"])
+            || resource.data.keys().hasAny(["location"])
+          )
+
+          && resource.data.senderId
+             == request.auth.uid
+
+          && request.resource.data.senderId
+             == resource.data.senderId
+
+          && request.resource.data.conversationId
+             == resource.data.conversationId
         );
 
 

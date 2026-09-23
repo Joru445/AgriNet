@@ -8,10 +8,8 @@ import {
 import { useAuth } from "./AuthContext";
 import { subscribeUserConversations } from "../services/conversation.service";
 import { getUserProfile } from "../services/user.service";
-import {
-  getCachedUserProfile,
-  setCachedUserProfile,
-} from "../utils/userProfileCache";
+import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
+import { getTimestampMs } from "../utils/chat";
 
 const ConversationsContext = createContext({
   conversations: [],
@@ -80,6 +78,44 @@ export function ConversationsProvider({ children }) {
             missingProfileUids.push(otherUid);
           }
 
+          let unread = 0;
+
+          if (typeof conversation.unreadCount === "number") {
+            unread = conversation.lastMessageSender !== listenerUid ? conversation.unreadCount : 0;
+          } else if (
+            conversation.unreadCount &&
+            typeof conversation.unreadCount === "object" &&
+            listenerUid in conversation.unreadCount
+          ) {
+            unread = Number(conversation.unreadCount[listenerUid]) || 0;
+          } else if (conversation[`unreadCount.${listenerUid}`] != null) {
+            unread = Number(conversation[`unreadCount.${listenerUid}`]) || 0;
+          } else if (
+            conversation.rawUnreadCount &&
+            typeof conversation.rawUnreadCount === "object" &&
+            listenerUid in conversation.rawUnreadCount
+          ) {
+            unread = Number(conversation.rawUnreadCount[listenerUid]) || 0;
+          }
+
+          // Resilient check: If last message was sent by the other party and is newer than our lastRead (or not yet read),
+          // ensure unread is at least 1 even if the unreadCount field was 0, lagged, or missed an increment
+          const isFromMe = Boolean(
+            conversation.lastMessageSender === listenerUid ||
+            (typeof conversation.lastMessage === "string" &&
+              conversation.lastMessage.startsWith("You:"))
+          );
+          if (!isFromMe && (conversation.lastMessageAt || conversation.lastMessage)) {
+            const myLastRead = conversation.lastRead?.[listenerUid];
+            const readMs = getTimestampMs(myLastRead);
+            const msgMs = getTimestampMs(conversation.lastMessageAt);
+            if (!readMs || (msgMs && msgMs > readMs)) {
+              if (unread <= 0) {
+                unread = 1;
+              }
+            }
+          }
+
           return {
             ...conversation,
             otherUser: {
@@ -100,7 +136,7 @@ export function ConversationsProvider({ children }) {
                 (cachedProfile?.verified ??
                 otherInfo.verified === true),
             },
-            unreadCount: conversation.unreadCount?.[listenerUid] ?? 0,
+            unreadCount: unread,
             rawUnreadCount: conversation.unreadCount || {},
           };
         });

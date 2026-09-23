@@ -5,6 +5,7 @@ import MessageImage from "./MessageImage";
 import MessageLinkPreview from "./MessageLinkPreview";
 import MessageReplyContent from "./MessageReplyContent";
 import { extractFirstUrl } from "../../../utils/linkPreview";
+import LiveLocationCard from "./LiveLocationCard";
 import {
   applyTransform,
   MESSAGE_IMG_TF,
@@ -22,12 +23,34 @@ export default function MessageBubble({
   onRetry,
   onDeleteFailed,
   onJumpToMessage,
+  onStopLiveLocation,
 }) {
   const { t } = useLanguage();
   const [showLightbox, setShowLightbox] = useState(false);
 
   const isFailed = message.status === "failed";
   const isImage = message.type === "image" || Boolean(message.imageUrl);
+  const isLocation =
+    message.type === "live_location" ||
+    message.type === "location" ||
+    message.locationType === "live_location" ||
+    message.locationType === "location" ||
+    Boolean(message.location);
+  const isDefaultLocationText = isLocation && (
+    !message.text ||
+    message.text === "📍 Live Location" ||
+    message.text === "📍 Shared Location" ||
+    message.text === "📍 Farm Address" ||
+    message.text === "Live Location" ||
+    message.text === "Shared Location" ||
+    message.text === "Farm Address" ||
+    Boolean(
+      message.location?.address &&
+      (message.text === `📍 ${message.location.address}` ||
+        message.text === message.location.address)
+    )
+  );
+  const showTextMessage = Boolean(message.text && !isDefaultLocationText);
 
   // Use resolved reply from parent, fallback to legacy replyToSnapshot
   const replyTo =
@@ -37,7 +60,7 @@ export default function MessageBubble({
       ? message.replyTo
       : null);
   const messageUrl = extractFirstUrl(message.text);
-  const showLinkPreview = Boolean(messageUrl && !isImage);
+  const showLinkPreview = Boolean(messageUrl && !isImage && !isLocation);
 
   const textRadius =
     {
@@ -86,17 +109,17 @@ export default function MessageBubble({
     >
       {/* Reply quote */}
       {replyTo && (
-        <div className={`flex flex-col ${mine ? "items-end" : "items-start"} max-w-full mb-1`}>
+        <div className={`flex flex-col ${mine ? "items-end" : "items-start"} max-w-full min-w-0 mb-1`}>
           {/* Subtle header: ↩ You replied to Name (when mine) / ↩ Name replied to you (when other) */}
           {showReplyHeader && (
             <button
               type="button"
               onClick={() => onJumpToMessage?.(replyTo.messageId || replyTo.id)}
-              className="flex items-center gap-1 text-[11px] text-(--agri-text-muted) hover:text-(--agri-text) font-medium mb-1 px-1 select-none cursor-pointer transition"
+              className="flex items-center gap-1 text-[11px] text-(--agri-text-muted) hover:text-(--agri-text) font-medium mb-1 px-1 select-none cursor-pointer transition max-w-full min-w-0"
               aria-label={t("messages.replyToLabel")}
             >
-              <i className="ri-reply-line text-xs" />
-              <span>
+              <i className="ri-reply-line text-xs shrink-0" />
+              <span className="truncate">
                 {mine
                   ? t("messages.youRepliedTo", { name: targetReplyName })
                   : t("messages.repliedToYou", { name: otherUserName || targetReplyName })}
@@ -108,7 +131,7 @@ export default function MessageBubble({
           <button
             type="button"
             onClick={() => onJumpToMessage?.(replyTo.messageId || replyTo.id)}
-            className={`flex items-center gap-2 rounded-2xl px-3 py-1.5 text-xs text-left cursor-pointer transition hover:opacity-85 max-w-full w-fit shadow-xs
+            className={`flex items-center gap-2 rounded-2xl px-3 py-1.5 text-xs text-left cursor-pointer transition hover:opacity-85 max-w-[240px] sm:max-w-xs md:max-w-sm min-w-0 w-fit overflow-hidden shadow-xs
               ${
                 mine
                   ? "bg-black/10 dark:bg-white/10 text-(--agri-text) border border-black/5 dark:border-white/5"
@@ -122,10 +145,10 @@ export default function MessageBubble({
         </div>
       )}
 
-      {message.text && (
+      {showTextMessage && (
         <p
           className={`w-fit max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap px-4 py-2 shadow-md ${textRadius}
-            ${isImage ? "text-sm font-medium" : ""}
+            ${isImage || isLocation ? "text-sm font-medium mb-1.5" : ""}
             ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-(--agri-brand)/40" : ""}
             ${
               mine
@@ -136,6 +159,19 @@ export default function MessageBubble({
         >
           {message.text}
         </p>
+      )}
+
+      {/* Location Attachment */}
+      {isLocation && (
+        <div className={`w-fit max-w-full min-w-0 mb-0 ${isHighlighted ? "animate-reply-flash ring-2 ring-[#2D6A4F]/40 dark:ring-(--agri-brand)/40 rounded-2xl" : ""}`}>
+          <LiveLocationCard
+            message={message}
+            mine={mine}
+            user={user}
+            profile={profile}
+            onStopLiveLocation={onStopLiveLocation}
+          />
+        </div>
       )}
 
       {showLinkPreview && (

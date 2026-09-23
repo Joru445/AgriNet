@@ -31,6 +31,10 @@ export default function ChatWindow({
   replyTo,
   onSetReply,
   onClearReply,
+  onSendLocation,
+  onStopLiveLocation,
+  hasActiveLiveLocation = false,
+  activeLiveMessageId = null,
 }) {
   const { t } = useLanguage();
 
@@ -64,6 +68,7 @@ export default function ChatWindow({
         onRetry={onRetryMessage}
         onDeleteFailed={onDeleteFailedMessage}
         onSetReply={onSetReply}
+        onStopLiveLocation={onStopLiveLocation}
       />
 
       <MessageInput
@@ -80,6 +85,10 @@ export default function ChatWindow({
         isSending={isSending}
         replyTo={replyTo}
         onClearReply={onClearReply}
+        onSendLocation={onSendLocation}
+        onStopLiveLocation={onStopLiveLocation}
+        hasActiveLiveLocation={hasActiveLiveLocation}
+        activeLiveMessageId={activeLiveMessageId}
       />
     </section>
   );

@@ -170,7 +170,14 @@ export default function CategoryChips({ value = "All", onChange }) {
 
             {/* Label */}
             <span className="relative z-10 text-left leading-tight text-white drop-shadow-md">
-              {t(cat.labelKey)}
+              {(() => {
+                const label = t(cat.labelKey);
+                if (typeof label === "string" && label.startsWith("categories.")) {
+                  const cleaned = label.replace(/^categories\./, "");
+                  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+                }
+                return label;
+              })()}
             </span>
           </button>
         );

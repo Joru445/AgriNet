@@ -1,14 +1,35 @@
+export function parseDate(timestamp) {
+  if (!timestamp) return null;
+  if (timestamp instanceof Date) return isNaN(timestamp.getTime()) ? null : timestamp;
+  if (typeof timestamp?.toDate === "function") {
+    try {
+      const d = timestamp.toDate();
+      if (d instanceof Date && !isNaN(d.getTime())) return d;
+    } catch (_) {}
+  }
+  if (typeof timestamp?.toMillis === "function") {
+    try {
+      const d = new Date(timestamp.toMillis());
+      if (!isNaN(d.getTime())) return d;
+    } catch (_) {}
+  }
+  if (typeof timestamp?.seconds === "number") {
+    return new Date(timestamp.seconds * 1000);
+  }
+  if (typeof timestamp?._seconds === "number") {
+    return new Date(timestamp._seconds * 1000);
+  }
+  if (typeof timestamp === "number") {
+    const d = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  const date = new Date(timestamp);
+  return isNaN(date.getTime()) ? null : date;
+}
+
 export function formatTimestamp(timestamp) {
-  if (!timestamp) return "";
-
-  const date =
-    typeof timestamp?.toDate === "function"
-      ? timestamp.toDate()
-      : timestamp instanceof Date
-      ? timestamp
-      : new Date(timestamp);
-
-  if (isNaN(date.getTime())) return "";
+  const date = parseDate(timestamp);
+  if (!date) return "";
 
   const now = new Date();
   const diff = now - date;
@@ -38,16 +59,8 @@ export function formatTimestamp(timestamp) {
 }
 
 export function formatDate(timestamp) {
-  if (!timestamp) return "";
-
-  const date =
-    typeof timestamp?.toDate === "function"
-      ? timestamp.toDate()
-      : timestamp instanceof Date
-      ? timestamp
-      : new Date(timestamp);
-
-  if (isNaN(date.getTime())) return "";
+  const date = parseDate(timestamp);
+  if (!date) return "";
 
   return date.toLocaleDateString("en-US", {
     month: "short",
@@ -57,16 +70,8 @@ export function formatDate(timestamp) {
 }
 
 export function formatFullDateTime(timestamp) {
-  if (!timestamp) return "";
-
-  const date =
-    typeof timestamp?.toDate === "function"
-      ? timestamp.toDate()
-      : timestamp instanceof Date
-      ? timestamp
-      : new Date(timestamp);
-
-  if (isNaN(date.getTime())) return "";
+  const date = parseDate(timestamp);
+  if (!date) return "";
 
   const datePart = date.toLocaleDateString("en-US", {
     month: "long",

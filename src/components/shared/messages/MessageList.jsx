@@ -1,4 +1,4 @@
-﻿import {
+import {
   useEffect,
   useLayoutEffect,
   useRef,
@@ -15,6 +15,7 @@ import MessageSeparator from "./MessageSeparator";
 import {
   shouldShowSeparator,
   getMessageGroupPosition,
+  getTimestampMs,
 } from "../../../utils/chat";
 
 const SCROLL_THRESHOLD = 120;
@@ -32,6 +33,7 @@ export default function MessageList({
   onRetry,
   onDeleteFailed,
   onSetReply,
+  onStopLiveLocation,
 }) {
   const { profile } = useAuth();
   const { t } = useLanguage();
@@ -193,11 +195,6 @@ export default function MessageList({
 
   const otherUid = user?.uid || user?.id || conversation?.otherUser?.uid;
   const otherUserLastRead = conversation?.lastRead?.[otherUid];
-  const otherUserUnreadCount =
-    conversation?.rawUnreadCount?.[otherUid] ??
-    (typeof conversation?.unreadCount === "object"
-      ? conversation?.unreadCount?.[otherUid]
-      : undefined);
 
   const hasReplyFromOther = Boolean(
     otherUid && messages.some((m) => m.senderId === otherUid),
@@ -205,7 +202,7 @@ export default function MessageList({
 
   function checkIfSeen(message, messageIndex) {
     if (message.read === true) return true;
-    if (message.status === "failed") return false;
+    if (message.status === "failed" || message.status === "sending") return false;
 
     if (hasReplyFromOther && typeof messageIndex === "number") {
       const hasLaterReply = messages
@@ -214,33 +211,18 @@ export default function MessageList({
       if (hasLaterReply) return true;
     }
 
-    if (otherUserUnreadCount === 0) {
-      return true;
-    }
+    if (otherUserLastRead && message.createdAt) {
+      const readMs = getTimestampMs(otherUserLastRead);
+      const msgMs = getTimestampMs(message.createdAt);
 
-    if (otherUserLastRead) {
-      const readSeconds =
-        otherUserLastRead.seconds ||
-        (otherUserLastRead.toMillis
-          ? otherUserLastRead.toMillis() / 1000
-          : typeof otherUserLastRead === "number"
-            ? otherUserLastRead / 1000
-            : 0);
-
-      const msgSeconds = message.createdAt
-        ? message.createdAt.seconds ||
-          (message.createdAt.toMillis
-            ? message.createdAt.toMillis() / 1000
-            : typeof message.createdAt === "number"
-              ? message.createdAt / 1000
-              : 0)
-        : Infinity;
-
-      if (readSeconds >= msgSeconds && readSeconds > 0) return true;
+      if (readMs && msgMs && readMs >= msgMs) {
+        return true;
+      }
     }
 
     return false;
   }
+
 
   let lastMineIndex = -1;
   for (let i = messages.length - 1; i >= 0; i--) {
@@ -342,6 +324,7 @@ export default function MessageList({
                   onJumpToMessage={scrollToMessage}
                   onRetry={onRetry}
                   onDeleteFailed={onDeleteFailed}
+                  onStopLiveLocation={onStopLiveLocation}
                 />
               )}
             </div>
