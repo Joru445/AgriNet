@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import useUsers from "../../hooks/useUsers";
 
 import UserManagementHeader from "../../components/admin/users/UserManagementHeader";
-import StatCard from "../../components/ui/StatCard";
+import UserStats from "../../components/admin/users/UserStats";
 import UserFilters from "../../components/admin/users/UserFilters";
 import UserTable from "../../components/admin/users/UserTable";
 import UserTableSkeleton from "../../components/admin/users/UserTableSkeleton";
@@ -165,31 +165,7 @@ export default function Users() {
       <div className="mx-auto max-w-7xl">
         <UserManagementHeader />
 
-        <div className="grid grid-cols-2 gap-4 pb-6">
-          <StatCard
-            title={t("admin.totalUsers")}
-            value={stats.total}
-            description={t("admin.registeredUsers")}
-          />
-
-          <StatCard
-            title={t("admin.farmers")}
-            value={stats.farmers}
-            description={t("admin.registeredFarmers")}
-          />
-
-          <StatCard
-            title={t("admin.consumers")}
-            value={stats.consumers}
-            description={t("admin.registeredConsumers")}
-          />
-
-          <StatCard
-            title={t("adminUser.suspended")}
-            value={stats.suspended}
-            description={t("admin.suspended")}
-          />
-        </div>
+        <UserStats stats={stats} />
 
         <UserFilters
           search={search}
@@ -221,6 +197,7 @@ export default function Users() {
 
       <UserDetailsModal
         user={selectedUser}
+        farmer={farmers.find((f) => f.uid === selectedUser?.uid)}
         onClose={() => setSelectedUser(null)}
       />
 

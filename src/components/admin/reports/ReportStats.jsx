@@ -13,9 +13,14 @@ export default function ReportStats({ stats }) {
   ];
 
   return (
-    <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-1">
+    <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
       {cards.map((card) => (
-        <StatCard key={card.label} title={card.label} value={card.value} />
+        <StatCard
+          compact
+          key={card.label}
+          title={card.label}
+          value={card.value}
+        />
       ))}
     </div>
   );

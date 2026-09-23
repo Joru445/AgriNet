@@ -1,4 +1,4 @@
-﻿import { useLanguage } from "../../../context/LanguageContext";
+import { useLanguage } from "../../../context/LanguageContext";
 import InlineSearchInput from "../../ui/InlineSearchInput";
 import Button from "../../ui/Button";
 
@@ -35,8 +35,8 @@ export default function ActivityFilters({
   };
 
   return (
-    <div className="mb-6 rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-4.5 shadow-md shadow-black/5">
-      <div className="flex flex-col gap-3">
+    <div className="mb-6 rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-4 sm:p-5 shadow-sm">
+      <div className="flex flex-col gap-3.5">
         {/* Search */}
         <InlineSearchInput
           value={search}
@@ -45,11 +45,11 @@ export default function ActivityFilters({
         />
 
         {/* Dropdowns Row */}
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex flex-col gap-2.5 sm:gap-3 md:flex-row md:items-center">
           <select
             value={action}
             onChange={(e) => onActionChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
           >
             <option value="">{t("adminActivity.allActions")}</option>
             {AUDIT_ACTIONS.map((a) => (
@@ -60,7 +60,7 @@ export default function ActivityFilters({
           <select
             value={targetType}
             onChange={(e) => onTargetTypeChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
           >
             <option value="">{t("adminActivity.allTypes")}</option>
             {TARGET_TYPES.map((t2) => (
@@ -72,7 +72,7 @@ export default function ActivityFilters({
             type="date"
             value={dateFrom}
             onChange={(e) => onDateFromChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
             title={t("adminActivity.dateFrom")}
           />
 
@@ -80,7 +80,7 @@ export default function ActivityFilters({
             type="date"
             value={dateTo}
             onChange={(e) => onDateToChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
             title={t("adminActivity.dateTo")}
           />
 
@@ -94,6 +94,7 @@ export default function ActivityFilters({
                 onDateFromChange("");
                 onDateToChange("");
               }}
+              className="shadow-2xs"
             >
               <i className="ri-filter-off-line" />
               {t("adminActivity.clearFilters")}

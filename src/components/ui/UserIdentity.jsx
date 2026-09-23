@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { getInitials } from "../../utils/getInitials";
 import { applyTransform, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
 import { useLanguage } from "../../context/LanguageContext";
@@ -70,10 +70,10 @@ export default function UserIdentity({
           loading="lazy"
           decoding="async"
           onError={() => setImgError(true)}
-          className={`${currentSize.image} shrink-0 rounded-full object-cover`}
+          className={`${currentSize.image} shrink-0 rounded-full object-cover shadow-2xs border border-(--agri-border-subtle)`}
         />
       ) : (
-        <div className={`flex ${currentSize.image} shrink-0 items-center justify-center rounded-full bg-[#2D6A4F]/10 text-sm font-semibold text-[#2D6A4F] dark:text-(--agri-brand)`}>
+        <div className={`flex ${currentSize.image} shrink-0 items-center justify-center rounded-full bg-[#2D6A4F]/10 border border-[#2D6A4F]/20 text-sm font-semibold text-[#2D6A4F] dark:text-(--agri-brand) shadow-2xs`}>
           {getInitials(user.fullname)}
         </div>
       )}

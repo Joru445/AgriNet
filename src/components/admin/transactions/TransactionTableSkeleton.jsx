@@ -1,6 +1,6 @@
-﻿export default function TransactionTableSkeleton({ rows = 8 }) {
+export default function TransactionTableSkeleton({ rows = 8 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-md shadow-black/5">
+    <div className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[900px]">
           <thead>

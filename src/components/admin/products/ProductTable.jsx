@@ -1,4 +1,4 @@
-﻿import { useLanguage } from "../../../context/LanguageContext";
+import { useLanguage } from "../../../context/LanguageContext";
 import AdminPagination from "../../ui/AdminPagination";
 
 import ProductTableRow from "./ProductTableRow";
@@ -15,14 +15,14 @@ export default function ProductTable({
 
   if (products.length === 0) {
     return (
-      <div className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-12 text-center shadow-md shadow-black/5">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-(--agri-hover) text-(--agri-text-muted)">
+      <div className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-12 text-center shadow-sm">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-(--agri-hover) text-(--agri-text-muted) shadow-2xs">
           <i className="ri-store-2-line text-3xl" />
         </div>
-        <p className="text-sm font-semibold text-(--agri-text)">
+        <p className="text-base font-bold text-(--agri-text)">
           {t("adminProduct.noProductsFound")}
         </p>
-        <p className="mt-1 text-xs text-(--agri-text-muted)">
+        <p className="mt-1 text-xs sm:text-sm text-(--agri-text-muted)">
           {t("adminProduct.noProductsHint")}
         </p>
       </div>
@@ -30,38 +30,38 @@ export default function ProductTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-md shadow-black/5">
+    <div className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[900px]">
           <thead>
-            <tr className="border-b border-(--agri-border-subtle) bg-(--agri-hover)/50">
-              <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
+            <tr className="border-b border-(--agri-border-subtle) bg-(--agri-hover)/60">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminProduct.product")}
               </th>
-              <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminProduct.farmer")}
               </th>
-              <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminProduct.price")}
               </th>
-              <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminProduct.stock")}
               </th>
-              <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminProduct.sellingMode")}
               </th>
-              <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminProduct.status")}
               </th>
-              <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminProduct.reports")}
               </th>
-              <th className="px-5 py-3 text-right text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminProduct.actions")}
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-(--agri-border-subtle)">
             {products.map((product) => (
               <ProductTableRow
                 key={product.id}

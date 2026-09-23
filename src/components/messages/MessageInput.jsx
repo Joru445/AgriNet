@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback, lazy, Suspense } from "react"
 import { createPortal } from "react-dom";
 import { compressImage } from "../../utils/imageCompression";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
 import MessageReplyPreview from "./MessageReplyPreview";
 
@@ -26,6 +27,9 @@ export default function MessageInput({
   hasActiveLiveLocation = false,
   activeLiveMessageId = null,
 }) {
+  const { identity, profile } = useAuth();
+  const isAdmin = (identity?.role || profile?.role) === "admin";
+
   const textareaRef = useRef(null);
   const plusButtonRef = useRef(null);
   const menuRef = useRef(null);
@@ -546,19 +550,21 @@ export default function MessageInput({
                    <span>{t("messageInput.chooseFromGallery")}</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowMenu(false);
-                    setShowLocationModal(true);
-                  }}
-                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-(--agri-text-secondary) hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) transition cursor-pointer"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <i className="ri-map-pin-2-fill text-base" />
-                  </div>
-                  <span>{t("messages.shareLocation")}</span>
-                </button>
+                {!isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMenu(false);
+                      setShowLocationModal(true);
+                    }}
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-semibold text-(--agri-text-secondary) hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) transition cursor-pointer"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                      <i className="ri-map-pin-2-fill text-base" />
+                    </div>
+                    <span>{t("messages.shareLocation")}</span>
+                  </button>
+                )}
               </div>,
               document.body,
             )}
@@ -606,7 +612,7 @@ export default function MessageInput({
         </div>
       </div>
 
-      {showLocationModal && (
+      {showLocationModal && !isAdmin && (
         <Suspense fallback={null}>
           <ShareLocationModal
             isOpen={showLocationModal}

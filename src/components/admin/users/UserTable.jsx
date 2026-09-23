@@ -1,4 +1,4 @@
-﻿import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
 
 import UserTableRow from "./UserTableRow";
@@ -80,12 +80,12 @@ export default function UserTable({
   }, [users, currentPage, pageSize]);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-lg shadow-black/5">
+    <div className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-sm">
       {/* Top Green Sliding/Scroll Bar for Mobile */}
       <div
         ref={topScrollRef}
         onScroll={handleTopScroll}
-        className="overflow-x-auto border-b border-(--agri-border-subtle) bg-(--agri-hover)/50 block md:hidden"
+        className="overflow-x-auto border-b border-(--agri-border-subtle) bg-(--agri-hover)/40 block md:hidden"
       >
         <div className="h-1.5 min-w-200" />
       </div>
@@ -97,30 +97,30 @@ export default function UserTable({
       >
         <table className="w-full min-w-200">
           <thead>
-            <tr className="border-b border-(--agri-border) bg-(--agri-hover)/80">
-              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-secondary)">
+            <tr className="border-b border-(--agri-border-subtle) bg-(--agri-hover)/60">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminUser.user")}
               </th>
 
-              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-secondary)">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminUser.email")}
               </th>
 
-              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-secondary)">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminUser.role")}
               </th>
 
-              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-secondary)">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminUser.status")}
               </th>
 
-              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-secondary)">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
                 {t("adminUser.actions")}
               </th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-(--agri-border-subtle)">
             {paginatedUsers.map((user) => (
               <UserTableRow
                 key={user.uid}
@@ -137,7 +137,7 @@ export default function UserTable({
 
       {users.length === 0 && (
         <div className="px-6 py-14 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-(--agri-hover) border border-(--agri-border) text-(--agri-text-muted) mb-3">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-(--agri-hover) border border-(--agri-border-subtle) text-(--agri-text-muted) mb-3 shadow-2xs">
             <i className="ri-user-search-line text-2xl" />
           </div>
 
@@ -145,7 +145,7 @@ export default function UserTable({
             {t("adminUser.noUsersFound")}
           </p>
 
-          <p className="mt-1 text-xs text-(--agri-text-muted) font-medium">
+          <p className="mt-1 text-xs sm:text-sm text-(--agri-text-muted) font-medium">
             {t("adminUser.noUsersHint")}
           </p>
         </div>
@@ -153,14 +153,14 @@ export default function UserTable({
 
       {/* Pagination in Bottom Left Side */}
       {users.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-(--agri-border) px-5 py-3.5 bg-(--agri-hover)/70">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-(--agri-border-subtle) px-5 py-3.5 bg-(--agri-hover)/40">
           <div className="flex items-center gap-1.5">
             {/* Previous Page Arrow */}
             <button
               type="button"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-(--agri-border) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-(--agri-hover) disabled:opacity-40 disabled:hover:bg-(--agri-card) transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-(--agri-border-subtle) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-(--agri-hover) disabled:opacity-40 disabled:hover:bg-(--agri-card) transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
               title={t("adminUser.previousPage")}
             >
               <i className="ri-arrow-left-s-line text-base font-bold" />
@@ -175,7 +175,7 @@ export default function UserTable({
                 className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold transition cursor-pointer ${
                   currentPage === pageNum
                     ? "bg-[#2D6A4F] text-white shadow-xs"
-                    : "border border-(--agri-border) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-(--agri-hover) shadow-2xs"
+                    : "border border-(--agri-border-subtle) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-(--agri-hover) shadow-2xs"
                 }`}
               >
                 {pageNum}
@@ -187,7 +187,7 @@ export default function UserTable({
               type="button"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-(--agri-border) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-(--agri-hover) disabled:opacity-40 disabled:hover:bg-(--agri-card) transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-(--agri-border-subtle) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-(--agri-hover) disabled:opacity-40 disabled:hover:bg-(--agri-card) transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
               title={t("adminUser.nextPage")}
             >
               <i className="ri-arrow-right-s-line text-base font-bold" />

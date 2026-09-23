@@ -1,4 +1,4 @@
-﻿import { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 
 import useAdminReports from "../../hooks/useAdminReports";
 import { apiSetUserSuspension, apiSetProductAvailability } from "../../services/admin.service";
@@ -119,7 +119,7 @@ export default function Reports() {
   }, [t]);
 
   return (
-    <div className="min-h-full p-4 md:p-6 lg:p-8">
+    <div className="min-h-full p-4 sm:p-6 lg:p-8 bg-(--agri-page)">
       <div className="mx-auto max-w-7xl">
         <ReportHeader />
 

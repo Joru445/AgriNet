@@ -13,7 +13,6 @@ export const tabRoutes = [
   "/farmer/settings",
 
   "/admin",
-  "/admin/users",
   "/admin/reports",
   "/admin/messages",
   "/admin/settings",

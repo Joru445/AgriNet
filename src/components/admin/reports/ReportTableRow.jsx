@@ -1,16 +1,16 @@
-﻿import { formatFullDateTime } from "../../../utils/date";
+import { formatFullDateTime } from "../../../utils/date";
 import { useLanguage } from "../../../context/LanguageContext";
 
 function getStatusClasses(status) {
   switch (status) {
     case "pending":
-      return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border border-yellow-500/20";
+      return "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30";
     case "reviewing":
-      return "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20";
+      return "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-500/30";
     case "resolved":
-      return "bg-green-500/10 text-green-700 dark:text-green-300 border border-green-500/20";
+      return "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30";
     case "dismissed":
-      return "bg-(--agri-hover) text-(--agri-text-secondary) border border-(--agri-border)";
+      return "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700";
     default:
       return "bg-(--agri-hover) text-(--agri-text-secondary) border border-(--agri-border)";
   }
@@ -96,7 +96,7 @@ export default function ReportTableRow({ report, onView }) {
         <button
           type="button"
           onClick={() => onView(report)}
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--agri-hover) text-(--agri-text-secondary) transition hover:bg-[#2D6A4F] hover:text-white shadow-2xs cursor-pointer active:scale-95"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--agri-hover) text-(--agri-text-secondary) transition hover:bg-[#2D6A4F] hover:text-white dark:hover:bg-(--agri-brand) dark:hover:text-white shadow-2xs cursor-pointer active:scale-95"
           title={t("adminReport.viewReportDetails")}
           aria-label={t("adminReport.viewReportAria")}
         >

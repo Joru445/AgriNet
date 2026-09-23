@@ -1,4 +1,4 @@
-﻿import RoleBadge from "../../ui/RoleBadge";
+import RoleBadge from "../../ui/RoleBadge";
 import UserIdentity from "../../ui/UserIdentity";
 import { useLanguage } from "../../../context/LanguageContext";
 
@@ -23,7 +23,7 @@ export default function UserTableRow({
       : user;
 
   return (
-    <tr className="border-b border-(--agri-border-subtle) last:border-0 hover:bg-(--agri-hover)/80 transition-colors">
+    <tr className="border-b border-(--agri-border-subtle) last:border-0 hover:bg-(--agri-hover)/50 transition-colors">
       {/* User */}
       <td className="px-5 py-4">
         <UserIdentity
@@ -48,10 +48,10 @@ export default function UserTableRow({
       {/* Account Status */}
       <td className="px-5 py-4">
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border shadow-2xs ${
             isSuspended
-              ? "bg-red-50 text-red-700 border-red-200"
-              : "bg-emerald-50 text-emerald-700 border-emerald-200"
+              ? "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/25"
+              : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/25"
           }`}
         >
           <span
@@ -73,8 +73,8 @@ export default function UserTableRow({
             disabled={isAdmin}
             className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border shadow-2xs transition-all ${
               isAdmin
-                ? "border-(--agri-border) bg-(--agri-hover) text-(--agri-text-muted) cursor-not-allowed opacity-50"
-                : "border-(--agri-border) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-[#D8F3DC] dark:hover:bg-(--agri-brand-bg)/40 dark:bg-(--agri-brand-bg)/40 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) hover:border-[#2D6A4F]/30 cursor-pointer"
+                ? "border-(--agri-border-subtle) bg-(--agri-hover)/50 text-(--agri-text-muted) cursor-not-allowed opacity-50"
+                : "border-(--agri-border-subtle) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-[#D8F3DC] dark:hover:bg-(--agri-brand-bg)/40 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) hover:border-[#2D6A4F]/30 cursor-pointer"
             }`}
             title={isAdmin ? t("adminUser.adminDetailsDisabled") : t("adminUser.viewDetails")}
           >
@@ -87,8 +87,8 @@ export default function UserTableRow({
             disabled={isAdmin}
             className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border shadow-2xs transition-all ${
               isAdmin
-                ? "border-(--agri-border) bg-(--agri-hover) text-(--agri-text-muted) cursor-not-allowed opacity-50"
-                : "border-(--agri-border) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-[#D8F3DC] dark:hover:bg-(--agri-brand-bg)/40 dark:bg-(--agri-brand-bg)/40 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) hover:border-[#2D6A4F]/30 cursor-pointer"
+                ? "border-(--agri-border-subtle) bg-(--agri-hover)/50 text-(--agri-text-muted) cursor-not-allowed opacity-50"
+                : "border-(--agri-border-subtle) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-[#D8F3DC] dark:hover:bg-(--agri-brand-bg)/40 hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) hover:border-[#2D6A4F]/30 cursor-pointer"
             }`}
             title={isAdmin ? t("adminUser.adminEditDisabled") : t("adminUser.editUser")}
           >

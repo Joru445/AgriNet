@@ -1,4 +1,4 @@
-﻿import useAdminActivity from "../../hooks/useAdminActivity";
+import useAdminActivity from "../../hooks/useAdminActivity";
 
 import ActivityHeader from "../../components/admin/activity/ActivityHeader";
 import ActivityFilters from "../../components/admin/activity/ActivityFilters";
@@ -48,11 +48,11 @@ export default function Activity() {
         {error && <InlineError message={error} />}
 
         {loading ? (
-          <div className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-12 text-center shadow-md shadow-black/5">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-(--agri-hover)">
-              <i className="ri-loader-4-line animate-spin text-2xl text-(--agri-text-muted)" />
+          <div className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-12 text-center shadow-sm">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-(--agri-hover) shadow-2xs">
+              <i className="ri-loader-4-line animate-spin text-2xl text-[#2D6A4F]" />
             </div>
-            <p className="text-sm font-semibold text-(--agri-text-secondary)">
+            <p className="text-sm font-bold text-(--agri-text)">
               {t("adminActivity.loading")}
             </p>
           </div>

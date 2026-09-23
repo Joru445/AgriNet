@@ -1,11 +1,11 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import RoleBadge from "../../ui/RoleBadge";
 import ImageViewerModal from "../../ui/ImageViewerModal";
 import { useLanguage } from "../../../context/LanguageContext";
 import ResponsiveModal from "../../ui/ResponsiveModal";
 import Button from "../../ui/Button";
 
-export default function UserDetailsModal({ user, onClose }) {
+export default function UserDetailsModal({ user, farmer, onClose }) {
   const { t } = useLanguage();
   const [fullscreenImage, setFullscreenImage] = useState(null);
 
@@ -13,9 +13,9 @@ export default function UserDetailsModal({ user, onClose }) {
     if (!timestamp) return t("adminUser.naLabel");
 
     let date = null;
-    if (typeof timestamp.toDate === "function") {
+    if (typeof timestamp?.toDate === "function") {
       date = timestamp.toDate();
-    } else if (timestamp.seconds) {
+    } else if (timestamp?.seconds) {
       date = new Date(timestamp.seconds * 1000);
     } else if (typeof timestamp === "string" || typeof timestamp === "number") {
       date = new Date(timestamp);
@@ -27,7 +27,7 @@ export default function UserDetailsModal({ user, onClose }) {
 
     return date.toLocaleString(undefined, {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
@@ -38,6 +38,12 @@ export default function UserDetailsModal({ user, onClose }) {
   if (!user) return null;
 
   const isSuspended = user.status === "suspended";
+  const isFarmer = user.role === "farmer";
+  const isVerifiedFarmer =
+    user.verificationStatus === "approved" ||
+    user.verified === true ||
+    farmer?.verificationStatus === "approved" ||
+    farmer?.verified === true;
 
   // Build complete location string
   const locationParts = [
@@ -51,204 +57,231 @@ export default function UserDetailsModal({ user, onClose }) {
   const fullLocation =
     user.location?.address ||
     (locationParts.length > 0 ? locationParts.join(", ") : null) ||
-    "No address provided";
+    t("adminUser.noAddressProvided");
 
   return (
     <ResponsiveModal
       open={Boolean(user)}
       onClose={onClose}
       title={t("adminUser.detailsTitle")}
-      maxWidth="max-w-md"
+      maxWidth="max-w-xl"
     >
-        {/* Profile Card / Avatar */}
-        <div className="flex flex-col items-center text-center pt-2.5 pb-2">
-          <div className="relative mb-2">
-            {user.profilePicture ? (
-              <img
-                src={user.profilePicture}
-                alt={user.fullname}
-                onClick={() =>
-                  setFullscreenImage({
-                    src: user.profilePicture,
-                    title: `${user.fullname || user.username}'s Profile Picture`,
-                  })
-                }
-                className="h-16 w-16 rounded-full object-cover ring-3 ring-[#D8F3DC] cursor-pointer hover:opacity-90 transition"
-                title={t("adminUser.clickToViewPhoto")}
-              />
-            ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-(--agri-brand-bg) text-xl font-black text-[#2D6A4F] dark:text-(--agri-brand) ring-3 ring-[#D8F3DC]/40">
-                {user.fullname
-                  ?.split(/\s+/)
-                  .slice(0, 2)
-                  .map((name) => name[0])
-                  .join("")
-                  .toUpperCase() || "U"}
-              </div>
-            )}
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
+        {/* Profile Card / Avatar Overview */}
+        <div className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow">
+          <div className="flex flex-col items-center text-center">
+            <div className="relative mb-3">
+              {user.profilePicture ? (
+                <img
+                  src={user.profilePicture}
+                  alt={user.fullname}
+                  onClick={() =>
+                    setFullscreenImage({
+                      src: user.profilePicture,
+                      title: `${user.fullname || user.username}'s Profile Picture`,
+                    })
+                  }
+                  className="h-20 w-20 rounded-full object-cover ring-4 ring-[#2D6A4F]/20 shadow-xs cursor-pointer hover:opacity-90 transition"
+                  title={t("adminUser.clickToViewPhoto")}
+                />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#2D6A4F]/10 dark:bg-(--agri-brand-bg) text-2xl font-black text-[#2D6A4F] dark:text-(--agri-brand) ring-4 ring-[#2D6A4F]/20 shadow-xs">
+                  {user.fullname
+                    ?.split(/\s+/)
+                    .slice(0, 2)
+                    .map((name) => name[0])
+                    .join("")
+                    .toUpperCase() || "U"}
+                </div>
+              )}
 
-            {(user.verificationStatus === "approved" || user.verified) && (
+              {isVerifiedFarmer && (
+                <span
+                  className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-[#2D6A4F] text-white ring-2 ring-(--agri-card) shadow-2xs"
+                  title={t("adminUser.verifiedAccount")}
+                >
+                  <i className="ri-check-line text-xs font-bold" />
+                </span>
+              )}
+            </div>
+
+            <h4 className="text-lg font-bold text-(--agri-text) tracking-tight">
+              {user.fullname || t("adminUser.unnamedUser")}
+            </h4>
+
+            <p className="text-xs font-semibold text-(--agri-text-muted) mb-2.5">
+              @{user.username || "user"}
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <RoleBadge role={user.role || "consumer"} />
+
               <span
-                className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[#2D6A4F] text-white ring-2 ring-white"
-                title={t("adminUser.verifiedAccount")}
-              >
-                <i className="ri-check-line text-[10px] font-bold" />
-              </span>
-            )}
-          </div>
-
-          <h4 className="text-base font-bold text-(--agri-text)">
-            {user.fullname || t("adminUser.unnamedUser")}
-          </h4>
-
-          <p className="text-xs font-medium text-(--agri-text-muted) mb-1.5">
-            @{user.username || "user"}
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
-            <RoleBadge role={user.role || "consumer"} />
-
-            <span
-              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                isSuspended
-                  ? "bg-red-50 text-red-700 border-red-200"
-                  : "bg-emerald-50 text-emerald-700 border-emerald-200"
-              }`}
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  isSuspended ? "bg-red-500" : "bg-emerald-500"
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-2xs ${
+                  isSuspended
+                    ? "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/25"
+                    : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/25"
                 }`}
-              />
-              {isSuspended ? t("adminUser.suspendedAccount") : t("adminUser.activeAccount")}
-            </span>
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    isSuspended ? "bg-red-500" : "bg-emerald-500"
+                  }`}
+                />
+                {isSuspended ? t("adminUser.suspendedAccount") : t("adminUser.activeAccount")}
+              </span>
+
+              {isFarmer && (
+                <span
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border shadow-2xs ${
+                    isVerifiedFarmer
+                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/25"
+                      : "bg-gray-500/10 text-(--agri-text-muted) border-gray-500/20"
+                  }`}
+                >
+                  <i className={isVerifiedFarmer ? "ri-verified-badge-fill" : "ri-shield-line"} />
+                  {isVerifiedFarmer ? t("adminUser.verifiedFarmer") : t("adminUser.notVerified")}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Complete Information Section */}
-        <div className="space-y-2 text-left my-2">
-          {/* Full Name & Username */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-(--agri-hover)/90 border border-(--agri-border-subtle)">
-              <i className="ri-user-3-line text-base text-[#2D6A4F] dark:text-(--agri-brand) shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
-                  {t("adminUser.fullName")}
-                </p>
-                <p className="text-xs font-semibold text-(--agri-text) truncate mt-0.5">
-                  {user.fullname || t("adminUser.naLabel")}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-(--agri-hover)/90 border border-(--agri-border-subtle)">
-              <i className="ri-at-line text-base text-[#2D6A4F] dark:text-(--agri-brand) shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
-                  {t("adminUser.username")}
-                </p>
-                <p className="text-xs font-semibold text-(--agri-text) truncate mt-0.5">
-                  @{user.username || "user"}
-                </p>
-              </div>
-            </div>
+        {/* User Information Grid */}
+        <div className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow space-y-3.5">
+          <div className="flex items-center gap-1.5">
+            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#2D6A4F]/15 text-[#2D6A4F] dark:text-[#52B788] text-xs shadow-2xs">
+              <i className="ri-user-3-line" />
+            </span>
+            <h3 className="text-xs font-bold uppercase tracking-wide text-(--agri-text)">
+              {t("adminUser.detailsTitle")}
+            </h3>
           </div>
 
-          {/* Email Address */}
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-(--agri-hover)/90 border border-(--agri-border-subtle)">
-            <i className="ri-mail-line text-base text-[#2D6A4F] dark:text-(--agri-brand) shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
-                {t("adminUser.emailAddress")}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            {/* Full Name */}
+            <div className="p-3 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted) block">
+                {t("adminUser.fullName")}
+              </span>
+              <p className="font-bold text-sm text-(--agri-text) truncate mt-0.5">
+                {user.fullname || t("adminUser.naLabel")}
               </p>
-              <p className="text-xs font-semibold text-(--agri-text) break-all mt-0.5">
+            </div>
+
+            {/* Username */}
+            <div className="p-3 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted) block">
+                {t("adminUser.username")}
+              </span>
+              <p className="font-bold text-sm text-(--agri-text) truncate mt-0.5">
+                @{user.username || "user"}
+              </p>
+            </div>
+
+            {/* Email Address */}
+            <div className="p-3 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs sm:col-span-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted) block">
+                {t("adminUser.emailAddress")}
+              </span>
+              <p className="font-bold text-sm text-(--agri-text) break-all mt-0.5">
                 {user.email || t("adminUser.noEmailProvided")}
               </p>
             </div>
-          </div>
 
-          {/* Phone Number */}
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-(--agri-hover)/90 border border-(--agri-border-subtle)">
-            <i className="ri-phone-line text-base text-[#2D6A4F] dark:text-(--agri-brand) shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
+            {/* Phone Number */}
+            <div className="p-3 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs sm:col-span-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted) block">
                 {t("adminUser.phoneNumber")}
-              </p>
-              <p className="text-xs font-semibold text-(--agri-text) mt-0.5">
+              </span>
+              <p className="font-bold text-sm text-(--agri-text) mt-0.5">
                 {user.phone || user.contactNumber || t("adminUser.noPhoneProvided")}
               </p>
             </div>
           </div>
+        </div>
 
-          {/* Full Location */}
-          <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-(--agri-hover)/90 border border-(--agri-border-subtle)">
-            <i className="ri-map-pin-2-line text-base text-[#2D6A4F] dark:text-(--agri-brand) shrink-0 mt-0.5" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
-                {t("adminUser.fullLocation")}
-              </p>
-              <p className="text-xs font-semibold text-(--agri-text) whitespace-normal break-words leading-snug mt-0.5">
-                {fullLocation}
-              </p>
-              {user.location?.latitude && user.location?.longitude && (
-                <p className="text-[11px] text-(--agri-text-muted) font-mono mt-0.5">
-                  GPS: {user.location.latitude}, {user.location.longitude}
-                </p>
-              )}
-            </div>
+        {/* Location & Address Card */}
+        <div className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow space-y-3.5">
+          <div className="flex items-center gap-1.5">
+            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-blue-500/15 text-blue-600 dark:text-blue-400 text-xs shadow-2xs">
+              <i className="ri-map-pin-2-line" />
+            </span>
+            <h3 className="text-xs font-bold uppercase tracking-wide text-(--agri-text)">
+              {t("adminUser.fullLocation")}
+            </h3>
           </div>
 
-          {/* Registration & Update Dates */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-(--agri-hover)/90 border border-(--agri-border-subtle)">
-              <i className="ri-calendar-line text-base text-[#2D6A4F] dark:text-(--agri-brand) shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
-                  {t("adminUser.created")}
-                </p>
-                <p className="text-xs font-semibold text-(--agri-text) mt-0.5">
-                  {formatFullDateTime(user.createdAt)}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-(--agri-hover)/90 border border-(--agri-border-subtle)">
-              <i className="ri-time-line text-base text-[#2D6A4F] dark:text-(--agri-brand) shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
-                  {t("adminUser.updated")}
-                </p>
-                <p className="text-xs font-semibold text-(--agri-text) mt-0.5">
-                  {formatFullDateTime(user.updatedAt || user.createdAt)}
-                </p>
-              </div>
-            </div>
+          <div className="p-3 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs text-xs space-y-1">
+            <p className="font-semibold text-sm text-(--agri-text) leading-relaxed">
+              {fullLocation}
+            </p>
+            {user.location?.latitude && user.location?.longitude && (
+              <p className="text-[11px] text-(--agri-text-muted) font-mono pt-1">
+                GPS: {user.location.latitude}, {user.location.longitude}
+              </p>
+            )}
           </div>
+        </div>
 
-          {/* Bio / Description */}
-          {user.bio && (
-            <div className="p-2.5 rounded-xl bg-(--agri-hover)/90 border border-(--agri-border-subtle)">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted) mb-0.5">
+        {/* Bio / About */}
+        {user.bio && (
+          <div className="rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow space-y-3.5">
+            <div className="flex items-center gap-1.5">
+              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 text-xs shadow-2xs">
+                <i className="ri-file-text-line" />
+              </span>
+              <h3 className="text-xs font-bold uppercase tracking-wide text-(--agri-text)">
                 {t("adminUser.bioAbout")}
-              </p>
-              <p className="text-xs text-(--agri-text) font-medium whitespace-pre-wrap leading-relaxed">
+              </h3>
+            </div>
+            <div className="p-3 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs text-xs">
+              <p className="text-(--agri-text) font-medium whitespace-pre-wrap leading-relaxed">
                 {user.bio}
               </p>
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Timestamps */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+          <div className="flex items-center gap-2.5 p-3 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs">
+            <i className="ri-calendar-line text-sm text-[#2D6A4F] dark:text-(--agri-brand) shrink-0" />
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted) block">
+                {t("adminUser.created")}
+              </span>
+              <p className="font-semibold text-xs text-(--agri-text) mt-0.5">
+                {formatFullDateTime(user.createdAt)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 p-3 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs">
+            <i className="ri-time-line text-sm text-[#2D6A4F] dark:text-(--agri-brand) shrink-0" />
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted) block">
+                {t("adminUser.updated")}
+              </span>
+              <p className="font-semibold text-xs text-(--agri-text) mt-0.5">
+                {formatFullDateTime(user.updatedAt || user.createdAt)}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Modal Close Action */}
-        <div className="mt-3">
+        <div className="flex justify-end pt-3 border-t border-(--agri-border-subtle)">
           <Button
             variant="cancel"
             size="md"
             onClick={onClose}
-            fullWidth
+            className="shadow-2xs"
           >
             {t("adminUser.closeDetails")}
           </Button>
         </div>
+      </div>
 
       {/* Fullscreen Zoomable Image Modal */}
       <ImageViewerModal

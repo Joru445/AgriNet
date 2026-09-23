@@ -1,4 +1,4 @@
-﻿import SkeletonBox from "../../ui/SkeletonBox";
+import SkeletonBox from "../../ui/SkeletonBox";
 
 /**
  * Skeleton that mirrors the admin UserTable
@@ -7,15 +7,15 @@
  */
 export default function UserTableSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-lg shadow-black/5">
+    <div className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-sm">
       <div className="overflow-x-auto max-md:scrollbar-none">
         <table className="w-full min-w-200">
           <thead>
-            <tr className="border-b border-(--agri-border) bg-(--agri-hover)/80">
+            <tr className="border-b border-(--agri-border-subtle) bg-(--agri-hover)/60">
               {["", "", "", "", ""].map((_, i) => (
                 <th
                   key={i}
-                  className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-secondary)"
+                  className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)"
                 >
                   <SkeletonBox className="h-3 w-16 rounded" />
                 </th>
@@ -23,7 +23,7 @@ export default function UserTableSkeleton() {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-(--agri-border-subtle)">
             {Array.from({ length: 6 }).map((_, rowIndex) => (
               <tr
                 key={rowIndex}

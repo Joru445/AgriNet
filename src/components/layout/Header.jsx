@@ -42,7 +42,7 @@ export default function Header({ user, collapsed, hideBackButton, authInitializi
           <img
             src={logo}
             alt="AgriNet"
-            className="h-8 w-8 sm:h-8 sm:w-8 object-contain shrink-0"
+            className="h-8 w-8 object-contain shrink-0 lg:hidden"
           />
           <span className="font-bold text-(--agri-text) text-lg sm:text-xl tracking-tight whitespace-nowrap">
             AgriNet

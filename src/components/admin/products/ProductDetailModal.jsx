@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import { formatDate } from "../../../utils/date";
@@ -99,22 +99,47 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
         )}
 
         {product && !loading && (
-          <div className="space-y-6">
-            {/* Header */}
-            <div>
-              <h2 className="text-lg font-bold text-(--agri-text)">
-                {t("adminProduct.detailsTitle")}
-              </h2>
-              <p className="text-sm text-(--agri-text-muted)">
-                {t("adminProduct.detailsSubtitle")}
-              </p>
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
+            {/* Status & Overview Banner Card */}
+            <div className="rounded-2xl border border-(--agri-border) bg-(--agri-card) p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-(--agri-text-muted)">
+                    {t("adminProduct.status")}
+                  </span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold shadow-xs ${product.available ? "bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/30" : "bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/30"}`}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
+                      {product.available ? t("adminProduct.available") : t("adminProduct.unavailable")}
+                    </span>
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold shadow-2xs ${isPreorder ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20" : "bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/20"}`}>
+                      <i className={isPreorder ? "ri-timer-line" : "ri-checkbox-circle-line"} />
+                      {isPreorder ? t("adminProduct.preorder") : t("adminProduct.availableNow")}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {product.ratingSummary && (
+                    <div className="flex items-center gap-1 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) px-3 py-1.5 shadow-2xs">
+                      <i className="ri-star-fill text-amber-500 text-xs" />
+                      <span className="text-xs font-bold text-(--agri-text)">
+                        {product.ratingSummary.average?.toFixed(1) || "0.0"}
+                      </span>
+                      <span className="text-[10px] text-(--agri-text-muted) font-medium">
+                        ({product.ratingSummary.count || 0})
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Product Images */}
             {product.images?.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="flex gap-2.5 overflow-x-auto pb-2 pt-1">
                 {product.images.map((img, idx) => (
-                  <div key={idx} className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-(--agri-hover)">
+                  <div key={idx} className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-(--agri-hover) border border-(--agri-border) shadow-xs hover:shadow-md transition">
                     <img src={img.url} alt="" className="h-full w-full object-cover" loading="lazy" />
                   </div>
                 ))}
@@ -122,50 +147,43 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
             )}
 
             {/* Product Info */}
-            <div className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 p-4">
-              <h3 className="mb-3 text-sm font-bold text-(--agri-text)">
-                {t("adminProduct.productInformation")}
-              </h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <span className="text-(--agri-text-muted)">{t("adminProduct.productName")}</span>
-                  <p className="font-semibold text-(--agri-text)">{product.name}</p>
+            <div className="rounded-2xl border border-(--agri-border) bg-(--agri-card) p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow space-y-3.5">
+              <div className="flex items-center gap-1.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#2D6A4F]/15 text-[#2D6A4F] dark:text-[#52B788] text-xs">
+                  <i className="ri-store-2-line" />
+                </span>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-(--agri-text)">
+                  {t("adminProduct.productInformation")}
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                <div className="p-2.5 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs">
+                  <span className="text-(--agri-text-muted) block text-[10px] uppercase font-bold">{t("adminProduct.productName")}</span>
+                  <p className="font-bold text-sm text-(--agri-text) mt-0.5">{product.name}</p>
                 </div>
-                <div>
-                  <span className="text-(--agri-text-muted)">{t("adminProduct.category")}</span>
-                  <p className="font-semibold text-(--agri-text)">{product.category}</p>
+                <div className="p-2.5 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs">
+                  <span className="text-(--agri-text-muted) block text-[10px] uppercase font-bold">{t("adminProduct.category")}</span>
+                  <p className="font-bold text-sm text-(--agri-text) mt-0.5">{product.category}</p>
                 </div>
-                <div>
-                  <span className="text-(--agri-text-muted)">{t("adminProduct.price")}</span>
-                  <p className="font-semibold text-(--agri-text)">₱{product.price.toLocaleString()}/{product.unit}</p>
+                <div className="p-2.5 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs">
+                  <span className="text-(--agri-text-muted) block text-[10px] uppercase font-bold">{t("adminProduct.price")}</span>
+                  <p className="font-bold text-sm text-(--agri-text) mt-0.5">₱{product.price.toLocaleString()} / {product.unit}</p>
                 </div>
-                <div>
-                  <span className="text-(--agri-text-muted)">{t("adminProduct.stock")}</span>
-                  <p className={`font-semibold ${product.stock <= 0 ? "text-red-500" : "text-(--agri-text)"}`}>
+                <div className="p-2.5 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs">
+                  <span className="text-(--agri-text-muted) block text-[10px] uppercase font-bold">{t("adminProduct.stock")}</span>
+                  <p className={`font-bold text-sm mt-0.5 ${product.stock <= 0 ? "text-red-600 dark:text-red-400" : "text-(--agri-text)"}`}>
                     {product.stock} {product.unit}
                   </p>
                 </div>
-                <div>
-                  <span className="text-(--agri-text-muted)">{t("adminProduct.sellingMode")}</span>
-                  <p className="font-semibold text-(--agri-text)">
+                <div className="p-2.5 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs">
+                  <span className="text-(--agri-text-muted) block text-[10px] uppercase font-bold">{t("adminProduct.sellingMode")}</span>
+                  <p className="font-bold text-sm text-(--agri-text) mt-0.5 capitalize">
                     {isPreorder ? t("adminProduct.preorder") : t("adminProduct.availableNow")}
                   </p>
                 </div>
-                <div>
-                  <span className="text-(--agri-text-muted)">{t("adminProduct.availability")}</span>
-                  <p className={`font-semibold ${product.available ? "text-green-600" : "text-red-500"}`}>
-                    {product.available ? t("adminProduct.available") : t("adminProduct.unavailable")}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-(--agri-text-muted)">{t("adminProduct.rating")}</span>
-                  <p className="font-semibold text-(--agri-text)">
-                    {product.ratingSummary?.average?.toFixed(1) || "0.0"} ({product.ratingSummary?.count || 0} reviews)
-                  </p>
-                </div>
-                <div>
-                  <span className="text-(--agri-text-muted)">{t("adminProduct.listingDuration")}</span>
-                  <p className="font-semibold text-(--agri-text)">
+                <div className="p-2.5 rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) shadow-2xs">
+                  <span className="text-(--agri-text-muted) block text-[10px] uppercase font-bold">{t("adminProduct.listingDuration")}</span>
+                  <p className="font-bold text-sm text-(--agri-text) mt-0.5">
                     {product.durationHours ? `${product.durationHours}h` : "—"}
                   </p>
                 </div>
@@ -174,39 +192,43 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
 
             {/* Pre-order Information */}
             {isPreorder && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-800/30 dark:bg-amber-900/10">
-                <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-amber-700 dark:text-amber-400">
-                  <i className="ri-timer-line" />
-                  {t("adminProduct.preorderInformation")}
-                </h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-amber-600/70">{t("adminProduct.preorderLimit")}</span>
-                    <p className="font-semibold text-amber-700 dark:text-amber-400">
+              <div className="rounded-2xl border border-amber-300 dark:border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow space-y-3.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 text-xs">
+                    <i className="ri-timer-line" />
+                  </span>
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-amber-800 dark:text-amber-300">
+                    {t("adminProduct.preorderInformation")}
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                  <div className="p-2.5 rounded-xl bg-white/70 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 shadow-2xs">
+                    <span className="text-amber-800/80 dark:text-amber-300/80 block text-[10px] uppercase font-bold">{t("adminProduct.preorderLimit")}</span>
+                    <p className="font-bold text-sm text-amber-900 dark:text-amber-200 mt-0.5">
                       {product.preOrderLimit ?? "—"} {product.unit}
                     </p>
                   </div>
-                  <div>
-                    <span className="text-amber-600/70">{t("adminProduct.reserved")}</span>
-                    <p className="font-semibold text-amber-700 dark:text-amber-400">
+                  <div className="p-2.5 rounded-xl bg-white/70 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 shadow-2xs">
+                    <span className="text-amber-800/80 dark:text-amber-300/80 block text-[10px] uppercase font-bold">{t("adminProduct.reserved")}</span>
+                    <p className="font-bold text-sm text-amber-900 dark:text-amber-200 mt-0.5">
                       {product.reservedQuantity ?? 0} {product.unit}
                     </p>
                   </div>
-                  <div>
-                    <span className="text-amber-600/70">{t("adminProduct.remaining")}</span>
-                    <p className="font-semibold text-amber-700 dark:text-amber-400">
+                  <div className="p-2.5 rounded-xl bg-white/70 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 shadow-2xs">
+                    <span className="text-amber-800/80 dark:text-amber-300/80 block text-[10px] uppercase font-bold">{t("adminProduct.remaining")}</span>
+                    <p className="font-bold text-sm text-amber-900 dark:text-amber-200 mt-0.5">
                       {remainingCapacity ?? "—"} {product.unit}
                     </p>
                   </div>
-                  <div>
-                    <span className="text-amber-600/70">{t("adminProduct.preorderDeadline")}</span>
-                    <p className="font-semibold text-amber-700 dark:text-amber-400">
+                  <div className="p-2.5 rounded-xl bg-white/70 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 shadow-2xs">
+                    <span className="text-amber-800/80 dark:text-amber-300/80 block text-[10px] uppercase font-bold">{t("adminProduct.preorderDeadline")}</span>
+                    <p className="font-bold text-sm text-amber-900 dark:text-amber-200 mt-0.5">
                       {product.preOrderDeadline ? formatDate(product.preOrderDeadline) : "—"}
                     </p>
                   </div>
-                  <div className="col-span-2">
-                    <span className="text-amber-600/70">{t("adminProduct.expectedAvailability")}</span>
-                    <p className="font-semibold text-amber-700 dark:text-amber-400">
+                  <div className="col-span-1 sm:col-span-2 p-2.5 rounded-xl bg-white/70 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 shadow-2xs">
+                    <span className="text-amber-800/80 dark:text-amber-300/80 block text-[10px] uppercase font-bold">{t("adminProduct.expectedAvailability")}</span>
+                    <p className="font-bold text-sm text-amber-900 dark:text-amber-200 mt-0.5">
                       {product.expectedAvailableDate ? formatDate(product.expectedAvailableDate) : "—"}
                     </p>
                   </div>
@@ -215,25 +237,30 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
             )}
 
             {/* Farmer Info */}
-            <div className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 p-4">
-              <h3 className="mb-3 text-sm font-bold text-(--agri-text)">
-                {t("adminProduct.farmerInformation")}
-              </h3>
+            <div className="rounded-2xl border border-(--agri-border) bg-(--agri-card) p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow space-y-3.5">
+              <div className="flex items-center gap-1.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs">
+                  <i className="ri-user-line" />
+                </span>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-(--agri-text)">
+                  {t("adminProduct.farmerInformation")}
+                </h3>
+              </div>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-(--agri-hover)">
+                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-(--agri-hover) border border-(--agri-border) shadow-2xs">
                   {product.farmer?.profilePicture ? (
                     <img src={product.farmer.profilePicture} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-(--agri-text-muted)">
-                      <i className="ri-user-line" />
+                      <i className="ri-user-line text-lg" />
                     </div>
                   )}
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-(--agri-text)">
+                <div className="min-w-0">
+                  <p className="truncate text-sm sm:text-base font-bold text-(--agri-text)">
                     {product.farmer?.fullname || product.farmer?.username || "—"}
                   </p>
-                  <p className="text-xs text-(--agri-text-muted)">
+                  <p className="truncate text-xs text-(--agri-text-secondary) font-medium">
                     @{product.farmer?.username || "—"}
                   </p>
                 </div>
@@ -241,7 +268,7 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
                   variant="secondary"
                   size="sm"
                   onClick={handleViewFarmer}
-                  className="ml-auto"
+                  className="ml-auto shadow-xs"
                 >
                   {t("adminProduct.viewFarmer")}
                 </Button>
@@ -249,51 +276,57 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
             </div>
 
             {/* Reports */}
-            <div className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-(--agri-text)">
-                  {t("adminProduct.reports")} ({product.totalReports || 0})
-                </h3>
+            <div className="rounded-2xl border border-(--agri-border) bg-(--agri-card) p-4 sm:p-5 shadow-xs hover:shadow-sm transition-shadow space-y-3.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-orange-500/15 text-orange-600 dark:text-orange-400 text-xs">
+                    <i className="ri-shield-alert-line" />
+                  </span>
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-(--agri-text)">
+                    {t("adminProduct.reports")} ({product.totalReports || 0})
+                  </h3>
+                </div>
                 {product.totalReports > 0 && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleViewReports}
-                >
-                  {t("adminProduct.viewAllReports")}
-                </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleViewReports}
+                    className="shadow-xs"
+                  >
+                    {t("adminProduct.viewAllReports")}
+                  </Button>
                 )}
               </div>
 
               {product.totalReports === 0 ? (
-                <p className="text-sm text-(--agri-text-muted)">
+                <p className="text-xs sm:text-sm text-(--agri-text-muted) font-medium">
                   {t("adminProduct.noReports")}
                 </p>
               ) : (
-                <div className="space-y-2">
-                  <div className="flex gap-3 text-xs">
-                    <span className="rounded-full bg-orange-500/10 px-2.5 py-0.5 font-bold text-orange-600">
+                <div className="space-y-2.5">
+                  <div className="flex gap-2 text-xs">
+                    <span className="rounded-full bg-orange-500/15 px-2.5 py-0.5 font-bold text-orange-700 dark:text-orange-300 border border-orange-500/20 shadow-2xs">
                       {product.pendingReports || 0} {t("adminProduct.pending")}
                     </span>
-                    <span className="rounded-full bg-green-500/10 px-2.5 py-0.5 font-bold text-green-600">
+                    <span className="rounded-full bg-green-500/15 px-2.5 py-0.5 font-bold text-green-700 dark:text-green-300 border border-green-500/20 shadow-2xs">
                       {product.resolvedReports || 0} {t("adminProduct.resolved")}
                     </span>
                   </div>
                   {product.reports?.slice(0, 3).map((report) => (
-                    <div key={report.id} className="rounded-lg bg-(--agri-card) p-3 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-(--agri-text)">{report.reason}</span>
-                        <span className={`rounded-full px-2 py-0.5 font-bold ${
-                          report.status === "pending" ? "bg-orange-500/10 text-orange-600" :
-                          report.status === "reviewing" ? "bg-blue-500/10 text-blue-600" :
-                          report.status === "resolved" ? "bg-green-500/10 text-green-600" :
-                          "bg-gray-500/10 text-gray-600"
+                    <div key={report.id} className="rounded-xl bg-(--agri-hover)/50 border border-(--agri-border-subtle) p-3 text-xs shadow-2xs">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-(--agri-text)">{report.reason}</span>
+                        <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold shadow-2xs ${
+                          report.status === "pending" ? "bg-orange-500/15 text-orange-700 dark:text-orange-300 border border-orange-500/20" :
+                          report.status === "reviewing" ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/20" :
+                          report.status === "resolved" ? "bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/20" :
+                          "bg-gray-500/10 text-(--agri-text-secondary) border border-gray-500/20"
                         }`}>
                           {report.status}
                         </span>
                       </div>
                       {report.description && (
-                        <p className="mt-1 text-(--agri-text-muted) line-clamp-2">{report.description}</p>
+                        <p className="mt-1 text-(--agri-text-secondary) line-clamp-2 leading-relaxed">{report.description}</p>
                       )}
                     </div>
                   ))}
@@ -302,18 +335,25 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
             </div>
 
             {/* Timestamps */}
-            <div className="flex gap-4 text-xs text-(--agri-text-muted)">
-              <span>{t("adminProduct.created")}: {product.createdAt ? formatDate(product.createdAt) : "—"}</span>
-              <span>{t("adminProduct.updated")}: {product.updatedAt ? formatDate(product.updatedAt) : "—"}</span>
+            <div className="flex flex-wrap items-center gap-4 text-xs text-(--agri-text-muted) font-medium">
+              <span className="flex items-center gap-1.5">
+                <i className="ri-calendar-line" />
+                {t("adminProduct.created")}: {product.createdAt ? formatDate(product.createdAt) : "—"}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <i className="ri-time-line" />
+                {t("adminProduct.updated")}: {product.updatedAt ? formatDate(product.updatedAt) : "—"}
+              </span>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3 border-t border-(--agri-border-subtle) pt-4">
+            <div className="flex items-center justify-between gap-3 border-t border-(--agri-border-subtle) pt-4">
               <Button
                 variant={product.available ? "danger" : "primary"}
                 size="sm"
                 onClick={handleToggle}
                 disabled={actionLoading}
+                className="shadow-xs"
               >
                 {product.available ? t("adminProduct.disableProduct") : t("adminProduct.enableProduct")}
               </Button>
@@ -321,6 +361,7 @@ export default function ProductDetailModal({ productId, onClose, onToggleAvailab
                 variant="cancel"
                 size="md"
                 onClick={onClose}
+                className="shadow-2xs"
               >
                 {t("common.close")}
               </Button>

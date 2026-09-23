@@ -1,4 +1,4 @@
-﻿import { useLanguage } from "../../../context/LanguageContext";
+import { useLanguage } from "../../../context/LanguageContext";
 import InlineSearchInput from "../../ui/InlineSearchInput";
 import Button from "../../ui/Button";
 
@@ -17,8 +17,8 @@ export default function ReportFilters({
   const { t } = useLanguage();
 
   return (
-    <div className="mb-6 rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-4.5 shadow-md shadow-black/5">
-      <div className="flex flex-col gap-3">
+    <div className="mb-6 rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-4 sm:p-5 shadow-sm">
+      <div className="flex flex-col gap-3.5">
         {/* Search */}
         <InlineSearchInput
           value={search}
@@ -27,12 +27,12 @@ export default function ReportFilters({
         />
 
         {/* Dropdowns Row */}
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex flex-col gap-2.5 sm:gap-3 md:flex-row md:items-center">
           {/* Status Filter */}
           <select
             value={status}
             onChange={(e) => onStatusChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
           >
             <option value="">{t("adminReport.allStatus")}</option>
             <option value="pending">{t("adminReport.pending")}</option>
@@ -45,7 +45,7 @@ export default function ReportFilters({
           <select
             value={targetType}
             onChange={(e) => onTargetTypeChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
           >
             <option value="">{t("adminReport.allTypes")}</option>
             <option value="user">{t("adminReport.typeUser")}</option>
@@ -59,7 +59,7 @@ export default function ReportFilters({
             type="date"
             value={dateFrom}
             onChange={(e) => onDateFromChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
             title={t("adminReport.dateFrom")}
           />
 
@@ -68,14 +68,14 @@ export default function ReportFilters({
             type="date"
             value={dateTo}
             onChange={(e) => onDateToChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
             title={t("adminReport.dateTo")}
           />
 
           {/* Clear Filters */}
           {(status || targetType || dateFrom || dateTo) && (
             <Button
-              variant="ghost"
+              variant="cancel"
               size="sm"
               onClick={() => {
                 onStatusChange("");
@@ -83,9 +83,10 @@ export default function ReportFilters({
                 onDateFromChange("");
                 onDateToChange("");
               }}
+              className="rounded-xl shadow-2xs"
             >
               <i className="ri-filter-off-line" />
-              {t("adminReport.clearFilters")}
+              <span>{t("adminReport.clearFilters")}</span>
             </Button>
           )}
         </div>
