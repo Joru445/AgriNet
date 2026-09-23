@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 
 import Avatar from "../ui/Avatar";
 import ConfirmDialog from "../ui/ConfirmDialog";
@@ -110,7 +110,7 @@ export default function AccountSwitcher() {
         {t("settings.accounts")}
       </h2>
 
-      <div className="rounded-xl border border-(--agri-border) bg-(--agri-card) overflow-hidden">
+      <div className="rounded-xl border border-(--agri-border) bg-(--agri-card) shadow-sm overflow-hidden">
         {/* Current account */}
         <div className="flex items-center gap-3 px-4 py-3 bg-(--agri-brand-bg)/30">
           <Avatar

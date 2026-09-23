@@ -31,7 +31,7 @@ function SectionHeading({ children, className = "" }) {
 
 function SectionCard({ children, className = "" }) {
   return (
-    <div className={`rounded-xl border border-(--agri-border) bg-(--agri-card) overflow-hidden ${className}`}>
+    <div className={`rounded-xl border border-(--agri-border) bg-(--agri-card) shadow-sm overflow-hidden ${className}`}>
       {children}
     </div>
   );
@@ -126,16 +126,21 @@ export default function Settings() {
             </Link>
 
             <div className="border-t border-(--agri-border-subtle)">
-              <Button
+              <button
                 type="button"
-                variant="logout"
                 onClick={() => setShowLogoutModal(true)}
-                icon="ri-logout-box-line"
-                fullWidth
-                className="justify-start"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-red-500/10 cursor-pointer"
               >
-                {t("common.logout")}
-              </Button>
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/40 text-red-500">
+                  <i className="ri-logout-box-line text-lg" />
+                </div>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-red-500">
+                    {t("common.logout")}
+                  </span>
+                </span>
+                <i className="ri-arrow-right-s-line shrink-0 text-(--agri-text-muted)" />
+              </button>
             </div>
           </SectionCard>
         </section>

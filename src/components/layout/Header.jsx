@@ -1,5 +1,6 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 
+import logo from "../../assets/favicon.ico";
 import BackButton from "../ui/BackButton";
 import UserIdentity from "../ui/UserIdentity";
 import Badge from "../ui/Badge";
@@ -30,27 +31,23 @@ export default function Header({ user, collapsed, hideBackButton, authInitializi
   return (
     <header className="shrink-0 sticky top-0 right-0 z-9996 dark:lg:rounded-2xl flex h-[calc(3.75rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] items-center justify-between bg-(--agri-surface)/95 border-b border-(--agri-border) dark:border-(--agri-surface) px-3 md:px-5 dark:lg:m-2 backdrop-blur-sm transition-all duration-300 ease-in-out">
       {/* ── Left ──────────────────────────────────────── */}
-      <div className="flex items-center gap-1.5 min-w-0">
-        {hideBackButton && !isAnonymous ? (
-          <span
-            className={`font-bold text-(--agri-text) text-base sm:text-lg whitespace-nowrap transition-all duration-300 ease-in-out ${
-              !collapsed ? "lg:hidden" : "block"
+      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+        {!hideBackButton || isAnonymous ? (
+          <BackButton to={isAnonymous ? "/landing" : undefined} />
+        ) : null}
+        <div
+          className={`flex items-center gap-2 shrink-0 transition-all duration-300 ease-in-out ${!collapsed ? "lg:hidden" : "flex"
             }`}
-          >
+        >
+          <img
+            src={logo}
+            alt="AgriNet"
+            className="h-8 w-8 sm:h-8 sm:w-8 object-contain shrink-0"
+          />
+          <span className="font-bold text-(--agri-text) text-lg sm:text-xl tracking-tight whitespace-nowrap">
             AgriNet
           </span>
-        ) : (
-          <>
-            <BackButton to={isAnonymous ? "/landing" : undefined} />
-            <span
-              className={`font-bold text-(--agri-text) text-base sm:text-lg whitespace-nowrap transition-all duration-300 ease-in-out ${
-                !collapsed ? "lg:hidden" : "block"
-              }`}
-            >
-              AgriNet
-            </span>
-          </>
-        )}
+        </div>
       </div>
 
       {/* ── Right actions ─────────────────────────────── */}

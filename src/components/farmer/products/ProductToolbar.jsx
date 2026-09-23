@@ -1,5 +1,4 @@
-﻿import { useLanguage } from "../../../context/LanguageContext";
-import Button from "../../ui/Button";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ProductToolbar({
   view,
@@ -46,11 +45,11 @@ export default function ProductToolbar({
 
         <div className="flex items-center gap-2.5 justify-between sm:justify-start">
           {/* Grid / List View Toggle (High contrast & readable) */}
-          <div className="flex bg-(--agri-card) border-2 border-(--agri-border-subtle) rounded-xl p-1 shadow-xs items-center gap-1">
+          <div className="h-[42px] flex bg-(--agri-card) border-2 border-(--agri-border-subtle) rounded-xl p-1 shadow-xs items-center gap-1">
             <button
               type="button"
               onClick={() => onViewChange("grid")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
+              className={`h-full px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
                 view === "grid"
                   ? "bg-[#E8F5EE] dark:bg-(--agri-brand-bg-alt) border border-[#BBDAC4] text-[#1B4332] dark:text-(--agri-brand-light) shadow-xs"
                   : "text-(--agri-text-muted) hover:text-(--agri-text) hover:bg-(--agri-hover)"
@@ -64,7 +63,7 @@ export default function ProductToolbar({
             <button
               type="button"
               onClick={() => onViewChange("list")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
+              className={`h-full px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
                 view === "list"
                   ? "bg-[#E8F5EE] dark:bg-(--agri-brand-bg-alt) border border-[#BBDAC4] text-[#1B4332] dark:text-(--agri-brand-light) shadow-xs"
                   : "text-(--agri-text-muted) hover:text-(--agri-text) hover:bg-(--agri-hover)"
@@ -76,9 +75,15 @@ export default function ProductToolbar({
             </button>
           </div>
 
-          <Button variant="primary" size="md" icon="ri-add-line" onClick={onAdd} data-onboarding="add-product">
-            {t("products.addProduct")}
-          </Button>
+          <button
+            type="button"
+            onClick={onAdd}
+            data-onboarding="add-product"
+            className="h-[42px] flex items-center justify-center gap-1.5 px-4 rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-sm shadow-xs hover:shadow-md transition cursor-pointer shrink-0"
+          >
+            <i className="ri-add-line text-lg font-bold" />
+            <span>{t("products.addProduct")}</span>
+          </button>
         </div>
       </div>
     </div>

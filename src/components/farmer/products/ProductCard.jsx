@@ -12,7 +12,6 @@ import {
   LOW_STOCK_THRESHOLD,
 } from "../../../utils/productStatus";
 
-import Button from "../../ui/Button";
 import { CATEGORY_ICONS } from "../../../utils/categoryIcons";
 import { applyTransform, PRODUCT_THUMB_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
 
@@ -287,9 +286,14 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
 
         {/* Footer Action Buttons */}
         <div className="pt-2 border-t border-(--agri-border) flex items-center justify-between gap-1.5">
-          <Button variant="ghost" size="sm" icon="ri-edit-line" onClick={() => onEdit(product)} className="flex-1">
-            {t("common.edit")}
-          </Button>
+          <button
+            type="button"
+            onClick={() => onEdit(product)}
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-(--agri-hover) hover:bg-[#E8F5EE] hover:text-[#2D6A4F] text-(--agri-text-secondary) text-xs font-bold rounded-lg transition cursor-pointer"
+          >
+            <i className="ri-edit-line text-xs" />
+            <span>{t("common.edit")}</span>
+          </button>
 
           <button
             type="button"
