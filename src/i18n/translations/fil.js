@@ -1095,6 +1095,7 @@ export default {
       poultry: "Mga Manok",
       meats: "Karne",
       seafoods: "Mga Pagkaing Dagat",
+      others: "Iba pa",
     },
     units: {
       kg: "kg",

@@ -1080,6 +1080,7 @@ export default {
       poultry: "Poultry",
       meats: "Meat",
       seafoods: "Seafood",
+      others: "Others",
     },
     units: {
       kg: "kg",
