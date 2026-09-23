@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import ThemeToggle from "../../components/common/ThemeToggle";
@@ -204,12 +204,18 @@ export default function Settings() {
                   type="button"
                   onClick={handleUpdate}
                   disabled={updating}
-                  className="shrink-0 rounded-lg bg-(--agri-brand-dark) px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 cursor-pointer disabled:opacity-50"
+                  className="shrink-0 rounded-lg bg-(--agri-brand-dark) px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                 >
                   {updating ? (
-                    <i className="ri-loader-4-line animate-spin" />
+                    <>
+                      <i className="ri-loader-4-line animate-spin" />
+                      <span>{t("settings.updateApp") || t("settings.update") || "Update App"}</span>
+                    </>
                   ) : (
-                    t("settings.update")
+                    <>
+                      <i className="ri-download-cloud-2-line text-base" />
+                      <span>{t("settings.updateApp") || t("settings.update") || "Update App"}</span>
+                    </>
                   )}
                 </button>
               </div>

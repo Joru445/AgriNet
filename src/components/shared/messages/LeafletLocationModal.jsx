@@ -569,9 +569,8 @@ export default function LeafletLocationModal({
               >
                 <i className="ri-stop-circle-line text-sm" />
                 <span>
-                  {isLiveActive
-                    ? t("messages.stopSharing")
-                    : t("messages.endLocation")}
+                  {t("messages.endLiveLocation") ||
+                    (isLiveActive ? t("messages.stopSharing") : t("messages.endLocation"))}
                 </span>
               </button>
             )}

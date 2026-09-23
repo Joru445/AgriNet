@@ -1623,6 +1623,7 @@ export default {
     updateAvailable: "May Bagong Update",
     updateDescription: "May bagong bersyon ng AgriNet na handa nang i-install.",
     update: "Update",
+    updateApp: "I-update ang App",
     updateFailed: "Nabigong mag-update. Mangyaring subukan muli.",
     upToDate: "Naka-update ka na",
     upToDateDescription: "Ang iyong app ay gumagana sa pinakabagong bersyon.",

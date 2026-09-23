@@ -62,6 +62,8 @@ export default defineConfig({
           '**/firebase-messaging-sw.js',
         ],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MiB
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           // Google Fonts stylesheets
           {

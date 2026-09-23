@@ -316,9 +316,8 @@ export default function LiveLocationCard({
               >
                 <i className="ri-stop-circle-line text-xs sm:text-sm" />
                 <span>
-                  {isLiveActive
-                    ? t("messages.stopSharing")
-                    : t("messages.endLocation")}
+                  {t("messages.endLiveLocation") ||
+                    (isLiveActive ? t("messages.stopSharing") : t("messages.endLocation"))}
                 </span>
               </button>
             )}

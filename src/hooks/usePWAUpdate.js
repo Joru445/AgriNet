@@ -1,90 +1,241 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
-/**
- * Hook to detect and manage PWA service worker updates.
- *
- * Uses the virtual module injected by vite-plugin-pwa when registerType: 'prompt'.
- *
- * Key behavior:
- * - Suppresses the update prompt on initial page load (Workbox detects
- *   a "new" SW on every build due to asset hash changes, even when no
- *   code changed).
- * - Only shows the prompt when a genuinely new version is deployed
- *   while the user is actively browsing.
- * - Tracks dismissal in sessionStorage so the prompt doesn't reappear
- *   during the same session after the user taps "Later".
- */
-export function usePWAUpdate() {
-  const [needRefresh, setNeedRefresh] = useState(false)
-  const [registration, setRegistration] = useState(null)
+let globalRegistration = null
+let globalUpdateSW = null
+let globalNeedRefresh = false
+let globalIsChecking = false
+const listeners = new Set()
 
-  // Suppress the first onNeedRefresh call that fires during initial SW registration.
-  // After ~3 seconds the SW registration + update check cycle is complete.
-  const initialLoadRef = useRef(true)
-  // Track if the user dismissed the prompt this session.
-  const dismissedRef = useRef(
-    typeof sessionStorage !== 'undefined' &&
-    sessionStorage.getItem('pwa_update_dismissed') === 'true',
-  )
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      initialLoadRef.current = false
-    }, 3000)
-    return () => clearTimeout(timer)
-  }, [])
-
-  const updateServiceWorker = useCallback(async (reloadPage = true) => {
-    if (!registration?.waiting) {
-      if (reloadPage) window.location.reload()
-      return
+function notifyListeners() {
+  listeners.forEach((listener) => {
+    try {
+      listener(globalNeedRefresh, globalIsChecking)
+    } catch (e) {
+      console.warn('[PWA] Listener error:', e)
     }
+  })
+}
 
-    registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+function setupRegistrationListeners(reg) {
+  if (!reg) return
+  globalRegistration = reg
 
-    const onControlChange = () => {
-      if (reloadPage) window.location.reload()
-    }
+  // Check if a service worker is already waiting to activate
+  if (reg.waiting && navigator.serviceWorker?.controller) {
+    globalNeedRefresh = true
+    notifyListeners()
+  }
 
-    navigator.serviceWorker.addEventListener('controllerchange', onControlChange, {
-      once: true,
+  // If a worker is currently installing, watch for it to finish installing
+  if (reg.installing) {
+    reg.installing.addEventListener('statechange', (e) => {
+      if (e.target.state === 'installed' && navigator.serviceWorker?.controller) {
+        globalNeedRefresh = true
+        notifyListeners()
+      }
     })
-  }, [registration])
+  }
 
-  const dismissUpdate = useCallback(() => {
-    setNeedRefresh(false)
-    dismissedRef.current = true
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.setItem('pwa_update_dismissed', 'true')
+  // Listen for future updates found during this session
+  reg.addEventListener('updatefound', () => {
+    const newWorker = reg.installing
+    if (newWorker) {
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker?.controller) {
+          globalNeedRefresh = true
+          notifyListeners()
+        }
+      })
     }
-  }, [])
+  })
+}
 
-  useEffect(() => {
-    import('virtual:pwa-register').then(({ registerSW }) => {
-      registerSW({
+let initPromise = null
+function initPWARegistration() {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    return Promise.resolve()
+  }
+  if (initPromise) return initPromise
+
+  initPromise = import('virtual:pwa-register')
+    .then(({ registerSW }) => {
+      globalUpdateSW = registerSW({
+        immediate: true,
         onNeedRefresh() {
-          // Skip on initial page load — the Workbox SW always detects a
-          // "new" version on first registration because Vite hashes assets.
-          // Also skip if the user already dismissed the prompt this session.
-          if (initialLoadRef.current || dismissedRef.current) return
-          setNeedRefresh(true)
+          console.log('[PWA] onNeedRefresh triggered')
+          globalNeedRefresh = true
+          notifyListeners()
         },
         onOfflineReady() {
           console.log('[PWA] App ready for offline use')
         },
         onRegisteredSW(swUrl, swReg) {
-          setRegistration(swReg)
           console.log('[PWA] Service worker registered:', swUrl)
+          setupRegistrationListeners(swReg)
         },
         onRegisterError(error) {
           console.error('[PWA] Service worker registration failed:', error)
         },
       })
-    }).catch((err) => {
-      // Not in a PWA context or module not available (dev mode)
-      console.debug('[PWA] Not available:', err?.message)
+
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (reg) {
+          setupRegistrationListeners(reg)
+        }
+      })
     })
+    .catch((err) => {
+      console.debug('[PWA] Virtual module not available:', err?.message)
+    })
+
+  return initPromise
+}
+
+// Auto-initialize PWA registration on module load
+initPWARegistration()
+
+// Setup automatic background update checks and seamless auto-activation
+if (typeof window !== 'undefined') {
+  // Check when user resumes or focuses the app
+  window.addEventListener('focus', () => {
+    checkForUpdate()
+  })
+
+  // Check when returning online
+  window.addEventListener('online', () => {
+    checkForUpdate()
+  })
+
+  // When app goes into background or screen turns off, if an update is waiting,
+  // silently activate the new service worker so the app is already updated on next open
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && globalNeedRefresh) {
+      updateServiceWorker(false)
+    } else if (document.visibilityState === 'visible') {
+      checkForUpdate()
+    }
+  })
+
+  // Periodic background update check every 15 minutes
+  setInterval(() => {
+    checkForUpdate()
+  }, 15 * 60 * 1000)
+}
+
+export async function checkForUpdate() {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    return false
+  }
+  globalIsChecking = true
+  notifyListeners()
+
+  try {
+    await initPWARegistration()
+
+    const reg = globalRegistration || (await navigator.serviceWorker.getRegistration())
+    if (reg) {
+      globalRegistration = reg
+      if (reg.waiting && navigator.serviceWorker?.controller) {
+        globalNeedRefresh = true
+        globalIsChecking = false
+        notifyListeners()
+        return true
+      }
+
+      // Proactively check with the server for newer service worker script
+      await reg.update()
+
+      if (reg.waiting && navigator.serviceWorker?.controller) {
+        globalNeedRefresh = true
+      }
+    }
+  } catch (err) {
+    console.debug('[PWA] checkForUpdate error:', err)
+  } finally {
+    globalIsChecking = false
+    notifyListeners()
+  }
+
+  return globalNeedRefresh
+}
+
+export async function updateServiceWorker(reloadPage = true) {
+  let reloaded = false
+  const reload = () => {
+    if (!reloaded && reloadPage) {
+      reloaded = true
+      window.location.reload()
+    }
+  }
+
+  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener(
+      'controllerchange',
+      () => {
+        reload()
+      },
+      { once: true }
+    )
+
+    const reg = globalRegistration || (await navigator.serviceWorker.getRegistration())
+    if (reg?.waiting) {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' })
+    }
+  }
+
+  if (globalUpdateSW) {
+    try {
+      await globalUpdateSW(true)
+    } catch (e) {
+      console.warn('[PWA] globalUpdateSW error:', e)
+    }
+  }
+
+  if (reloadPage) {
+    setTimeout(() => {
+      reload()
+    }, 1200)
+  }
+}
+
+/**
+ * Hook to detect and manage PWA service worker updates.
+ */
+export function usePWAUpdate() {
+  const [needRefresh, setNeedRefresh] = useState(globalNeedRefresh)
+  const [isChecking, setIsChecking] = useState(globalIsChecking)
+
+  useEffect(() => {
+    setNeedRefresh(globalNeedRefresh)
+    setIsChecking(globalIsChecking)
+
+    const listener = (refreshVal, checkingVal) => {
+      setNeedRefresh(refreshVal)
+      setIsChecking(checkingVal)
+    }
+
+    listeners.add(listener)
+
+    // Actively check for service worker updates upon mounting
+    checkForUpdate()
+
+    return () => {
+      listeners.delete(listener)
+    }
   }, [])
 
-  return { needRefresh, updateServiceWorker, dismissUpdate }
+  const triggerUpdate = useCallback(async (reloadPage = true) => {
+    await updateServiceWorker(reloadPage)
+  }, [])
+
+  const triggerCheck = useCallback(async () => {
+    return await checkForUpdate()
+  }, [])
+
+  return {
+    needRefresh,
+    isChecking,
+    checkForUpdate: triggerCheck,
+    updateServiceWorker: triggerUpdate,
+  }
 }

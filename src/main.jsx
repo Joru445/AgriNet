@@ -13,6 +13,7 @@ import AuthHandlerPage from "./pages/auth/AuthHandlerPage";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { ThemeProvider } from "./context/ThemeContext";
 import { LanguageProvider } from "./context/LanguageContext";
+import "./hooks/usePWAUpdate";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

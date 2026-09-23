@@ -1596,6 +1596,7 @@ export default {
     updateAvailable: "Update Available",
     updateDescription: "A new version of AgriNet is ready to install.",
     update: "Update",
+    updateApp: "Update App",
     updateFailed: "Failed to update. Please try again.",
     upToDate: "You're up to date",
     upToDateDescription: "Your app is running the latest version.",

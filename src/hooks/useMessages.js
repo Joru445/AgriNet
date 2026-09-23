@@ -208,14 +208,31 @@ export default function useMessages() {
       // Must be sent by the CURRENT user
       if (!mSender || mSender !== currentUid) return false;
 
-      // Only active LIVE location messages count as running location
-      const isLiveLocation =
-        (m.type === "live_location" || m.locationType === "live_location") &&
-        m.locationType !== "location";
-      if (!isLiveLocation) return false;
+      // Location message (both 1-time location send and live location)
+      const isLocationMsg =
+        Boolean(m.location) ||
+        m.type === "location" ||
+        m.type === "live_location" ||
+        m.locationType === "location" ||
+        m.locationType === "live_location";
+      if (!isLocationMsg) return false;
 
       if (m.isEnded === true || Boolean(m.endedAt) || m.isLive === false) return false;
-      if (!m.liveUntil || now >= Number(m.liveUntil)) return false;
+
+      // Live location: check expiration
+      if (m.liveUntil && now >= Number(m.liveUntil)) return false;
+
+      // 1-time location send: keep active to prevent spamming until ended, up to 24 hours
+      if (!m.liveUntil) {
+        let msgTime = now;
+        if (m.createdAt) {
+          if (typeof m.createdAt.toMillis === "function") msgTime = m.createdAt.toMillis();
+          else if (typeof m.createdAt === "number") msgTime = m.createdAt < 1e11 ? m.createdAt * 1000 : m.createdAt;
+          else if (m.createdAt.seconds != null) msgTime = m.createdAt.seconds * 1000;
+        }
+        if (now - msgTime > 24 * 60 * 60 * 1000) return false;
+      }
+
       return true;
     });
   }, [
