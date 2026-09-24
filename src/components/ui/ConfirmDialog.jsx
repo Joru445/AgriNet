@@ -1,14 +1,13 @@
-﻿import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-
-import { useLanguage } from "../../context/LanguageContext";
+﻿import { useLanguage } from "../../context/LanguageContext";
 import Button from "./Button";
+import Modal from "./Modal";
 
 /**
  * Reusable confirmation dialog for destructive or important actions.
  *
- * Renders as a centered modal with icon, title, description, and
- * confirm/cancel buttons. Supports an optional danger variant.
+ * Renders as a centered modal (via the shared Modal / overlay foundation)
+ * with icon, title, description, and confirm/cancel buttons. Supports an
+ * optional danger variant.
  *
  * Props:
  *   open        — boolean
@@ -35,72 +34,54 @@ export default function ConfirmDialog({
   loading = false,
 }) {
   const { t } = useLanguage();
-  const [shouldRender, setShouldRender] = useState(false);
-  const [animating, setAnimating] = useState(false);
 
   const resolvedConfirm = confirmLabel ?? t("common.yes");
   const resolvedCancel = cancelLabel ?? t("common.cancel");
 
-  useEffect(() => {
-    if (open) {
-      setShouldRender(true);
-      setAnimating(false);
-    } else if (shouldRender) {
-      setAnimating(true);
-      const timer = setTimeout(() => {
-        setShouldRender(false);
-        setAnimating(false);
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-  }, [open, shouldRender]);
-
-  if (!shouldRender) return null;
-
-  const isClosing = animating;
-
-  return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md">
-      <div
-        className={`absolute inset-0 ${isClosing ? "anim-fade-out" : "anim-fade-in"}`}
-        onClick={onClose}
-      />
-
-      <div
-        className={`relative w-full max-w-sm overflow-hidden rounded-2xl bg-(--agri-card) p-6 shadow-2xl ${isClosing ? "anim-fade-out" : "anim-scale-in"}`}
-      >
-        <div className="flex items-start gap-4">
-          <div
-            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
-              danger
-                ? "bg-red-100/80 text-red-600"
-                : "bg-(--agri-hover) text-(--agri-text-muted)"
-            }`}
-          >
-            <i className={`${icon} text-2xl`} />
-          </div>
-
-          <div>
-            <h3 className="text-base font-bold text-(--agri-text)">{title}</h3>
-            {description && (
-              <p className="mt-1 text-sm text-(--agri-text-secondary) font-medium">
-                {description}
-              </p>
-            )}
-          </div>
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      maxWidth="max-w-sm"
+      hideTitleBar
+      bodyClassName="p-6"
+    >
+      <div className="flex items-start gap-4">
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
+            danger
+              ? "bg-red-100/80 text-red-600"
+              : "bg-(--agri-hover) text-(--agri-text-muted)"
+          }`}
+        >
+          <i className={`${icon} text-2xl`} />
         </div>
 
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <Button variant="cancel" size="md" onClick={onClose} disabled={loading}>
-            {resolvedCancel}
-          </Button>
-
-          <Button variant={danger ? "danger" : "primary"} size="md" onClick={onConfirm} disabled={loading} loading={loading}>
-            {resolvedConfirm}
-          </Button>
+        <div>
+          <h3 className="text-base font-bold text-(--agri-text)">{title}</h3>
+          {description && (
+            <p className="mt-1 text-sm font-medium text-(--agri-text-secondary)">
+              {description}
+            </p>
+          )}
         </div>
       </div>
-    </div>,
-    document.body,
+
+      <div className="mt-6 flex items-center justify-end gap-3">
+        <Button variant="cancel" size="md" onClick={onClose} disabled={loading}>
+          {resolvedCancel}
+        </Button>
+
+        <Button
+          variant={danger ? "danger" : "primary"}
+          size="md"
+          onClick={onConfirm}
+          disabled={loading}
+          loading={loading}
+        >
+          {resolvedConfirm}
+        </Button>
+      </div>
+    </Modal>
   );
 }

@@ -1,5 +1,6 @@
 ﻿import { useLanguage } from "../../../context/LanguageContext";
 import Button from "../../ui/Button";
+import Sheet from "../../ui/Sheet";
 
 import FiltersSidebar from "./FiltersSidebar";
 
@@ -13,42 +14,25 @@ export default function MobileFiltersDrawer({
   const { t } = useLanguage();
 
   return (
-    <>
-      <div
-        onClick={onClose}
-        className={`fixed inset-0 z-9998 bg-black/40 transition-opacity lg:hidden ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title={t("nearby.filters")}
+      maxWidth="max-w-full"
+      bodyClassName="p-5"
+      ariaLabel={t("nearby.filters")}
+      footer={
+        <Button variant="primary" size="md" fullWidth onClick={onClose}>
+          {t("nearby.applyFilters")}
+        </Button>
+      }
+    >
+      <FiltersSidebar
+        mobile
+        filters={filters}
+        onChange={onChange}
+        onReset={onReset}
       />
-
-      <div
-        className={`fixed bottom-0 left-0 right-0 z-9999 rounded-t-3xl bg-(--agri-card) transition-transform duration-300 lg:hidden ${
-          open ? "translate-y-0" : "translate-y-full"
-        }`}
-      >
-        <div className="flex items-center justify-between border-b border-(--agri-border) px-5 py-4">
-          <h2 className="text-lg font-bold">{t("nearby.filters")}</h2>
-
-          <button onClick={onClose}>
-            <i className="ri-close-line text-2xl" />
-          </button>
-        </div>
-
-        <div className="max-h-[75vh] overflow-y-auto p-5">
-          <FiltersSidebar
-            mobile
-            filters={filters}
-            onChange={onChange}
-            onReset={onReset}
-          />
-        </div>
-
-        <div className="border-t border-(--agri-border) p-5">
-          <Button variant="primary" size="md" fullWidth onClick={onClose}>
-            {t("nearby.applyFilters")}
-          </Button>
-        </div>
-      </div>
-    </>
+    </Sheet>
   );
 }

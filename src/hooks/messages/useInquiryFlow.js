@@ -7,7 +7,20 @@ import {
 import { apiFindOrCreateConversation } from "../../services/conversation.service";
 import { apiAcceptInquiry } from "../../services/inquiry.service";
 import { buildOptimisticConversation } from "../../utils/messaging/buildOptimisticConversation";
+import { getProductInquiryState } from "../../utils/productStatus";
+import { useLanguage } from "../../context/LanguageContext";
 import { showToast } from "../../utils/toast";
+
+// i18n keys for each blocked inquiry state — mirrors the backend's
+// authoritative error wording ("The pre-order deadline has passed." etc.)
+const BLOCKED_MESSAGES = {
+  OUT_OF_STOCK: "inquiryFlow.outOfStock",
+  UNAVAILABLE: "inquiryFlow.unavailable",
+  EXPIRED: "inquiryFlow.unavailable",
+  PREORDER_FULL: "inquiryFlow.preOrderFull",
+  PREORDER_ENDED: "inquiryFlow.preOrderEnded",
+  PREORDER_UNAVAILABLE: "inquiryFlow.unavailable",
+};
 
 export default function useInquiryFlow({
   profile,
@@ -18,6 +31,7 @@ export default function useInquiryFlow({
   setSearchParams,
 }) {
   const location = useLocation();
+  const { t } = useLanguage();
 
   const [inquiryProduct, setInquiryProduct] = useState(
     () => location.state?.inquiryProduct || null,
@@ -89,65 +103,54 @@ export default function useInquiryFlow({
   const sendInquiry = useCallback(
     async (quantity) => {
       if (!inquiryProduct) {
-        showToast.error("No product selected for inquiry.");
+        showToast.error(t("inquiryFlow.noProduct"));
         return;
       }
 
       if (!profile?.uid) {
-        showToast.error("You must be logged in.");
+        showToast.error(t("inquiryFlow.notLoggedIn"));
         return;
       }
 
       const parsedQuantity = Number(quantity);
-      const stock = Number(inquiryProduct.stock);
-      const isPreorder = inquiryProduct.sellingMode === "preorder";
 
       if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1) {
-        showToast.error("Please enter a valid quantity.");
+        showToast.error(t("inquiryFlow.validQuantity"));
         return;
       }
 
-      if (isPreorder) {
-        // Pre-order validation: check deadline and limit
-        const now = new Date();
-        const deadline = inquiryProduct.preOrderDeadline
-          ? new Date(inquiryProduct.preOrderDeadline)
-          : null;
-        if (deadline && now > deadline) {
-          showToast.error("The pre-order deadline has passed.");
-          return;
-        }
+      // Re-check eligibility against the CURRENT product state before doing
+      // anything. Router state and the composer's copy can be stale — the
+      // deadline may have passed, capacity may be full, or the farmer may
+      // have marked the product unavailable since the page was opened.
+      // Always fetch fresh; on fetch failure fall back to the last known
+      // state (the canonical helper still evaluates time-derived fields
+      // against the current clock). Backend validation remains the
+      // authoritative final gate.
+      let currentProduct = inquiryProduct;
+      try {
+        const freshProduct = await getProductById(inquiryProduct.id);
+        if (freshProduct) currentProduct = freshProduct;
+      } catch {
+        // Offline / transient failure — validate against last known state.
+      }
 
-        const preOrderLimit = Number(inquiryProduct.preOrderLimit ?? 0);
-        const reservedQuantity = Number(inquiryProduct.reservedQuantity ?? 0);
-        const remaining = preOrderLimit - reservedQuantity;
+      const inquiryState = getProductInquiryState(currentProduct);
+      if (!inquiryState.allowed) {
+        showToast.error(
+          t(BLOCKED_MESSAGES[inquiryState.code] ?? "inquiryFlow.unavailable"),
+        );
+        return;
+      }
 
-        if (remaining <= 0) {
-          showToast.error("This pre-order product has reached its reservation limit.");
-          return;
-        }
-
-        if (parsedQuantity > remaining) {
-          showToast.error(`Only ${remaining} units can be reserved.`);
-          return;
-        }
-      } else {
-        // Normal product validation
-        if (
-          inquiryProduct.available !== true ||
-          !Number.isInteger(stock) ||
-          stock < 1
-        ) {
-          showToast.error("This product is currently unavailable.");
-          return;
-        }
-
-        if (parsedQuantity > stock) {
-          showToast.error(
-            `Only ${stock} ${inquiryProduct.unit || "units"} available.`,
-          );
-          return;
-        }
+      if (parsedQuantity > inquiryState.quantityAvailable) {
+        showToast.error(
+          t("inquiryFlow.onlyAvailable", {
+            count: inquiryState.quantityAvailable,
+            unit: currentProduct.unit || t("productDetails.unit"),
+          }),
+        );
+        return;
       }
 
       try {
@@ -155,7 +158,7 @@ export default function useInquiryFlow({
 
         if (!conversationId) {
           if (!activeUser?.uid) {
-            showToast.error("Unable to determine the farmer.");
+            showToast.error(t("inquiryFlow.unableFarmer"));
             return;
           }
 
@@ -194,10 +197,10 @@ export default function useInquiryFlow({
         }
 
         setInquiryProduct(null);
-        showToast.success("Inquiry sent successfully.");
+        showToast.success(t("inquiryFlow.sent"));
       } catch (error) {
         console.error("Failed to send inquiry:", error);
-        showToast.error(error.message || "Failed to send inquiry.");
+        showToast.error(error.message || t("inquiryFlow.sendFailed"));
       }
     },
     [
@@ -208,28 +211,29 @@ export default function useInquiryFlow({
       setActiveConversation,
       setActiveUser,
       setSearchParams,
+      t,
     ],
   );
 
   const acceptInquiry = useCallback(
     async (inquiryMessage) => {
       if (!inquiryMessage?.id) {
-        showToast.error("Invalid inquiry message.");
+        showToast.error(t("inquiryFlow.invalidMessage"));
         return;
       }
 
       if (inquiryMessage.type !== "product_inquiry") {
-        showToast.error("This message is not an inquiry.");
+        showToast.error(t("inquiryFlow.notInquiry"));
         return;
       }
 
       if (inquiryMessage.inquiryStatus !== "pending") {
-        showToast.error("This inquiry has already been processed.");
+        showToast.error(t("inquiryFlow.processed"));
         return;
       }
 
       if (!profile?.uid) {
-        showToast.error("You must be logged in.");
+        showToast.error(t("inquiryFlow.notLoggedIn"));
         return;
       }
 
@@ -241,16 +245,16 @@ export default function useInquiryFlow({
           consumerId: inquiryMessage.senderId,
           quantity: inquiryMessage.quantity,
         });
-        showToast.success("Inquiry accepted.");
+        showToast.success(t("inquiryFlow.accepted"));
       } catch (error) {
         console.error("Failed to accept inquiry:", error);
         showToast.error(
-          error.message || "Failed to accept inquiry.",
+          error.message || t("inquiryFlow.acceptFailed"),
         );
         throw error;
       }
     },
-    [profile],
+    [profile, t],
   );
 
   const cancelInquiryProduct = useCallback(() => {

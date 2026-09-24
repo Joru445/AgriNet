@@ -485,6 +485,13 @@ export default {
     orderUntil: "Hanggang sa",
     availableDate: "Available",
     reserved: "naka-reserve",
+    preOrderFull: "Ubos na ang Pre-order",
+    preOrderEnded: "Tapos na ang Pre-order",
+    outOfStockReason: "Naubos na ang lahat ng units.",
+    notAvailableReason: "Itinakda ng magsasaka ang produktong ito na hindi available.",
+    preOrderFullReason: "Na-reserve na ang lahat ng slot sa pre-order.",
+    preOrderEndedReason: "Lumipas na ang deadline ng pre-order.",
+    preOrderUnavailableReason: "Hindi available ang pre-order na ito sa ngayon.",
   },
 
   transactions: {
@@ -557,6 +564,7 @@ export default {
       consumerCompleted: "Tapos na ang transaction!",
       consumerCancelled: "Kinansela ang transaction.",
       preOrderReserved: "Na-reserve na ang pre-order! Tingnan ang chat.",
+      preOrderReservedWaiting: "Na-reserve na ang pre-order — naghihintay sa availability.",
       preOrderCancelled: "Kinansela ang pre-order.",
       farmerAccepted:
         "Tinanggap mo na ang transaction na ito. Simulan kapag handa ka na.",
@@ -676,6 +684,29 @@ export default {
     expectedAvailable: "Inaasahang availability:",
     orderUntil: "Hanggang sa:",
     reserved: "naka-reserve",
+    markAvailableSuccess: "Available na ang produkto para sa agarang pagbili.",
+    markAvailableError: "Hindi na-mark ang produkto bilang available.",
+    awaitingConfirmation:
+      "Lumipas na ang inaasahang petsa ng availability. Naghihintay ng kumpirmasyon mula sa magsasaka.",
+  },
+
+  inquiryFlow: {
+    noProduct: "Walang napiling produkto para sa inquiry.",
+    notLoggedIn: "Kailangan mong naka-log in.",
+    validQuantity: "Maglagay ng wastong quantity.",
+    preOrderEnded: "Lumipas na ang deadline ng pre-order.",
+    preOrderFull: "Naabot na ng pre-order na ito ang reservation limit.",
+    onlyAvailable: "{count} {unit} na lang ang available.",
+    unavailable: "Hindi available ang produktong ito sa ngayon.",
+    outOfStock: "Ubos na ang stock ng produktong ito.",
+    unableFarmer: "Hindi matukoy ang magsasaka.",
+    sent: "Naipadala na ang inquiry.",
+    sendFailed: "Hindi naipadala ang inquiry.",
+    invalidMessage: "Di-wastong inquiry message.",
+    notInquiry: "Hindi ito isang inquiry.",
+    processed: "Naproseso na ang inquiry na ito.",
+    accepted: "Tinanggap ang inquiry.",
+    acceptFailed: "Hindi matanggap ang inquiry.",
   },
 
   transaction: {
@@ -1169,6 +1200,13 @@ export default {
     preOrderDeadline: "Deadline ng Pre-order",
     preOrderLimit: "Maximum na Kantidad ng Pre-order",
     preOrderLimitHint: "Maximum na total na units na maaaring i-reserve ng mga customer",
+    preOrderRemaining: "{count} {unit} ang natitira para i-reserve",
+    limitBelowReserved:
+      "Hindi maaaring mas mababa sa naka-reserve na kantidad ({count}) ang limit ng pre-order.",
+    modeSwitchWithReservations:
+      "May aktibong reservation ang produktong ito. Gamitin ang Gawing Available upang i-convert ito.",
+    expectedDatePassed:
+      "Lumipas na ang inaasahang petsa ng availability. Gawing available ang produkto.",
   },
 
   farmerReviews: {

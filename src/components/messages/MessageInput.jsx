@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState, useCallback, lazy, Suspense } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { compressImage } from "../../utils/imageCompression";
 import { useLanguage } from "../../context/LanguageContext";
 import { useAuth } from "../../context/AuthContext";
+import { getProductInquiryState } from "../../utils/productStatus";
 import Button from "../ui/Button";
+import useClickOutside from "../../hooks/useClickOutside";
 import MessageReplyPreview from "./MessageReplyPreview";
 
 const ShareLocationModal = lazy(() => import("./ShareLocationModal"));
@@ -53,28 +55,14 @@ export default function MessageInput({
     return { left: safeLeft, bottom: safeBottom };
   }, []);
 
-  // Close menu on click outside (ignoring clicks on the plus button itself)
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (
-        menuRef.current?.contains(e.target) ||
-        plusButtonRef.current?.contains(e.target)
-      ) {
-        return;
-      }
-      setShowMenu(false);
-    }
-
-    if (showMenu) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("touchstart", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [showMenu]);
+  // Close menu on click outside (ignoring clicks inside the menu itself and
+  // on the plus button that toggles it)
+  const menuDismissRefs = useMemo(() => [menuRef, plusButtonRef], []);
+  useClickOutside(
+    menuDismissRefs,
+    () => setShowMenu(false),
+    showMenu,
+  );
 
   // Keep menu positioned accurately if screen resizes
   useEffect(() => {
@@ -116,6 +104,18 @@ export default function MessageInput({
 
   useEffect(() => {
     setQuantity(1);
+  }, [inquiryProduct?.id]);
+
+  // Time-derived eligibility (pre-order deadline) must stay current even if
+  // the composer sits open — periodically recompute so the disabled state
+  // and reason update without a user interaction. The final authoritative
+  // re-check happens on click (handleSendInquiry) plus a fresh product fetch
+  // inside useInquiryFlow.sendInquiry.
+  const [stateNow, setStateNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!inquiryProduct?.id) return;
+    const timer = setInterval(() => setStateNow(Date.now()), 30000);
+    return () => clearInterval(timer);
   }, [inquiryProduct?.id]);
 
   function handleKeyDown(e) {
@@ -224,8 +224,8 @@ export default function MessageInput({
         return 1;
       }
 
-      if (hasStock) {
-        return Math.min(stock, currentQuantity + 1);
+      if (canReserve) {
+        return Math.min(maxQuantity, currentQuantity + 1);
       }
 
       return currentQuantity + 1;
@@ -246,8 +246,8 @@ export default function MessageInput({
       return;
     }
 
-    if (hasStock) {
-      setQuantity(Math.min(nextQuantity, stock));
+    if (canReserve) {
+      setQuantity(Math.min(nextQuantity, maxQuantity));
 
       return;
     }
@@ -262,29 +262,36 @@ export default function MessageInput({
       return;
     }
 
+    // Re-evaluate eligibility against the CURRENT time immediately before
+    // handing off — the deadline may have passed since the last render.
+    // Server-side product data freshness is re-checked in useInquiryFlow.
+    const freshState = inquiryProduct
+      ? getProductInquiryState(inquiryProduct)
+      : null;
+    if (
+      !freshState?.allowed ||
+      finalQuantity > freshState.quantityAvailable
+    ) {
+      setStateNow(Date.now());
+      return;
+    }
+
     onSendInquiry(finalQuantity);
   }
 
-  const stock = Number(inquiryProduct?.stock);
-
-  const isAvailable = inquiryProduct?.available === true;
-
+  const inquiryState = inquiryProduct
+    ? getProductInquiryState(inquiryProduct, stateNow)
+    : null;
+  const canReserve = Boolean(inquiryState?.allowed);
   const isPreorder = inquiryProduct?.sellingMode === "preorder";
-
-  const hasStock = isPreorder
-    ? true // Pre-order products are always "available" for reservation
-    : Number.isInteger(stock) && stock > 0;
-
-  const maxQuantity = isPreorder
-    ? Math.max(1, Number(inquiryProduct?.preOrderLimit ?? 0) - Number(inquiryProduct?.reservedQuantity ?? 0))
-    : stock;
-
-  const isMaxQuantity = hasStock && Number(quantity) >= maxQuantity;
+  const maxQuantity = inquiryState?.quantityAvailable ?? 0;
+  const parsedQty = Number(quantity);
+  const isMaxQuantity = canReserve && parsedQty >= maxQuantity;
 
   const canSend = Boolean(value.trim() || selectedImage) && !uploadingImage && !isSending;
 
   return (
-    <div className="shrink-0 w-full bg-transparent p-3 sm:border-t border-(--agri-border-subtle) z-10">
+    <div className="shrink-0 w-full bg-transparent p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:border-t border-(--agri-border-subtle) z-10">
       {/* Hidden file inputs for Camera and Gallery */}
       <input
         ref={galleryInputRef}
@@ -340,14 +347,19 @@ export default function MessageInput({
                 </p>
               )}
 
-              {isAvailable && hasStock && !isPreorder && (
+              {canReserve && !isPreorder && (
                 <p className="mt-0.5 text-xs text-(--agri-text-muted)">
-                  {t("messageInput.available", { count: stock, unit: inquiryProduct.unit || "units" })}
+                  {t("messageInput.available", { count: maxQuantity, unit: inquiryProduct.unit || "units" })}
                 </p>
               )}
-              {isPreorder && (
+              {canReserve && isPreorder && (
                 <p className="mt-0.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
                   {t("messageInput.preOrderAvailable", { count: maxQuantity, unit: inquiryProduct.unit || "units" })}
+                </p>
+              )}
+              {!canReserve && inquiryState && (
+                <p className="mt-0.5 text-xs font-semibold text-red-600 dark:text-red-400">
+                  {t(inquiryState.reasonKey)}
                 </p>
               )}
             </div>
@@ -377,7 +389,7 @@ export default function MessageInput({
                 <input
                   type="number"
                   min="1"
-                  max={hasStock ? maxQuantity : undefined}
+                  max={canReserve ? maxQuantity : undefined}
                   value={quantity}
                   onChange={handleQuantityChange}
                   className="
@@ -415,14 +427,16 @@ export default function MessageInput({
               size="sm"
               onClick={handleSendInquiry}
               disabled={
-                !isAvailable ||
-                !hasStock ||
+                !canReserve ||
                 !Number.isInteger(Number(quantity)) ||
-                Number(quantity) < 1
+                Number(quantity) < 1 ||
+                Number(quantity) > maxQuantity
               }
               className="shrink-0 rounded-xl"
             >
-              {!isAvailable ? t("messageInput.unavailable") : isPreorder ? t("messageInput.sendPreOrderInquiry") : t("messageInput.sendInquiry")}
+              {!canReserve
+                ? t(inquiryState.labelKey)
+                : t(inquiryState.ctaKey)}
             </Button>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
@@ -9,6 +9,7 @@ import BackButton from "../ui/BackButton";
 import ImageViewerModal from "../ui/ImageViewerModal";
 import ReportModal from "../reports/ReportModal";
 
+import useClickOutside from "../../hooks/useClickOutside";
 import { getProfilePath } from "../../utils/routes";
 import useProfileViewer from "../../hooks/useProfileViewer";
 
@@ -22,23 +23,7 @@ export default function ChatHeader({ user }) {
   const [showReportModal, setShowReportModal] = useState(false);
   const menuRef = useRef(null);
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
-    }
-
-    if (menuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("touchstart", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [menuOpen]);
+  useClickOutside(menuRef, () => setMenuOpen(false), menuOpen);
 
   if (!user) return null;
 

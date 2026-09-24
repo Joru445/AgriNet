@@ -1,4 +1,15 @@
 import { useState, useEffect } from "react";
+import { parseDate } from "./date";
+
+/**
+ * Millis for a timestamp in any supported shape (Firestore Timestamp,
+ * {seconds}, { _seconds}, epoch millis, Date, ISO string) via the shared
+ * parseDate() utility — the single timestamp parser.
+ */
+function toMillis(timestamp) {
+  const date = parseDate(timestamp);
+  return date ? date.getTime() : NaN;
+}
 
 /**
  * Utility to check if a product listing has exceeded its expiration time.
@@ -6,13 +17,7 @@ import { useState, useEffect } from "react";
 export function isProductExpired(product) {
   if (!product || !product.expiresAt) return false;
   try {
-    const expireTime =
-      typeof product.expiresAt.toMillis === "function"
-        ? product.expiresAt.toMillis()
-        : typeof product.expiresAt.seconds === "number"
-          ? product.expiresAt.seconds * 1000
-          : new Date(product.expiresAt).getTime();
-
+    const expireTime = toMillis(product.expiresAt);
     if (!isNaN(expireTime) && expireTime > 0) {
       return Date.now() >= expireTime;
     }
@@ -23,17 +28,22 @@ export function isProductExpired(product) {
 }
 
 /**
+ * Whether a pre-order's expected-available date has already passed.
+ * parseDate-based, so all timestamp shapes compare identically. Time-derived:
+ * recompute each render — never store the result.
+ */
+export function isExpectedDatePassed(product, now = Date.now()) {
+  const expected = parseDate(product?.expectedAvailableDate);
+  return Boolean(expected) && now > expected.getTime();
+}
+
+/**
  * Formats the remaining time until product expiration in hours and minutes only (no seconds).
  */
 export function getRemainingTime(product) {
   if (!product || !product.expiresAt) return null;
   try {
-    const expireTime =
-      typeof product.expiresAt.toMillis === "function"
-        ? product.expiresAt.toMillis()
-        : typeof product.expiresAt.seconds === "number"
-          ? product.expiresAt.seconds * 1000
-          : new Date(product.expiresAt).getTime();
+    const expireTime = toMillis(product.expiresAt);
 
     if (isNaN(expireTime) || expireTime <= 0) return null;
 
@@ -67,12 +77,7 @@ export function useLiveRemainingTime(product) {
   );
   const [isExpired, setIsExpired] = useState(() => isProductExpired(product));
 
-  const expiresAtMillis =
-    typeof product?.expiresAt?.toMillis === "function"
-      ? product.expiresAt.toMillis()
-      : typeof product?.expiresAt?.seconds === "number"
-        ? product.expiresAt.seconds * 1000
-        : product?.expiresAt;
+  const expiresAtMillis = toMillis(product?.expiresAt);
 
   useEffect(() => {
     if (!product?.expiresAt) {

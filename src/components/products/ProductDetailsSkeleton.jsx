@@ -8,7 +8,7 @@ export default function ProductDetailsSkeleton() {
   return (
     <div className="grid gap-0 lg:grid-cols-2 lg:gap-8 lg:items-start">
       {/* Gallery */}
-      <div className="space-y-2 lg:sticky lg:top-0">
+      <div className="space-y-2 lg:sticky lg:top-[var(--app-header-h)]">
         <SkeletonBox className="aspect-square w-full" />
 
         <div className="flex gap-2 overflow-x-auto px-1 py-1">

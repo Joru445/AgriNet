@@ -70,7 +70,7 @@ export default function PublicProfile() {
   const isFarmer = role === "farmer";
 
   return (
-    <main className="mx-auto max-w-6xl min-h-[calc(100vh-4rem)] flex flex-col overflow-hidden bg-(--agri-surface) pb-16 shadow-sm md:pb-8">
+    <main className="mx-auto max-w-6xl min-h-full flex flex-col overflow-hidden bg-(--agri-surface) pb-8 shadow-sm">
       {loading ? (
         <PublicProfileSkeleton />
       ) : (

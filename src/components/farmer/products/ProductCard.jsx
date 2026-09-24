@@ -4,13 +4,15 @@ import { useLanguage } from "../../../context/LanguageContext";
 import productPlaceholder from "../../../assets/img/productPlaceholder.png";
 
 import { getFormatPrice, getDiscount, hasProductDiscount } from "../../../utils/price";
-import { useLiveRemainingTime } from "../../../utils/productExpiration";
+import { useLiveRemainingTime, isExpectedDatePassed } from "../../../utils/productExpiration";
 import {
   getProductStock,
-  getProductStatus,
-  PRODUCT_STATUS,
+  getProductInquiryState,
+  getRemainingPreOrderCapacity,
+  INQUIRY_STATE,
   LOW_STOCK_THRESHOLD,
 } from "../../../utils/productStatus";
+import { formatDate } from "../../../utils/date";
 
 import { CATEGORY_ICONS } from "../../../utils/categoryIcons";
 import { applyTransform, PRODUCT_THUMB_TF, isCloudinaryUrl } from "../../../utils/cloudinaryTransform";
@@ -27,12 +29,13 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
 
   const { remainingTime, isExpired } = useLiveRemainingTime(product);
   const stockNum = getProductStock(product);
-  const productStatus = getProductStatus(product);
-  const isPreorder = productStatus === PRODUCT_STATUS.PREORDER;
-  const isNotAvailable = productStatus === PRODUCT_STATUS.NOT_AVAILABLE;
-  const isNoStock = productStatus === PRODUCT_STATUS.NO_STOCK;
-  const isAvailable = productStatus === PRODUCT_STATUS.IN_STOCK;
-  const isLowStock = isAvailable && stockNum <= LOW_STOCK_THRESHOLD;
+  const inquiryState = getProductInquiryState(product);
+  const stateCode = inquiryState.code;
+  const isPreorder = product.sellingMode === "preorder";
+  const isLowStock =
+    stateCode === INQUIRY_STATE.AVAILABLE && stockNum <= LOW_STOCK_THRESHOLD;
+  const remainingCapacity = getRemainingPreOrderCapacity(product);
+  const expectedPassed = isExpectedDatePassed(product);
 
   const originalPriceNum = Number(product.originalPrice);
   const priceNum = Number(product.price ?? 0);
@@ -79,16 +82,25 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
                   <span>{t("products.noDisplay")}</span>
                 </span>
               </>
-            ) : isPreorder ? (
+            ) : stateCode === INQUIRY_STATE.PREORDER_OPEN ? (
               <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 flex items-center gap-0.5">
                 <i className="ri-calendar-schedule-line text-[9px]" />
                 {t("product.preOrder")}
               </span>
-            ) : isNotAvailable ? (
+            ) : stateCode === INQUIRY_STATE.PREORDER_FULL ? (
+              <span className="rounded-md bg-orange-100 px-1.5 py-0.5 text-[10px] font-bold text-orange-700 whitespace-nowrap shrink-0">
+                {t("product.preOrderFull")}
+              </span>
+            ) : stateCode === INQUIRY_STATE.PREORDER_ENDED ? (
+              <span className="rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600 whitespace-nowrap shrink-0">
+                {t("product.preOrderEnded")}
+              </span>
+            ) : stateCode === INQUIRY_STATE.UNAVAILABLE ||
+              stateCode === INQUIRY_STATE.PREORDER_UNAVAILABLE ? (
               <span className="rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600 whitespace-nowrap shrink-0">
                 {t("product.notAvailable")}
               </span>
-            ) : isNoStock ? (
+            ) : stateCode === INQUIRY_STATE.OUT_OF_STOCK ? (
               <span className="rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600 whitespace-nowrap shrink-0">
                 {t("product.outOfStock")}
               </span>
@@ -188,15 +200,24 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-gray-700 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
             {t("products.expired")}
           </div>
-        ) : isPreorder ? (
+        ) : stateCode === INQUIRY_STATE.PREORDER_OPEN ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-amber-500 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
             {t("product.preOrder")}
           </div>
-        ) : isNotAvailable ? (
+        ) : stateCode === INQUIRY_STATE.PREORDER_FULL ? (
+          <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-orange-600 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
+            {t("product.preOrderFull")}
+          </div>
+        ) : stateCode === INQUIRY_STATE.PREORDER_ENDED ? (
+          <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-red-600 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
+            {t("product.preOrderEnded")}
+          </div>
+        ) : stateCode === INQUIRY_STATE.UNAVAILABLE ||
+          stateCode === INQUIRY_STATE.PREORDER_UNAVAILABLE ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-red-600 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
             {t("product.notAvailable")}
           </div>
-        ) : isNoStock ? (
+        ) : stateCode === INQUIRY_STATE.OUT_OF_STOCK ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-lg bg-red-600 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
             {t("product.outOfStock")}
           </div>
@@ -216,7 +237,7 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
             <i className="ri-eye-off-line text-[10px] text-red-300 shrink-0" />
             <span>{t("products.noDisplay")}</span>
           </div>
-        ) : remainingTime && (isAvailable || isPreorder) ? (
+        ) : remainingTime && inquiryState.allowed ? (
           <div className="absolute bottom-1.5 left-1.5 z-10 flex items-center rounded-full bg-black/70 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-sm backdrop-blur-xs border border-white/20">
             <span>{remainingTime}</span>
           </div>
@@ -261,20 +282,43 @@ export default function ProductCard({ product, view, onEdit, onDelete }) {
             {isPreorder && product.preOrderLimit != null ? (
               <div className="mt-2 space-y-1">
                 {product.preOrderDeadline && (
-                  <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                  <p
+                    className={`text-[10px] sm:text-xs font-medium flex items-center gap-1 ${
+                      stateCode === INQUIRY_STATE.PREORDER_ENDED
+                        ? "text-red-600 dark:text-red-400 font-bold"
+                        : "text-amber-600 dark:text-amber-400"
+                    }`}
+                  >
                     <i className="ri-time-line" />
-                    {t("product.orderUntil")} {new Date(product.preOrderDeadline).toLocaleDateString()}
+                    {stateCode === INQUIRY_STATE.PREORDER_ENDED
+                      ? t("product.preOrderEnded")
+                      : `${t("product.orderUntil")} ${formatDate(product.preOrderDeadline)}`}
                   </p>
                 )}
                 {product.expectedAvailableDate && (
                   <p className="text-[10px] sm:text-xs text-(--agri-text-muted) font-medium flex items-center gap-1">
                     <i className="ri-calendar-line" />
-                    {t("product.availableDate")} {new Date(product.expectedAvailableDate).toLocaleDateString()}
+                    {t("product.availableDate")} {formatDate(product.expectedAvailableDate)}
                   </p>
                 )}
                 <p className="text-[10px] sm:text-xs text-(--agri-text-muted) font-medium">
                   {product.reservedQuantity ?? 0} / {product.preOrderLimit} {product.unit || "units"} {t("product.reserved")}
                 </p>
+                {remainingCapacity != null && (
+                  <p className="text-[10px] sm:text-xs font-bold text-amber-700 dark:text-amber-400">
+                    {t("products.preOrderRemaining", {
+                      count: remainingCapacity,
+                      unit: product.unit || "units",
+                    })}
+                  </p>
+                )}
+                {/* §18: expected date passed, farmer has not marked available */}
+                {expectedPassed && (
+                  <p className="text-[10px] sm:text-xs font-bold text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                    <i className="ri-alert-line" />
+                    {t("products.expectedDatePassed")}
+                  </p>
+                )}
               </div>
             ) : !isPreorder && (
               <span className="text-[10px] sm:text-[11px] font-semibold text-(--agri-text-muted) shrink-0">

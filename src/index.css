@@ -118,6 +118,33 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Edge-to-edge shell metrics: Header and BottomNavigation overlay the scroll
+   surface, so scrolling content carries matching insets (they scroll away). */
+:root {
+  --app-header-h: calc(3.75rem + env(safe-area-inset-top, 0px));
+  --app-bottom-nav-h: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Shell z-index ownership (content region uses `isolate` on the scroll
+   surface, so page-level z values are trapped below these shell layers):
+   Header / Sidebar / BottomNavigation = 9996, OfflineIndicator = 9995,
+   Overlay portal (Modal / Sheet / ConfirmDialog) = 9999, onboarding = 10010,
+   toast = --toastify-z-index (10040), fullscreen image viewer = 99999. */
+
+@media (min-width: 1024px) {
+  [data-theme="dark"] {
+    --app-header-h: calc(4.25rem + env(safe-area-inset-top, 0px));
+  }
+}
+
+/* Keyboard focus / scroll-into-view clears the overlay Header and
+   BottomNavigation instead of landing underneath them. Applied to the shell
+   scroll surface only ([data-app-scroll]), so portaled overlays are unaffected. */
+[data-app-scroll]
+  :is(a[href], button, input, select, textarea, [tabindex]) {
+  scroll-margin-block: var(--app-header-h) var(--app-bottom-nav-h);
+}
+
 *,
 *::before,
 *::after {
@@ -147,6 +174,9 @@ body {
   color: var(--agri-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Toasts sit above the Overlay portal (9999) and onboarding (10010),
+     below the deliberately-elevated image viewer / message menu (99999). */
+  --toastify-z-index: 10040;
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
@@ -239,6 +269,17 @@ body {
   }
 }
 
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
 @keyframes slideUp {
   from {
     transform: translateY(100%);
@@ -254,6 +295,16 @@ body {
   }
   to {
     transform: translateY(0);
+  }
+}
+
+/* Sheet exit: continues downward off-screen (translateY 0 -> 100%). */
+@keyframes sheetDownOut {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
   }
 }
 
@@ -341,11 +392,11 @@ body {
 }
 
 .anim-scale-out {
-  animation: fadeOut 0.15s ease-in both;
+  animation: scaleOut 0.2s ease-in both;
 }
 
 .anim-slide-down-out {
-  animation: slideDown 0.25s cubic-bezier(0.32, 0.72, 0, 1) reverse both;
+  animation: sheetDownOut 0.25s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
 .stagger-1 {

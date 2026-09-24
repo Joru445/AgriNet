@@ -46,10 +46,19 @@ export default function InquiryCard({
   if (userRole === "farmer" && ["accepted", "proof_submitted"].includes(status)) showDot = true;
 
   function handlePrimaryAction() {
-    const isConsumerReserved = userRole === "consumer" && status === "reserved";
+    // Consumer may only start a reserved pre-order transaction after the
+    // farmer has marked the product available (mirrors InquiryRow and the
+    // backend's start gate).
+    const isConsumerReserved =
+      userRole === "consumer" &&
+      status === "reserved" &&
+      productData?.sellingMode === "available";
     if (isConsumerReserved || (status === "accepted" && userRole === "farmer")) {
       acknowledgeInquiry(inquiry.id, inquiry.status);
       onStatusChange(inquiry.id, "ongoing");
+    } else if (status === "reserved") {
+      // Waiting for availability — the only honest action is the conversation.
+      openConversation();
     } else if (status === "accepted" || status === "ongoing") {
       navigate(`${getInquiriesPath(userRole)}/${inquiry.id}/proof`);
     } else if (status === "awaiting_proof" || status === "proof_submitted") {
@@ -69,7 +78,7 @@ export default function InquiryCard({
     navigate(`${getMessagesPath(userRole)}?conversation=${inquiry.conversationId}`);
   }
 
-  const primaryLabel = getPrimaryLabel(status, userRole, isReviewed, t);
+  const primaryLabel = getPrimaryLabel(status, userRole, isReviewed, t, productData);
 
   return (
     <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-md transition-all hover:shadow-xl hover:-translate-y-1">
@@ -207,9 +216,14 @@ export default function InquiryCard({
   );
 }
 
-function getPrimaryLabel(status, userRole, isReviewed, t) {
+function getPrimaryLabel(status, userRole, isReviewed, t, productData) {
   if (userRole === "consumer") {
-    if (status === "reserved") return t("transactions.startTransaction");
+    if (status === "reserved") {
+      // Only actionable after the farmer marks the product available.
+      return productData?.sellingMode === "available"
+        ? t("transactions.startTransaction")
+        : t("transactions.viewConversation");
+    }
     if (status === "accepted") return t("transactions.viewConversation");
     if (status === "ongoing") return t("transactions.markComplete");
     if (status === "awaiting_proof") return t("transactions.uploadProof");

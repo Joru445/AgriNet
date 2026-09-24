@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useRef } from "react";
 
 import { useLanguage } from "../../../context/LanguageContext";
+import useClickOutside from "../../../hooks/useClickOutside";
 
 const tomorrowDate = new Date(Date.now() + 86400000).toISOString().split("T")[0];
 
@@ -59,21 +60,7 @@ function CustomDropdown({
   const [openUpwards, setOpenUpwards] = useState(false);
   const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    }
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("touchstart", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [isOpen]);
+  useClickOutside(dropdownRef, () => setIsOpen(false), isOpen);
 
   function handleToggle() {
     if (!isOpen && dropdownRef.current) {

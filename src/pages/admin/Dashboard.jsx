@@ -57,7 +57,7 @@ export default function Dashboard() {
   const pendingCount = stats?.inquiries?.pending ?? 0;
 
   return (
-    <main className="bg-(--agri-page) overflow-x-hidden min-h-screen">
+    <main className="bg-(--agri-page) overflow-x-hidden min-h-full">
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="border-b border-(--agri-border-subtle) bg-(--agri-card) shadow-2xs">
         <div className="mx-auto max-w-7xl flex items-center justify-between gap-4 px-4 sm:px-6 py-4">

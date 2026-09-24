@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { getOnboardingSteps } from "../../constants/onboardingSteps";
 import useMediaQuery from "../../hooks/useMediaQuery";
+import Overlay from "../ui/Overlay";
 
 const POLL_INTERVAL = 250;
 const TARGET_TIMEOUT = 4000;
@@ -286,7 +287,9 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
     };
   }, [visible, targetFound, step, stepIndex]);
 
-  // Prevent scrolling while the tour is active.
+  // Prevent scrolling while the tour is active. Kept local (instead of the
+  // Overlay's body-only lock) because the tour must still allow scrolling
+  // inside the tooltip while blocking background touch/wheel scrolling.
   useEffect(() => {
     if (!visible) return;
 
@@ -313,32 +316,29 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
     };
   }, [visible]);
 
-  // Allow dismissing the tour with Escape.
-  useEffect(() => {
-    if (!visible) return;
-
-    function handleKeyDown(event) {
-      if (event.key === "Escape") {
-        onSkipRef.current?.();
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [visible]);
-
-  if (!visible || !step) return null;
-
-  const centered = !step.target || !targetFound;
-  const placement = centered ? "center" : choosePlacement(targetRect, isMobile);
-  const isLast = stepIndex >= steps.length - 1;
-
   return (
-    <section
-      role="region"
-      aria-label={t("onboarding.guidedTutorial")}
-      className="fixed inset-0 z-[10010] pointer-events-auto"
+    <Overlay
+      open={visible}
+      onClose={() => onSkipRef.current?.()}
+      closeOnBackdrop={false}
+      closeOnEscape={true}
+      lockScroll={false}
+      trapFocus={true}
+      zIndex={10010}
+      backdropClass="bg-transparent"
+      positionClass="p-0"
+      duration={0}
+      ariaLabel={t("onboarding.guidedTutorial")}
     >
+      {() => {
+        if (!step) return null;
+
+        const centered = !step.target || !targetFound;
+        const placement = centered ? "center" : choosePlacement(targetRect, isMobile);
+        const isLast = stepIndex >= steps.length - 1;
+
+        return (
+          <section className="fixed inset-0 z-[10010] pointer-events-auto">
       {/* Full-screen backdrop blocker to prevent clicking on page elements in the background */}
       <div
         aria-hidden="true"
@@ -456,6 +456,9 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
           </div>
         </div>
       </div>
-    </section>
+          </section>
+        );
+      }}
+    </Overlay>
   );
 }

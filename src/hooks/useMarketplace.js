@@ -5,7 +5,7 @@ import { apiGetMarketplaceProducts } from "../services/product.service";
 import useUserLocation from "./useUserLocation";
 import { getDistanceKm } from "../utils/distance";
 import { isProductExpired } from "../utils/productExpiration";
-import { isProductBuyable } from "../utils/productStatus";
+import { isProductBuyable, getProductInquiryState } from "../utils/productStatus";
 import * as pageCache from "../utils/pageCache";
 
 const PRODUCTS_PER_PAGE = 12;
@@ -341,17 +341,19 @@ export default function useMarketplace() {
     return marketplaceProducts
       .filter((product) => {
         const distance = Number(product.distance);
-        const stock = Number(product.stock ?? 0);
         return (
           Number.isFinite(distance) &&
           distance <= DISCOVERY_NEARBY_RADIUS_KM &&
-          product.available !== false &&
-          stock > 0
+          // Canonical eligibility: excludes expired listings, ended/full
+          // pre-orders, unavailable and out-of-stock products — while
+          // including open pre-orders even when their future stock is 0.
+          // Explicit `now` keeps the section current as deadlines pass.
+          getProductInquiryState(product, now).allowed
         );
       })
       .sort((a, b) => a.distance - b.distance)
       .slice(0, DISCOVERY_SECTION_SIZE);
-  }, [marketplaceProducts, userLocation]);
+  }, [marketplaceProducts, userLocation, now]);
 
   const recentProducts = useMemo(() => {
     return [...marketplaceProducts]

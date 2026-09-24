@@ -23,7 +23,7 @@ export default function Reviews() {
   } = useReviews();
 
   return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-16 md:pb-6">
+    <main className="p-4 md:p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[#1B4332] dark:text-(--agri-brand-light)">{t("farmer.reviewsTitle")}</h1>
 

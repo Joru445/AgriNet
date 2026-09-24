@@ -14,13 +14,13 @@ import {
 import { useLiveRemainingTime } from "../../utils/productExpiration";
 import {
   getProductStock,
-  getProductStatus,
-  PRODUCT_STATUS,
+  getProductInquiryState,
+  INQUIRY_STATE,
   LOW_STOCK_THRESHOLD,
 } from "../../utils/productStatus";
 
 import productPlaceholder from "../../assets/img/productPlaceholder.png";
-import { formatTimestamp } from "../../utils/date";
+import { formatTimestamp, formatDate } from "../../utils/date";
 
 import { CATEGORY_ICONS } from "../../utils/categoryIcons";
 import { applyTransform, PRODUCT_THUMB_TF, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
@@ -43,12 +43,11 @@ export default function ProductCard({
 
   const { remainingTime, isExpired } = useLiveRemainingTime(product);
   const stockNum = getProductStock(product);
-  const productStatus = getProductStatus(product);
-  const isPreorder = productStatus === PRODUCT_STATUS.PREORDER;
-  const isNotAvailable = productStatus === PRODUCT_STATUS.NOT_AVAILABLE;
-  const isNoStock = productStatus === PRODUCT_STATUS.NO_STOCK;
-  const isAvailable = productStatus === PRODUCT_STATUS.IN_STOCK;
-  const isLowStock = isAvailable && stockNum <= LOW_STOCK_THRESHOLD;
+  const inquiryState = getProductInquiryState(product);
+  const stateCode = inquiryState.code;
+  const isPreorder = product.sellingMode === "preorder";
+  const isLowStock =
+    inquiryState.code === INQUIRY_STATE.AVAILABLE && stockNum <= LOW_STOCK_THRESHOLD;
 
   // Auto delete / vanish completely from consumer view once duration is done
   if (isExpired) {
@@ -97,15 +96,24 @@ export default function ProductCard({
         </div>
 
         {/* Stock Badge - Stuck to Top Right Corner */}
-        {isPreorder ? (
+        {stateCode === INQUIRY_STATE.PREORDER_OPEN ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-amber-500 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
             {t("product.preOrder")}
           </div>
-        ) : isNotAvailable ? (
+        ) : stateCode === INQUIRY_STATE.PREORDER_FULL ? (
+          <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
+            {t("product.preOrderFull")}
+          </div>
+        ) : stateCode === INQUIRY_STATE.PREORDER_ENDED ? (
+          <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
+            {t("product.preOrderEnded")}
+          </div>
+        ) : stateCode === INQUIRY_STATE.UNAVAILABLE ||
+          stateCode === INQUIRY_STATE.PREORDER_UNAVAILABLE ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
             {t("product.notAvailable")}
           </div>
-        ) : isNoStock ? (
+        ) : stateCode === INQUIRY_STATE.OUT_OF_STOCK ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
             {t("product.outOfStock")}
           </div>
@@ -120,7 +128,7 @@ export default function ProductCard({
         )}
 
         {/* Duration / Auto-Disappear Badge - Bottom Left of Image */}
-        {remainingTime && (isAvailable || isPreorder) && (
+        {remainingTime && inquiryState.allowed && (
           <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 z-10 flex items-center rounded-full bg-black/70 px-2 py-0.5 text-[9px] sm:text-[11px] font-bold text-white shadow-sm backdrop-blur-xs border border-white/20">
             <span>{remainingTime}</span>
           </div>
@@ -190,7 +198,7 @@ export default function ProductCard({
               )}
             </div>
 
-            {!isPreorder && isAvailable && (
+            {!isPreorder && inquiryState.code === INQUIRY_STATE.AVAILABLE && (
             <span className="text-[10px] sm:text-xs font-semibold text-(--agri-text-muted) shrink-0">
                 {t("product.stockCount", { count: stockNum })}
               </span>
@@ -201,15 +209,23 @@ export default function ProductCard({
           {isPreorder && (
             <div className="mt-2 space-y-1">
               {product.preOrderDeadline && (
-                <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                <p
+                  className={`text-[10px] sm:text-xs font-medium flex items-center gap-1 ${
+                    stateCode === INQUIRY_STATE.PREORDER_ENDED
+                      ? "text-red-600 dark:text-red-400 font-bold"
+                      : "text-amber-600 dark:text-amber-400"
+                  }`}
+                >
                   <i className="ri-time-line" />
-                  {t("product.orderUntil")} {new Date(product.preOrderDeadline).toLocaleDateString()}
+                  {stateCode === INQUIRY_STATE.PREORDER_ENDED
+                    ? t("product.preOrderEnded")
+                    : `${t("product.orderUntil")} ${formatDate(product.preOrderDeadline)}`}
                 </p>
               )}
               {product.expectedAvailableDate && (
                 <p className="text-[10px] sm:text-xs text-(--agri-text-muted) font-medium flex items-center gap-1">
                   <i className="ri-calendar-line" />
-                  {t("product.availableDate")} {new Date(product.expectedAvailableDate).toLocaleDateString()}
+                  {t("product.availableDate")} {formatDate(product.expectedAvailableDate)}
                 </p>
               )}
               {product.preOrderLimit != null && (

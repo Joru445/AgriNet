@@ -93,7 +93,7 @@ export default function Marketplace() {
           onChange={(value) => updateFilter("category", value)}
         />
 
-        <div className="flex flex-col lg:flex-row gap-6 px-2 sm:px-0">
+        <div className="flex flex-col lg:flex-row gap-6 px-2 xl:px-0">
           <FiltersSidebar
             filters={filters}
             onChange={updateFilter}

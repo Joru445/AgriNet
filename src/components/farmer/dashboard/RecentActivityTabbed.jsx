@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import { useInquiriesContext } from "../../../context/InquiriesContext";
 import { formatDate } from "../../../utils/date";
+import { getProductInquiryState } from "../../../utils/productStatus";
 import DashboardSection from "../../ui/DashboardSection";
 import SkeletonBox from "../../ui/SkeletonBox";
 
@@ -112,7 +113,10 @@ function RecentProductsList({ products }) {
 
   return (
     <ul className="divide-y divide-(--agri-border-subtle)">
-      {displayed.map((product) => (
+      {displayed.map((product) => {
+        const inquiryState = getProductInquiryState(product);
+        const isOpen = inquiryState.allowed;
+        return (
         <li key={product.id}>
           <Link
             to="/farmer/products"
@@ -138,12 +142,12 @@ function RecentProductsList({ products }) {
                 <div className="mt-1 flex items-center gap-2">
                   <span
                     className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                      product.available
+                      isOpen
                         ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200/60"
                         : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200/60"
                     }`}
                   >
-                    {product.available ? t("admin.available") : t("admin.unavailable")}
+                    {t(inquiryState.labelKey)}
                   </span>
                   {product.category && (
                     <span className="text-[11px] text-(--agri-text-muted) truncate">
@@ -162,7 +166,8 @@ function RecentProductsList({ products }) {
             </div>
           </Link>
         </li>
-      ))}
+        );
+      })}
     </ul>
   );
 }

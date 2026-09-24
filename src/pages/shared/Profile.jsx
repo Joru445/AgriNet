@@ -82,7 +82,7 @@ export default function Profile() {
   ];
 
   return (
-    <main className="mx-auto w-full max-w-6xl md:px-6 pb-18 md:pb-8 bg-(--agri-surface) sm:bg-transparent">
+    <main className="mx-auto w-full max-w-6xl md:px-6 pb-8 bg-(--agri-surface) sm:bg-transparent">
       <div className="anim-page-enter space-y-6">
         <ProfileHeader
           profile={form}

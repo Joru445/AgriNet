@@ -3,8 +3,12 @@ import {
   getDiscount,
   hasProductDiscount,
 } from "../../utils/price";
-import { useLiveRemainingTime } from "../../utils/productExpiration";
-import { getProductStatus, PRODUCT_STATUS } from "../../utils/productStatus";
+import { useLiveRemainingTime, isExpectedDatePassed } from "../../utils/productExpiration";
+import {
+  getProductInquiryState,
+  INQUIRY_STATE,
+} from "../../utils/productStatus";
+import { formatDate } from "../../utils/date";
 import { useLanguage } from "../../context/LanguageContext";
 import { showToast } from "../../utils/toast";
 
@@ -35,14 +39,15 @@ export default function ProductInfo({
     ? getDiscount(product.originalPrice, product.price)
     : 0;
 
-  const { remainingTime, isExpired } = useLiveRemainingTime(product);
-  const productStatus = isExpired
-    ? PRODUCT_STATUS.NO_STOCK
-    : getProductStatus(product);
-  const isNotAvailable = productStatus === PRODUCT_STATUS.NOT_AVAILABLE;
-  const isNoStock = productStatus === PRODUCT_STATUS.NO_STOCK;
-  const isInStock = productStatus === PRODUCT_STATUS.IN_STOCK;
+  const { remainingTime } = useLiveRemainingTime(product);
+  const inquiryState = getProductInquiryState(product);
   const isPreorder = product.sellingMode === "preorder";
+  const isAllowed = inquiryState.allowed;
+  const isAvailableState = inquiryState.code === INQUIRY_STATE.AVAILABLE;
+  const isExpiredState = inquiryState.code === INQUIRY_STATE.EXPIRED;
+  // §17/§18: expectedAvailableDate is NOT the deadline and passing it does
+  // not make the product available — only the farmer's mark-available does.
+  const expectedPassed = isExpectedDatePassed(product);
   const priceFormatted = getFormatPrice(priceNum);
   const originalPriceFormatted = getFormatPrice(originalPriceNum);
   const categoryIcon =
@@ -120,33 +125,45 @@ export default function ProductInfo({
           </span>
         )}
 
+        {isExpiredState && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-500/10 border border-gray-500/20 px-2.5 py-1 text-xs font-bold text-gray-600 dark:text-gray-300">
+            <i className="ri-time-line text-gray-500 text-sm" />
+            <span>{t("products.expired")}</span>
+          </span>
+        )}
+
+        {/* Pre-order lifecycle state: Full / Ended / Unavailable — never
+            collapsed into a stock state or the generic pre-order badge */}
+        {isPreorder && !isAllowed && !isExpiredState && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 border border-red-500/20 px-2.5 py-1 text-xs font-bold text-red-600 dark:text-red-300">
+            <i className="ri-error-warning-line text-red-500 text-sm" />
+            <span>{t(inquiryState.labelKey)}</span>
+          </span>
+        )}
+
         <span className="inline-flex items-center gap-1.5 rounded-full bg-(--agri-green-mid)/10 border border-(--agri-green-mid)/20 px-2.5 py-1 text-xs font-bold text-(--agri-text)">
           <i className={`${categoryIcon} text-(--agri-green-mid) dark:text-(--agri-brand-light) text-sm`} />
           <span>{product.category || t("productDetails.produce")}</span>
         </span>
 
-        {!isPreorder && (
+        {!isPreorder && !isExpiredState && (
           <span
             className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold border ${
-              isInStock
+              isAllowed
                 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
-                : "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20"
+                : "bg-red-500/10 text-red-600 dark:text-red-300 border-red-500/20"
             }`}
           >
             <span
               className={`h-1.5 w-1.5 rounded-full ${
-                isInStock ? "bg-emerald-600" : "bg-red-600"
+                isAllowed ? "bg-emerald-600" : "bg-red-600"
               }`}
             />
-            {isNotAvailable
-              ? t("product.notAvailable")
-              : isNoStock
-                ? t("product.outOfStock")
-                : t("product.inStock")}
+            {t(inquiryState.labelKey)}
           </span>
         )}
 
-        {remainingTime && isInStock && (
+        {remainingTime && isAvailableState && (
           <span className="inline-flex items-center rounded-full bg-(--agri-hover) border border-(--agri-border) px-2 py-0.5 text-xs font-bold text-(--agri-text-secondary)">
             <span>{remainingTime}</span>
           </span>
@@ -162,11 +179,7 @@ export default function ProductInfo({
               <span className="text-(--agri-text-secondary)">
                 {t("productDetails.expectedAvailable")}{" "}
                 <span className="font-semibold text-(--agri-text)">
-                  {new Date(product.expectedAvailableDate).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  {formatDate(product.expectedAvailableDate)}
                 </span>
               </span>
             </div>
@@ -177,11 +190,7 @@ export default function ProductInfo({
               <span className="text-(--agri-text-secondary)">
                 {t("productDetails.orderUntil")}{" "}
                 <span className="font-semibold text-(--agri-text)">
-                  {new Date(product.preOrderDeadline).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  {formatDate(product.preOrderDeadline)}
                 </span>
               </span>
             </div>
@@ -192,6 +201,16 @@ export default function ProductInfo({
               <span className="text-(--agri-text-secondary)">
                 {product.reservedQuantity ?? 0} / {product.preOrderLimit} {product.unit || t("productDetails.unit")}{" "}
                 {t("productDetails.reserved")}
+              </span>
+            </div>
+          )}
+          {/* Expected availability passed but the farmer has not marked the
+              product available yet — be honest, do not imply it is available. */}
+          {expectedPassed && (
+            <div className="flex items-center gap-2 text-sm">
+              <i className="ri-alert-line text-orange-500" />
+              <span className="font-semibold text-orange-600 dark:text-orange-400">
+                {t("productDetails.awaitingConfirmation")}
               </span>
             </div>
           )}
@@ -212,7 +231,7 @@ export default function ProductInfo({
             : t("reviews.reviewPlural")}
         </span>
 
-        {product.stock != null && (
+        {!isPreorder && product.stock != null && (
           <>
             <span className="text-(--agri-border)">·</span>
             <span className="text-xs sm:text-sm font-semibold text-(--agri-text-secondary)">

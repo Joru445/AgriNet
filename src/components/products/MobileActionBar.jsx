@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
+import { getProductInquiryState } from "../../utils/productStatus";
 import { getMessagesPath } from "../../utils/routes";
 import Avatar from "../ui/Avatar";
 
@@ -15,15 +16,18 @@ export default function MobileActionBar({ product, farmer, isOwner }) {
   const { user, authInitializing, identity } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
 
-  const isPreorder = product?.sellingMode === "preorder";
   const isSignedIn = Boolean(user) && !authInitializing;
   const saved = isFavorite("product", product?.id);
+
+  const inquiryState = getProductInquiryState(product);
+  const canInquire = inquiryState.allowed;
 
   const farmerName =
     farmer?.fullname || farmer?.storeName || farmer?.username || "";
   const farmerId = farmer?.uid || farmer?.id || product?.farmerId;
 
   function handleInquiry() {
+    if (!canInquire) return;
     if (authInitializing) return;
     if (!user) {
       navigate("/login");
@@ -46,7 +50,7 @@ export default function MobileActionBar({ product, farmer, isOwner }) {
   // Owner sees a simplified bar
   if (isOwner) {
     return (
-      <div className="fixed bottom-0 inset-x-0 z-50 lg:hidden border-t border-(--agri-border) bg-(--agri-card) px-4 py-3">
+      <div className="fixed bottom-0 inset-x-0 z-50 lg:hidden border-t border-(--agri-border) bg-(--agri-card) px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
         <button
           onClick={() => navigate("/farmer/products")}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-(--agri-green-mid) py-3 text-sm font-bold text-white shadow-lg shadow-(--agri-green-mid)/20 transition hover:bg-(--agri-green-dark) active:scale-[0.99] cursor-pointer"
@@ -59,7 +63,7 @@ export default function MobileActionBar({ product, farmer, isOwner }) {
   }
 
   return (
-    <div className="fixed h-16 bottom-0 inset-x-0 z-50 lg:hidden border-t border-(--agri-border) bg-(--agri-card) px-3 py-2.5">
+    <div className="fixed min-h-16 bottom-0 inset-x-0 z-50 lg:hidden border-t border-(--agri-border) bg-(--agri-card) px-3 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))]">
       <div className="flex items-center px-3 gap-2">
         {/* Farmer identity — clickable */}
         <button
@@ -100,14 +104,21 @@ export default function MobileActionBar({ product, farmer, isOwner }) {
         <button
           type="button"
           onClick={handleInquiry}
-          className="flex shrink-0 items-center gap-1.5 rounded-xl bg-(--agri-green-mid) px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-(--agri-green-mid)/20 transition hover:bg-(--agri-green-dark) active:scale-[0.99] cursor-pointer"
+          disabled={!canInquire}
+          aria-disabled={!canInquire}
+          title={!canInquire ? t(inquiryState.reasonKey) : undefined}
+          className={`flex shrink-0 items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
+            canInquire
+              ? "bg-(--agri-green-mid) border-transparent text-white shadow-md shadow-(--agri-green-mid)/20 hover:bg-(--agri-green-dark) active:scale-[0.99] cursor-pointer"
+              : "bg-(--agri-hover) border-(--agri-border) text-(--agri-text-muted) cursor-not-allowed"
+          }`}
         >
           <span className="whitespace-nowrap">
-            {isSignedIn
-              ? isPreorder
-                ? t("productDetails.sendPreOrderInquiry")
-                : t("productDetails.sendInquiry")
-              : t("guest.loginToSendInquiry")}
+            {!canInquire
+              ? t(inquiryState.labelKey)
+              : isSignedIn
+                ? t(inquiryState.ctaKey)
+                : t("guest.loginToSendInquiry")}
           </span>
         </button>
       </div>

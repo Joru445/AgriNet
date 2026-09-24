@@ -1,5 +1,6 @@
 ﻿import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
+import { getProductInquiryState } from "../../../utils/productStatus";
 import DashboardSection from "../../ui/DashboardSection";
 import SkeletonBox from "../../ui/SkeletonBox";
 
@@ -56,7 +57,10 @@ export default function RecentProducts({ products = [], loading = false }) {
         </div>
       ) : (
         <ul className="divide-y divide-(--agri-border-subtle)">
-          {displayedProducts.map((product) => (
+          {displayedProducts.map((product) => {
+            const inquiryState = getProductInquiryState(product);
+            const isOpen = inquiryState.allowed;
+            return (
             <li key={product.id}>
               <Link
                 to="/farmer/products"
@@ -81,14 +85,12 @@ export default function RecentProducts({ products = [], loading = false }) {
 
                   <p
                     className={`mt-0.5 text-[11px] font-bold ${
-                      product.available
+                      isOpen
                         ? "text-[#2D6A4F] dark:text-(--agri-brand)"
                         : "text-(--agri-text-muted)"
                     }`}
                   >
-                    {product.available
-                      ? t("admin.available")
-                      : t("admin.unavailable")}
+                    {t(inquiryState.labelKey)}
                   </p>
                 </div>
 
@@ -97,7 +99,8 @@ export default function RecentProducts({ products = [], loading = false }) {
                 </p>
               </Link>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </DashboardSection>

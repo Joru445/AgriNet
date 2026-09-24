@@ -88,7 +88,7 @@ export default function Settings() {
   const mePath = getMePath(profile.role);
 
   return (
-    <main className="mx-auto w-full max-w-2xl p-4 md:p-6 pb-18 md:pb-6">
+    <main className="mx-auto w-full max-w-2xl p-4 md:p-6">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-(--agri-text)">

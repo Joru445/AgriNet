@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
+import Modal from "../ui/Modal";
 import { getUserLocation } from "../../services/geolocation";
 import { showToast } from "../../utils/toast";
 import LeafletMapPreview from "./LeafletMapPreview";
@@ -90,8 +90,6 @@ export default function ShareLocationModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchLocation is stable, deps intentionally curated
   }, [isOpen, isFarmer, hasFarmCoords]);
 
-  if (!isOpen) return null;
-
   const activeCoords = mode === "farm_address" ? farmLocation : coords;
 
   const handleEndLiveLocation = async () => {
@@ -124,7 +122,7 @@ export default function ShareLocationModal({
           lng: farmLocation.lng,
           address: farmLocation.address,
           accuracy: null,
-          // eslint-disable-next-line react-hooks/purity -- Date.now() in click handler, not render
+
           updatedAt: Date.now(),
         },
         liveUntil: null,
@@ -137,7 +135,7 @@ export default function ShareLocationModal({
     if (!coords) return;
 
     if (mode === "live") {
-      // eslint-disable-next-line react-hooks/purity -- Date.now() in click handler, not render
+
       const liveUntil = Date.now() + duration * 60 * 1000;
       onSendLocation?.({
         type: "live_location",
@@ -145,7 +143,7 @@ export default function ShareLocationModal({
           lat: coords.lat,
           lng: coords.lng,
           accuracy: coords.accuracy || null,
-          // eslint-disable-next-line react-hooks/purity -- Date.now() in click handler, not render
+
           updatedAt: Date.now(),
         },
         liveUntil,
@@ -158,7 +156,7 @@ export default function ShareLocationModal({
           lat: coords.lat,
           lng: coords.lng,
           accuracy: coords.accuracy || null,
-          // eslint-disable-next-line react-hooks/purity -- Date.now() in click handler, not render
+
           updatedAt: Date.now(),
         },
         liveUntil: null,
@@ -169,15 +167,59 @@ export default function ShareLocationModal({
     onClose();
   };
 
-  return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-xs p-3 sm:p-4 animate-in fade-in duration-200">
-      <div
-        className="w-full max-w-md bg-(--agri-card) border border-(--agri-border) rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh] sm:max-h-[90vh] animate-in zoom-in-95 duration-200"
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Header */}
-        <div className="px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between border-b border-(--agri-border-subtle) shrink-0">
+  return (
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-md"
+      hideTitleBar
+      bodyClassName="p-0"
+      ariaLabel={t("messages.shareLocation")}
+      panelClassName="rounded-3xl border border-(--agri-border)"
+      footer={
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="cancel"
+            size="sm"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            loading={loading}
+            disabled={
+              hasActiveLiveLocation ||
+              (mode === "farm_address" ? !farmLocation : (!coords || loading))
+            }
+            title={
+              hasActiveLiveLocation
+                ? t("messages.endLiveLocationToShareAnother")
+                : undefined
+            }
+            onClick={handleConfirm}
+            icon={
+              mode === "farm_address"
+                ? "ri-store-2-fill"
+                : mode === "live"
+                  ? "ri-radar-line"
+                  : "ri-map-pin-2-fill"
+            }
+            className="shadow-md active:scale-95 whitespace-nowrap"
+          >
+            {mode === "farm_address"
+              ? t("messages.shareFarmAddress")
+              : mode === "live"
+                ? t("messages.shareLiveButton", { minutes: duration })
+                : t("messages.shareCurrentLocation")}
+          </Button>
+        </div>
+      }
+    >
+      {/* Header */}
+      <div className="px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between border-b border-(--agri-border-subtle)">
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-[#2D6A4F]/10 dark:bg-(--agri-brand)/10 text-[#2D6A4F] dark:text-(--agri-brand) flex items-center justify-center shrink-0">
               <i className="ri-map-pin-2-fill text-base" />
@@ -197,8 +239,8 @@ export default function ShareLocationModal({
           </button>
         </div>
 
-        {/* Body Content */}
-        <div className="p-3.5 sm:p-4 space-y-2.5 sm:space-y-3 overflow-y-auto scrollbar-none">
+{/* Body Content */}
+      <div className="p-3.5 sm:p-4 space-y-2.5 sm:space-y-3">
           {/* Integrated Map Preview Widget with overlay chip */}
           <div className={`relative w-full ${activeCoords ? "h-28 sm:h-32" : "min-h-[7.5rem] sm:min-h-[8rem] h-auto"} rounded-2xl overflow-hidden border border-(--agri-border) shadow-xs shrink-0 bg-neutral-100 dark:bg-neutral-800 flex flex-col justify-center`}>
             {activeCoords ? (
@@ -462,50 +504,7 @@ export default function ShareLocationModal({
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="px-4 py-3 sm:py-3.5 border-t border-(--agri-border-subtle) flex items-center justify-end gap-2 shrink-0 bg-(--agri-hover)/30">
-          <Button
-            variant="cancel"
-            size="sm"
-            onClick={onClose}
-          >
-            Cancel
-          </Button>
-
-          <Button
-            variant="primary"
-            size="sm"
-            loading={loading}
-            disabled={
-              hasActiveLiveLocation ||
-              (mode === "farm_address" ? !farmLocation : (!coords || loading))
-            }
-            title={
-              hasActiveLiveLocation
-                ? t("messages.endLiveLocationToShareAnother")
-                : undefined
-            }
-            onClick={handleConfirm}
-            icon={
-              mode === "farm_address"
-                ? "ri-store-2-fill"
-                : mode === "live"
-                  ? "ri-radar-line"
-                  : "ri-map-pin-2-fill"
-            }
-            className="shadow-md active:scale-95 whitespace-nowrap"
-          >
-            {mode === "farm_address"
-              ? t("messages.shareFarmAddress")
-              : mode === "live"
-                ? t("messages.shareLiveButton", { minutes: duration })
-                : t("messages.shareCurrentLocation")}
-          </Button>
-        </div>
       </div>
-    </div>,
-    document.body
+    </Modal>
   );
 }

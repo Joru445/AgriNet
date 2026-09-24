@@ -36,7 +36,7 @@ export default function ProductDetails() {
 
   if (!loading && (!product || (isProductExpired(product) && !isOwner))) {
     return (
-      <main className="mx-auto max-w-7xl px-4 py-8 pb-24 md:pb-4">
+      <main className="mx-auto max-w-7xl px-4 py-8">
         <EmptyState
           icon="ri-error-warning-line"
           title={t("productDetails.unavailable")}
@@ -47,7 +47,7 @@ export default function ProductDetails() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl pb-24 lg:pb-4">
+    <main className="mx-auto max-w-7xl pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:pb-4">
       {loading ? (
         <ProductDetailsSkeleton />
       ) : (
@@ -55,7 +55,7 @@ export default function ProductDetails() {
           {/* Product Hero: two-column on desktop, equal height */}
           <div className="grid gap-0 lg:grid-cols-2 lg:gap-8">
             {/* LEFT: Gallery — aspect-square on wrapper sets row height on lg */}
-            <div className="lg:sticky lg:top-0">
+            <div className="lg:sticky lg:top-[var(--app-header-h)]">
               <ProductGallery product={product} />
             </div>
 

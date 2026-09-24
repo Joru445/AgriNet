@@ -4,6 +4,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
 import { apiMarkProductAsAvailable } from "../../services/product.service";
+import { getProductInquiryState } from "../../utils/productStatus";
 import { showToast } from "../../utils/toast";
 
 export default function ProductActions({ product, farmer, isOwner, onProductUpdate }) {
@@ -12,6 +13,8 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
   const { user, authInitializing, identity } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
 
+  const inquiryState = getProductInquiryState(product);
+  const canInquire = inquiryState.allowed;
   const isPreorder = product.sellingMode === "preorder";
 
   // Gated on Firebase Auth (not Firestore profile): an authenticated user whose
@@ -19,6 +22,8 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
   const isSignedIn = Boolean(user) && !authInitializing;
 
   function handleInquiry() {
+    if (!canInquire) return;
+
     if (authInitializing) return;
 
     if (!user) {
@@ -43,12 +48,18 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
   async function handleMarkAvailable() {
     try {
       await apiMarkProductAsAvailable(product.id);
-      showToast.success("Product is now available for immediate purchase.");
+      showToast.success(t("productDetails.markAvailableSuccess"));
       onProductUpdate?.();
     } catch (error) {
-      showToast.error(error.message || "Failed to mark product as available.");
+      showToast.error(error.message || t("productDetails.markAvailableError"));
     }
   }
+
+  const inquiryLabel = !canInquire
+    ? t(inquiryState.labelKey)
+    : isSignedIn
+      ? t(inquiryState.ctaKey)
+      : t("guest.loginToSendInquiry");
 
   return (
     <section className="hidden lg:block px-4 sm:px-6 mt-4 sm:mt-5 pb-2">
@@ -89,16 +100,27 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
           </button>
         </div>
       ) : (
-        <button
-          onClick={handleInquiry}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-(--agri-green-mid) py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-(--agri-green-mid)/20 transition hover:bg-(--agri-green-dark) active:scale-[0.99] cursor-pointer"
-        >
-          {isSignedIn
-            ? isPreorder
-              ? t("productDetails.sendPreOrderInquiry")
-              : t("productDetails.sendInquiry")
-            : t("guest.loginToSendInquiry")}
-        </button>
+        <div>
+          <button
+            onClick={handleInquiry}
+            disabled={!canInquire}
+            aria-disabled={!canInquire}
+            title={!canInquire ? t(inquiryState.reasonKey) : undefined}
+            className={`flex w-full items-center justify-center gap-2 rounded-xl border py-3.5 text-sm sm:text-base font-bold transition ${
+              canInquire
+                ? "bg-(--agri-green-mid) border-transparent text-white shadow-lg shadow-(--agri-green-mid)/20 hover:bg-(--agri-green-dark) active:scale-[0.99] cursor-pointer"
+                : "bg-(--agri-hover) border-(--agri-border) text-(--agri-text-muted) cursor-not-allowed"
+            }`}
+          >
+            {inquiryLabel}
+          </button>
+
+          {!canInquire && inquiryState.reasonKey && (
+            <p className="mt-1.5 text-center text-xs font-medium text-(--agri-text-muted)">
+              {t(inquiryState.reasonKey)}
+            </p>
+          )}
+        </div>
       )}
     </section>
   );

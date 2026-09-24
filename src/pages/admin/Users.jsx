@@ -12,11 +12,9 @@ import UserEditModal from "../../components/admin/users/UserEditModal";
 import { InlineError } from "../../components/ui/ErrorState";
 
 import { useAuth } from "../../context/AuthContext";
-import { useLanguage } from "../../context/LanguageContext";
 
 export default function Users() {
   const { user } = useAuth();
-  const { t } = useLanguage();
 
   const {
     users,

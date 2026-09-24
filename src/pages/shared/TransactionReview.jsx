@@ -53,7 +53,7 @@ export default function TransactionReview() {
 
   if (!loading && !inquiry) {
     return (
-      <div className="mx-auto w-full max-w-3xl p-4 pb-18 sm:p-6 sm:pb-4">
+      <div className="mx-auto w-full max-w-3xl p-4 pb-6 sm:p-6">
         <div className="rounded-2xl border border-red-200 bg-red-500/5 p-6 text-center">
           <i className="ri-error-warning-line text-4xl text-red-500 mb-2" />
           <h2 className="text-base font-bold text-red-800 dark:text-red-300">{t("transaction.notFoundTitle")}</h2>
@@ -66,7 +66,7 @@ export default function TransactionReview() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl p-4 pb-18 sm:p-6 sm:pb-4">
+    <div className="mx-auto w-full max-w-3xl p-4 pb-6 sm:p-6">
       <div className="space-y-4">
         {loading ? (
           <div className="space-y-4 animate-pulse">

@@ -37,7 +37,7 @@ export default function TransactionProof() {
 
   return (
     <PageWrapper>
-      <div className="mx-auto max-w-3xl pb-18 sm:pb-4">
+      <div className="mx-auto max-w-3xl">
         {/* Header */}
         <div className="mb-6">
           <h1 className="mt-4 text-2xl font-bold text-(--agri-text)">{t("transaction.title")}</h1>

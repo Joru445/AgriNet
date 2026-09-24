@@ -1,8 +1,8 @@
 import { useEffect, useRef, useMemo } from "react";
-import { createPortal } from "react-dom";
 import L from "leaflet";
 import { useLanguage } from "../../context/LanguageContext";
 import Button from "../ui/Button";
+import Modal from "../ui/Modal";
 import useUserLocation from "../../hooks/useUserLocation";
 import {
   getPermanentlyEndedLocations,
@@ -396,17 +396,66 @@ export default function LeafletLocationModal({
     }
   };
 
-  if (!isOpen) return null;
+  return (
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-md sm:max-w-lg"
+      hideTitleBar
+      bodyClassName="p-0"
+      ariaLabel={senderLabel}
+      panelClassName="rounded-3xl border border-(--agri-border)"
+      footer={
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="text-xs text-(--agri-text-muted) flex items-center gap-2 flex-wrap">
+            <span className="flex items-center gap-1">
+              <i className="ri-map-pin-line text-sm" />
+              <span>
+                {accuracy
+                  ? t("messages.locationAccurateTo", { meters: Math.round(accuracy) })
+                  : `${lat.toFixed(5)}, ${lng.toFixed(5)}`}
+              </span>
+            </span>
+            {hasBoth && (
+              <span className="text-(--agri-text-muted)/70">
+                • {formattedDistance ? `${formattedDistance} apart` : ""}
+              </span>
+            )}
+          </div>
 
-  return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-xs p-3 sm:p-4 animate-in fade-in duration-200">
-      <div
-        className="w-full max-w-md sm:max-w-lg bg-(--agri-card) border border-(--agri-border) rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200"
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Modal Header */}
-        <div className="px-3.5 sm:px-4 py-2.5 sm:py-3 flex items-start sm:items-center justify-between gap-3 border-b border-(--agri-border-subtle) bg-(--agri-hover)/30">
+          <div className="flex items-center gap-2">
+            {mine && !isEnded && !(messageId && getPermanentlyEndedLocations().has(messageId)) && (
+              <Button
+                variant="danger"
+                size="sm"
+                icon="ri-stop-circle-line"
+                onClick={() => {
+                  if (messageId) {
+                    markLocationPermanentlyEnded(messageId);
+                  }
+                  onStopLiveLocation?.(messageId, conversationId);
+                  onClose();
+                }}
+                className="whitespace-nowrap shrink-0 shadow-2xs active:scale-[0.98]"
+              >
+                {t("messages.endLiveLocation") ||
+                  (isLiveActive ? t("messages.stopSharing") : t("messages.endLocation"))}
+              </Button>
+            )}
+
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onClose}
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      }
+    >
+      {/* Modal Header */}
+      <div className="px-3.5 sm:px-4 py-2.5 sm:py-3 flex items-start sm:items-center justify-between gap-3 border-b border-(--agri-border-subtle) bg-(--agri-hover)/30">
           <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
             <div
               className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center text-white shadow-sm shrink-0 mt-0.5 sm:mt-0 ${
@@ -469,7 +518,7 @@ export default function LeafletLocationModal({
         </div>
 
         {/* Leaflet Map Body */}
-        <div className="relative w-full h-[290px] sm:h-[340px] bg-neutral-100 dark:bg-neutral-800">
+      <div className="relative w-full flex-1 min-h-0 h-[290px] sm:h-[340px] bg-neutral-100 dark:bg-neutral-800">
           <div ref={containerRef} className="w-full h-full z-0" />
 
           {/* Floating Navigation Controls when both locations are visible */}
@@ -537,56 +586,6 @@ export default function LeafletLocationModal({
             <i className="ri-crosshair-2-line text-base text-[#2D6A4F] dark:text-(--agri-brand)" />
           </button>
         </div>
-
-        {/* Modal Footer */}
-        <div className="p-3.5 sm:p-4 border-t border-(--agri-border-subtle) flex items-center justify-between bg-(--agri-card)">
-          <div className="text-xs text-(--agri-text-muted) flex items-center gap-2 flex-wrap">
-            <span className="flex items-center gap-1">
-              <i className="ri-map-pin-line text-sm" />
-              <span>
-                {accuracy
-                  ? t("messages.locationAccurateTo", { meters: Math.round(accuracy) })
-                  : `${lat.toFixed(5)}, ${lng.toFixed(5)}`}
-              </span>
-            </span>
-            {hasBoth && (
-              <span className="text-(--agri-text-muted)/70">
-                • {formattedDistance ? `${formattedDistance} apart` : ""}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {mine && !isEnded && !(messageId && getPermanentlyEndedLocations().has(messageId)) && (
-              <Button
-                variant="danger"
-                size="sm"
-                icon="ri-stop-circle-line"
-                onClick={() => {
-                  if (messageId) {
-                    markLocationPermanentlyEnded(messageId);
-                  }
-                  onStopLiveLocation?.(messageId, conversationId);
-                  onClose();
-                }}
-                className="whitespace-nowrap shrink-0 shadow-2xs active:scale-[0.98]"
-              >
-                {t("messages.endLiveLocation") ||
-                  (isLiveActive ? t("messages.stopSharing") : t("messages.endLocation"))}
-              </Button>
-            )}
-
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={onClose}
-            >
-              Close
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>,
-    document.body
+    </Modal>
   );
 }

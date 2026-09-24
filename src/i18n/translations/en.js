@@ -485,6 +485,13 @@ export default {
     orderUntil: "Order until",
     availableDate: "Available",
     reserved: "reserved",
+    preOrderFull: "Pre-order Full",
+    preOrderEnded: "Pre-order Ended",
+    outOfStockReason: "All units have been sold.",
+    notAvailableReason: "The farmer has marked this product as unavailable.",
+    preOrderFullReason: "All pre-order slots have been reserved.",
+    preOrderEndedReason: "The pre-order deadline has passed.",
+    preOrderUnavailableReason: "This pre-order is currently unavailable.",
   },
 
   transactions: {
@@ -554,6 +561,7 @@ export default {
       consumerCompleted: "Transaction complete.",
       consumerCancelled: "Transaction cancelled.",
       preOrderReserved: "Pre-order reserved! View the conversation.",
+      preOrderReservedWaiting: "Pre-order reserved — waiting for availability.",
       preOrderCancelled: "Pre-order cancelled.",
       farmerAccepted: "You accepted this transaction. Start the transaction when ready.",
       farmerOngoing: "Transaction is ongoing.",
@@ -667,6 +675,29 @@ export default {
     expectedAvailable: "Expected availability:",
     orderUntil: "Order until:",
     reserved: "reserved",
+    markAvailableSuccess: "Product is now available for immediate purchase.",
+    markAvailableError: "Failed to mark product as available.",
+    awaitingConfirmation:
+      "Expected availability date has passed. Waiting for farmer confirmation.",
+  },
+
+  inquiryFlow: {
+    noProduct: "No product selected for inquiry.",
+    notLoggedIn: "You must be logged in.",
+    validQuantity: "Please enter a valid quantity.",
+    preOrderEnded: "The pre-order deadline has passed.",
+    preOrderFull: "This pre-order product has reached its reservation limit.",
+    onlyAvailable: "Only {count} {unit} available.",
+    unavailable: "This product is currently unavailable.",
+    outOfStock: "This product is out of stock.",
+    unableFarmer: "Unable to determine the farmer.",
+    sent: "Inquiry sent successfully.",
+    sendFailed: "Failed to send inquiry.",
+    invalidMessage: "Invalid inquiry message.",
+    notInquiry: "This message is not an inquiry.",
+    processed: "This inquiry has already been processed.",
+    accepted: "Inquiry accepted.",
+    acceptFailed: "Failed to accept inquiry.",
   },
 
   transaction: {
@@ -1154,6 +1185,13 @@ export default {
     preOrderDeadline: "Pre-order Deadline",
     preOrderLimit: "Maximum Pre-order Quantity",
     preOrderLimitHint: "Maximum total units customers can reserve",
+    preOrderRemaining: "{count} {unit} left to reserve",
+    limitBelowReserved:
+      "Pre-order limit cannot be below the reserved quantity ({count}).",
+    modeSwitchWithReservations:
+      "This product has active reservations. Use Mark as Available to convert it instead.",
+    expectedDatePassed:
+      "Expected availability date has passed. Mark the product as available.",
   },
 
   farmerReviews: {

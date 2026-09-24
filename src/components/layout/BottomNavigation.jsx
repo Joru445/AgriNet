@@ -1,30 +1,19 @@
-﻿import { NavLink, useLocation, useSearchParams } from "react-router-dom";
+﻿import { NavLink } from "react-router-dom";
 import { useUnreadMessages } from "../../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../../context/UnreadInquiriesContext";
 import { useUnreadReports } from "../../context/UnreadReportsContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { getOnboardingNavKey } from "../../constants/onboardingSteps";
-import useKeyboardVisible from "../../hooks/useKeyboardVisible";
 import Badge, { PulsingDot } from "../ui/Badge";
 
 export default function BottomNavigation({ items }) {
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
-  const isKeyboardVisible = useKeyboardVisible();
   const { t } = useLanguage();
   const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
   const { pendingReportsCount, showReportPopup, reportPopupMessage } = useUnreadReports();
 
-  const isMessagesRoute = location.pathname.includes("messages");
-  const hasActiveChat = isMessagesRoute && Boolean(searchParams.get("conversation") || searchParams.get("user"));
-
-  if (isKeyboardVisible || hasActiveChat) {
-    return null;
-  }
-
   return (
-    <nav className="shrink-0 border-t lg:hidden z-30 bg-(--agri-surface) border-(--agri-border) pb-[env(safe-area-inset-bottom,0px)]">
+    <nav className="absolute bottom-0 left-0 right-0 border-t lg:hidden z-9996 bg-(--agri-surface) border-(--agri-border) pb-[env(safe-area-inset-bottom,0px)]">
       <div className="flex h-16">
         {items.map((item) => {
           const isMessages = item.to.includes("messages");

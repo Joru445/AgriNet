@@ -2,6 +2,7 @@
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
+import Overlay from "../ui/Overlay";
 
 // Persisted per authenticated farmer UID so the prompt only appears once until
 // they actually create their first product.
@@ -143,13 +144,6 @@ export default function FirstProductOnboarding({ hasProducts, loading, onCreate 
     };
   }, [open]);
 
-  if (!open) return null;
-
-  const target = document.querySelector(TARGET_SELECTOR);
-  const rect = target ? target.getBoundingClientRect() : null;
-  const centered = !rect;
-  const style = centered ? null : computeTooltipStyle(rect);
-
   const finish = () => {
     reportedDoneRef.current = true;
     if (uid) markDone(uid);
@@ -164,11 +158,27 @@ export default function FirstProductOnboarding({ hasProducts, loading, onCreate 
   };
 
   return (
-    <section
-      role="region"
-      aria-label={t("onboarding.guidedTutorial")}
-      className="fixed inset-0 z-[10010] pointer-events-auto"
+    <Overlay
+      open={open}
+      onClose={finish}
+      closeOnBackdrop={false}
+      closeOnEscape={true}
+      lockScroll={false}
+      trapFocus={true}
+      zIndex={10010}
+      backdropClass="bg-transparent"
+      positionClass="p-0"
+      duration={0}
+      ariaLabel={t("onboarding.guidedTutorial")}
     >
+      {() => {
+        const target = document.querySelector(TARGET_SELECTOR);
+        const rect = target ? target.getBoundingClientRect() : null;
+        const centered = !rect;
+        const style = centered ? null : computeTooltipStyle(rect);
+
+        return (
+          <section className="fixed inset-0 z-[10010] pointer-events-auto">
       {/* Full-screen backdrop blocker to prevent clicking on page elements in the background */}
       <div
         aria-hidden="true"
@@ -251,6 +261,9 @@ export default function FirstProductOnboarding({ hasProducts, loading, onCreate 
           </div>
         </div>
       </div>
-    </section>
+          </section>
+        );
+      }}
+    </Overlay>
   );
 }

@@ -85,7 +85,7 @@ export default function Favorites() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-6 pb-24 md:pb-6">
+    <main className="mx-auto max-w-7xl px-4 py-6">
       <h1 className="text-2xl font-bold text-(--agri-text) mb-4">
         {t("favorites.title")}
       </h1>

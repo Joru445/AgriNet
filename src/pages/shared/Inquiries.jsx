@@ -35,7 +35,7 @@ export default function Inquiries() {
   }
 
   return (
-    <main className="flex-1 p-4 md:p-6 pb-18 md:pb-4">
+    <main className="p-4 md:p-6">
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>

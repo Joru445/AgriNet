@@ -90,7 +90,7 @@ export default function InquiryRow({
     Boolean(inquiry.productReviewId);
 
   // --- Determine banner config ---
-  const banner = getBanner(status, userRole, t);
+  const banner = getBanner(status, userRole, t, product);
 
   // --- Determine which buttons get red dots ---
   const dots = getRedDots(status, userRole, isReviewed);
@@ -351,7 +351,7 @@ function Action({ updating, label, icon, showDot, className, onClick, disabled =
 /**
  * Returns banner config for the current status + role combo.
  */
-function getBanner(status, userRole, t) {
+function getBanner(status, userRole, t, product) {
   if (userRole === "consumer") {
     if (status === "pending") {
       return {
@@ -361,8 +361,14 @@ function getBanner(status, userRole, t) {
       };
     }
     if (status === "reserved") {
+      // §13: while the product is still a pre-order the consumer is waiting
+      // for the farmer to mark it available — say so. Once marked, the
+      // Start Transaction action becomes available alongside this banner.
+      const waitingForAvailability = product?.sellingMode === "preorder";
       return {
-        message: t("transactions.banner.preOrderReserved"),
+        message: waitingForAvailability
+          ? t("transactions.banner.preOrderReservedWaiting")
+          : t("transactions.banner.preOrderReserved"),
         icon: "ri-calendar-schedule-line",
         className: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20",
       };

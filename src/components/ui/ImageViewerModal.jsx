@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { createPortal } from "react-dom";
 import { useLanguage } from "../../context/LanguageContext";
+
+import Overlay from "./Overlay";
 
 /**
  * Reusable full-screen zoomable Image Viewer Modal (Lightbox).
@@ -44,17 +45,6 @@ export default function ImageViewerModal({
     }
   }, [isOpen, imageSrc]);
 
-  // Lock body scroll when open
-  useEffect(() => {
-    if (isOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isOpen]);
-
   const zoomIn = useCallback(() => {
     setScale((prev) => Math.min(5, Math.round((prev + 0.5) * 10) / 10));
   }, []);
@@ -74,14 +64,13 @@ export default function ImageViewerModal({
     setPosition({ x: 0, y: 0 });
   }, []);
 
-  // Handle keyboard shortcuts
+  // Zoom shortcuts. Escape is handled by the Overlay foundation so it only
+  // closes the top-most overlay (this lightbox can open above a Modal).
   useEffect(() => {
     if (!isOpen) return;
 
     function handleKeyDown(e) {
-      if (e.key === "Escape") {
-        onClose?.();
-      } else if (e.key === "+" || e.key === "=") {
+      if (e.key === "+" || e.key === "=") {
         e.preventDefault();
         zoomIn();
       } else if (e.key === "-" || e.key === "_") {
@@ -95,7 +84,7 @@ export default function ImageViewerModal({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose, zoomIn, zoomOut, resetZoom]);
+  }, [isOpen, zoomIn, zoomOut, resetZoom]);
 
   // Double click or double tap toggle (1x <-> 2.5x)
   const handleToggleZoom = (e) => {
@@ -210,18 +199,30 @@ export default function ImageViewerModal({
     }
   };
 
-  if (!isOpen || !imageSrc) return null;
-
-  return createPortal(
-    <div
-      ref={containerRef}
-      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/90 backdrop-blur-sm select-none p-2 sm:p-6"
-      onClick={onClose}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      onWheel={handleWheel}
+  return (
+    <Overlay
+      open={isOpen && !!imageSrc}
+      onClose={onClose}
+      closeOnBackdrop={false}
+      closeOnEscape={true}
+      lockScroll={true}
+      trapFocus={true}
+      zIndex={99999}
+      backdropClass="bg-transparent"
+      positionClass="p-0"
+      duration={0}
+      ariaLabel={title || t("imageViewer.imagePreviewAlt")}
     >
+      {() => (
+        <div
+          ref={containerRef}
+          className="fixed inset-0 flex items-center justify-center bg-black/90 backdrop-blur-sm select-none p-2 sm:p-6 pointer-events-auto"
+          onClick={onClose}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onWheel={handleWheel}
+        >
       {/* Top Floating Control Bar */}
       <div
         className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between pointer-events-none"
@@ -333,7 +334,8 @@ export default function ImageViewerModal({
           </span>
         </div>
       )}
-    </div>,
-    document.body
+        </div>
+      )}
+    </Overlay>
   );
 }
