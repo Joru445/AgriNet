@@ -72,10 +72,14 @@ export default function AppRoutes() {
         <Route path="/" element={<HomeRedirect />} />
 
         <Route element={<SuspendedRoute />}>
-          <Route path="/suspended" element={<Suspended />} />
+          <Route element={<PublicLayout />}>
+            <Route path="/suspended" element={<Suspended />} />
+          </Route>
         </Route>
 
-        <Route path="/verify-account" element={<VerifyAccount />} />
+        <Route element={<PublicLayout />}>
+          <Route path="/verify-account" element={<VerifyAccount />} />
+        </Route>
 
         {/* PUBLIC (login/register/landing) */}
 

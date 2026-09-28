@@ -1,4 +1,4 @@
-﻿import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -19,11 +19,11 @@ export default function StatCard({ title, value, description, to, compact = fals
       tabIndex={to ? 0 : undefined}
       onKeyDown={to ? (e) => e.key === "Enter" && handleClick() : undefined}
       className={`group rounded-2xl border bg-(--agri-card) transition-all select-none ${
-        compact ? "p-3" : "p-5"
+        compact ? "p-3.5" : "p-5"
       } ${
         to
-          ? "border-(--agri-border) shadow-md shadow-black/5 cursor-pointer hover:-translate-y-0.5 hover:border-[#2D6A4F]/40 hover:shadow-xl active:scale-95 active:shadow-sm"
-          : "border-(--agri-border-subtle) shadow-md shadow-black/5"
+          ? "border-(--agri-border) shadow-xs cursor-pointer hover:border-[#2D6A4F]/40 dark:hover:border-[#52b788]/40 hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F]/30"
+          : "border-(--agri-border-subtle) shadow-xs"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -37,7 +37,7 @@ export default function StatCard({ title, value, description, to, compact = fals
           </p>
 
           <p
-            className={`mt-1 font-bold text-(--agri-text) ${
+            className={`mt-1 font-extrabold tabular-nums tracking-tight text-(--agri-text) ${
               compact ? "text-2xl" : "mt-2 text-3xl"
             }`}
           >
@@ -59,7 +59,7 @@ export default function StatCard({ title, value, description, to, compact = fals
         {to && (
           <div className="shrink-0 flex flex-col items-end justify-between h-full gap-1">
             <div
-              className={`flex items-center justify-center rounded-xl bg-[#2D6A4F]/10 border border-[#2D6A4F]/20 text-[#2D6A4F] dark:text-(--agri-brand) group-hover:bg-[#2D6A4F] group-hover:text-white transition-all ${
+              className={`flex items-center justify-center rounded-xl bg-[#2D6A4F]/10 border border-[#2D6A4F]/15 text-[#2D6A4F] dark:text-(--agri-brand) group-hover:bg-[#2D6A4F] group-hover:text-white transition-all duration-150 ${
                 compact ? "h-6 w-6" : "h-8 w-8"
               }`}
             >

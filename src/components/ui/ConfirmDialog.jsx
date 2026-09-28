@@ -1,4 +1,4 @@
-﻿import { useLanguage } from "../../context/LanguageContext";
+import { useLanguage } from "../../context/LanguageContext";
 import Button from "./Button";
 import Modal from "./Modal";
 
@@ -50,8 +50,8 @@ export default function ConfirmDialog({
         <div
           className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
             danger
-              ? "bg-red-100/80 text-red-600"
-              : "bg-(--agri-hover) text-(--agri-text-muted)"
+              ? "bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/25"
+              : "bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-(--agri-brand) border border-[#2D6A4F]/20"
           }`}
         >
           <i className={`${icon} text-2xl`} />

@@ -1,30 +1,12 @@
 import { useId } from "react";
+import { motion } from "motion/react";
 
 import Overlay from "./Overlay";
+import { modalMotion } from "../../utils/motion";
 
 /**
  * Centered modal dialog built on the Overlay foundation.
- *
- * Provides the standard dialog surface: backdrop, Escape / backdrop-close,
- * body scroll lock, focus trap/restore, accessible dialog semantics,
- * title bar with optional close button, scrollable body, optional footer.
- *
- * Props:
- *   open              — boolean
- *   onClose           — invoked when the overlay requests to close
- *   onRequestClose    — optional guard; forwarded to Overlay
- *   title             — visible header title
- *   description       — optional helper text rendered under the title
- *   children          — body content
- *   footer            — optional footer content
- *   maxWidth          — width constraint class (default "max-w-lg")
- *   showCloseButton   — render the title bar close button (default true)
- *   closeOnBackdrop   — backdrop click closes (default true)
- *   closeOnEscape     — Escape closes (default true)
- *   zIndex            — portal z-index
- *   bodyClassName     — extra classes for the scrollable body wrapper
- *   panelClassName    — extra classes for the dialog panel
- *   hideTitleBar      — hide the title bar entirely
+ * Integrated with Motion for React for smooth, restrained elevation.
  */
 export default function Modal({
   open,
@@ -61,11 +43,14 @@ export default function Modal({
       ariaLabelledBy={title ? titleId : undefined}
       ariaDescribedBy={description ? descriptionId : undefined}
     >
-      {({ isClosing, close }) => (
-        <div
-          className={`relative mx-auto flex w-full max-h-[90dvh] flex-col overflow-hidden rounded-2xl bg-(--agri-card) shadow-2xl pointer-events-auto ${
-            isClosing ? "anim-scale-out" : "anim-scale-in"
-          } ${maxWidth} ${panelClassName}`}
+      {({ close }) => (
+        <motion.div
+          key="modal-panel"
+          variants={modalMotion}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className={`relative mx-auto flex w-full max-h-[90dvh] flex-col overflow-hidden rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-2xl pointer-events-auto ${maxWidth} ${panelClassName}`}
         >
           {showTitleBar && (
             <div className="flex shrink-0 items-center justify-between border-b border-(--agri-border-subtle) px-5 py-4">
@@ -111,7 +96,7 @@ export default function Modal({
               {typeof footer === "function" ? footer({ close }) : footer}
             </div>
           )}
-        </div>
+        </motion.div>
       )}
     </Overlay>
   );

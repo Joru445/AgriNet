@@ -20,22 +20,25 @@ export default function SearchBar({
           flex
           items-center
           gap-2
-          rounded-2xl
-          px-2
-          py-1
-          border-2
+          rounded-xl
+          px-1.5
+          py-0.5
+          border
           bg-(--agri-card)
           border-(--agri-input-border)
           shadow-xs
+          hover:border-(--agri-brand)/40
           focus-within:border-[#2D6A4F]
-          focus-within:shadow-md
-          focus-within:ring-3
-          focus-within:ring-[#2D6A4F]/15
-          transition-all
+          dark:focus-within:border-emerald-500
+          focus-within:shadow-sm
+          focus-within:ring-2
+          focus-within:ring-[#2D6A4F]/20
+          dark:focus-within:ring-emerald-500/25
+          transition-all duration-150
         "
       >
-        <div className="flex-1 min-w-0 flex items-center gap-3 px-3.5">
-          <i className="ri-search-line text-[#2D6A4F] dark:text-(--agri-brand) text-xl font-bold shrink-0" />
+        <div className="flex-1 min-w-0 flex items-center gap-2.5 px-3">
+          <i className="ri-search-line text-[#2D6A4F] dark:text-(--agri-brand) text-lg font-bold shrink-0" />
 
           <input
             type="search"
@@ -49,7 +52,7 @@ export default function SearchBar({
               text-sm
               sm:text-base
               text-(--agri-text)
-              placeholder-(--agri-text-muted)
+              placeholder:text-(--agri-text-muted)
               font-medium
               focus:outline-none
               bg-transparent

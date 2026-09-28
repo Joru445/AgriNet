@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -73,7 +73,7 @@ export default function ProductCard({
     <Link
       to={`${getProductPath(profile?.role || "consumer")}/${product.id}`}
       data-onboarding="product-card"
-      className="group relative flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-[#2D6A4F]/60 hover:shadow-xl anim-fade-in"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-md transition-all duration-200 hover:border-[#2D6A4F]/60 dark:hover:border-[#52b788]/60 hover:shadow-lg anim-fade-in"
     >
       {/* Top Image Container */}
       <div className="relative aspect-square w-full overflow-hidden bg-[var(--agri-bg-surface,#F0F5F2)]">

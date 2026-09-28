@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "motion/react";
 
 import useBodyScrollLock from "../../hooks/useBodyScrollLock";
 import useFocusTrap from "../../hooks/useFocusTrap";
+import { backdropMotion } from "../../utils/motion";
 
 const overlayStack = [];
 const stackListeners = new Set();
@@ -35,37 +37,7 @@ const DEFAULT_Z_INDEX = 9999;
 
 /**
  * Canonical overlay foundation used by Modal and Sheet.
- *
- * Owns everything an overlay must behave identically for:
- * - portal to document.body
- * - backdrop rendering
- * - click-outside-to-close (backdrop click)
- * - Escape-to-close
- * - body scroll lock (nesting-safe)
- * - focus restoration on close
- * - focus trap while open
- * - accessible dialog semantics
- * - consistent z-index
- * - open/close animation lifecycle
- *
- * The visual surface (centered modal vs bottom sheet) is supplied by the
- * caller through the children render-prop, which receives `isClosing` and a
- * `close` function.
- *
- * Props:
- *   open            — boolean
- *   onClose         — invoked when the overlay requests to close
- *   onRequestClose  — optional (reason) => void guard; when provided it is
- *                     used instead of onClose so the feature can decide
- *   closeOnBackdrop — allow backdrop click close (default true)
- *   closeOnEscape   — allow Escape close (default true)
- *   lockScroll      — lock body scroll while open (default true)
- *   trapFocus       — keep focus inside the overlay (default true)
- *   restoreFocus    — restore focus to the previously focused element
- *   zIndex          — numeric z-index for the portal root
- *   backdropClass   — Tailwind classes for the backdrop tint
- *   ariaLabel       — aria-label applied to the dialog
- *   children        — render prop ({ isClosing, close }) => ReactNode
+ * Orchestrated with Motion for React (`motion/react`) AnimatePresence.
  */
 export default function Overlay({
   open,
@@ -77,21 +49,17 @@ export default function Overlay({
   trapFocus = true,
   restoreFocus = true,
   zIndex = DEFAULT_Z_INDEX,
-  backdropClass = "bg-black/40",
+  backdropClass = "bg-black/50 backdrop-blur-xs",
   ariaLabel,
   ariaLabelledBy,
   ariaDescribedBy,
   children,
-  duration = 200,
   positionClass = "items-center justify-center p-3 sm:p-4",
 }) {
   const idRef = useRef(null);
   const contentRef = useRef(null);
   const previouslyFocusedRef = useRef(null);
   const [isTopmost, setIsTopmost] = useState(false);
-
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
 
   const requestClose = useCallback(
     (reason) => {
@@ -104,24 +72,7 @@ export default function Overlay({
     [onRequestClose, onClose],
   );
 
-  // Mount / exit-animation lifecycle. The overlay stays mounted for
-  // `duration` ms during the exit animation so it can fade/slide out.
-  useEffect(() => {
-    if (open) {
-      setShouldRender(true);
-      setIsClosing(false);
-    } else if (shouldRender) {
-      setIsClosing(true);
-      const timer = setTimeout(() => {
-        setShouldRender(false);
-        setIsClosing(false);
-      }, duration);
-      return () => clearTimeout(timer);
-    }
-  }, [open, shouldRender, duration]);
-
-  // Subscribe to stack changes so Escape / focus-trap know whether this
-  // overlay is currently the top-most one.
+  // Subscribe to stack changes
   useEffect(() => {
     const listener = () => {
       setIsTopmost(Boolean(idRef.current) && isTopmostOverlay(idRef.current));
@@ -130,10 +81,9 @@ export default function Overlay({
     return () => stackListeners.delete(listener);
   }, []);
 
-  // Register in the global stack while open so Escape only closes the
-  // top-most overlay. Capture focus and remember what to restore.
+  // Register in global stack when open
   useEffect(() => {
-    if (!shouldRender || isClosing) return;
+    if (!open) return;
 
     idRef.current = idRef.current || nextOverlayId();
     registerOverlay(idRef.current);
@@ -157,11 +107,11 @@ export default function Overlay({
         idRef.current = null;
       }
     };
-  }, [shouldRender, isClosing, trapFocus]);
+  }, [open, trapFocus]);
 
-  // Restore focus to the previously focused element once fully closed.
+  // Restore focus on close
   useEffect(() => {
-    if (shouldRender) return;
+    if (open) return;
     if (!restoreFocus || !previouslyFocusedRef.current) return;
 
     const target = previouslyFocusedRef.current;
@@ -170,12 +120,11 @@ export default function Overlay({
     if (document.contains(target)) {
       requestAnimationFrame(() => target.focus?.());
     }
-  }, [shouldRender, restoreFocus]);
+  }, [open, restoreFocus]);
 
-  // Escape-to-close, only for the top-most overlay.
+  // Escape-to-close for topmost overlay
   useEffect(() => {
-    if (!shouldRender || isClosing || !closeOnEscape) return;
-    if (!isTopmost) return;
+    if (!open || !closeOnEscape || !isTopmost) return;
 
     function handleKeyDown(e) {
       if (e.key === "Escape") {
@@ -186,45 +135,50 @@ export default function Overlay({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [shouldRender, isClosing, closeOnEscape, isTopmost, requestClose]);
+  }, [open, closeOnEscape, isTopmost, requestClose]);
 
-  useBodyScrollLock(shouldRender && lockScroll);
-  useFocusTrap(
-    contentRef,
-    shouldRender && !isClosing && trapFocus && isTopmost,
-  );
+  useBodyScrollLock(open && lockScroll);
+  useFocusTrap(contentRef, open && trapFocus && isTopmost);
 
-  if (!shouldRender) return null;
+  if (typeof document === "undefined") return null;
 
   return createPortal(
-    <div
-      className={`fixed inset-0 flex ${positionClass}`}
-      style={{ zIndex }}
-    >
-      <div
-        className={`absolute inset-0 ${backdropClass} ${
-          isClosing ? "anim-fade-out" : "anim-fade-in"
-        }`}
-        style={{ animationDuration: `${duration}ms` }}
-        onClick={() => closeOnBackdrop && requestClose("backdrop")}
-        aria-hidden="true"
-      />
+    <AnimatePresence>
+      {open && (
+        <div
+          className={`fixed inset-0 flex ${positionClass}`}
+          style={{ zIndex }}
+        >
+          {/* Backdrop animated with Motion */}
+          <motion.div
+            key="overlay-backdrop"
+            variants={backdropMotion}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className={`absolute inset-0 ${backdropClass}`}
+            onClick={() => closeOnBackdrop && requestClose("backdrop")}
+            aria-hidden="true"
+          />
 
-      <div
-        ref={contentRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledBy}
-        aria-describedby={ariaDescribedBy}
-        tabIndex={-1}
-        className="relative w-full pointer-events-none outline-none"
-      >
-        {typeof children === "function"
-          ? children({ isClosing, close: () => requestClose("close") })
-          : children}
-      </div>
-    </div>,
+          {/* Dialog Container */}
+          <div
+            ref={contentRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={ariaLabel}
+            aria-labelledby={ariaLabelledBy}
+            aria-describedby={ariaDescribedBy}
+            tabIndex={-1}
+            className="relative w-full pointer-events-none outline-none"
+          >
+            {typeof children === "function"
+              ? children({ close: () => requestClose("close") })
+              : children}
+          </div>
+        </div>
+      )}
+    </AnimatePresence>,
     document.body,
   );
 }

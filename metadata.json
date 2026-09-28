@@ -1,0 +1,8 @@
+{
+  "name": "AgriNet",
+  "description": "Connect directly with local farmers. Buy fresh produce, manage your farm store, and grow your agricultural business.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

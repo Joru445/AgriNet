@@ -146,3 +146,76 @@ export function getRoleHome(role) {
       return "/login";
   }
 }
+
+/**
+ * Public & Authentication routes that must remain strictly light-only.
+ */
+export const PUBLIC_AUTH_ROUTES = [
+  "/",
+  "/landing",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/verify-account",
+  "/suspended",
+];
+
+export function isPublicAuthRoute(pathname) {
+  if (!pathname || pathname === "/" || pathname === "/landing") return true;
+  if (
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/forgot-password" ||
+    pathname === "/verify-account" ||
+    pathname === "/suspended" ||
+    pathname.startsWith("/auth/")
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Safe fallback logical parent for deep links and direct navigations.
+ */
+export function getLogicalParent(pathname) {
+  if (!pathname) return "/marketplace";
+
+  // Farmer routes
+  if (pathname.startsWith("/farmer/product/")) return "/farmer/products";
+  if (pathname.startsWith("/farmer/profile/")) return "/farmer";
+  if (pathname.startsWith("/farmer/transactions/") && (pathname.includes("/proof") || pathname.includes("/review"))) {
+    return "/farmer/transactions";
+  }
+  if (pathname.startsWith("/farmer/reviews")) return "/farmer";
+
+  // Admin routes
+  if (pathname.startsWith("/admin/groups/")) return "/admin/groups";
+  if (pathname.startsWith("/admin/transactions/") && (pathname.includes("/proof") || pathname.includes("/review"))) {
+    return "/admin/transactions";
+  }
+  if (pathname.startsWith("/admin/farmer-verifications")) return "/admin";
+  if (pathname.startsWith("/admin/activity")) return "/admin";
+  if (pathname.startsWith("/admin/reports")) return "/admin";
+  if (pathname.startsWith("/admin/users")) return "/admin";
+  if (pathname.startsWith("/admin/products")) return "/admin";
+
+  // Manager routes
+  if (pathname.startsWith("/manage/groups/")) return "/manage/groups";
+
+  // Shared routes
+  if (pathname.startsWith("/groups/")) return "/groups";
+  if (pathname.startsWith("/product/")) return "/marketplace";
+  if (pathname.startsWith("/profile/")) return "/marketplace";
+  if (pathname.startsWith("/transactions/") && (pathname.includes("/proof") || pathname.includes("/review"))) {
+    return "/transactions";
+  }
+  if (pathname.startsWith("/favorites")) return "/marketplace";
+  if (pathname.startsWith("/notifications")) return "/marketplace";
+  if (pathname.startsWith("/nearby")) return "/marketplace";
+
+  if (pathname.startsWith("/farmer")) return "/farmer";
+  if (pathname.startsWith("/admin")) return "/admin";
+  return "/marketplace";
+}
+

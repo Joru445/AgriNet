@@ -1,39 +1,14 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { motion } from "motion/react";
 
 import Overlay from "./Overlay";
+import { sheetBottomMotion } from "../../utils/motion";
 
 const SWIPE_THRESHOLD = 100;
 
 /**
  * Bottom sheet built on the Overlay foundation.
- *
- * Mobile-first surface that slides up from the bottom edge. Drag-to-dismiss is
- * owned exclusively by the grab region (drag handle + title bar), so the body
- * stays a plain native-scrolling area. Pulling the grab region past the
- * threshold dismisses; otherwise it snaps back.
- *
- * Prop structure:
- *   An animation wrapper handles the open/close slide (CSS animation owns the
- *   wrapper transform), while the inner panel carries the drag transform. This
- *   keeps the exit animation (0 -> 100%, downward) independent from any drag
- *   offset.
- *
- * Props (in addition to Overlay passthroughs handled internally):
- *   open            — boolean
- *   onClose         — invoked when the sheet requests to close
- *   onRequestClose  — optional guard; forwarded to Overlay
- *   title           — visible header title
- *   description     — optional helper text rendered under the title
- *   children        — body content
- *   footer          — optional footer content
- *   maxWidth        — width constraint class (default "max-w-lg")
- *   showCloseButton — render the title bar close button (default true)
- *   closeOnBackdrop — backdrop click closes (default true)
- *   closeOnEscape   — Escape closes (default true)
- *   zIndex          — portal z-index
- *   bodyClassName   — extra classes for the scrollable body wrapper
- *   hideTitleBar    — hide the title bar entirely
- *   duration        — close animation / unmount delay in ms (default 250)
+ * Mobile-first surface that slides up from the bottom edge using Motion for React.
  */
 export default function Sheet({
   open,
@@ -51,7 +26,6 @@ export default function Sheet({
   ariaLabel,
   bodyClassName = "",
   hideTitleBar = false,
-  duration = 250,
 }) {
   const titleId = useId();
 
@@ -62,14 +36,10 @@ export default function Sheet({
 
   const showTitleBar = !hideTitleBar && (title || showCloseButton);
 
-  // A fresh open always starts from the bottom with no leftover drag offset.
   useEffect(() => {
     if (open) setDragY(0);
   }, [open]);
 
-  // Drag only starts from the grab region (handle / title bar). Interactive
-  // elements (close button, inputs) are ignored so they keep normal click
-  // behaviour instead of dragging the sheet.
   const handleGrabPointerDown = (e) => {
     if (e.target.closest?.("button, a, input, textarea, select, label")) return;
     isDraggingRef.current = true;
@@ -90,8 +60,6 @@ export default function Sheet({
     setAnimatingDrag(false);
     const deltaY = e.clientY - dragStartYRef.current;
     if (deltaY > SWIPE_THRESHOLD) {
-      // Keep dragY so the downward exit animation continues from where the
-      // finger left the sheet; it is reset on the next open.
       onClose();
     } else {
       setDragY(0);
@@ -109,45 +77,48 @@ export default function Sheet({
       ariaLabel={ariaLabel ?? (title || "Sheet")}
       ariaLabelledBy={title ? titleId : undefined}
       positionClass="items-end justify-center p-0"
-      duration={duration}
     >
-      {({ isClosing, close }) => (
-        // Animation wrapper: owns the open/close slide only.
-        <div
-          className={
-            isClosing ? "anim-slide-down-out" : "anim-slide-up"
-          }
+      {({ close }) => (
+        <motion.div
+          key="sheet-panel-wrapper"
+          variants={sheetBottomMotion}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="w-full flex justify-center pointer-events-none"
         >
-          {/* Drag panel: owns the inline drag transform only. */}
           <div
             style={{
               transform: `translateY(${dragY}px)`,
-              transition: animatingDrag ? "none" : "transform 0.25s ease",
+              transition: animatingDrag ? "none" : "transform 0.22s ease",
             }}
-            className={`relative mx-auto flex w-full max-h-[92dvh] flex-col overflow-hidden rounded-t-3xl bg-(--agri-card) shadow-2xl pointer-events-auto safe-area-pb ${maxWidth}`}
+            className={`relative mx-auto flex w-full max-h-[92dvh] flex-col overflow-hidden rounded-t-3xl border-t border-x border-(--agri-border) bg-(--agri-card) shadow-2xl pointer-events-auto safe-area-pb ${maxWidth}`}
           >
-            {/* Grab region — the only part of the sheet that initiates drag. */}
+            {/* Grab region */}
             <div
               onPointerDown={handleGrabPointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerEnd}
               onPointerCancel={handlePointerEnd}
-              className="shrink-0 touch-none select-none"
+              className="shrink-0 touch-none select-none cursor-grab active:cursor-grabbing"
             >
-              <div className="flex justify-center pt-3 pb-1">
-                <div className="h-1 w-10 rounded-full bg-(--agri-border)" />
+              <div className="flex justify-center pt-3 pb-1.5">
+                <div className="h-1.5 w-12 rounded-full bg-(--agri-border) opacity-80" />
               </div>
 
               {showTitleBar && (
-                <div className="flex shrink-0 items-center justify-between border-b border-(--agri-border-subtle) px-5 py-3">
+                <div className="flex items-center justify-between border-b border-(--agri-border-subtle) px-5 pb-3">
                   <div>
                     {title && (
-                      <h2 id={titleId} className="text-lg font-bold text-(--agri-text)">
+                      <h2
+                        id={titleId}
+                        className="text-lg font-bold text-(--agri-text)"
+                      >
                         {title}
                       </h2>
                     )}
                     {description && (
-                      <p className="mt-0.5 text-sm text-(--agri-text-secondary)">
+                      <p className="mt-0.5 text-xs text-(--agri-text-secondary)">
                         {description}
                       </p>
                     )}
@@ -158,7 +129,7 @@ export default function Sheet({
                       type="button"
                       onClick={close}
                       aria-label="Close"
-                      className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-(--agri-text-muted) transition-colors cursor-pointer hover:bg-(--agri-hover) hover:text-(--agri-text-secondary)"
+                      className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-(--agri-text-muted) transition-colors cursor-pointer hover:bg-(--agri-hover) hover:text-(--agri-text)"
                     >
                       <i className="ri-close-line text-xl" />
                     </button>
@@ -167,22 +138,23 @@ export default function Sheet({
               )}
             </div>
 
-            {/* Body: plain native scroll, no pointer handlers. */}
+            {/* Scrollable content body */}
             <div
               className={`flex-1 min-h-0 overflow-y-auto overscroll-contain ${
-                bodyClassName || "p-2 px-4"
+                bodyClassName || "p-4"
               }`}
             >
               {children}
             </div>
 
+            {/* Optional footer */}
             {footer && (
-              <div className="shrink-0 border-t border-(--agri-border-subtle) px-5 py-4">
+              <div className="shrink-0 border-t border-(--agri-border-subtle) px-5 py-3">
                 {typeof footer === "function" ? footer({ close }) : footer}
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
     </Overlay>
   );

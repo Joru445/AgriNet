@@ -285,7 +285,7 @@ export default function VerifyAccount() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex" data-theme="light">
       <SidePanel />
 
       <div

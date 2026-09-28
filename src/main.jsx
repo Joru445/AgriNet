@@ -18,9 +18,9 @@ import "./hooks/usePWAUpdate";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <ThemeProvider>
-        <LanguageProvider>
-          <BrowserRouter>
+      <BrowserRouter>
+        <ThemeProvider>
+          <LanguageProvider>
             <Routes>
               {/* Dedicated provider authentication tabs. Rendered OUTSIDE the
                   main App so opening them never redirects or refreshes the
@@ -36,7 +36,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <Route path="/*" element={<App />} />
             </Routes>
 
-          <ToastContainer
+            <ToastContainer
               position="top-center"
               autoClose={3000}
               hideProgressBar
@@ -45,9 +45,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               pauseOnHover
               draggable
             />
-          </BrowserRouter>
-        </LanguageProvider>
-      </ThemeProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </BrowserRouter>
     </ErrorBoundary>
   </React.StrictMode>,
 );

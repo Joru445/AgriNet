@@ -1,6 +1,13 @@
 import { auth } from "../../firebase/auth";
 
-const API_URL = import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "";
+const RAW_API_URL = import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "";
+
+// In browser and dev environment, prefer the same-origin server proxy (/api)
+// to prevent cross-origin CORS failures ("TypeError: Failed to fetch").
+const API_URL =
+  typeof window !== "undefined" && (RAW_API_URL.startsWith("http") || !RAW_API_URL)
+    ? "/api"
+    : RAW_API_URL;
 
 const DEFAULT_TIMEOUT = 15_000;
 const MAX_RETRIES = 2;
@@ -34,10 +41,6 @@ async function fetchWithTimeout(url, options, timeout) {
 }
 
 export async function apiRequest(endpoint, options = {}) {
-  if (!API_URL) {
-    throw new Error("VITE_API_URL is not configured.");
-  }
-
   const {
     timeout = DEFAULT_TIMEOUT,
     retries = MAX_RETRIES,
@@ -51,8 +54,14 @@ export async function apiRequest(endpoint, options = {}) {
   headers.set("Content-Type", "application/json");
 
   if (currentUser) {
-    const token = await currentUser.getIdToken();
-    headers.set("Authorization", `Bearer ${token}`);
+    try {
+      const token = await currentUser.getIdToken();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+    } catch {
+      // Continue without token if auth state is unready or offline
+    }
   }
 
   let lastError;
@@ -62,7 +71,14 @@ export async function apiRequest(endpoint, options = {}) {
       const cleanEndpoint = endpoint.startsWith("/api/")
         ? endpoint.slice(4)
         : endpoint;
-      const url = `${API_URL}${cleanEndpoint.startsWith("/") ? "" : "/"}${cleanEndpoint}`;
+
+      // Prefer the local /api proxy; if that returns 404 in static hosting, try RAW_API_URL
+      const baseUrl =
+        attempt > 0 && lastError?.status === 404 && RAW_API_URL.startsWith("http")
+          ? RAW_API_URL
+          : API_URL;
+
+      const url = `${baseUrl}${cleanEndpoint.startsWith("/") ? "" : "/"}${cleanEndpoint}`;
       const response = await fetchWithTimeout(
         url,
         { ...fetchOptions, headers },

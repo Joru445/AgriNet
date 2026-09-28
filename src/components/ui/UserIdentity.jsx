@@ -70,10 +70,10 @@ export default function UserIdentity({
           loading="lazy"
           decoding="async"
           onError={() => setImgError(true)}
-          className={`${currentSize.image} shrink-0 rounded-full object-cover shadow-2xs border border-(--agri-border-subtle)`}
+          className={`${currentSize.image} shrink-0 rounded-full object-cover shadow-2xs ring-2 ring-(--agri-border)/60 dark:ring-(--agri-border)`}
         />
       ) : (
-        <div className={`flex ${currentSize.image} shrink-0 items-center justify-center rounded-full bg-[#2D6A4F]/10 border border-[#2D6A4F]/20 text-sm font-semibold text-[#2D6A4F] dark:text-(--agri-brand) shadow-2xs`}>
+        <div className={`flex ${currentSize.image} shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-(--agri-brand-bg) text-sm font-bold text-[#2D6A4F] dark:text-(--agri-brand) shadow-2xs ring-2 ring-(--agri-border)/60 dark:ring-(--agri-border)`}>
           {getInitials(user.fullname)}
         </div>
       )}

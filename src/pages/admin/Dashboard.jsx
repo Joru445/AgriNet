@@ -395,7 +395,7 @@ function ShortcutCard({ to, icon, title, subtitle, styles }) {
   return (
     <Link
       to={to}
-      className="group flex items-center gap-3.5 rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-3.5 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#2D6A4F]/40 hover:bg-(--agri-hover) hover:shadow-md"
+      className="group flex items-center gap-3.5 rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-3.5 sm:p-4 shadow-sm transition-all duration-200 hover:border-[#2D6A4F]/40 dark:hover:border-[#52b788]/40 hover:bg-(--agri-hover) hover:shadow-md"
     >
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-2xs ${styles}`}>
         <i className={`${icon} text-lg`} />

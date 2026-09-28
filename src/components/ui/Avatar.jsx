@@ -39,7 +39,7 @@ export default function Avatar({ src, name, size = "md", className = "", onClick
         loading="lazy"
         decoding="async"
         onError={() => setImgError(true)}
-        className={`${sizeClass} shrink-0 rounded-full object-cover object-top ${clickAttrs.className}`}
+        className={`${sizeClass} shrink-0 rounded-full object-cover object-top ring-2 ring-(--agri-border)/60 dark:ring-(--agri-border) ${clickAttrs.className}`}
         {...(onClick ? { onClick: clickAttrs.onClick } : {})}
       />
     );
@@ -51,7 +51,9 @@ export default function Avatar({ src, name, size = "md", className = "", onClick
         flex shrink-0 items-center justify-center
         rounded-full
         bg-[#D8F3DC] dark:bg-(--agri-brand-bg)
-        font-semibold text-[#2D6A4F] dark:text-(--agri-brand)
+        font-bold text-[#2D6A4F] dark:text-(--agri-brand)
+        ring-2 ring-(--agri-border)/60 dark:ring-(--agri-border)
+        select-none
         ${sizeClass}
         ${clickAttrs.className}
       `}

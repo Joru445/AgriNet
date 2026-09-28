@@ -1,10 +1,32 @@
+import process from 'node:process'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const BACKEND_URL = (process.env.VITE_API_URL || 'https://agrinet-backend-c8w7.onrender.com/api')
+  .replace(/\/api\/?$/, '');
+
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    host: '0.0.0.0',
+    port: 3000,
+    allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+        secure: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.removeHeader('origin');
+            proxyReq.removeHeader('referer');
+          });
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),

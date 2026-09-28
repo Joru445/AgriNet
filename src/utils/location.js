@@ -24,45 +24,55 @@ export function getCurrentPosition() {
 }
 
 export async function reverseGeocode(lat, lng) {
-  const response = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
-    {
-      headers: {
-        Accept: "application/json",
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
       },
-    },
-  );
+    );
 
-  if (!response.ok) {
-    throw new Error("Failed to get address.");
+    if (!response.ok) {
+      return `${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)}`;
+    }
+
+    const data = await response.json();
+    return data.display_name || `${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)}`;
+  } catch (error) {
+    console.warn("Reverse geocode failed:", error);
+    return `${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)}`;
   }
-
-  const data = await response.json();
-
-  return data.display_name;
 }
 
 export async function searchLocation(query) {
-  if (!query.trim()) return [];
+  if (!query?.trim()) return [];
 
-  const response = await fetch(
-    `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=5`,
-    {
-      headers: {
-        Accept: "application/json",
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=5`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
       },
-    },
-  );
+    );
 
-  if (!response.ok) {
-    throw new Error("Search failed.");
+    if (!response.ok) {
+      return [];
+    }
+
+    const data = await response.json();
+
+    return data.map((item) => ({
+      lat: Number(item.lat),
+      lng: Number(item.lon),
+      address: item.display_name,
+    }));
+  } catch (error) {
+    console.warn("Location search failed:", error);
+    return [];
   }
-
-  const data = await response.json();
-
-  return data.map((item) => ({
-    lat: Number(item.lat),
-    lng: Number(item.lon),
-    address: item.display_name,
-  }));
 }
+

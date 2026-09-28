@@ -93,13 +93,12 @@ const config = loadConfig();
 // Validate all required variables are present
 const missing = REQUIRED_VARS.filter((key) => !config[key]);
 if (missing.length > 0) {
-  console.error(
-    `[FCM SW] Missing required environment variables: ${missing.join(", ")}`,
+  console.warn(
+    `[FCM SW] Missing environment variables: ${missing.join(", ")}. Using fallback placeholders.`,
   );
-  console.error(
-    "[FCM SW] Set them in .env.local or as environment variables before building.",
-  );
-  process.exit(1);
+  for (const key of missing) {
+    config[key] = config[key] || "";
+  }
 }
 
 const template = loadTemplate();

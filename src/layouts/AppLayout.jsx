@@ -7,6 +7,7 @@ import BottomTab from "../components/layout/BottomTab";
 import OfflineIndicator from "../components/ui/OfflineIndicator";
 import PageTransition from "../components/ui/PageTransition";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import useMediaQuery from "../hooks/useMediaQuery";
 import useKeyboardVisible from "../hooks/useKeyboardVisible";
 
@@ -14,6 +15,7 @@ import { tabRoutes } from "../constants/tabsRoutes";
 
 export default function AppLayout() {
   const { identity, authInitializing } = useAuth();
+  const { resolved } = useTheme();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [collapsed, setCollapsed] = useState(true);
@@ -28,13 +30,8 @@ export default function AppLayout() {
    *   never reduce the physical height of the scroll surface.
    * - Global navigation insets are padding on the scroll surface itself, so
    *   they scroll away with the content (first item starts below the Header,
-   *   last item can scroll above the BottomNavigation).
-   * - Pages must NOT re-pad for the Header/BottomNavigation. Product Details'
-   *   own fixed MobileActionBar is the one page-level exception.
-   *
-   * The scroll surface is shared across routes inside this persistent layout,
-   * so reset it whenever the pathname changes (search-param changes within a
-   * route, e.g. selecting a conversation, intentionally keep position).
+   *   last item can scroll completely above the BottomNavigation).
+   * - On desktop (lg), mobile bottom navigation is hidden and receives no extra pb.
    */
   useEffect(() => {
     scrollRef.current?.scrollTo(0, 0);
@@ -51,7 +48,7 @@ export default function AppLayout() {
     isTabRoutes && !isDesktop && !isKeyboardVisible && !hasActiveChat;
 
   return (
-    <div className="fixed inset-0 flex overflow-hidden h-full">
+    <div data-theme={resolved} className="fixed inset-0 flex overflow-hidden h-full">
       {isDesktop && (
         <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       )}
@@ -65,7 +62,9 @@ export default function AppLayout() {
           ref={scrollRef}
           data-app-scroll="true"
           className={`absolute inset-0 isolate overflow-y-auto overscroll-none scrollbar-none bg-(--agri-page) pt-[var(--app-header-h)] ${
-            showBottomNav ? "pb-[var(--app-bottom-nav-h)]" : ""
+            showBottomNav
+              ? "pb-[var(--app-bottom-nav-h)] lg:pb-0"
+              : "pb-4 lg:pb-0"
           }`}
         >
           <PageTransition>
@@ -86,3 +85,4 @@ export default function AppLayout() {
     </div>
   );
 }
+

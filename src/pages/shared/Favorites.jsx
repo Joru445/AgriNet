@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
@@ -169,7 +169,7 @@ function FarmerCard({ farmer }) {
   return (
     <Link
       to={`/profile/${farmer.id || farmer.uid}`}
-      className="flex items-center gap-4 rounded-xl border border-(--agri-border) bg-(--agri-card) p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md anim-fade-in"
+      className="flex items-center gap-4 rounded-xl border border-(--agri-border) bg-(--agri-card) p-4 shadow-sm transition-all duration-200 hover:border-[#2D6A4F]/40 dark:hover:border-[#52b788]/40 hover:shadow-md anim-fade-in"
     >
       <div className="h-14 w-14 shrink-0 rounded-full bg-[#2D6A4F]/10 flex items-center justify-center overflow-hidden">
         {farmer.profilePicture ? (

@@ -1,4 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { isPublicAuthRoute } from "../utils/routes";
 
 const ThemeContext = createContext(null);
 
@@ -18,19 +20,20 @@ function resolveTheme(preference) {
 }
 
 /**
- * Apply the resolved theme to the document.
+ * Apply the visual theme to the document and PWA meta.
  */
-function applyTheme(resolved) {
-  document.documentElement.setAttribute("data-theme", resolved);
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
 
-  // Update meta theme-color for PWA
+  // Update meta theme-color for mobile browser header / PWA
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.content = resolved === "dark" ? "#0c1410" : "#1B4332";
+    meta.content = theme === "dark" ? "#121416" : "#1B4332";
   }
 }
 
 export function ThemeProvider({ children }) {
+  const location = useLocation();
   const [preference, setPreference] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) || "system";
@@ -40,18 +43,26 @@ export function ThemeProvider({ children }) {
   });
 
   const resolved = resolveTheme(preference);
+  const isPublicAuth = isPublicAuthRoute(location?.pathname);
+  // Public & Authentication pages are strictly light-only
+  const activeTheme = isPublicAuth ? "light" : resolved;
 
-  // Apply theme on mount and when resolved changes
+  // Apply active theme on mount and whenever activeTheme changes
   useEffect(() => {
-    applyTheme(resolved);
-  }, [resolved]);
+    applyTheme(activeTheme);
+  }, [activeTheme]);
 
   // Listen for OS preference changes when in system mode
   useEffect(() => {
     if (preference !== "system") return;
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => applyTheme(resolveTheme("system"));
+    const handler = () => {
+      const nextResolved = resolveTheme("system");
+      if (!isPublicAuthRoute(window.location.pathname)) {
+        applyTheme(nextResolved);
+      }
+    };
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, [preference]);
@@ -66,7 +77,15 @@ export function ThemeProvider({ children }) {
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ preference, resolved, setTheme }}>
+    <ThemeContext.Provider
+      value={{
+        preference,
+        resolved,
+        activeTheme,
+        isPublicAuth,
+        setTheme,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -78,3 +97,4 @@ export function useTheme() {
   if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
   return ctx;
 }
+

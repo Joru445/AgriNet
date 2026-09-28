@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0 --port 3000",
     "build": "node scripts/generate-fcm-sw.js && vite build",
     "generate-fcm-sw": "node scripts/generate-fcm-sw.js",
     "lint": "eslint .",
@@ -15,6 +15,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "firebase": "^12.16.0",
     "leaflet": "^1.9.4",
+    "motion": "^13.4.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-leaflet": "^5.0.0",

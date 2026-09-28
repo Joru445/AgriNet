@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import Avatar from "../../ui/Avatar";
 import ImageViewerModal from "../../ui/ImageViewerModal";
@@ -9,7 +9,7 @@ export default function NearbyFarmerCard({ farmer }) {
   const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
   return (
     <>
-    <div className="group flex flex-col justify-between h-full rounded-2xl border border-(--agri-border)/90 bg-(--agri-card) p-3.5 sm:p-4 shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5">
+    <div className="group flex flex-col justify-between h-full rounded-2xl border border-(--agri-border)/90 bg-(--agri-card) p-3.5 sm:p-4 shadow-md hover:shadow-lg transition-all duration-200 hover:border-[#2D6A4F]/40 dark:hover:border-[#52b788]/40">
       <div>
         {/* Top Header: Avatar + Farmer Info */}
         <div className="flex items-start gap-2.5 sm:gap-3 text-left">

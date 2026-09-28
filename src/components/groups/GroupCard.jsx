@@ -67,7 +67,7 @@ export default function GroupCard({ group, membershipStatus, showMembership = fa
   return (
     <Link
       to={`/groups/${group.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-xl border border-(--agri-border) bg-(--agri-card) shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#2D6A4F]/40 hover:shadow-md"
+      className="group relative flex flex-col overflow-hidden rounded-xl border border-(--agri-border) bg-(--agri-card) shadow-sm transition-all duration-200 hover:border-[#2D6A4F]/40 dark:hover:border-[#52b788]/40 hover:shadow-md"
     >
       {/* Image */}
       <div className="relative aspect-[3/2] w-full overflow-hidden bg-[#F0F5F2] dark:bg-(--agri-hover)">

@@ -1,4 +1,4 @@
-﻿import { t } from "../../i18n";
+import { t } from "../../i18n";
 
 function getRoleLabel(role) {
   switch (role) {
@@ -19,23 +19,23 @@ function getRoleLabel(role) {
 function getRoleClasses(role) {
   switch (role) {
     case "admin":
-      return "bg-white text-purple-900 border border-purple-300 shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-purple-950 dark:text-purple-200 dark:border-purple-700/60";
+      return "bg-purple-500/10 text-purple-800 border border-purple-500/25 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30";
 
     case "farmer":
-      return "bg-white text-emerald-900 border border-emerald-300 shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-700/60";
+      return "bg-emerald-500/10 text-emerald-800 border border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30";
 
     case "consumer":
-      return "bg-white text-blue-900 border border-blue-300 shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-blue-950 dark:text-blue-200 dark:border-blue-700/60";
+      return "bg-sky-500/10 text-sky-800 border border-sky-500/25 dark:bg-sky-500/15 dark:text-sky-300 dark:border-sky-500/30";
 
     default:
-      return "bg-white text-(--agri-text) border border-(--agri-border) shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-(--agri-card) dark:text-(--agri-text)";
+      return "bg-(--agri-surface-subtle) text-(--agri-text-secondary) border border-(--agri-border)";
   }
 }
 
 export default function RoleBadge({ role }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-bold tracking-wide ${getRoleClasses(
+      className={`inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-semibold tracking-normal shadow-2xs ${getRoleClasses(
         role,
       )}`}
     >

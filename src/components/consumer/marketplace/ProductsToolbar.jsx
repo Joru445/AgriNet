@@ -1,4 +1,4 @@
-﻿import { useLanguage } from "../../../context/LanguageContext";
+import { useLanguage } from "../../../context/LanguageContext";
 import Button from "../../ui/Button";
 
 export default function ProductsToolbar({
@@ -30,7 +30,7 @@ export default function ProductsToolbar({
         <select
           value={sort}
           onChange={(e) => onSort(e.target.value)}
-          className="bg-(--agri-card) px-3 py-2 border border-(--agri-border) rounded-xl font-semibold outline-none text-xs sm:text-sm cursor-pointer"
+          className="bg-(--agri-card) text-(--agri-text) px-3 py-2 border border-(--agri-border) rounded-xl font-semibold outline-none text-xs sm:text-sm cursor-pointer focus:border-[#2D6A4F] dark:focus:border-[#52b788] transition-colors"
         >
           <option value="relevant">{t("consumer.sort.relevant")}</option>
           <option value="newest">{t("consumer.sort.newest")}</option>

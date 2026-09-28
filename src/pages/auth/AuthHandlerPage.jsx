@@ -215,7 +215,7 @@ export default function AuthHandlerPage({ method }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
+    <div className="min-h-screen flex items-center justify-center bg-white" data-theme="light">
       <div className="text-center max-w-sm px-6">
         <div className="mb-4 flex items-center justify-center">
           {status === "success" ? (
