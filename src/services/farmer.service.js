@@ -49,7 +49,9 @@ export async function getFarmers({ hasProducts = false, lat, lng, maxDistance, c
   if (cursor) params.set("cursor", cursor);
   if (limit != null) params.set("limit", String(limit));
   const qs = params.toString();
-  const result = await apiRequest(`/v1/farmers${qs ? `?${qs}` : ""}`);
+  const result = await apiRequest(`/v1/farmers${qs ? `?${qs}` : ""}`, {
+    requireAuth: false,
+  });
   return {
     farmers: result.data || [],
     cursor: result.pagination?.cursor ?? null,
@@ -192,7 +194,9 @@ export async function getFarmerById(uid) {
   }
 
   try {
-    const result = await apiRequest(`/v1/farmers/${uid}`);
+    const result = await apiRequest(`/v1/farmers/${uid}`, {
+      requireAuth: false,
+    });
     const farmer = result.data;
 
     if (farmer) {

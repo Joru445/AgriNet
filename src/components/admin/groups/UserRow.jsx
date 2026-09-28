@@ -15,7 +15,9 @@ export default function UserRow({ userId, className = "" }) {
 
     async function load() {
       try {
-        const data = await apiRequest(`/v1/users/${encodeURIComponent(userId)}`);
+        const data = await apiRequest(`/v1/users/${encodeURIComponent(userId)}`, {
+          requireAuth: false,
+        });
         if (!cancelled) setUser(data.data);
       } catch {
         // Silently ignore — render fallback

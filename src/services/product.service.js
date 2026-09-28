@@ -327,7 +327,9 @@ export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, 
     if (sellingMode) params.set("sellingMode", sellingMode);
     if (farmerId) params.set("farmerId", farmerId);
 
-    const data = await apiRequest(`/v1/products/marketplace?${params}`);
+    const data = await apiRequest(`/v1/products/marketplace?${params}`, {
+      requireAuth: false,
+    });
 
     return {
       products: data.data ?? [],
@@ -342,7 +344,9 @@ export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, 
 
 export async function apiGetProductById(id) {
   try {
-    const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}`);
+    const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}`, {
+      requireAuth: false,
+    });
     return data.data ?? null;
   } catch (err) {
     console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
@@ -352,7 +356,9 @@ export async function apiGetProductById(id) {
 
 export async function apiGetFarmerProducts(farmerId) {
   try {
-    const data = await apiRequest(`/v1/products/farmer/${encodeURIComponent(farmerId)}`);
+    const data = await apiRequest(`/v1/products/farmer/${encodeURIComponent(farmerId)}`, {
+      requireAuth: false,
+    });
     return data.data ?? [];
   } catch (err) {
     console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);

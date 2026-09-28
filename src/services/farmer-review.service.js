@@ -72,7 +72,9 @@ export async function getFarmerReviews(farmerId) {
   if (!farmerId) return [];
 
   try {
-    const result = await apiRequest(`/v1/reviews/farmers/${encodeURIComponent(farmerId)}`);
+    const result = await apiRequest(`/v1/reviews/farmers/${encodeURIComponent(farmerId)}`, {
+      requireAuth: false,
+    });
     const reviews = result?.data || [];
 
     return reviews.map((r) => ({
@@ -133,6 +135,7 @@ export async function getRecentFarmerReviews(farmerId, maxLimit = 3) {
   try {
     const result = await apiRequest(
       `/v1/reviews/farmers/${encodeURIComponent(farmerId)}?limit=${maxLimit}`,
+      { requireAuth: false },
     );
     const reviews = result?.data || [];
 
@@ -155,7 +158,9 @@ export async function getRecentFarmerReviews(farmerId, maxLimit = 3) {
 export async function getAverageFarmerRating(farmerId) {
   if (!farmerId) return 0;
   try {
-    const result = await apiRequest(`/v1/reviews/farmers/${encodeURIComponent(farmerId)}/summary`);
+    const result = await apiRequest(`/v1/reviews/farmers/${encodeURIComponent(farmerId)}/summary`, {
+      requireAuth: false,
+    });
     return result.data?.average ?? 0;
   } catch {
     const all = await getFarmerReviews(farmerId);
@@ -168,7 +173,9 @@ export async function getAverageFarmerRating(farmerId) {
 export async function getFarmerReviewCount(farmerId) {
   if (!farmerId) return 0;
   try {
-    const result = await apiRequest(`/v1/reviews/farmers/${encodeURIComponent(farmerId)}/summary`);
+    const result = await apiRequest(`/v1/reviews/farmers/${encodeURIComponent(farmerId)}/summary`, {
+      requireAuth: false,
+    });
     return result.data?.count ?? 0;
   } catch {
     const all = await getFarmerReviews(farmerId);
@@ -178,7 +185,9 @@ export async function getFarmerReviewCount(farmerId) {
 
 export async function getInquiryFarmerReview(inquiryId) {
   try {
-    const result = await apiRequest(`/v1/reviews/inquiries/${inquiryId}/farmer`);
+    const result = await apiRequest(`/v1/reviews/inquiries/${inquiryId}/farmer`, {
+      requireAuth: false,
+    });
     return result.data ?? null;
   } catch (error) {
     if (error.status === 404) return null;
