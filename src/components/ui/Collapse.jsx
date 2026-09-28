@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { collapseMotion } from "../../utils/motion";
+import { collapsePanel } from "../../utils/motion";
 
 /**
  * Expandable / Collapsible container using Motion for React.
@@ -11,7 +11,7 @@ export default function Collapse({ open, children, className = "" }) {
       {open && (
         <motion.div
           key="collapse-content"
-          variants={collapseMotion}
+          variants={collapsePanel}
           initial="initial"
           animate="animate"
           exit="exit"

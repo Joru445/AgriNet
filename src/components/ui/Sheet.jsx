@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { motion } from "motion/react";
 
 import Overlay from "./Overlay";
-import { sheetBottomMotion } from "../../utils/motion";
+import { bottomSheet } from "../../utils/motion";
 
 const SWIPE_THRESHOLD = 100;
 
@@ -81,7 +81,7 @@ export default function Sheet({
       {({ close }) => (
         <motion.div
           key="sheet-panel-wrapper"
-          variants={sheetBottomMotion}
+          variants={bottomSheet}
           initial="initial"
           animate="animate"
           exit="exit"

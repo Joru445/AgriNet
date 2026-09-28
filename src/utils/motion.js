@@ -18,6 +18,12 @@ export const EASING = {
   easeOut: "easeOut",
 };
 
+// Layout transition for the shared active-tab indicator (layoutId pill)
+export const tabIndicatorTransition = {
+  duration: DURATION.standard,
+  ease: EASING.smooth,
+};
+
 // Fade variant
 export const fadeIn = {
   initial: { opacity: 0 },
@@ -68,6 +74,21 @@ export const dropdownMenu = {
     opacity: 0,
     y: -4,
     scale: 0.98,
+    transition: { duration: DURATION.fast, ease: EASING.easeOut },
+  },
+};
+
+// Collapse / Expand variant (animated height + opacity)
+export const collapsePanel = {
+  initial: { height: 0, opacity: 0 },
+  animate: {
+    height: "auto",
+    opacity: 1,
+    transition: { duration: DURATION.standard, ease: EASING.smooth },
+  },
+  exit: {
+    height: 0,
+    opacity: 0,
     transition: { duration: DURATION.fast, ease: EASING.easeOut },
   },
 };
