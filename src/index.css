@@ -159,41 +159,6 @@
   }
 }
 
-/* Explicit shell layout metric utility classes */
-.app-header-h {
-  height: var(--app-header-h);
-}
-
-.app-header-top {
-  top: var(--app-header-h);
-}
-
-.app-scroll-surface {
-  padding-top: var(--app-header-h);
-}
-
-.app-scroll-surface.has-bottom-nav {
-  padding-bottom: var(--app-bottom-nav-h);
-}
-
-@media (min-width: 1024px) {
-  .app-scroll-surface.has-bottom-nav {
-    padding-bottom: 0px;
-  }
-
-  .lg-sticky-top-header {
-    top: var(--app-header-h);
-  }
-}
-
-/* Keyboard focus / scroll-into-view clears the overlay Header and
-   BottomNavigation instead of landing underneath them. Applied to the shell
-   scroll surface only ([data-app-scroll]), so portaled overlays are unaffected. */
-[data-app-scroll]
-  :is(a[href], button, input, select, textarea, [tabindex]) {
-  scroll-margin-block: var(--app-header-h) var(--app-bottom-nav-h);
-}
-
 *,
 *::before,
 *::after {
@@ -204,6 +169,8 @@ html,
 body {
   min-height: 100%;
   width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   margin: 0;
   padding: 0;
 }
@@ -216,6 +183,8 @@ body {
 #root {
   min-height: 100%;
   width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 body {

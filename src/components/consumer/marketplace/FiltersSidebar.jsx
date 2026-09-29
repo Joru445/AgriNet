@@ -237,7 +237,7 @@ export default function FiltersSidebar({
 
   return (
     <aside className="hidden lg:block w-72 shrink-0">
-      <div className="bg-(--agri-card) rounded-2xl border border-(--agri-border) shadow-md p-5 sticky top-20">
+      <div className="bg-(--agri-card) rounded-2xl border border-(--agri-border) shadow-md p-5 sticky top-20 z-30 max-h-[calc(100vh-6.5rem)] overflow-y-auto scrollbar-none">
         {content}
       </div>
     </aside>

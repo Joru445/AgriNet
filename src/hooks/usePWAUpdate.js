@@ -16,22 +16,30 @@ function notifyListeners() {
   })
 }
 
+let isUpdating = false
+
+function applyAutoUpdate() {
+  if (isUpdating) return
+  isUpdating = true
+  globalNeedRefresh = true
+  notifyListeners()
+  updateServiceWorker(true)
+}
+
 function setupRegistrationListeners(reg) {
   if (!reg) return
   globalRegistration = reg
 
   // Check if a service worker is already waiting to activate
   if (reg.waiting && navigator.serviceWorker?.controller) {
-    globalNeedRefresh = true
-    notifyListeners()
+    applyAutoUpdate()
   }
 
   // If a worker is currently installing, watch for it to finish installing
   if (reg.installing) {
     reg.installing.addEventListener('statechange', (e) => {
       if (e.target.state === 'installed' && navigator.serviceWorker?.controller) {
-        globalNeedRefresh = true
-        notifyListeners()
+        applyAutoUpdate()
       }
     })
   }
@@ -42,8 +50,7 @@ function setupRegistrationListeners(reg) {
     if (newWorker) {
       newWorker.addEventListener('statechange', () => {
         if (newWorker.state === 'installed' && navigator.serviceWorker?.controller) {
-          globalNeedRefresh = true
-          notifyListeners()
+          applyAutoUpdate()
         }
       })
     }
@@ -62,9 +69,8 @@ function initPWARegistration() {
       globalUpdateSW = registerSW({
         immediate: true,
         onNeedRefresh() {
-          console.log('[PWA] onNeedRefresh triggered')
-          globalNeedRefresh = true
-          notifyListeners()
+          console.log('[PWA] onNeedRefresh triggered - automatically updating')
+          applyAutoUpdate()
         },
         onOfflineReady() {
           console.log('[PWA] App ready for offline use')
@@ -136,9 +142,7 @@ export async function checkForUpdate() {
     if (reg) {
       globalRegistration = reg
       if (reg.waiting && navigator.serviceWorker?.controller) {
-        globalNeedRefresh = true
-        globalIsChecking = false
-        notifyListeners()
+        applyAutoUpdate()
         return true
       }
 
@@ -146,7 +150,7 @@ export async function checkForUpdate() {
       await reg.update()
 
       if (reg.waiting && navigator.serviceWorker?.controller) {
-        globalNeedRefresh = true
+        applyAutoUpdate()
       }
     }
   } catch (err) {

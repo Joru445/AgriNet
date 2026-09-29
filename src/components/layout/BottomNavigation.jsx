@@ -15,7 +15,7 @@ export default function BottomNavigation({ items }) {
   return (
     <nav
       aria-label="Mobile navigation"
-      className="absolute bottom-0 left-0 right-0 border-t lg:hidden z-9996 bg-(--agri-surface) border-(--agri-border) pb-[env(safe-area-inset-bottom,0px)] shadow-lg shadow-black/5"
+      className="shrink-0 border-t lg:hidden z-30 bg-(--agri-surface) border-(--agri-border) pb-[env(safe-area-inset-bottom,0px)] shadow-lg shadow-black/5"
     >
       <div className="flex h-16 items-center px-1">
         {items.map((item) => {

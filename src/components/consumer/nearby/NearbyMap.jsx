@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { farmerIcon, userIcon } from "../../../constants/MapIcons";
 
 import useStartConversation from "../../../hooks/useStartConversation";
@@ -28,50 +29,65 @@ export default function NearbyMap({ userLocation, farmers, maxDistance }) {
       !isNaN(f.location.lng),
   );
 
-  const mapCenter = hasValidUserLocation
-    ? userLocation
-    : firstFarmerWithLocation
-      ? { lat: firstFarmerWithLocation.location.lat, lng: firstFarmerWithLocation.location.lng }
-      : PHILIPPINES_CENTER;
+  const mapCenter = useMemo(() => {
+    if (hasValidUserLocation) {
+      return { lat: userLocation.lat, lng: userLocation.lng };
+    }
+    if (firstFarmerWithLocation) {
+      return {
+        lat: firstFarmerWithLocation.location.lat,
+        lng: firstFarmerWithLocation.location.lng,
+      };
+    }
+    return PHILIPPINES_CENTER;
+  }, [
+    hasValidUserLocation,
+    userLocation?.lat,
+    userLocation?.lng,
+    firstFarmerWithLocation?.location?.lat,
+    firstFarmerWithLocation?.location?.lng,
+  ]);
+
+  const markers = useMemo(() => [
+    ...(hasValidUserLocation
+      ? [
+          {
+            key: "user",
+            lat: userLocation.lat,
+            lng: userLocation.lng,
+            icon: userIcon,
+            popup: t("nearby.youAreHere"),
+          },
+        ]
+      : []),
+
+    ...(farmers || [])
+      .filter(
+        (f) =>
+          f &&
+          f.location &&
+          typeof f.location.lat === "number" &&
+          !isNaN(f.location.lat) &&
+          typeof f.location.lng === "number" &&
+          !isNaN(f.location.lng),
+      )
+      .map((f) => ({
+        key: f.uid,
+        lat: f.location.lat,
+        lng: f.location.lng,
+        icon: farmerIcon,
+        popup: (
+          <FarmerPopup farmer={f} onMessage={() => startConversation(f)} />
+        ),
+      })),
+  ], [hasValidUserLocation, userLocation?.lat, userLocation?.lng, farmers, t, startConversation]);
 
   return (
     <Map
       center={mapCenter}
       zoom={13}
       radius={maxDistance * 1000}
-      markers={[
-        ...(hasValidUserLocation
-          ? [
-              {
-                key: "user",
-                lat: userLocation.lat,
-                lng: userLocation.lng,
-                icon: userIcon,
-                popup: t("nearby.youAreHere"),
-              },
-            ]
-          : []),
-
-        ...(farmers || [])
-          .filter(
-            (f) =>
-              f &&
-              f.location &&
-              typeof f.location.lat === "number" &&
-              !isNaN(f.location.lat) &&
-              typeof f.location.lng === "number" &&
-              !isNaN(f.location.lng),
-          )
-          .map((f) => ({
-            key: f.uid,
-            lat: f.location.lat,
-            lng: f.location.lng,
-            icon: farmerIcon,
-            popup: (
-              <FarmerPopup farmer={f} onMessage={() => startConversation(f)} />
-            ),
-          })),
-      ]}
+      markers={markers}
     />
   );
 }

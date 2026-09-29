@@ -28,10 +28,10 @@ export default function BackButton({
     <button
       type="button"
       onClick={handleBack}
-      className={`inline-flex items-center justify-center size-9 rounded-xl font-medium text-(--agri-text-secondary) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) hover:bg-(--agri-hover) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F]/40 shadow-2xs transition-all duration-150 active:scale-90 cursor-pointer ${className}`}
+      className={`inline-flex items-center justify-center size-8 sm:size-9 rounded-xl font-medium text-(--agri-text-secondary) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) hover:bg-(--agri-hover) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F]/40 shadow-2xs transition-all duration-150 active:scale-90 cursor-pointer ${className}`}
       aria-label={ariaLabel}
     >
-      <i className="ri-arrow-left-line text-xl" />
+      <i className="ri-arrow-left-line text-lg sm:text-xl" />
     </button>
   );
 }

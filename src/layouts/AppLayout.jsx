@@ -54,26 +54,10 @@ export default function AppLayout() {
       )}
 
       <div
-        className={`relative flex-1 h-full overflow-hidden transition-[margin] duration-200 ease-out will-change-[margin] ${
+        className={`flex-1 flex flex-col h-full overflow-hidden transition-[margin] duration-200 ease-out will-change-[margin] ${
           collapsed ? "lg:ml-20" : "lg:ml-60"
         }`}
       >
-        <div
-          ref={scrollRef}
-          data-app-scroll="true"
-          style={{
-            paddingTop: "var(--app-header-h)",
-            paddingBottom: showBottomNav ? "var(--app-bottom-nav-h)" : undefined,
-          }}
-          className={`absolute inset-0 isolate overflow-y-auto overscroll-none scrollbar-none bg-(--agri-page) app-scroll-surface ${
-            showBottomNav ? "has-bottom-nav" : "pb-4 lg:pb-0"
-          }`}
-        >
-          <PageTransition>
-            <Outlet />
-          </PageTransition>
-        </div>
-
         <Header
           user={identity}
           collapsed={collapsed}
@@ -81,6 +65,20 @@ export default function AppLayout() {
           authInitializing={authInitializing}
         />
         <OfflineIndicator />
+
+        <div
+          ref={scrollRef}
+          data-app-scroll="true"
+          className={`flex-1 min-h-0 min-w-0 w-full bg-(--agri-page) ${
+            isMessagesRoute
+              ? "h-full overflow-hidden flex flex-col"
+              : "overflow-y-auto overflow-x-hidden overscroll-none scrollbar-none"
+          }`}
+        >
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
+        </div>
 
         {showBottomNav && <BottomTab showBottomTab />}
       </div>

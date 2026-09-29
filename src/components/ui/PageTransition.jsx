@@ -13,11 +13,14 @@ import { useLocation } from "react-router-dom";
  */
 export default function PageTransition({ children }) {
   const location = useLocation();
+  const isMessages = location.pathname.includes("messages");
 
   return (
     <div
       key={location.pathname}
-      className="anim-page-enter min-h-full flex flex-col"
+      className={`anim-page-enter min-h-full flex flex-col min-w-0 w-full ${
+        isMessages ? "h-full flex-1" : ""
+      }`}
     >
       {children}
     </div>

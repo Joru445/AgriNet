@@ -240,11 +240,11 @@ export default function MessageList({
     lastMineMessage?.status === "sending";
 
   return (
-    <div className="flex-1 min-w-0 flex flex-col relative overflow-hidden">
+    <div className="flex-1 min-h-0 min-w-0 flex flex-col relative overflow-hidden">
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y p-3 sm:p-4 space-y-3 scrollbar-none [overflow-anchor:auto]"
+        className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden p-3 sm:p-4 space-y-3 scrollbar-none [overflow-anchor:auto]"
       >
         {/* Top Pagination Loader / Action */}
         {hasMoreOlder && (

@@ -7,7 +7,7 @@ export default function MarketplaceSubHeader({
 }) {
   return (
     <div data-onboarding="home-search" className="sticky top-0 z-40 bg-(--agri-page)/95 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 py-3 space-y-2">
+      <div className="max-w-7xl mx-auto px-2 xl:px-0 py-2.5">
         <SearchBar
           value={searchValue}
           onChange={onSearchChange}

@@ -82,7 +82,7 @@ export default function Marketplace() {
 
   return (
     <>
-      <main className="max-w-6xl mx-auto pb-8 space-y-4">
+      <main className="w-full min-w-0 max-w-6xl mx-auto pb-8 space-y-4">
         <MarketplaceSubHeader
           searchValue={filters.search}
           onSearchChange={(value) => updateFilter("search", value)}

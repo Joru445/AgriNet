@@ -11,7 +11,6 @@ import StoreProducts from "../../components/store/StoreProducts";
 import ReviewSection from "../../components/reviews/ReviewSection";
 import ProductGridSkeleton from "../../components/products/ProductGridSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
-import FarmerGroupAffiliation from "../../components/groups/FarmerGroupAffiliation";
 
 export default function PublicProfile() {
   const startConversation = useStartConversation();
@@ -70,7 +69,7 @@ export default function PublicProfile() {
   const isFarmer = role === "farmer";
 
   return (
-    <main className="mx-auto max-w-6xl min-h-full flex flex-col overflow-hidden bg-(--agri-surface) pb-8 shadow-sm">
+    <main className="mx-auto w-full min-w-0 max-w-6xl min-h-full flex flex-col bg-(--agri-surface) pb-16 md:pb-8 shadow-sm">
       {loading ? (
         <PublicProfileSkeleton />
       ) : (
@@ -81,15 +80,6 @@ export default function PublicProfile() {
           reviewCount={reviewCount}
           stats={stats}
           onMessage={() => startConversation(profile)}
-        />
-      )}
-
-      {/* Approved farmer affiliations */}
-      {isFarmer && (
-        <FarmerGroupAffiliation
-          groups={groups}
-          variant="full"
-          className="border-t border-(--agri-border-subtle) px-4 py-4 sm:px-6"
         />
       )}
 

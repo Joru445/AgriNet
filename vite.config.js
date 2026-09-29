@@ -44,7 +44,7 @@ export default defineConfig(({ command, mode }) => {
       react(),
       tailwindcss(),
       VitePWA({
-        registerType: 'prompt',
+        registerType: 'autoUpdate',
         includeAssets: [
           'favicon.svg',
           'favicon.png',
@@ -98,6 +98,7 @@ export default defineConfig(({ command, mode }) => {
           ],
           maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MiB
           clientsClaim: true,
+          skipWaiting: true,
           cleanupOutdatedCaches: true,
           runtimeCaching: [
             // Google Fonts stylesheets

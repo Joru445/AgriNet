@@ -18,7 +18,6 @@ import { usePWAUpdate } from "../../hooks/usePWAUpdate";
 import { getMePath } from "../../utils/routes";
 import { showToast } from "../../utils/toast";
 import LoginRequired from "../../components/ui/LoginRequired";
-import Button from "../../components/ui/Button";
 import Loading from "../../components/ui/Loading";
 
 function SectionHeading({ children, className = "" }) {
@@ -41,11 +40,10 @@ export default function Settings() {
   const { user, profile, logout, authInitializing } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { needRefresh, updateServiceWorker } = usePWAUpdate();
+  const { needRefresh } = usePWAUpdate();
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [updating, setUpdating] = useState(false);
   const [pushSubscribed, setPushSubscribed] = useState(false);
 
   if (authInitializing) {
@@ -71,17 +69,6 @@ export default function Settings() {
     }
   }
 
-  async function handleUpdate() {
-    try {
-      setUpdating(true);
-      await updateServiceWorker(true);
-    } catch (error) {
-      console.error(error);
-      showToast.error(t("settings.updateFailed"));
-    } finally {
-      setUpdating(false);
-    }
-  }
 
   if (!profile) return null;
 
@@ -194,7 +181,7 @@ export default function Settings() {
             {needRefresh ? (
               <div className="flex items-center gap-3 px-4 py-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--agri-brand-bg) text-(--agri-brand)">
-                  <i className="ri-refresh-line text-lg" />
+                  <i className="ri-loader-4-line text-lg animate-spin" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-(--agri-text)">
@@ -204,17 +191,6 @@ export default function Settings() {
                     {t("settings.updateDescription")}
                   </p>
                 </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleUpdate}
-                disabled={updating}
-                loading={updating}
-                icon={updating ? undefined : "ri-download-cloud-2-line"}
-              >
-                {t("settings.updateApp") || t("settings.update") || "Update App"}
-              </Button>
               </div>
             ) : (
               <div className="flex items-center gap-3 px-4 py-3">

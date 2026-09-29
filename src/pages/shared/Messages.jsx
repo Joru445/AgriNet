@@ -72,8 +72,8 @@ export default function Messages() {
   const hasChat = Boolean(activeConversation || activeUser);
 
   return (
-    <main className="flex-1 h-full flex flex-col overflow-hidden">
-      <div className="h-full flex flex-1 overflow-hidden" style={{ backgroundColor: 'var(--agri-page)' }}>
+    <main className="flex-1 h-full min-h-0 min-w-0 flex flex-col overflow-hidden">
+      <div className="h-full flex flex-1 min-h-0 min-w-0 overflow-hidden" style={{ backgroundColor: 'var(--agri-page)' }}>
         <ConversationList
           conversations={filteredConversations}
           users={userResults}
