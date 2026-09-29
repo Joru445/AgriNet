@@ -105,25 +105,5 @@ export const backdropMotion = overlayBackdrop;
 export const modalMotion = modalDialog;
 export const sheetBottomMotion = bottomSheet;
 export const dropdownMotion = dropdownMenu;
+export const collapseMotion = collapsePanel;
 
-// Collapse animation
-export const collapseMotion = {
-  initial: { height: 0, opacity: 0 },
-  animate: {
-    height: "auto",
-    opacity: 1,
-    transition: { duration: DURATION.standard, ease: EASING.smooth },
-  },
-  exit: {
-    height: 0,
-    opacity: 0,
-    transition: { duration: DURATION.fast, ease: EASING.easeOut },
-  },
-};
-
-// Tab indicator transition
-export const tabIndicatorTransition = {
-  type: "spring",
-  stiffness: 500,
-  damping: 35,
-};
