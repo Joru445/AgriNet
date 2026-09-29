@@ -17,20 +17,20 @@ export default function BottomNavigation({ items }) {
       aria-label="Mobile navigation"
       className="shrink-0 border-t lg:hidden z-30 bg-(--agri-surface) border-(--agri-border) pb-[env(safe-area-inset-bottom,0px)] shadow-lg shadow-black/5"
     >
-      <div className="flex h-16 items-center px-1">
+      <div className="flex h-16 items-center px-0.5 sm:px-1">
         {items.map((item) => {
           const isMessages = item.to.includes("messages");
           const isInquiries = item.to.includes("transactions");
           const isReports = item.to.includes("reports");
 
           return (
-            <div key={item.to} className="relative flex-1 flex items-center justify-center h-full">
+            <div key={item.to} className="relative flex-auto min-w-0 flex items-center justify-center h-full">
               <NavLink
                 to={item.to}
                 end
                 data-onboarding={getOnboardingNavKey(item.to)}
                 className={({ isActive }) =>
-                  `relative flex w-full h-full flex-col items-center justify-center gap-0.5 rounded-xl transition-all duration-150 select-none active:scale-95 min-h-[44px] ${
+                  `relative flex w-full h-full flex-col items-center justify-center gap-0.5 px-0.5 rounded-xl transition-all duration-150 select-none active:scale-95 min-h-[44px] ${
                     isActive
                       ? "text-[#2D6A4F] dark:text-(--agri-brand) font-bold"
                       : "text-(--agri-text-muted) hover:text-(--agri-text-secondary) font-medium"
@@ -57,7 +57,7 @@ export default function BottomNavigation({ items }) {
                       )}
                     </div>
 
-                    <span className="text-[10px] leading-tight truncate max-w-[68px] text-center tracking-tight">
+                    <span className="text-[10px] leading-none whitespace-nowrap text-center tracking-tight select-none">
                       {t(item.labelKey)}
                     </span>
                   </>

@@ -1,42 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import Avatar from "../ui/Avatar";
 import ImageViewerModal from "../ui/ImageViewerModal";
-import FarmerGroupAffiliation from "../groups/FarmerGroupAffiliation";
 import { useLanguage } from "../../context/LanguageContext";
 import useProfileViewer from "../../hooks/useProfileViewer";
-import { getUserApprovedGroups } from "../../services/group.service";
 
 export default function ProductSeller({ farmer, isOwner }) {
   const { t } = useLanguage();
   const [expandedAddress, setExpandedAddress] = useState(false);
   const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
-  const [groups, setGroups] = useState([]);
 
   const farmerId = farmer?.uid || farmer?.id;
 
-  useEffect(() => {
-    if (!farmerId || isOwner) {
-      setGroups([]);
-      return;
-    }
-
-    let cancelled = false;
-    setGroups([]);
-    getUserApprovedGroups(farmerId)
-      .then((approvedGroups) => {
-        if (!cancelled) setGroups(approvedGroups);
-      })
-      .catch(() => {
-        if (!cancelled) setGroups([]);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [farmerId, isOwner]);
-
-  if (!farmer) return null;
+  if (!farmer || isOwner || !farmerId) return null;
 
   const farmerName =
     farmer.fullname || farmer.storeName || farmer.username || t("productDetails.farmerFallback");
@@ -44,90 +20,91 @@ export default function ProductSeller({ farmer, isOwner }) {
   const address = farmer.location?.address || farmer.address || "";
   const isLongAddress = address.length > 28;
 
-  if (isOwner || !farmerId) return null;
-
   return (
     <>
-    <section className="mx-4 sm:mx-6 mt-4 sm:mt-5 rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover) p-4">
-      <div className="flex items-center gap-3.5">
-        <Link to={`/profile/${farmerId}`} className="shrink-0">
-          <Avatar
-            src={farmerAvatar}
-            name={farmerName}
-            className="w-11 h-11"
-            onClick={handleAvatarClick(farmer)}
-          />
-        </Link>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <Link
-              to={`/profile/${farmerId}`}
-              className="font-semibold text-sm sm:text-base text-(--agri-text) hover:underline truncate"
-            >
-              {farmerName}
+      <section className="mx-4 sm:mx-6 mt-4 sm:mt-5 rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover) p-4">
+        {/* Top row: Avatar + Farmer Info on left, Visit Store button on right */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Link to={`/profile/${farmerId}`} className="shrink-0">
+              <Avatar
+                src={farmerAvatar}
+                name={farmerName}
+                className="w-11 h-11"
+                onClick={handleAvatarClick(farmer)}
+              />
             </Link>
-            {(farmer.verificationStatus === "approved" || farmer.verified) && (
-              <span
-                title={t("productSeller.verifiedFarmer")}
-                aria-label={t("productSeller.verifiedFarmer")}
-                className="inline-flex shrink-0 items-center text-(--agri-green-mid) dark:text-(--agri-brand) text-sm"
-              >
-                <i className="ri-verified-badge-fill" />
-              </span>
-            )}
-          </div>
 
-          <FarmerGroupAffiliation groups={groups} className="mt-1.5" />
-
-          {address && (
-            <div className="mt-0.5 flex items-start gap-1 text-xs text-(--agri-text-muted)">
-              <i className="ri-map-pin-line shrink-0 mt-0.5" />
-              <div className="min-w-0 flex-1 leading-snug">
-                <span
-                  className={
-                    !expandedAddress && isLongAddress
-                      ? "line-clamp-1 break-words"
-                      : "break-words"
-                  }
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Link
+                  to={`/profile/${farmerId}`}
+                  className="font-semibold text-sm sm:text-base text-(--agri-text) hover:underline truncate"
                 >
-                  {address}
-                </span>
-                {isLongAddress && (
-                  <button
-                    type="button"
-                    onClick={() => setExpandedAddress((prev) => !prev)}
-                    className="mt-0.5 text-xs font-bold text-(--agri-green-mid) dark:text-(--agri-brand) hover:text-(--agri-green-dark) dark:hover:text-(--agri-brand-light) hover:underline cursor-pointer inline-flex items-center gap-0.5 transition-colors"
+                  {farmerName}
+                </Link>
+                {(farmer.verificationStatus === "approved" || farmer.verified) && (
+                  <span
+                    title={t("productSeller.verifiedFarmer")}
+                    aria-label={t("productSeller.verifiedFarmer")}
+                    className="inline-flex shrink-0 items-center text-(--agri-green-mid) dark:text-(--agri-brand) text-sm"
                   >
-                    {expandedAddress ? t("productSeller.seeLess") : t("productSeller.seeMore")}
-                    <i
-                      className={`text-xs ${
-                        expandedAddress
-                          ? "ri-arrow-up-s-line"
-                          : "ri-arrow-down-s-line"
-                      }`}
-                    />
-                  </button>
+                    <i className="ri-verified-badge-fill" />
+                  </span>
                 )}
               </div>
             </div>
-          )}
+          </div>
+
+          <Link
+            to={`/profile/${farmerId}`}
+            className="shrink-0 rounded-lg border border-(--agri-border) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) hover:text-(--agri-text) transition-colors whitespace-nowrap"
+          >
+            {t("productSeller.visitStore")}
+          </Link>
         </div>
 
-        <Link
-          to={`/profile/${farmerId}`}
-          className="shrink-0 rounded-lg border border-(--agri-border) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) hover:text-(--agri-text) transition-colors"
-        >
-          {t("productSeller.visitStore")}
-        </Link>
-      </div>
-    </section>
-    <ImageViewerModal
-      isOpen={Boolean(lightbox)}
-      src={lightbox?.src}
-      title={lightbox?.title}
-      onClose={closeLightbox}
-    />
+        {/* Address row: spans full width below top row to prevent vertical squishing */}
+        {address && (
+          <div className="mt-2.5 pt-2 border-t border-(--agri-border-subtle) flex items-start gap-1.5 text-xs text-(--agri-text-muted)">
+            <i className="ri-map-pin-line shrink-0 mt-0.5 text-xs text-(--agri-text-muted)" />
+            <div className="min-w-0 flex-1 leading-snug">
+              <span
+                className={
+                  !expandedAddress && isLongAddress
+                    ? "line-clamp-2 break-words"
+                    : "break-words"
+                }
+              >
+                {address}
+              </span>
+              {isLongAddress && (
+                <button
+                  type="button"
+                  onClick={() => setExpandedAddress((prev) => !prev)}
+                  className="ml-1 text-xs font-bold text-(--agri-green-mid) dark:text-(--agri-brand) hover:text-(--agri-green-dark) dark:hover:text-(--agri-brand-light) hover:underline cursor-pointer inline-flex items-center gap-0.5 transition-colors"
+                >
+                  {expandedAddress ? t("productSeller.seeLess") : t("productSeller.seeMore")}
+                  <i
+                    className={`text-xs ${
+                      expandedAddress
+                        ? "ri-arrow-up-s-line"
+                        : "ri-arrow-down-s-line"
+                    }`}
+                  />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <ImageViewerModal
+        isOpen={Boolean(lightbox)}
+        src={lightbox?.src}
+        title={lightbox?.title}
+        onClose={closeLightbox}
+      />
     </>
   );
 }

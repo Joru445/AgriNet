@@ -64,31 +64,31 @@ export default function MobileActionBar({ product, farmer, isOwner }) {
 
   return (
     <div className="fixed min-h-16 bottom-0 inset-x-0 z-50 lg:hidden border-t border-(--agri-border) bg-(--agri-card) px-3 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))]">
-      <div className="flex items-center px-3 gap-2">
+      <div className="flex items-center gap-2">
         {/* Farmer identity — clickable */}
         <button
           type="button"
           onClick={handleFarmerClick}
-          className="flex min-w-0 max-w-38 items-center gap-2 shrink-0 rounded-lg px-1 py-1 -ml-1 text-left transition cursor-pointer"
+          className="flex min-w-0 max-w-[105px] sm:max-w-36 items-center gap-1.5 shrink-0 rounded-lg py-1 text-left transition cursor-pointer"
         >
           <Avatar src={farmer?.profilePicture} name={farmerName} size="xs" />
 
-          <span className="text-sm truncate whitespace-nowrap">{farmer.fullname}</span>
+          <span className="text-xs sm:text-sm font-medium truncate whitespace-nowrap">
+            {farmerName}
+          </span>
           {(farmer?.verificationStatus === "approved" || farmer?.verified) && (
             <i
-              className="ri-verified-badge-fill text-(--agri-green-mid) dark:text-(--agri-brand) text-sm shrink-0"
+              className="ri-verified-badge-fill text-(--agri-green-mid) dark:text-(--agri-brand) text-xs sm:text-sm shrink-0"
               title={t("productSeller.verifiedFarmer")}
             />
           )}
         </button>
 
-        <div className="flex-1" />
-
         {/* Save / heart */}
         <button
           type="button"
           onClick={handleSave}
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition cursor-pointer ${
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition cursor-pointer ${
             saved
               ? "text-[#E63946]"
               : "text-(--agri-text-secondary) hover:bg-(--agri-hover)"
@@ -107,7 +107,7 @@ export default function MobileActionBar({ product, farmer, isOwner }) {
           disabled={!canInquire}
           aria-disabled={!canInquire}
           title={!canInquire ? t(inquiryState.reasonKey) : undefined}
-          className={`flex shrink-0 items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
+          className={`flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-xl border px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-bold transition ${
             canInquire
               ? "bg-(--agri-green-mid) border-transparent text-white shadow-md shadow-(--agri-green-mid)/20 hover:bg-(--agri-green-dark) active:scale-[0.99] cursor-pointer"
               : "bg-(--agri-hover) border-(--agri-border) text-(--agri-text-muted) cursor-not-allowed"
