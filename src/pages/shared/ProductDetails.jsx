@@ -55,7 +55,7 @@ export default function ProductDetails() {
           {/* Product Hero: two-column on desktop, equal height */}
           <div className="grid gap-0 lg:grid-cols-2 lg:gap-8">
             {/* LEFT: Gallery — aspect-square on wrapper sets row height on lg */}
-            <div className="lg:sticky lg:top-[var(--app-header-h)]">
+            <div className="lg:sticky lg-sticky-top-header">
               <ProductGallery product={product} />
             </div>
 

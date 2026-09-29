@@ -42,10 +42,11 @@ export default function OfflineIndicator() {
 
   return (
     <div
-      className="absolute top-[var(--app-header-h)] left-0 right-0 z-[9995] flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white anim-slide-down"
+      className="absolute app-header-top left-0 right-0 z-[9995] flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white anim-slide-down"
       role="alert"
       aria-live="assertive"
       style={{
+        top: "var(--app-header-h)",
         backgroundColor: isOffline ? "#D97706" : "#2D6A4F",
       }}
     >

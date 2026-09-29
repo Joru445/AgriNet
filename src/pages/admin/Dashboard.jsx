@@ -167,7 +167,7 @@ export default function Dashboard() {
           <p className="text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
             {t("admin.quickAccess")}
           </p>
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <ShortcutCard
               to="/admin/transactions"
               icon="ri-file-list-3-line"
@@ -188,6 +188,13 @@ export default function Dashboard() {
               title={t("adminUser.headerTitle")}
               subtitle={t("adminUser.headerSubtitle")}
               styles="bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400"
+            />
+            <ShortcutCard
+              to="/admin/groups"
+              icon="ri-team-line"
+              title={t("adminGroups.title")}
+              subtitle={t("adminGroups.subtitle")}
+              styles="bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400"
             />
             <ShortcutCard
               to="/admin/activity"

@@ -146,7 +146,7 @@
    surface, so scrolling content carries matching insets (they scroll away). */
 :root {
   --bottom-nav-height: 4rem;
-  --bottom-nav-breathing-room: 1.5rem;
+  --bottom-nav-breathing-room: 0.75rem;
   --app-header-h: calc(3.75rem + env(safe-area-inset-top, 0px));
   --app-bottom-nav-h: calc(
     var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + var(--bottom-nav-breathing-room)
@@ -156,6 +156,33 @@
 @media (min-width: 1024px) {
   :root {
     --app-header-h: calc(4rem + env(safe-area-inset-top, 0px));
+  }
+}
+
+/* Explicit shell layout metric utility classes */
+.app-header-h {
+  height: var(--app-header-h);
+}
+
+.app-header-top {
+  top: var(--app-header-h);
+}
+
+.app-scroll-surface {
+  padding-top: var(--app-header-h);
+}
+
+.app-scroll-surface.has-bottom-nav {
+  padding-bottom: var(--app-bottom-nav-h);
+}
+
+@media (min-width: 1024px) {
+  .app-scroll-surface.has-bottom-nav {
+    padding-bottom: 0px;
+  }
+
+  .lg-sticky-top-header {
+    top: var(--app-header-h);
   }
 }
 

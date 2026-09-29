@@ -17,7 +17,7 @@ export default function PageTransition({ children }) {
   return (
     <div
       key={location.pathname}
-      className="anim-page-enter min-h-full h-full"
+      className="anim-page-enter min-h-full flex flex-col"
     >
       {children}
     </div>

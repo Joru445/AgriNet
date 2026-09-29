@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import DashboardHeader from "../../components/farmer/dashboard/DashboardHeader";
 import KpiRow from "../../components/farmer/dashboard/KpiRow";
@@ -55,6 +56,30 @@ export default function Dashboard() {
 
       {/* ── Tier 3: Analytics ─────────────────────────────────── */}
       <div className="mx-auto max-w-7xl w-full flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 pb-12">
+        {/* ── Mobile Quick Access: Groups ─────────────────────── */}
+        <div className="lg:hidden flex flex-col gap-2">
+          <p className="text-xs font-bold uppercase tracking-wider text-(--agri-text-muted)">
+            {t("admin.quickAccess") || "Quick Access"}
+          </p>
+          <Link
+            to="/groups"
+            className="group flex items-center gap-3.5 rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-3.5 shadow-2xs transition-all duration-200 hover:border-[#2D6A4F]/40 dark:hover:border-[#52b788]/40 hover:bg-(--agri-hover) active:scale-[0.99]"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 shadow-2xs">
+              <i className="ri-team-line text-lg" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-(--agri-text) group-hover:text-[#2D6A4F] dark:group-hover:text-(--agri-brand) transition-colors">
+                {t("groups.title") || "Groups"}
+              </p>
+              <p className="truncate text-xs text-(--agri-text-muted)">
+                {t("groups.subtitle") || "Join agricultural organizations and communities"}
+              </p>
+            </div>
+            <i className="ri-arrow-right-line shrink-0 text-base text-(--agri-text-muted) transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[#2D6A4F] dark:group-hover:text-(--agri-brand)" />
+          </Link>
+        </div>
+
         <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
           <InquiryTrendCard
             analytics={analytics.inquiryAnalytics}

@@ -61,10 +61,12 @@ export default function AppLayout() {
         <div
           ref={scrollRef}
           data-app-scroll="true"
-          className={`absolute inset-0 isolate overflow-y-auto overscroll-none scrollbar-none bg-(--agri-page) pt-[var(--app-header-h)] ${
-            showBottomNav
-              ? "pb-[var(--app-bottom-nav-h)] lg:pb-0"
-              : "pb-4 lg:pb-0"
+          style={{
+            paddingTop: "var(--app-header-h)",
+            paddingBottom: showBottomNav ? "var(--app-bottom-nav-h)" : undefined,
+          }}
+          className={`absolute inset-0 isolate overflow-y-auto overscroll-none scrollbar-none bg-(--agri-page) app-scroll-surface ${
+            showBottomNav ? "has-bottom-nav" : "pb-4 lg:pb-0"
           }`}
         >
           <PageTransition>

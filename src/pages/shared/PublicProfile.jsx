@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import usePublicProfile from "../../hooks/usePublicProfile";
 import useStartConversation from "../../hooks/useStartConversation";
 import { useLanguage } from "../../context/LanguageContext";
