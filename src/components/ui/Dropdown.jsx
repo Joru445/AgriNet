@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import useClickOutside from "../../hooks/useClickOutside";
-import { dropdownMotion } from "../../utils/motion";
+import { dropdownMenu } from "../../utils/motion";
 
 /**
  * Reusable Dropdown / Menu primitive powered by Motion for React.
@@ -30,7 +30,7 @@ export default function Dropdown({
       <AnimatePresence>
         {open && (
           <motion.div
-            variants={dropdownMotion}
+            variants={dropdownMenu}
             initial="initial"
             animate="animate"
             exit="exit"

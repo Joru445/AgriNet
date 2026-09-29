@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 import useBodyScrollLock from "../../hooks/useBodyScrollLock";
 import useFocusTrap from "../../hooks/useFocusTrap";
-import { backdropMotion } from "../../utils/motion";
+import { overlayBackdrop } from "../../utils/motion";
 
 const overlayStack = [];
 const stackListeners = new Set();
@@ -152,7 +152,7 @@ export default function Overlay({
           {/* Backdrop animated with Motion */}
           <motion.div
             key="overlay-backdrop"
-            variants={backdropMotion}
+            variants={overlayBackdrop}
             initial="initial"
             animate="animate"
             exit="exit"

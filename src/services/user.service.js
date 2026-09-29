@@ -70,7 +70,7 @@ export async function getUserProfile(uid, requesterUid) {
       ? `/v1/users/${uid}?requester=${requesterUid}`
       : `/v1/users/${uid}`;
 
-    const result = await apiRequest(endpoint);
+    const result = await apiRequest(endpoint, { requireAuth: false });
     const profile = result.user;
 
     if (profile && profile.role) {

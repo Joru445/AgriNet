@@ -2,7 +2,7 @@ import { useId } from "react";
 import { motion } from "motion/react";
 
 import Overlay from "./Overlay";
-import { modalMotion } from "../../utils/motion";
+import { modalDialog } from "../../utils/motion";
 
 /**
  * Centered modal dialog built on the Overlay foundation.
@@ -46,7 +46,7 @@ export default function Modal({
       {({ close }) => (
         <motion.div
           key="modal-panel"
-          variants={modalMotion}
+          variants={modalDialog}
           initial="initial"
           animate="animate"
           exit="exit"

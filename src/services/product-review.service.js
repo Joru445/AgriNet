@@ -4,6 +4,7 @@ export async function getReviewsByProduct(productId, { maxReviews = 20 } = {}) {
   try {
     const result = await apiRequest(
       `/v1/reviews/products/${productId}?limit=${maxReviews}`,
+      { requireAuth: false },
     );
     return result.data || [];
   } catch {
@@ -16,6 +17,7 @@ export async function getProductReviewSummaries(productIds) {
 
   const result = await apiRequest(
     `/v1/reviews/products/summaries?ids=${productIds.join(",")}`,
+    { requireAuth: false },
   );
 
   const data = result.data || {};
@@ -27,7 +29,9 @@ export async function getProductReviewSummaries(productIds) {
 
 export async function getInquiryProductReview(inquiryId) {
   try {
-    const result = await apiRequest(`/v1/reviews/inquiries/${inquiryId}/product`);
+    const result = await apiRequest(`/v1/reviews/inquiries/${inquiryId}/product`, {
+      requireAuth: false,
+    });
     return result.data ?? null;
   } catch (error) {
     if (error.status === 404) return null;
