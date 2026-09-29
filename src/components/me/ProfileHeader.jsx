@@ -6,6 +6,7 @@ import Avatar from "../ui/Avatar";
 import Button from "../ui/Button";
 import ImageViewerModal from "../ui/ImageViewerModal";
 import StarRating from "../ui/StarRating";
+import GroupBadge from "../groups/GroupBadge";
 import { useLanguage } from "../../context/LanguageContext";
 import {
   applyTransform,
@@ -18,12 +19,14 @@ export default function ProfileHeader({
   editing,
   saving = false,
   uploadingAvatar = false,
+  groups = [],
 
   onEdit,
   onCancel,
   onSave,
 
   onAvatarChange,
+  onGroupClick,
 }) {
   const fileInput = useRef(null);
   const [fullscreenImage, setFullscreenImage] = useState(null);
@@ -165,6 +168,17 @@ export default function ProfileHeader({
                   <i className="ri-user-star-line" />
                   {roleLabel}
                 </span>
+
+                {isFarmer && groups?.map((g) => (
+                  <GroupBadge
+                    key={g.groupId}
+                    groupId={g.groupId}
+                    groupName={g.groupName}
+                    groupImageUrl={g.groupImageUrl}
+                    size="xs"
+                    onClick={() => onGroupClick?.(g)}
+                  />
+                ))}
               </div>
 
               <p className="mt-0.5 text-sm text-(--agri-text-muted) font-medium">

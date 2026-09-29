@@ -13,9 +13,28 @@ export default function FiltersSidebar({
   const [groups, setGroups] = useState([]);
 
   useEffect(() => {
+    let cancelled = false;
     getGroups()
-      .then(setGroups)
-      .catch(() => setGroups([]));
+      .then((data) => {
+        if (cancelled || !Array.isArray(data)) return;
+        const seen = new Set();
+        const valid = [];
+        for (const g of data) {
+          const name = g?.name?.trim();
+          if (name && !seen.has(name.toLowerCase())) {
+            seen.add(name.toLowerCase());
+            valid.push({ ...g, name });
+          }
+        }
+        setGroups(valid);
+      })
+      .catch(() => {
+        if (!cancelled) setGroups([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
   const hasActiveFilters =
     Boolean(filters.search) ||
@@ -82,13 +101,21 @@ export default function FiltersSidebar({
           </label>
 
           <select
-            value={filters.group || ""}
+            value={
+              groups.find(
+                (g) =>
+                  g.name?.toLowerCase() === (filters.group || "").toLowerCase() ||
+                  g.id === filters.group,
+              )?.name ||
+              filters.group ||
+              ""
+            }
             onChange={(e) => onChange("group", e.target.value)}
             className="w-full border border-(--agri-input-border) rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F] dark:focus:border-emerald-500 bg-(--agri-input-bg) text-(--agri-text) cursor-pointer"
           >
             <option value="">{t("nearby.allGroups")}</option>
             {groups.map((group) => (
-              <option key={group.id} value={group.id}>
+              <option key={group.id || group.name} value={group.name}>
                 {group.name}
               </option>
             ))}

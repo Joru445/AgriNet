@@ -1,4 +1,4 @@
-﻿import { useLanguage } from "../../../context/LanguageContext";
+import { useLanguage } from "../../../context/LanguageContext";
 import Button from "../../ui/Button";
 import Sheet from "../../ui/Sheet";
 

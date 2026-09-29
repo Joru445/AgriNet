@@ -4,6 +4,7 @@ import landscape from "../../assets/img/landscapeCover.jpg";
 import ImageViewerModal from "../ui/ImageViewerModal";
 import RoleBadge from "../ui/RoleBadge";
 import ReportModal from "../reports/ReportModal";
+import GroupBadge from "../groups/GroupBadge";
 import { getInitials } from "../../utils/getInitials";
 import { applyTransform, COVER_TF, PROFILE_TF, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
 import { useLanguage } from "../../context/LanguageContext";
@@ -16,7 +17,10 @@ export default function PublicProfileHeader({
   role,
   averageRating,
   reviewCount,
+  stats,
+  groups = [],
   onMessage,
+  onGroupClick,
 }) {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -140,8 +144,18 @@ export default function PublicProfileHeader({
               <p className="text-sm text-(--agri-text-muted) font-medium">
                 @{profile.username}
               </p>
-              <div className="mt-1.5">
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                 <RoleBadge role={isFarmer ? "farmer" : "consumer"} />
+                {isFarmer && groups?.map((g) => (
+                  <GroupBadge
+                    key={g.groupId}
+                    groupId={g.groupId}
+                    groupName={g.groupName}
+                    groupImageUrl={g.groupImageUrl}
+                    size="xs"
+                    onClick={() => onGroupClick?.(g)}
+                  />
+                ))}
               </div>
             </div>
           </div>

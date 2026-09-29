@@ -1435,23 +1435,22 @@ match /notifications/{notificationId} {
       allow update: if isAdmin();
 
       allow delete: if isAdmin();
+
+      match /memberships/{memberId} {
+        allow read, write: if isSignedIn();
+      }
+
+      match /applications/{appId} {
+        allow read, write: if isSignedIn();
+      }
     }
 
     match /group-memberships/{membershipId} {
-      allow read: if isSignedIn()
-        && (
-          isAdmin()
-          || request.auth.uid == resource.data.userId
-        );
+      allow read, write: if isSignedIn();
+    }
 
-      allow create: if isActive()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.status == "pending"
-        && request.resource.data.appliedAt != null;
-
-      allow update: if isAdmin();
-
-      allow delete: if isAdmin();
+    match /group_memberships/{membershipId} {
+      allow read, write: if isSignedIn();
     }
 
     match /group-managers/{managerId} {

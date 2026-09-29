@@ -8,13 +8,14 @@ import {
   getGroupManager,
   getGroupMemberCount,
   getGroupApplications,
+  subscribeToGroupApplications,
+  subscribeToGroupMembers,
 } from "../../services/group.service";
 import { GROUP_PERMISSIONS } from "../../constants/groupPermissions";
 
 import SkeletonBox from "../../components/ui/SkeletonBox";
 import ErrorState from "../../components/ui/ErrorState";
 import TabButton from "../../components/ui/TabButton";
-import BackButton from "../../components/ui/BackButton";
 
 import GroupOverview from "../../components/admin/groups/GroupOverview";
 import GroupApplications from "../../components/admin/groups/GroupApplications";
@@ -25,7 +26,9 @@ export default function ManagerGroupDetails() {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+
+  const isAdmin = user?.role === "admin" || profile?.role === "admin";
 
   const [group, setGroup] = useState(null);
   const [manager, setManager] = useState(null);
@@ -34,15 +37,20 @@ export default function ManagerGroupDetails() {
   const [tab, setTab] = useState("overview");
   const [counts, setCounts] = useState({ members: 0, applications: 0 });
 
-  const permissions = useMemo(() => manager?.permissions ?? [], [manager?.permissions]);
+  const permissions = useMemo(() => {
+    if (isAdmin) {
+      return Object.values(GROUP_PERMISSIONS);
+    }
+    return manager?.permissions ?? [];
+  }, [isAdmin, manager?.permissions]);
 
   const availableTabs = useMemo(() => {
     const tabs = ["overview"];
-    if (permissions.includes(GROUP_PERMISSIONS.APPLICATIONS_VIEW)) tabs.push("applications");
-    if (permissions.includes(GROUP_PERMISSIONS.MEMBERS_VIEW)) tabs.push("members");
-    if (permissions.includes(GROUP_PERMISSIONS.GROUP_EDIT)) tabs.push("settings");
+    if (isAdmin || permissions.includes(GROUP_PERMISSIONS.APPLICATIONS_VIEW)) tabs.push("applications");
+    if (isAdmin || permissions.includes(GROUP_PERMISSIONS.MEMBERS_VIEW)) tabs.push("members");
+    if (isAdmin || permissions.includes(GROUP_PERMISSIONS.GROUP_EDIT)) tabs.push("settings");
     return tabs;
-  }, [permissions]);
+  }, [isAdmin, permissions]);
 
   const loadGroup = useCallback(async () => {
     try {
@@ -51,7 +59,7 @@ export default function ManagerGroupDetails() {
 
       const [groupData, managerData] = await Promise.all([
         getGroup(groupId),
-        getGroupManager(groupId, user.uid),
+        getGroupManager(groupId, user?.uid).catch(() => null),
       ]);
 
       if (!groupData) {
@@ -59,19 +67,19 @@ export default function ManagerGroupDetails() {
         return;
       }
 
-      if (!managerData || !managerData.active) {
+      if (!isAdmin && (!managerData || !managerData.active)) {
         setError(t("managerGroups.unauthorized"));
         return;
       }
 
       setGroup(groupData);
-      setManager(managerData);
+      setManager(managerData || { active: true, permissions: Object.values(GROUP_PERMISSIONS) });
     } catch (err) {
       setError(err?.message || t("managerGroups.loadError"));
     } finally {
       setLoading(false);
     }
-  }, [groupId, user?.uid, t]);
+  }, [groupId, user?.uid, isAdmin, t]);
 
   const loadCounts = useCallback(async () => {
     try {
@@ -88,7 +96,20 @@ export default function ManagerGroupDetails() {
   useEffect(() => {
     loadGroup();
     loadCounts();
-  }, [loadGroup, loadCounts]);
+
+    const unsubApps = subscribeToGroupApplications(groupId, (apps) => {
+      setCounts((prev) => ({ ...prev, applications: apps.length }));
+    });
+
+    const unsubMembers = subscribeToGroupMembers(groupId, (members) => {
+      setCounts((prev) => ({ ...prev, members: members.length }));
+    });
+
+    return () => {
+      unsubApps();
+      unsubMembers();
+    };
+  }, [groupId, loadGroup, loadCounts]);
 
   // Auto-select first available tab if current tab is not available
   useEffect(() => {
@@ -118,9 +139,8 @@ export default function ManagerGroupDetails() {
     return (
       <div className="min-h-full p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-4xl">
-          <BackButton />
           <ErrorState
-            className="mt-4"
+            className="mt-2"
             message={error}
             onRetry={() => navigate("/manage/groups")}
             retryLabel={t("managerGroups.title")}
@@ -133,22 +153,15 @@ export default function ManagerGroupDetails() {
   return (
     <div className="min-h-full p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-4xl">
-        <BackButton />
-
         {/* Header */}
-        <div className="mb-6 mt-4">
-          <h1 className="text-2xl font-bold text-(--agri-text)">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-(--agri-text)">
             {group?.name || "..."}
           </h1>
-          {group?.description && (
-            <p className="mt-1 text-sm text-(--agri-text-muted)">
-              {group.description}
-            </p>
-          )}
         </div>
 
         {/* Tabs */}
-        <div className="mb-4 flex items-center gap-1 overflow-x-auto rounded-lg bg-(--agri-hover) p-0.5 scrollbar-none">
+        <div className="mb-5 flex items-center gap-1 sm:gap-1.5 overflow-x-auto rounded-2xl bg-(--agri-hover)/70 p-1 sm:p-1.5 border border-(--agri-border-subtle) shadow-xs scrollbar-none touch-pan-x">
           {availableTabs.map((tabKey) => (
             <TabButton
               key={tabKey}
@@ -156,6 +169,7 @@ export default function ManagerGroupDetails() {
               onClick={() => setTab(tabKey)}
               label={t(`managerGroups.tabs.${tabKey}`)}
               count={tabKey === "applications" ? counts.applications : undefined}
+              className="sm:flex-1 justify-center shrink-0"
             />
           ))}
         </div>
@@ -168,15 +182,15 @@ export default function ManagerGroupDetails() {
           <GroupApplications
             groupId={groupId}
             onCountsUpdate={loadCounts}
-            canApprove={permissions.includes(GROUP_PERMISSIONS.APPLICATIONS_APPROVE)}
-            canReject={permissions.includes(GROUP_PERMISSIONS.APPLICATIONS_REJECT)}
+            canApprove={isAdmin || permissions.includes(GROUP_PERMISSIONS.APPLICATIONS_APPROVE)}
+            canReject={isAdmin || permissions.includes(GROUP_PERMISSIONS.APPLICATIONS_REJECT)}
           />
         )}
         {tab === "members" && (
           <GroupMembers
             groupId={groupId}
             onCountsUpdate={loadCounts}
-            canRemove={permissions.includes(GROUP_PERMISSIONS.MEMBERS_REMOVE)}
+            canRemove={isAdmin || permissions.includes(GROUP_PERMISSIONS.MEMBERS_REMOVE)}
           />
         )}
         {tab === "settings" && (

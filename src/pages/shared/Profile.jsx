@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import ProfileHeader from "../../components/me/ProfileHeader";
@@ -6,6 +6,7 @@ import ProfileForm from "../../components/me/ProfileForm";
 import FarmerSection from "../../components/me/FarmerSection";
 import ProfileSkeleton from "../../components/me/ProfileSkeleton";
 import GroupBadge from "../../components/groups/GroupBadge";
+import GroupPreviewModal from "../../components/groups/GroupPreviewModal";
 
 import { useAuth } from "../../context/AuthContext";
 import { useOnboarding } from "../../context/OnboardingContext";
@@ -23,6 +24,7 @@ export default function Profile() {
   const navigate = useNavigate();
 
   const [groups, setGroups] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const [loadingGroups, setLoadingGroups] = useState(false);
 
   useEffect(() => {
@@ -89,10 +91,12 @@ export default function Profile() {
           editing={editing}
           saving={saving}
           uploadingAvatar={uploadingAvatar}
+          groups={groups}
           onEdit={() => setEditing(true)}
           onCancel={handleCancel}
           onSave={handleSave}
           onAvatarChange={handleAvatar}
+          onGroupClick={(g) => setSelectedGroup(g)}
         />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -127,6 +131,7 @@ export default function Profile() {
                       groupName={g.groupName}
                       groupImageUrl={g.groupImageUrl}
                       size="md"
+                      onClick={() => setSelectedGroup(g)}
                     />
                   ))}
                 </div>
@@ -181,6 +186,16 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {selectedGroup && (
+        <GroupPreviewModal
+          open={Boolean(selectedGroup)}
+          onClose={() => setSelectedGroup(null)}
+          groupId={selectedGroup.groupId}
+          initialGroup={selectedGroup}
+          farmerId={user?.uid}
+        />
+      )}
     </main>
   );
 }

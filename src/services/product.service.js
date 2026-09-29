@@ -224,6 +224,8 @@ export async function getMarketplaceProductsPage({ pageSize = 24, cursor } = {})
             location: farmer.location,
             verificationStatus: farmer.verificationStatus || (farmer.verified === true ? "approved" : "not_applied"),
             verified: farmer.verified === true,
+            groups: farmer.groups || [],
+            group: farmer.group || null,
           }
         : null,
 

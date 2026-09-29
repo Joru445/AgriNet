@@ -72,6 +72,7 @@ export default function GroupManagers({ groupId }) {
             size="sm"
             icon="ri-user-add-line"
             onClick={() => setShowAssign(true)}
+            className="text-xs h-8 px-2.5 sm:px-3 font-semibold shrink-0"
           >
             {t("adminGroups.managers.assignManager")}
           </Button>
@@ -89,7 +90,7 @@ export default function GroupManagers({ groupId }) {
             title={t("adminGroups.managers.noManagers")}
             description={t("adminGroups.managers.noManagersDesc")}
             action={
-              <Button variant="primary" size="sm" icon="ri-user-add-line" onClick={() => setShowAssign(true)}>
+              <Button variant="primary" size="sm" icon="ri-user-add-line" onClick={() => setShowAssign(true)} className="text-xs h-8 px-3 font-semibold">
                 {t("adminGroups.managers.assignManager")}
               </Button>
             }
@@ -99,34 +100,50 @@ export default function GroupManagers({ groupId }) {
             {managers.map((mgr) => (
               <div
                 key={mgr.id}
-                className="flex items-center gap-3 border-b border-(--agri-border-subtle) px-4 py-3 last:border-b-0"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-(--agri-border-subtle) p-3.5 sm:px-5 sm:py-4 last:border-b-0 hover:bg-(--agri-hover)/30 transition-colors"
               >
-                <UserRow userId={mgr.userId} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap gap-1">
+                {/* Manager identity */}
+                <div className="flex-1 min-w-0">
+                  <UserRow userId={mgr.userId} size="sm" />
+                </div>
+
+                {/* Permissions tags */}
+                <div className="w-full sm:w-auto sm:flex-1 sm:max-w-xs md:max-w-sm lg:max-w-md">
+                  <div className="flex flex-wrap gap-1 items-center">
                     {(mgr.permissions || []).map((perm) => (
                       <span
                         key={perm}
-                        className="inline-flex items-center rounded-full bg-[#D8F3DC] dark:bg-(--agri-brand-bg) px-2 py-0.5 text-[10px] font-bold text-[#2D6A4F] dark:text-(--agri-brand)"
+                        className="inline-flex items-center rounded-full bg-[#D8F3DC] dark:bg-(--agri-brand-bg) px-2 py-0.5 text-[10px] font-bold text-[#2D6A4F] dark:text-(--agri-brand) border border-[#2D6A4F]/10 dark:border-emerald-500/20 shadow-2xs"
                       >
                         {permissionLabels?.[perm] || perm}
                       </span>
                     ))}
+                    {(!mgr.permissions || mgr.permissions.length === 0) && (
+                      <span className="text-xs text-(--agri-text-muted) italic">
+                        {t("adminGroups.managers.noPermissions") || "No permissions"}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-1.5">
+
+                {/* Actions */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto pt-2.5 sm:pt-0 border-t sm:border-0 border-(--agri-border-subtle)/60 sm:justify-end">
                   <Button
                     variant="secondary"
                     size="sm"
+                    icon="ri-shield-keyhole-line"
                     onClick={() => setEditTarget(mgr)}
+                    className="w-full sm:w-auto justify-center text-xs h-8 px-3 font-semibold"
                   >
                     {t("adminGroups.managers.editPermissions")}
                   </Button>
                   <Button
                     variant="danger"
                     size="sm"
+                    icon="ri-user-unfollow-line"
                     onClick={() => setRemoveTarget(mgr)}
                     disabled={actionLoading}
+                    className="w-full sm:w-auto justify-center text-xs h-8 px-3 font-semibold"
                   >
                     {t("adminGroups.managers.removeManager")}
                   </Button>

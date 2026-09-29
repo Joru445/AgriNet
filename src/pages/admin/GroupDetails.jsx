@@ -4,10 +4,15 @@ import { useParams } from "react-router-dom";
 import SkeletonBox from "../../components/ui/SkeletonBox";
 import ErrorState from "../../components/ui/ErrorState";
 import TabButton from "../../components/ui/TabButton";
-import BackButton from "../../components/ui/BackButton";
 
 import { useLanguage } from "../../context/LanguageContext";
-import { getGroup, getGroupMemberCount, getGroupApplications } from "../../services/group.service";
+import {
+  getGroup,
+  getGroupMemberCount,
+  getGroupApplications,
+  subscribeToGroupApplications,
+  subscribeToGroupMembers,
+} from "../../services/group.service";
 import GroupOverview from "../../components/admin/groups/GroupOverview";
 import GroupApplications from "../../components/admin/groups/GroupApplications";
 import GroupMembers from "../../components/admin/groups/GroupMembers";
@@ -54,7 +59,20 @@ export default function AdminGroupDetails() {
   useEffect(() => {
     loadGroup();
     loadCounts();
-  }, [loadGroup, loadCounts]);
+
+    const unsubApps = subscribeToGroupApplications(groupId, (apps) => {
+      setCounts((prev) => ({ ...prev, applications: apps.length }));
+    });
+
+    const unsubMembers = subscribeToGroupMembers(groupId, (members) => {
+      setCounts((prev) => ({ ...prev, members: members.length }));
+    });
+
+    return () => {
+      unsubApps();
+      unsubMembers();
+    };
+  }, [groupId, loadGroup, loadCounts]);
 
   const handleGroupUpdated = useCallback(() => {
     loadGroup();
@@ -77,9 +95,8 @@ export default function AdminGroupDetails() {
     return (
       <div className="min-h-full p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-4xl">
-          <BackButton />
           <ErrorState
-            className="mt-4"
+            className="mt-2"
             title={t("admin.failedToLoad")}
             message={error}
             onRetry={loadGroup}
@@ -92,22 +109,15 @@ export default function AdminGroupDetails() {
   return (
     <div className="min-h-full p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-4xl">
-        <BackButton />
-
         {/* Header */}
-        <div className="mb-6 mt-4">
-          <h1 className="text-2xl font-bold text-(--agri-text)">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-(--agri-text)">
             {group?.name || "..."}
           </h1>
-          {group?.description && (
-            <p className="mt-1 text-sm text-(--agri-text-muted)">
-              {group.description}
-            </p>
-          )}
         </div>
 
         {/* Tabs */}
-        <div className="mb-4 flex items-center gap-1 overflow-x-auto rounded-lg bg-(--agri-hover) p-0.5 scrollbar-none">
+        <div className="mb-5 flex items-center gap-1 sm:gap-1.5 overflow-x-auto rounded-2xl bg-(--agri-hover)/70 p-1 sm:p-1.5 border border-(--agri-border-subtle) shadow-xs scrollbar-none touch-pan-x">
           {TABS.map((tabKey) => (
             <TabButton
               key={tabKey}
@@ -115,6 +125,7 @@ export default function AdminGroupDetails() {
               onClick={() => setTab(tabKey)}
               label={t(`adminGroups.tabs.${tabKey}`)}
               count={tabKey === "applications" ? counts.applications : undefined}
+              className="sm:flex-1 justify-center shrink-0"
             />
           ))}
         </div>

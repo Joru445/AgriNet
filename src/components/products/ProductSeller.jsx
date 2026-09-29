@@ -1,16 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Avatar from "../ui/Avatar";
+import GroupBadge from "../groups/GroupBadge";
+import GroupPreviewModal from "../groups/GroupPreviewModal";
 import ImageViewerModal from "../ui/ImageViewerModal";
 import { useLanguage } from "../../context/LanguageContext";
 import useProfileViewer from "../../hooks/useProfileViewer";
+import { getUserApprovedGroups } from "../../services/group.service";
+import * as pageCache from "../../utils/pageCache";
 
-export default function ProductSeller({ farmer, isOwner }) {
+export default function ProductSeller({ farmer, product, isOwner }) {
   const { t } = useLanguage();
   const [expandedAddress, setExpandedAddress] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
 
   const farmerId = farmer?.uid || farmer?.id;
+  const [groups, setGroups] = useState(() => {
+    if (!farmerId) return [];
+    if (Array.isArray(farmer?.groups) && farmer.groups.length > 0) return farmer.groups;
+    if (farmer?.group) return [farmer.group];
+    if (Array.isArray(product?.groups) && product.groups.length > 0) return product.groups;
+    if (product?.group) return [product.group];
+    const cached = pageCache.get(`approvedUserGroups:${farmerId}`);
+    return Array.isArray(cached) ? cached : [];
+  });
+
+  useEffect(() => {
+    if (!farmerId) return;
+    let cancelled = false;
+
+    getUserApprovedGroups(farmerId)
+      .then((approvedGroups) => {
+        if (!cancelled && Array.isArray(approvedGroups)) {
+          setGroups(approvedGroups);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [farmerId]);
 
   if (!farmer || isOwner || !farmerId) return null;
 
@@ -36,7 +67,7 @@ export default function ProductSeller({ farmer, isOwner }) {
             </Link>
 
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                 <Link
                   to={`/profile/${farmerId}`}
                   className="font-semibold text-sm sm:text-base text-(--agri-text) hover:underline truncate"
@@ -52,6 +83,16 @@ export default function ProductSeller({ farmer, isOwner }) {
                     <i className="ri-verified-badge-fill" />
                   </span>
                 )}
+                {groups.map((g) => (
+                  <GroupBadge
+                    key={g.groupId}
+                    groupId={g.groupId}
+                    groupName={g.groupName}
+                    groupImageUrl={g.groupImageUrl}
+                    size="xs"
+                    onClick={() => setSelectedGroup(g)}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -105,6 +146,16 @@ export default function ProductSeller({ farmer, isOwner }) {
         title={lightbox?.title}
         onClose={closeLightbox}
       />
+
+      {selectedGroup && (
+        <GroupPreviewModal
+          open={Boolean(selectedGroup)}
+          onClose={() => setSelectedGroup(null)}
+          groupId={selectedGroup.groupId}
+          initialGroup={selectedGroup}
+          farmerId={farmerId}
+        />
+      )}
     </>
   );
 }

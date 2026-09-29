@@ -8,7 +8,11 @@ import ConfirmDialog from "../../ui/ConfirmDialog";
 import UserRow from "./UserRow";
 
 import { useLanguage } from "../../../context/LanguageContext";
-import { getGroupMembers, removeGroupMember } from "../../../services/group.service";
+import {
+  getGroupMembers,
+  subscribeToGroupMembers,
+  removeGroupMember,
+} from "../../../services/group.service";
 import { showToast } from "../../../utils/toast";
 
 export default function GroupMembers({ groupId, onCountsUpdate, canRemove = true }) {
@@ -20,20 +24,27 @@ export default function GroupMembers({ groupId, onCountsUpdate, canRemove = true
 
   const loadMembers = useCallback(async () => {
     try {
-      setLoading(true);
       const data = await getGroupMembers(groupId);
       setMembers(data);
     } catch (err) {
       console.error("Failed to load members:", err);
-      showToast.error(err?.message || "Failed to load members.");
     } finally {
       setLoading(false);
     }
   }, [groupId]);
 
   useEffect(() => {
+    setLoading(true);
     loadMembers();
-  }, [loadMembers]);
+
+    const unsubscribe = subscribeToGroupMembers(groupId, (data) => {
+      setMembers(data);
+      setLoading(false);
+      onCountsUpdate?.();
+    });
+
+    return () => unsubscribe();
+  }, [groupId, loadMembers, onCountsUpdate]);
 
   async function handleRemove() {
     if (!removeTarget) return;
@@ -86,24 +97,28 @@ export default function GroupMembers({ groupId, onCountsUpdate, canRemove = true
             {members.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center gap-3 border-b border-(--agri-border-subtle) px-4 py-3 last:border-b-0"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-(--agri-border-subtle) p-3 sm:px-5 sm:py-3.5 last:border-b-0 hover:bg-(--agri-hover)/30 transition-colors"
               >
-                <UserRow userId={member.userId} size="sm" />
-                <div className="shrink-0 text-right">
-                  <p className="text-[10px] text-(--agri-text-muted)">
+                <div className="flex-1 min-w-0">
+                  <UserRow userId={member.userId} size="sm" />
+                </div>
+                <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-0 border-(--agri-border-subtle)/50 shrink-0">
+                  <p className="text-[11px] sm:text-xs text-(--agri-text-muted)">
                     {t("adminGroups.members.joinedAt")} {formatDate(member.appliedAt)}
                   </p>
+                  {canRemove && (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      icon="ri-user-unfollow-line"
+                      onClick={() => setRemoveTarget(member)}
+                      disabled={actionLoading}
+                      className="text-xs h-8 px-2.5 sm:px-3"
+                    >
+                      {t("adminGroups.members.removeConfirm")}
+                    </Button>
+                  )}
                 </div>
-                {canRemove && (
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => setRemoveTarget(member)}
-                    disabled={actionLoading}
-                  >
-                    {t("adminGroups.members.removeConfirm")}
-                  </Button>
-                )}
               </div>
             ))}
           </div>

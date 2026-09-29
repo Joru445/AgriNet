@@ -11,12 +11,15 @@ import StoreProducts from "../../components/store/StoreProducts";
 import ReviewSection from "../../components/reviews/ReviewSection";
 import ProductGridSkeleton from "../../components/products/ProductGridSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
+import GroupBadge from "../../components/groups/GroupBadge";
+import GroupPreviewModal from "../../components/groups/GroupPreviewModal";
 
 export default function PublicProfile() {
   const startConversation = useStartConversation();
   const { t } = useLanguage();
 
   const [groups, setGroups] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState(null);
 
   const {
     loading,
@@ -79,8 +82,38 @@ export default function PublicProfile() {
           averageRating={averageRating}
           reviewCount={reviewCount}
           stats={stats}
+          groups={groups}
           onMessage={() => startConversation(profile)}
+          onGroupClick={(g) => setSelectedGroup(g)}
         />
+      )}
+
+      {/* Farmer: Group / Organization Affiliations */}
+      {isFarmer && groups.length > 0 && (
+        <section className="px-4 sm:px-6 py-4 border-t border-(--agri-border-subtle) bg-(--agri-card)">
+          <div className="flex items-center justify-between mb-2.5">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-(--agri-text)">
+              <i className="ri-community-line text-base text-[#2D6A4F] dark:text-(--agri-brand)" />
+              {t("profile.organizations")}
+            </h2>
+            <span className="text-xs font-semibold text-(--agri-text-muted)">
+              {groups.length} {t("profile.member")}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {groups.map((g) => (
+              <GroupBadge
+                key={g.groupId}
+                groupId={g.groupId}
+                groupName={g.groupName}
+                groupImageUrl={g.groupImageUrl}
+                size="md"
+                showRole
+                onClick={() => setSelectedGroup(g)}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
       {/* Farmer: products */}
@@ -114,6 +147,16 @@ export default function PublicProfile() {
         <ConsumerProfileDetails
           profile={profile}
           stats={stats}
+        />
+      )}
+
+      {selectedGroup && (
+        <GroupPreviewModal
+          open={Boolean(selectedGroup)}
+          onClose={() => setSelectedGroup(null)}
+          groupId={selectedGroup.groupId}
+          initialGroup={selectedGroup}
+          farmerId={profile?.uid}
         />
       )}
     </main>

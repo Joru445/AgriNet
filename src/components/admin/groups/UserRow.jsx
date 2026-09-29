@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiRequest } from "../../../services/api/api.client";
+import { getUserProfile } from "../../../services/user.service";
 
 /**
  * Fetches a user by ID and renders their identity (avatar + name + username).
@@ -10,15 +10,18 @@ export default function UserRow({ userId, className = "" }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
 
     async function load() {
       try {
-        const data = await apiRequest(`/v1/users/${encodeURIComponent(userId)}`, {
-          requireAuth: false,
-        });
-        if (!cancelled) setUser(data.data);
+        const data = await getUserProfile(userId);
+        if (!cancelled && data) {
+          setUser(data);
+        }
       } catch {
         // Silently ignore — render fallback
       } finally {
@@ -53,23 +56,26 @@ export default function UserRow({ userId, className = "" }) {
     );
   }
 
+  const displayName = user.fullname || user.displayName || user.fullName || user.username || "User";
+  const initial = (displayName || "?")[0].toUpperCase();
+
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       {user.profilePicture ? (
         <img
           src={user.profilePicture}
-          alt={user.fullname}
+          alt={displayName}
           className="h-8 w-8 shrink-0 rounded-full object-cover"
         />
       ) : (
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D8F3DC] dark:bg-(--agri-brand-bg) text-xs font-bold text-[#2D6A4F] dark:text-(--agri-brand)">
-          {(user.fullname || "?")[0].toUpperCase()}
+          {initial}
         </div>
       )}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <p className="truncate text-sm font-semibold text-(--agri-text)">
-            {user.fullname || "Unnamed"}
+            {displayName}
           </p>
           {user.verificationStatus === "approved" && (
             <i className="ri-verified-badge-fill text-[#2D6A4F] dark:text-(--agri-brand) text-sm shrink-0" />

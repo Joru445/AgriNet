@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { apiGetMarketplaceProducts } from "../services/product.service";
+import { getGroups, getGroupMembers, getUserApprovedGroups } from "../services/group.service";
 import useUserLocation from "./useUserLocation";
 import { getDistanceKm } from "../utils/distance";
 import { isProductExpired } from "../utils/productExpiration";
@@ -15,6 +16,47 @@ const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 const DISCOVERY_NEARBY_RADIUS_KM = 5;
 const DISCOVERY_SECTION_SIZE = 4;
 const DISCOVERY_RECOMMENDED_SIZE = 6;
+
+/**
+ * Enriches products with their farmer's approved group affiliations.
+ * Uses cached results when available to minimize network calls.
+ */
+async function enrichProductsWithFarmerGroups(rawProducts) {
+  if (!Array.isArray(rawProducts) || rawProducts.length === 0) return rawProducts;
+
+  const farmerIds = [
+    ...new Set(
+      rawProducts
+        .map((p) => p.farmerId || p.farmer?.uid || p.farmer?.id)
+        .filter(Boolean),
+    ),
+  ];
+
+  if (farmerIds.length === 0) return rawProducts;
+
+  const farmerGroupsMap = new Map();
+  await Promise.all(
+    farmerIds.map(async (fId) => {
+      try {
+        const groups = await getUserApprovedGroups(fId);
+        farmerGroupsMap.set(fId, Array.isArray(groups) ? groups : []);
+      } catch {
+        farmerGroupsMap.set(fId, []);
+      }
+    }),
+  );
+
+  return rawProducts.map((p) => {
+    const fId = p.farmerId || p.farmer?.uid || p.farmer?.id;
+    const groups = farmerGroupsMap.get(fId) || p.farmer?.groups || [];
+    return {
+      ...p,
+      farmer: p.farmer
+        ? { ...p.farmer, groups }
+        : { uid: fId, groups },
+    };
+  });
+}
 
 /**
  * Compute a relevance score for a product.
@@ -59,7 +101,13 @@ const DEFAULT_FILTERS = {
  * to a product list.  These filters require runtime data the backend does
  * not have (user location, instant-search UX, cross-field price/range).
  */
-function applyClientFilters(products, filters, userLocation) {
+function applyClientFilters(
+  products,
+  filters,
+  userLocation,
+  groupFarmerIds = new Set(),
+  allGroups = [],
+) {
   let data = [...products];
 
   if (filters.search.trim()) {
@@ -72,6 +120,104 @@ function applyClientFilters(products, filters, userLocation) {
         product.farmer?.username?.toLowerCase().includes(keyword) ||
         product.farmer?.storeName?.toLowerCase().includes(keyword),
     );
+  }
+
+  // Filter by selected Group / Organization
+  if (filters.group && String(filters.group).trim() !== "") {
+    const target = String(filters.group).trim().toLowerCase();
+    const matchedGroup = allGroups.find(
+      (g) =>
+        String(g.name || "").trim().toLowerCase() === target ||
+        String(g.id || "") === String(filters.group),
+    );
+    const targetGroupId = matchedGroup?.id || filters.group;
+    const targetGroupName = String(matchedGroup?.name || filters.group).trim().toLowerCase();
+
+    data = data.filter((product) => {
+      // 1. Check if the product's farmer is an approved member of this group
+      const farmerId = product.farmerId || product.farmer?.uid || product.farmer?.id;
+      if (farmerId && groupFarmerIds.has(farmerId)) {
+        return true;
+      }
+
+      // 2. Direct product group identifiers
+      if (
+        (product.groupId &&
+          (String(product.groupId) === String(targetGroupId) ||
+            String(product.groupId).toLowerCase() === targetGroupName)) ||
+        (product.groupName &&
+          String(product.groupName).toLowerCase() === targetGroupName) ||
+        (product.organization &&
+          String(product.organization).toLowerCase() === targetGroupName) ||
+        (product.organizationId &&
+          String(product.organizationId) === String(targetGroupId))
+      ) {
+        return true;
+      }
+
+      // 3. String or object product.group
+      if (typeof product.group === "string") {
+        const pGroup = String(product.group).trim().toLowerCase();
+        if (pGroup === targetGroupName || product.group === targetGroupId) return true;
+      } else if (product.group && typeof product.group === "object") {
+        if (
+          String(product.group.id || "") === String(targetGroupId) ||
+          String(product.group.groupId || "") === String(targetGroupId) ||
+          String(product.group.name || "").toLowerCase() === targetGroupName ||
+          String(product.group.groupName || "").toLowerCase() === targetGroupName
+        ) {
+          return true;
+        }
+      }
+
+      // 4. Array product.groups
+      if (Array.isArray(product.groups) && product.groups.length > 0) {
+        const hasMatch = product.groups.some((g) => {
+          if (typeof g === "string") {
+            const str = g.toLowerCase();
+            return str === targetGroupName || g === targetGroupId;
+          }
+          return (
+            String(g?.groupId || "") === String(targetGroupId) ||
+            String(g?.id || "") === String(targetGroupId) ||
+            String(g?.groupName || "").toLowerCase() === targetGroupName ||
+            String(g?.name || "").toLowerCase() === targetGroupName
+          );
+        });
+        if (hasMatch) return true;
+      }
+
+      // 5. Farmer's groups array or object
+      if (Array.isArray(product.farmer?.groups) && product.farmer.groups.length > 0) {
+        const hasFarmerGroup = product.farmer.groups.some((g) => {
+          if (typeof g === "string") {
+            const str = g.trim().toLowerCase();
+            return str === targetGroupName || g.trim() === targetGroupId;
+          }
+          return (
+            String(g?.groupId || g?.id || "").trim() === targetGroupId ||
+            String(g?.groupName || g?.name || "").trim().toLowerCase() === targetGroupName
+          );
+        });
+        if (hasFarmerGroup) return true;
+      }
+
+      if (typeof product.farmer?.group === "string") {
+        const fGroup = String(product.farmer.group).trim().toLowerCase();
+        if (fGroup === targetGroupName || product.farmer.group === targetGroupId) return true;
+      } else if (product.farmer?.group && typeof product.farmer.group === "object") {
+        if (
+          String(product.farmer.group.id || "") === String(targetGroupId) ||
+          String(product.farmer.group.groupId || "") === String(targetGroupId) ||
+          String(product.farmer.group.name || "").toLowerCase() === targetGroupName ||
+          String(product.farmer.group.groupName || "").toLowerCase() === targetGroupName
+        ) {
+          return true;
+        }
+      }
+
+      return false;
+    });
   }
 
   data = data.filter((product) => {
@@ -108,14 +254,6 @@ export default function useMarketplace() {
   const cursorRef = useRef(null);
   const loadingMoreRef = useRef(false);
 
-  // Auto-tick every second so expired listings disappear immediately without refresh
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setNow(Date.now());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   const filters = useMemo(
     () => ({
       search: searchParams.get("search") ?? DEFAULT_FILTERS.search,
@@ -140,14 +278,81 @@ export default function useMarketplace() {
     [searchParams],
   );
 
-  // Build the backend filter key.  This is a stable string that changes
-  // only when the server-relevant filters change.  It is used to detect
-  // when a full reset is needed versus when we can keep the current data.
+  const [allGroups, setAllGroups] = useState([]);
+  const [groupFarmerIds, setGroupFarmerIds] = useState(() => new Set());
+
+  useEffect(() => {
+    let cancelled = false;
+    getGroups()
+      .then((list) => {
+        if (!cancelled && Array.isArray(list)) {
+          setAllGroups(list);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!filters.group || String(filters.group).trim() === "") {
+      setGroupFarmerIds(new Set());
+      return;
+    }
+
+    async function fetchGroupMembers() {
+      try {
+        const groupsList = allGroups.length > 0 ? allGroups : await getGroups();
+        const target = String(filters.group).trim().toLowerCase();
+        const found = groupsList.find(
+          (g) =>
+            String(g.name || "").trim().toLowerCase() === target ||
+            String(g.id || "") === String(filters.group),
+        );
+        if (found?.id) {
+          const members = await getGroupMembers(found.id);
+          if (!cancelled && Array.isArray(members)) {
+            const ids = new Set(members.map((m) => m.userId).filter(Boolean));
+            setGroupFarmerIds(ids);
+          }
+        }
+      } catch (err) {
+        console.warn("[useMarketplace] fetchGroupMembers error:", err);
+      }
+    }
+
+    fetchGroupMembers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filters.group, allGroups]);
+
+  // Auto-tick every second so expired listings disappear immediately without refresh
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
+  const userLocationRef = useRef(userLocation);
+  userLocationRef.current = userLocation;
+  const groupFarmerIdsRef = useRef(groupFarmerIds);
+  groupFarmerIdsRef.current = groupFarmerIds;
+  const allGroupsRef = useRef(allGroups);
+  allGroupsRef.current = allGroups;
+
+  // Build the backend filter key. This is a stable string that changes
+  // only when the server-relevant filters change (category, sellingMode, showUnavailable).
   const backendFilterKey = useMemo(
-    () => `${filters.category}|${filters.sellingMode}|${filters.showUnavailable}|${filters.group}`,
-    [filters.category, filters.sellingMode, filters.showUnavailable, filters.group],
+    () => `${filters.category}|${filters.sellingMode}|${filters.showUnavailable}`,
+    [filters.category, filters.sellingMode, filters.showUnavailable],
   );
-  const prevBackendFilterKeyRef = useRef(backendFilterKey);
 
   const loadProducts = useCallback(async ({ reset = false } = {}) => {
     try {
@@ -162,25 +367,25 @@ export default function useMarketplace() {
         loadingMoreRef.current = true;
       }
 
+      const activeFilters = filtersRef.current;
+      const activeLocation = userLocationRef.current;
+      const activeGroupFarmerIds = groupFarmerIdsRef.current;
+      const activeAllGroups = allGroupsRef.current;
+
       // Build backend-supported filter params.
       const apiFilters = {};
-      if (filters.category && filters.category !== "All") {
-        apiFilters.category = filters.category;
+      if (activeFilters.category && activeFilters.category !== "All") {
+        apiFilters.category = activeFilters.category;
       }
-      if (filters.sellingMode && filters.sellingMode !== "all") {
-        apiFilters.sellingMode = filters.sellingMode;
+      if (activeFilters.sellingMode && activeFilters.sellingMode !== "all") {
+        apiFilters.sellingMode = activeFilters.sellingMode;
       }
-      if (!filters.showUnavailable) {
+      if (!activeFilters.showUnavailable) {
         apiFilters.available = true;
-      }
-      if (filters.group) {
-        apiFilters.groupId = filters.group;
       }
 
       if (reset) {
-        // Reset: fetch fresh data from the beginning.  Keep fetching
-        // backend pages until we have enough client-side-filtered
-        // products to fill one UI page, or the backend is exhausted.
+        // Reset: fetch fresh data from the beginning.
         let allProducts = [];
         let cursor = null;
         let backendHasMore = true;
@@ -194,25 +399,30 @@ export default function useMarketplace() {
             ...apiFilters,
           });
 
-          allProducts = [...allProducts, ...result.products];
+          const enriched = await enrichProductsWithFarmerGroups(result.products);
+          allProducts = [...allProducts, ...enriched];
           cursor = result.cursor;
           backendHasMore = result.hasMore;
           fetchCount++;
 
-          // After applying client-side filters, check if we have
-          // enough products to fill one UI page.
           const withDistance = allProducts.map((product) => {
             const lat = product.farmer?.location?.lat;
             const lng = product.farmer?.location?.lng;
-            if (!userLocation || lat == null || lng == null) {
+            if (!activeLocation || lat == null || lng == null) {
               return { ...product, distance: null };
             }
             return {
               ...product,
-              distance: getDistanceKm(userLocation.lat, userLocation.lng, lat, lng),
+              distance: getDistanceKm(activeLocation.lat, activeLocation.lng, lat, lng),
             };
           });
-          const filtered = applyClientFilters(withDistance, filters, userLocation);
+          const filtered = applyClientFilters(
+            withDistance,
+            activeFilters,
+            activeLocation,
+            activeGroupFarmerIds,
+            activeAllGroups,
+          );
           if (filtered.length >= PRODUCTS_PER_PAGE || !backendHasMore) break;
         }
 
@@ -220,12 +430,12 @@ export default function useMarketplace() {
         const final = allProducts.map((product) => {
           const lat = product.farmer?.location?.lat;
           const lng = product.farmer?.location?.lng;
-          if (!userLocation || lat == null || lng == null) {
+          if (!activeLocation || lat == null || lng == null) {
             return { ...product, distance: null };
           }
           return {
             ...product,
-            distance: getDistanceKm(userLocation.lat, userLocation.lng, lat, lng),
+            distance: getDistanceKm(activeLocation.lat, activeLocation.lng, lat, lng),
           };
         });
 
@@ -242,9 +452,10 @@ export default function useMarketplace() {
         });
 
         if (result.products.length > 0) {
+          const enriched = await enrichProductsWithFarmerGroups(result.products);
           setProducts((current) => {
             const existingIds = new Set(current.map((p) => p.id));
-            const newProducts = result.products.filter((p) => !existingIds.has(p.id));
+            const newProducts = enriched.filter((p) => !existingIds.has(p.id));
             return newProducts.length > 0 ? [...current, ...newProducts] : current;
           });
         }
@@ -260,7 +471,7 @@ export default function useMarketplace() {
       setLoadingMore(false);
       loadingMoreRef.current = false;
     }
-  }, [filters, userLocation]);
+  }, []);
 
   const hasActiveFilters =
     filters.search.trim() !== "" ||
@@ -272,14 +483,8 @@ export default function useMarketplace() {
     filters.sellingMode !== "all" ||
     filters.group !== "";
 
-  // Re-fetch when ANY filter changes.  Both server-side filters
-  // (category, sellingMode, showUnavailable) and client-side filters
-  // (search, distance, price, rating) trigger a full reset because
-  // client-side filtering can exclude products from backend pages,
-  // producing incomplete results if we only append.
+  // Re-fetch only when server-side filters change or on initial mount.
   useEffect(() => {
-    prevBackendFilterKeyRef.current = backendFilterKey;
-
     loadProducts({ reset: true });
   }, [loadProducts, backendFilterKey]);
 
@@ -302,7 +507,13 @@ export default function useMarketplace() {
   );
 
   const filteredProducts = useMemo(() => {
-    let data = applyClientFilters(marketplaceProducts, filters, userLocation);
+    let data = applyClientFilters(
+      marketplaceProducts,
+      filters,
+      userLocation,
+      groupFarmerIds,
+      allGroups,
+    );
 
     switch (filters.sort) {
       case "price-low":
@@ -329,7 +540,7 @@ export default function useMarketplace() {
     }
 
     return data;
-  }, [marketplaceProducts, filters, userLocation, now]);
+  }, [marketplaceProducts, filters, userLocation, now, groupFarmerIds, allGroups]);
 
   // ── Discovery sections ─────────────────────────────────────────
   // These are computed from marketplaceProducts (unfiltered) and are

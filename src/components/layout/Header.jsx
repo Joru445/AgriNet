@@ -17,9 +17,11 @@ function getNestedHeaderTitle(pathname, t) {
   if (!pathname) return "";
   if (pathname.includes("/proof")) return t("transaction.proof") || "Transaction Proof";
   if (pathname.includes("/review")) return t("transaction.review") || "Review";
-  if (pathname.includes("/manage/groups/")) return t("groups.groupDetails") || "Group Details";
+  if (pathname.includes("/manage/groups/")) return "";
   if (pathname.includes("/manage/groups")) return t("nav.manageGroups") || "Manage Groups";
-  if (pathname.includes("/groups/")) return t("groups.groupDetails") || "Group Details";
+  if (pathname.includes("/admin/groups/")) return "";
+  if (pathname.includes("/admin/groups")) return t("adminGroups.title") || "Groups";
+  if (pathname.includes("/groups/")) return "";
   if (pathname.includes("/groups")) return t("nav.groups") || "Groups";
   if (pathname.includes("/farmer-verifications")) return t("nav.farmerVerifications") || "Verifications";
   if (pathname.includes("/activity")) return t("nav.adminActivity") || "Activity";
@@ -111,27 +113,39 @@ export default function Header({ user, collapsed, hideBackButton, authInitializi
         ) : (
           <>
             {/* Notifications & Action icons */}
-            <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+            <div className="flex items-center gap-0.5 sm:gap-1.5 shrink-0">
               <Link
                 to={notificationPath}
                 data-onboarding="bell"
-                className="relative flex size-8 sm:size-9 shrink-0 items-center justify-center rounded-xl text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F]/30"
+                className="relative flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F]/30"
                 aria-label={t("header.notifications")}
               >
-                <i className="ri-notification-3-line text-base sm:text-lg" />
+                <i className="ri-notification-3-line text-lg sm:text-xl" />
                 {notifCount > 0 && (
                   <Badge count={notifCount} className="-top-1 -right-1" />
                 )}
               </Link>
 
+              {user?.role === "farmer" && (
+                <Link
+                  to="/groups"
+                  data-onboarding="header-groups"
+                  className="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F]/30"
+                  aria-label={t("nav.groups") || "Groups"}
+                  title={t("nav.groups") || "Groups"}
+                >
+                  <i className="ri-team-line text-lg sm:text-xl" />
+                </Link>
+              )}
+
               {user?.role === "consumer" && (
                 <Link
                   to={favoritesPath}
                   data-onboarding="header-favorites"
-                  className="flex size-8 sm:size-9 shrink-0 items-center justify-center rounded-xl text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F]/30"
+                  className="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F]/30"
                   aria-label={t("nav.favorites")}
                 >
-                  <i className="ri-heart-line text-base sm:text-lg" />
+                  <i className="ri-heart-line text-lg sm:text-xl" />
                 </Link>
               )}
 
@@ -139,10 +153,10 @@ export default function Header({ user, collapsed, hideBackButton, authInitializi
                 <Link
                   to="/admin/farmer-verifications"
                   data-onboarding="header-verification"
-                  className="flex size-8 sm:size-9 shrink-0 items-center justify-center rounded-xl text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F]/30"
+                  className="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl text-(--agri-text-muted) transition-colors hover:bg-(--agri-hover) hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F]/30"
                   aria-label={t("nav.farmerVerifications")}
                 >
-                  <i className="ri-shield-star-line text-base sm:text-lg" />
+                  <i className="ri-shield-star-line text-lg sm:text-xl" />
                 </Link>
               )}
             </div>

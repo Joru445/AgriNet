@@ -73,7 +73,7 @@ export default function ProductDetails() {
 
               <div className="flex-1" />
 
-              <ProductSeller farmer={farmer} isOwner={isOwner} />
+              <ProductSeller farmer={farmer} product={product} isOwner={isOwner} />
 
               <ProductActions
                 product={product}
