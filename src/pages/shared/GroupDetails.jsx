@@ -281,7 +281,7 @@ export default function GroupDetails() {
       {/* Group info */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#1B4332] dark:text-(--agri-brand-light) tracking-tight">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-(--agri-text) tracking-tight">
             {group.name}
           </h1>
 

@@ -22,6 +22,8 @@ const CATEGORY_ICONS = {
   poultry: "ri-egg-line",
   meats: "ri-restaurant-line",
   seafoods: "ri-water-flash-line",
+  others: "ri-more-fill",
+  other: "ri-more-fill",
 };
 
 export default function ProductInfo({

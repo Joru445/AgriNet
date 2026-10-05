@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
@@ -37,7 +37,7 @@ export default function Suspended() {
         <img src={logo} alt="AgriNet" className="h-12 w-12 object-contain" />
 
         <div>
-          <h1 className="text-xl font-bold text-[#1B4332] dark:text-(--agri-brand-light)">AgriNet</h1>
+          <h1 className="text-xl font-bold text-(--agri-text)">AgriNet</h1>
 
           <p className="text-sm text-(--agri-text-muted)">{t("suspended.tagline")}</p>
         </div>

@@ -150,7 +150,7 @@ export default function Settings() {
         {profile?.role === "farmer" && <FarmerVerification />}
 
         {/* ── Preferences ─────────────────────────────────── */}
-        <section>
+        <section data-onboarding="settings-preferences">
           <SectionHeading>{t("settings.preferences") || "Preferences"}</SectionHeading>
           <SectionCard className="divide-y divide-(--agri-border-subtle)">
             <LanguageSelector compact />

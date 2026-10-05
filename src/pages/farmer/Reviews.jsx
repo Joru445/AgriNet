@@ -1,4 +1,4 @@
-﻿import useReviews from "../../hooks/useReviews";
+import useReviews from "../../hooks/useReviews";
 import { useLanguage } from "../../context/LanguageContext";
 
 import ReviewSummary from "../../components/farmer/reviews/ReviewSummary";
@@ -25,7 +25,7 @@ export default function Reviews() {
   return (
     <main className="p-4 md:p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1B4332] dark:text-(--agri-brand-light)">{t("farmer.reviewsTitle")}</h1>
+        <h1 className="text-2xl font-bold text-(--agri-text)">{t("farmer.reviewsTitle")}</h1>
 
         <p className="mt-1 text-sm text-(--agri-text-muted)">
           {t("farmer.reviewsSubtitle")}

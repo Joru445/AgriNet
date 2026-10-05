@@ -12,7 +12,7 @@ export default function ProductToolbar({
   return (
     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
       <div>
-        <h2 className="text-2xl font-bold text-[#1B4332] dark:text-(--agri-brand-light)">{t("products.myProducts")}</h2>
+        <h2 className="text-2xl font-bold text-(--agri-text)">{t("products.myProducts")}</h2>
 
         <p className="text-sm font-medium text-(--agri-text-muted)">
           {t("products.myProductsDesc")}

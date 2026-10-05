@@ -128,7 +128,7 @@ export default function PublicProfileHeader({
             {/* Text Info */}
             <div className="min-w-0 pb-1 sm:pb-3">
               <div className="flex items-center gap-1.5 min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332] dark:text-(--agri-brand) [text-shadow:_0_1px_2px_rgba(255,255,255,0.9),_0_0_8px_rgba(255,255,255,0.8)] dark:[text-shadow:0_1px_3px_rgba(0,0,0,0.8)] truncate">
+                <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332] dark:text-(--agri-text) [text-shadow:_0_1px_2px_rgba(255,255,255,0.9),_0_0_8px_rgba(255,255,255,0.8)] dark:[text-shadow:0_1px_3px_rgba(0,0,0,0.8)] truncate">
                   {name}
                 </h1>
                 {(profile.verificationStatus === "approved" || profile.verified) && (

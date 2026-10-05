@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -39,7 +39,7 @@ export default function Inquiries() {
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-[#1B4332] dark:text-(--agri-brand-light)">{t("transactions.title")}</h2>
+          <h2 className="text-xl font-bold text-(--agri-text)">{t("transactions.title")}</h2>
 
           <p className="text-sm text-(--agri-text-muted)">
             {t("transactions.subtitle")}

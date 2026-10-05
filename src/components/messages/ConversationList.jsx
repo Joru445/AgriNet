@@ -24,7 +24,7 @@ export default function ConversationList({
       className={`w-full lg:w-80 md:w-64 flex flex-col border-r border-(--agri-border) ${hasChat ? "hidden md:flex" : "flex"}`}
     >
       <div className="p-4">
-        <h2 className="text-xl font-bold text-agri-dark dark:text-(--agri-brand-light) mb-4">{t("nav.messages")}</h2>
+        <h2 className="text-xl font-bold text-(--agri-text) mb-4">{t("nav.messages")}</h2>
 
         <div className="relative flex items-center gap-2 bg-(--agri-card) rounded-xl px-3 py-1.5 border-2 border-(--agri-border) shadow-xs focus-within:border-agri-primary focus-within:shadow-md focus-within:ring-3 focus-within:ring-[#2D6A4F]/15 transition-all">
           <i className="ri-search-line text-agri-primary text-lg font-bold shrink-0" />

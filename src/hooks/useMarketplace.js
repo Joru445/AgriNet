@@ -122,6 +122,18 @@ function applyClientFilters(
     );
   }
 
+  // Filter by category
+  if (filters.category && filters.category !== "All") {
+    const targetCat = filters.category.toLowerCase();
+    data = data.filter((product) => {
+      const pCat = String(product.category || "").toLowerCase();
+      if (targetCat === "others" || targetCat === "other") {
+        return pCat === "others" || pCat === "other";
+      }
+      return pCat === targetCat;
+    });
+  }
+
   // Filter by selected Group / Organization
   if (filters.group && String(filters.group).trim() !== "") {
     const target = String(filters.group).trim().toLowerCase();

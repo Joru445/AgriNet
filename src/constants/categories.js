@@ -18,6 +18,7 @@ export const CATEGORIES = [
   { value: "poultry", labelKey: "products.categories.poultry" },
   { value: "meats", labelKey: "products.categories.meat" },
   { value: "seafoods", labelKey: "products.categories.seafood" },
+  { value: "others", labelKey: "products.categories.others" },
 ];
 
 /**

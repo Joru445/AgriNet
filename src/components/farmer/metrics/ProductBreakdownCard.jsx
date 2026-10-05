@@ -1,4 +1,4 @@
-﻿import ChartCard from "../../charts/ChartCard";
+import ChartCard from "../../charts/ChartCard";
 import DonutChart from "../../charts/DonutChart";
 import { useTheme } from "../../../context/ThemeContext";
 import { colorAt } from "../../charts/ChartTheme";
@@ -15,6 +15,7 @@ const CATEGORY_LABEL_KEY = {
   seafoods: "products.categories.seafood",
   meats: "products.categories.meat",
   other: "products.categories.others",
+  others: "products.categories.others",
 };
 
 export default function ProductBreakdownCard({ analytics, className = "" }) {

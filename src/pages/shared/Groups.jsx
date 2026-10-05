@@ -248,7 +248,7 @@ export default function Groups() {
               <i className="ri-team-line text-xl lg:text-2xl" />
             </div>
             <div>
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#1B4332] dark:text-(--agri-brand-light) tracking-tight">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-(--agri-text) tracking-tight">
                 {t("groups.title")}
               </h1>
               <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-(--agri-text-muted)">

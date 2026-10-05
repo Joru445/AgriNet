@@ -17,12 +17,14 @@ const TARGET = {
   headerProfile: '[data-onboarding="header-profile"]',
   storeHeader: '[data-onboarding="store-header"]',
   adminStats: '[data-onboarding="admin-stats"]',
+  preferences: '[data-onboarding="settings-preferences"]',
 };
 
 const NAV = {
   nearby: '[data-onboarding="nav-nearby"]',
   products: '[data-onboarding="nav-products"]',
   messages: '[data-onboarding="nav-messages"]',
+  settings: '[data-onboarding="nav-settings"]',
   transactions: '[data-onboarding="nav-transactions"]',
   reports: '[data-onboarding="nav-reports"]',
 };
@@ -52,6 +54,12 @@ const consumerSteps = [
     id: "consumer-messages",
             target: NAV.messages,
     path: "/marketplace",
+  },
+  {
+    id: "consumer-settings",
+    target: TARGET.preferences,
+    path: "/settings",
+    interactive: true,
   },
   {
     id: "consumer-notifications",
@@ -86,6 +94,12 @@ const farmerSteps = [
     id: "farmer-messages",
             target: NAV.messages,
     path: "/farmer",
+  },
+  {
+    id: "farmer-settings",
+    target: TARGET.preferences,
+    path: "/farmer/settings",
+    interactive: true,
   },
   {
     id: "farmer-transactions",
@@ -124,6 +138,12 @@ const adminSteps = [
     id: "admin-messages",
             target: NAV.messages,
     path: "/admin",
+  },
+  {
+    id: "admin-settings",
+    target: TARGET.preferences,
+    path: "/admin/settings",
+    interactive: true,
   },
   {
     id: "admin-notifications",

@@ -531,6 +531,10 @@ h1, h2, h3, h4 {
   position: fixed;
   z-index: 10030;
   width: min(28rem, calc(100vw - 24px));
+  transition:
+    top 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    bottom 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .onboarding-tip-center {

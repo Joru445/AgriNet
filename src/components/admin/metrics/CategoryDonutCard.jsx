@@ -15,6 +15,7 @@ const CATEGORY_LABEL_KEY = {
   seafoods: "products.categories.seafood",
   meats: "products.categories.meat",
   other: "products.categories.others",
+  others: "products.categories.others",
 };
 
 export default function CategoryDonutCard({ analytics, className = "" }) {

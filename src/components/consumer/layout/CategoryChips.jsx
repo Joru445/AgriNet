@@ -12,6 +12,7 @@ import meats from "../../../assets/categories/meats.webp";
 import seafoods from "../../../assets/categories/seafoods.webp";
 import herbs from "../../../assets/categories/herbs.webp";
 import rootCrops from "../../../assets/categories/root-crops.webp";
+import others from "../../../assets/categories/others.webp";
 
 const categories = [
   {
@@ -64,6 +65,11 @@ const categories = [
     labelKey: "categories.rootCrops",
     image: rootCrops,
   },
+  {
+    id: "others",
+    labelKey: "categories.others",
+    image: others,
+  },
 ];
 
 export default function CategoryChips({ value = "All", onChange }) {
@@ -94,7 +100,8 @@ export default function CategoryChips({ value = "All", onChange }) {
   return (
     <div className="w-full max-w-full min-w-0 flex items-center justify-start gap-3 overflow-x-auto px-4 xl:px-2 py-2 scrollbar-none">
       {categories.map((cat) => {
-        const active = value === cat.id;
+        const active =
+          value === cat.id || (cat.id === "others" && value === "other");
 
         return (
           <button

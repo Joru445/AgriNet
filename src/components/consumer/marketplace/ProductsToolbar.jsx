@@ -10,15 +10,7 @@ export default function ProductsToolbar({
 }) {
   const { t } = useLanguage();
   return (
-    <div className="flex items-center justify-between gap-3 sm:gap-4 min-w-0">
-      {/* Product Count */}
-      {loading ? (
-        <span className="inline-block h-5 w-20 sm:w-24 bg-(--agri-hover) rounded-md animate-pulse shrink-0" />
-      ) : (
-        <span className="text-xs sm:text-sm font-semibold text-(--agri-text-secondary) leading-tight min-w-0 flex-1">
-          {t("consumer.pagination.showing", { count: total, total })}
-        </span>
-      )}
+    <div className="flex items-center justify-end gap-3 sm:gap-4 min-w-0">
 
       <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
         {/* Mobile Filters */}

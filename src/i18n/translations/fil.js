@@ -1171,6 +1171,7 @@ export default {
       seafood: "Mga Pagkaing Dagat",
       seafoods: "Mga Pagkaing Dagat",
       others: "Iba pa",
+      other: "Iba pa",
     },
     units: {
       kg: "kg",
@@ -1255,6 +1256,8 @@ export default {
     meats: "Karne",
     seafood: "Mga Pagkaing-Dagat",
     seafoods: "Mga Pagkaing-Dagat",
+    others: "Iba pa",
+    other: "Iba pa",
   },
 
   nearby: {
@@ -2052,6 +2055,10 @@ export default {
         title: "Mga Mensahe at Transaction",
         body: "Makipag-chat sa mga magsasaka nang direkta at ayusin ang mga transaction tungkol sa produkto dito. Simulan ang chat mula mismo sa product page.",
       },
+      "consumer-settings": {
+        title: "Mga Setting at Kagustuhan",
+        body: "I-personalize ang iyong karanasan sa Settings. Maaari kang magpalit sa pagitan ng light at dark mode at palitan ang wika sa English o Filipino.",
+      },
       "consumer-notifications": {
         title: "Mga Notification",
         body: "Ang bell ay nagbibigay sa iyo ng update sa mga bagong mensahe, transaction, at aktibidad sa order. I-tap ito anumang oras.",
@@ -2080,6 +2087,10 @@ export default {
         title: "Mga Mensahe",
         body: "Makipag-ugnayan sa mga customer sa pamamagitan ng pagsagot sa mga mensahe nila dito.",
       },
+      "farmer-settings": {
+        title: "Mga Setting at Kagustuhan",
+        body: "Pamahalaan ang iyong farm store sa Settings — magpalit ng tema sa light o dark mode at palitan ang iyong napiling wika.",
+      },
       "farmer-transactions": {
         title: "Mga Transaction",
         body: "Subaybayan ang mga transaction ng customer at i-update ang status habang sinasagot mo ang mga ito.",
@@ -2107,6 +2118,10 @@ export default {
       "admin-messages": {
         title: "Mga Mensahe",
         body: "Pangasiwaan ang platform at support messages nang direkta mula sa admin inbox.",
+      },
+      "admin-settings": {
+        title: "Mga Setting at Kagustuhan",
+        body: "I-configure ang mga setting ng platform — magpalit sa pagitan ng light at dark mode at palitan ang wika anumang oras.",
       },
       "admin-notifications": {
         title: "Mga Notification",

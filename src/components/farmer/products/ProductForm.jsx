@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { useLanguage } from "../../../context/LanguageContext";
 import useClickOutside from "../../../hooks/useClickOutside";
@@ -15,6 +15,7 @@ const categories = [
   "poultry",
   "meats",
   "seafoods",
+  "others",
 ];
 
 const units = ["kg", "g", "pcs", "bundle", "pack", "box", "sack"];
@@ -77,7 +78,9 @@ function CustomDropdown({
   }
 
   const selectedOption = options.find((opt) =>
-    typeof opt === "string" ? opt === value : opt.value === value
+    typeof opt === "string"
+      ? opt === value || (value === "other" && opt === "others")
+      : opt.value === value || (value === "other" && opt.value === "others")
   );
 
   const displayLabel = selectedOption
@@ -135,7 +138,8 @@ function CustomDropdown({
           {options.map((opt) => {
             const optValue = typeof opt === "string" ? opt : opt.value;
             const optLabel = typeof opt === "string" ? opt : opt.label;
-            const isSelected = optValue === value;
+            const isSelected =
+              optValue === value || (value === "other" && optValue === "others");
 
             return (
               <button

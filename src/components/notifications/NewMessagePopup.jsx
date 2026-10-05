@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -72,7 +72,7 @@ export default function NewMessagePopup({ collapsed = true }) {
           className="flex-1 min-w-0 group"
         >
           <div className="flex items-center justify-between gap-1">
-            <h4 className="text-xs font-bold text-[#1B4332] dark:text-(--agri-brand-light) truncate group-hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) transition-colors">
+            <h4 className="text-xs font-bold text-[#1B4332] dark:text-(--agri-text) truncate group-hover:text-[#2D6A4F] dark:hover:text-(--agri-brand) transition-colors">
               {latestPopup.senderName}
             </h4>
             <span className="text-[10px] font-semibold text-red-500 bg-red-50 dark:bg-red-500/10 px-1.5 py-0.2 rounded-full flex items-center gap-1">

@@ -20,12 +20,21 @@ export default function StoreProducts({ farmer, products = [] }) {
     { id: "poultry", label: t("storeProfile.poultry"), icon: "ri-egg-line" },
     { id: "meats", label: t("storeProfile.meat"), icon: "ri-restaurant-line" },
     { id: "seafoods", label: t("storeProfile.seafood"), icon: "ri-water-flash-line" },
+    { id: "others", label: t("storeProfile.others"), icon: "ri-more-fill" },
   ];
 
   const filteredProducts = useMemo(() => {
     if (selectedCategory === "All") return products;
-    return products.filter((p) => p.category === selectedCategory);
+    return products.filter((p) => {
+      if (selectedCategory === "others") {
+        return p.category === "others" || p.category === "other";
+      }
+      return p.category === selectedCategory;
+    });
   }, [products, selectedCategory]);
+
+  const selectedCategoryLabel =
+    CATEGORIES.find((c) => c.id === selectedCategory)?.label || selectedCategory;
 
   const isLimited = filteredProducts.length > 4 && !showAll;
   const displayedProducts = isLimited
@@ -42,7 +51,7 @@ export default function StoreProducts({ farmer, products = [] }) {
       {/* Products Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#1B4332] dark:text-(--agri-brand-light)">{t("storeProfile.products")}</h2>
+          <h2 className="text-2xl font-bold text-(--agri-text)">{t("storeProfile.products")}</h2>
 
           <p className="text-sm text-(--agri-text-muted)">
             {filteredProducts.length === 0
@@ -109,13 +118,13 @@ export default function StoreProducts({ farmer, products = [] }) {
           <h3 className="mt-3 text-lg font-semibold text-(--agri-text)">
             {selectedCategory === "All"
               ? t("storeProfile.noProductsYet")
-              : t("storeProfile.noProductsCategory", { category: selectedCategory })}
+              : t("storeProfile.noProductsCategory", { category: selectedCategoryLabel })}
           </h3>
 
           <p className="text-(--agri-text-muted) mt-1 text-sm">
             {selectedCategory === "All"
               ? t("storeProfile.noProductsListed", { farmer: farmer?.fullname || t("farmer.farmerFallback") })
-              : t("storeProfile.noItemsCategory", { category: selectedCategory })}
+              : t("storeProfile.noItemsCategory", { category: selectedCategoryLabel })}
           </p>
         </div>
       ) : (

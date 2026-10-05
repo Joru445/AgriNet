@@ -129,7 +129,7 @@ export default function GroupPreviewModal({ open, onClose, groupId, initialGroup
 
         {/* Group Name & Member count */}
         <div className="mt-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-[#1B4332] dark:text-(--agri-brand-light) tracking-tight">
+          <h3 className="text-xl sm:text-2xl font-bold text-(--agri-text) tracking-tight">
             {groupName}
           </h3>
 

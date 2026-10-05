@@ -1,5 +1,5 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -7,7 +7,7 @@ import { getOnboardingSteps } from "../../constants/onboardingSteps";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import Overlay from "../ui/Overlay";
 
-const POLL_INTERVAL = 250;
+const POLL_INTERVAL = 100;
 const TARGET_TIMEOUT = 4000;
 const TIP_MAX_WIDTH = 448;
 
@@ -150,7 +150,6 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
   const { profile, suspended, phoneVerified } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const isMobile = useMediaQuery("(max-width: 639px)");
 
@@ -158,11 +157,15 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
   const [targetRect, setTargetRect] = useState(null);
   const [targetFound, setTargetFound] = useState(false);
   const [waiting, setWaiting] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
 
   const hadFoundRef = useRef(false);
   const lastNavigateRef = useRef(null);
   const activeQueryRef = useRef(null);
   const onSkipRef = useRef(onSkip);
+  const rafRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
 
   useEffect(() => {
     onSkipRef.current = onSkip;
@@ -182,11 +185,37 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
     setTargetRect(null);
     setTargetFound(false);
     setWaiting(false);
+    setTimedOut(false);
+    setIsScrolling(false);
   }, [open]);
 
   // Never run the overlay for unverif/suspended accounts.
   const visible = open && profile?.role && !suspended && phoneVerified;
   const step = steps[Math.min(stepIndex, steps.length - 1)];
+
+  const updateRect = useCallback(() => {
+    if (!step?.target) return;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+
+    rafRef.current = requestAnimationFrame(() => {
+      const el = document.querySelector(step.target);
+      if (el) {
+        const nextRect = el.getBoundingClientRect();
+        setTargetRect((prev) => {
+          if (
+            prev &&
+            Math.abs(prev.top - nextRect.top) < 0.5 &&
+            Math.abs(prev.left - nextRect.left) < 0.5 &&
+            Math.abs(prev.width - nextRect.width) < 0.5 &&
+            Math.abs(prev.height - nextRect.height) < 0.5
+          ) {
+            return prev;
+          }
+          return nextRect;
+        });
+      }
+    });
+  }, [step?.target]);
 
   // Resolve each step: navigate when needed, then look for the target element
   // (it may render asynchronously). Missing targets fall back to a centered tip.
@@ -194,56 +223,72 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
     if (!visible || !step) return;
 
     let pollTimer = null;
+    let settleTimer = null;
     const deadline = Date.now() + TARGET_TIMEOUT;
 
     hadFoundRef.current = false;
     lastNavigateRef.current = null;
     activeQueryRef.current = step.target || null;
+    setTimedOut(false);
+
+    const path =
+      typeof step.path === "function" ? step.path(profile) : step.path;
+
+    if (path && path !== window.location.pathname && lastNavigateRef.current !== path) {
+      lastNavigateRef.current = path;
+      navigate(path, { replace: true });
+      setWaiting(true);
+    }
+
+    if (!step.target) {
+      setTargetFound(false);
+      setTargetRect(null);
+      setWaiting(false);
+      return;
+    }
 
     const tryFind = () => {
-      const path =
-        typeof step.path === "function" ? step.path(profile) : step.path;
-
-      if (path && path !== location.pathname && lastNavigateRef.current !== path) {
-        lastNavigateRef.current = path;
-        navigate(path, { replace: true });
-      }
-
-      if (!step.target) {
-        setTargetFound(false);
-        setTargetRect(null);
-        setWaiting(false);
-        return true;
-      }
-
       const el = document.querySelector(step.target);
       if (!el) return false;
 
       if (!hadFoundRef.current) {
         hadFoundRef.current = true;
-        const initialRect = el.getBoundingClientRect();
-        const block = initialRect.height > 250 ? "start" : "center";
-        el.scrollIntoView({
-          block,
-          inline: "nearest",
-          behavior: prefersReducedMotion() ? "auto" : "smooth",
-        });
-      }
+        // Wait 80ms for route mounting and AppLayout's scrollTo(0,0) to settle
+        settleTimer = setTimeout(() => {
+          const freshEl = document.querySelector(step.target);
+          if (!freshEl) return;
 
-      setTargetFound(true);
-      setTargetRect(el.getBoundingClientRect());
-      setWaiting(false);
+          const rect = freshEl.getBoundingClientRect();
+          const inComfortView =
+            rect.top >= 70 && rect.bottom <= window.innerHeight - 80;
+
+          if (!inComfortView) {
+            freshEl.scrollIntoView({
+              block: "center",
+              inline: "nearest",
+              behavior: prefersReducedMotion() ? "auto" : "smooth",
+            });
+          }
+
+          setTargetRect(freshEl.getBoundingClientRect());
+          setTargetFound(true);
+          setWaiting(false);
+        }, 80);
+      } else {
+        setTargetRect(el.getBoundingClientRect());
+        setTargetFound(true);
+        setWaiting(false);
+      }
       return true;
     };
 
-    setWaiting(true);
-
     if (tryFind()) {
-      return;
+      return () => {
+        if (settleTimer) clearTimeout(settleTimer);
+      };
     }
 
     // Element is missing (data may still be loading). Poll briefly for it.
-    setTargetFound(false);
     setWaiting(true);
 
     pollTimer = setInterval(() => {
@@ -253,39 +298,59 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
       } else if (Date.now() > deadline) {
         clearInterval(pollTimer);
         pollTimer = null;
+        setTimedOut(true);
         setWaiting(false);
       }
     }, POLL_INTERVAL);
 
     return () => {
       if (pollTimer) clearInterval(pollTimer);
+      if (settleTimer) clearTimeout(settleTimer);
     };
-  }, [visible, step, stepIndex, location.pathname, navigate, profile]);
+  }, [visible, stepIndex, profile?.role, navigate]);
 
   // Keep the spotlight and tooltip anchored while the page scrolls/resizes.
   useEffect(() => {
     if (!visible || !targetFound || !step?.target) return;
 
-    const query = step.target;
-
-    const update = () => {
-      const el = document.querySelector(query);
-      if (el) {
-        setTargetRect(el.getBoundingClientRect());
-      } else {
-        setTargetFound(false);
-        setWaiting(true);
-      }
+    const onScroll = () => {
+      setIsScrolling(true);
+      updateRect();
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+        updateRect();
+      }, 120);
     };
 
-    window.addEventListener("resize", update);
-    document.addEventListener("scroll", update, true);
+    const onResize = () => {
+      updateRect();
+    };
+
+    window.addEventListener("resize", onResize);
+    document.addEventListener("scroll", onScroll, true);
 
     return () => {
-      window.removeEventListener("resize", update);
-      document.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", onResize);
+      document.removeEventListener("scroll", onScroll, true);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [visible, targetFound, step, stepIndex]);
+  }, [visible, targetFound, step?.target, updateRect]);
+
+  // Keep target rect updated when dimensions change (e.g. language translation change)
+  useEffect(() => {
+    if (!visible || !targetFound || !step?.target) return;
+    const el = document.querySelector(step.target);
+    if (!el || typeof ResizeObserver === "undefined") return;
+
+    const ro = new ResizeObserver(() => {
+      updateRect();
+    });
+
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [visible, targetFound, step?.target, updateRect]);
 
   // Prevent scrolling while the tour is active. Kept local (instead of the
   // Overlay's body-only lock) because the tour must still allow scrolling
@@ -300,7 +365,11 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
     document.body.style.overscrollBehavior = "none";
 
     const preventScroll = (e) => {
-      if (!e.target.closest(".onboarding-tip-fixed, .onboarding-tip-center")) {
+      if (
+        !e.target.closest(
+          ".onboarding-tip-fixed, .onboarding-tip-center, [data-onboarding]",
+        )
+      ) {
         e.preventDefault();
       }
     };
@@ -323,7 +392,7 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
       closeOnBackdrop={false}
       closeOnEscape={true}
       lockScroll={false}
-      trapFocus={true}
+      trapFocus={!step?.interactive}
       zIndex={10010}
       backdropClass="bg-transparent"
       positionClass="p-0"
@@ -333,52 +402,136 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
       {() => {
         if (!step) return null;
 
-        const centered = !step.target || !targetFound;
+        const isCenteredStep = !step.target;
+        const centered = isCenteredStep || (timedOut && !targetFound);
         const placement = centered ? "center" : choosePlacement(targetRect, isMobile);
         const isLast = stepIndex >= steps.length - 1;
 
+        const padding = step.interactive ? 4 : 0;
+        const cutoutRect = targetRect
+          ? {
+              top: Math.round(targetRect.top - padding),
+              left: Math.round(targetRect.left - padding),
+              right: Math.round(targetRect.right + padding),
+              bottom: Math.round(targetRect.bottom + padding),
+              width: Math.round(targetRect.width + padding * 2),
+              height: Math.round(targetRect.height + padding * 2),
+            }
+          : null;
+
+        const isInteractive = Boolean(step.interactive && cutoutRect && !centered);
+
         return (
-          <section className="fixed inset-0 z-[10010] pointer-events-auto">
-      {/* Full-screen backdrop blocker to prevent clicking on page elements in the background */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 pointer-events-auto cursor-default"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-      />
+          <section className="fixed inset-0 z-[10010] pointer-events-none">
+            {/* Blocker layer: blocks outside clicks; leaves interactive spotlight cutout clickable */}
+            {isInteractive ? (
+              <>
+                <div
+                  aria-hidden="true"
+                  className="fixed pointer-events-auto cursor-default z-[10010]"
+                  style={{
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: Math.max(0, cutoutRect.top),
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                />
+                <div
+                  aria-hidden="true"
+                  className="fixed pointer-events-auto cursor-default z-[10010]"
+                  style={{
+                    top: Math.max(0, cutoutRect.bottom),
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                />
+                <div
+                  aria-hidden="true"
+                  className="fixed pointer-events-auto cursor-default z-[10010]"
+                  style={{
+                    top: Math.max(0, cutoutRect.top),
+                    left: 0,
+                    width: Math.max(0, cutoutRect.left),
+                    height: Math.max(0, cutoutRect.height),
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                />
+                <div
+                  aria-hidden="true"
+                  className="fixed pointer-events-auto cursor-default z-[10010]"
+                  style={{
+                    top: Math.max(0, cutoutRect.top),
+                    left: Math.max(0, cutoutRect.right),
+                    right: 0,
+                    height: Math.max(0, cutoutRect.height),
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                />
+              </>
+            ) : (
+              <div
+                aria-hidden="true"
+                className="fixed inset-0 pointer-events-auto cursor-default z-[10010]"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              />
+            )}
 
-      {centered || !targetRect ? (
-        <div
-          aria-hidden="true"
-          className="fixed inset-0 bg-black/50 transition-opacity duration-300 pointer-events-auto"
-        />
-      ) : (
-        <div
-          aria-hidden="true"
-          className="onboarding-spotlight pointer-events-auto"
-          style={{
-            top: targetRect.top,
-            left: targetRect.left,
-            width: targetRect.width,
-            height: targetRect.height,
-            opacity: waiting ? 0 : 1,
-          }}
-        />
-      )}
+            {centered || !cutoutRect ? (
+              <div
+                aria-hidden="true"
+                className="fixed inset-0 bg-black/50 transition-opacity duration-300 pointer-events-auto"
+              />
+            ) : (
+              <div
+                aria-hidden="true"
+                className={`onboarding-spotlight ${isInteractive ? "pointer-events-none" : "pointer-events-auto"}`}
+                style={{
+                  top: cutoutRect.top,
+                  left: cutoutRect.left,
+                  width: cutoutRect.width,
+                  height: cutoutRect.height,
+                  opacity: waiting ? 0 : 1,
+                  transition: isScrolling ? "none" : undefined,
+                }}
+              />
+            )}
 
-      <div
-        className={centered ? "onboarding-tip-center" : "onboarding-tip-fixed anim-pop-in"}
-        style={centered ? undefined : computeTooltipStyle(targetRect, placement)}
-      >
-        <div
-          className={`pointer-events-auto w-full max-h-[calc(100vh-24px)] flex flex-col justify-between overflow-y-auto ${
-            centered
-              ? "max-w-[24rem] sm:max-w-[28rem] md:max-w-[32rem] lg:max-w-[34rem] p-5 sm:p-6 md:p-7"
-              : "max-w-[24rem] sm:max-w-[26rem] md:max-w-[28rem] p-4 sm:p-5"
-          } rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-2xl transition-all`}
-        >
+            <div
+              className={centered ? "onboarding-tip-center" : "onboarding-tip-fixed anim-pop-in"}
+              style={
+                centered
+                  ? undefined
+                  : {
+                      ...computeTooltipStyle(targetRect, placement),
+                      transition: isScrolling ? "none" : undefined,
+                    }
+              }
+            >
+              <div
+                className={`pointer-events-auto w-full max-h-[calc(100vh-24px)] flex flex-col justify-between overflow-y-auto ${
+                  centered
+                    ? "max-w-[24rem] sm:max-w-[28rem] md:max-w-[32rem] lg:max-w-[34rem] p-5 sm:p-6 md:p-7"
+                    : "max-w-[24rem] sm:max-w-[26rem] md:max-w-[28rem] p-4 sm:p-5"
+                } rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-2xl transition-all`}
+              >
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2D6A4F]/10 dark:bg-[#2D6A4F]/25 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-[#1B4332] dark:text-(--agri-brand)">
               <i className="ri-compass-3-line text-xs text-[#2D6A4F] dark:text-(--agri-brand)" />
@@ -394,7 +547,7 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
             </p>
           </div>
 
-          <div className="mt-5 pt-3.5 border-t border-(--agri-border) dark:border-gray-700 flex items-center justify-between gap-2">
+          <div className="mt-4 sm:mt-5 pt-3 border-t border-(--agri-border) dark:border-gray-700 flex items-center justify-between gap-1.5 sm:gap-2">
             {/* Left: Skip */}
             <button
               type="button"
@@ -405,29 +558,29 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
             </button>
 
             {/* Center: Step indicator dots */}
-            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0" aria-hidden="true">
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink min-w-0" aria-hidden="true">
               {steps.map((s, i) => (
                 <button
                   key={s.id}
                   type="button"
                   aria-label={t("onboarding.goToStep", { count: i + 1 })}
                   onClick={() => setStepIndex(i)}
-                  className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer ${
+                  className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer shrink-0 ${
                     i === stepIndex
-                      ? "w-5 sm:w-7 bg-[#2D6A4F] dark:bg-(--agri-brand)"
-                      : "w-1.5 sm:w-2 bg-(--agri-border) hover:bg-(--agri-text-muted)"
+                      ? "w-4 sm:w-7 bg-[#2D6A4F] dark:bg-(--agri-brand)"
+                      : "w-1 sm:w-2 bg-(--agri-border) hover:bg-(--agri-text-muted)"
                   }`}
                 />
               ))}
             </div>
 
             {/* Right: Back & Next / Finish action buttons */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {stepIndex > 0 && (
                 <button
                   type="button"
                   onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
-                  className="rounded-xl border border-(--agri-border) bg-(--agri-hover)/70 hover:bg-(--agri-hover) px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-(--agri-text) transition cursor-pointer whitespace-nowrap"
+                  className="rounded-xl border border-(--agri-border) bg-(--agri-hover)/70 hover:bg-(--agri-hover) px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-(--agri-text) transition cursor-pointer whitespace-nowrap"
                 >
                   {t("common.back")}
                 </button>
@@ -437,7 +590,7 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
                 <button
                   type="button"
                   onClick={onFinish}
-                  className="rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow transition cursor-pointer inline-flex items-center gap-1 whitespace-nowrap"
+                  className="rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] px-2.5 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow transition cursor-pointer inline-flex items-center gap-1 whitespace-nowrap"
                 >
                   <i className="ri-check-line text-sm" />
                   <span>{t("onboarding.finish")}</span>
@@ -446,7 +599,7 @@ export default function OnboardingTour({ open, onFinish, onSkip }) {
                 <button
                   type="button"
                   onClick={() => setStepIndex((i) => Math.min(steps.length - 1, i + 1))}
-                  className="rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow transition cursor-pointer inline-flex items-center gap-1 whitespace-nowrap"
+                  className="rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] px-2.5 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow transition cursor-pointer inline-flex items-center gap-1 whitespace-nowrap"
                 >
                   <span>{t("onboarding.next")}</span>
                   <i className="ri-arrow-right-line text-xs sm:text-sm" />

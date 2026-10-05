@@ -1156,6 +1156,7 @@ export default {
       seafood: "Seafood",
       seafoods: "Seafood",
       others: "Others",
+      other: "Others",
     },
     units: {
       kg: "kg",
@@ -1240,6 +1241,8 @@ export default {
     meats: "Meat",
     seafood: "Seafood",
     seafoods: "Seafood",
+    others: "Others",
+    other: "Others",
   },
 
   nearby: {
@@ -2010,6 +2013,10 @@ export default {
         title: "Messages & Transactions",
         body: "Chat with farmers directly and keep your product transactions organized here. Start a conversation right from a product page.",
       },
+      "consumer-settings": {
+        title: "Settings & Preferences",
+        body: "Personalize your experience in Settings. You can switch between light and dark themes and change your preferred language between English and Filipino.",
+      },
       "consumer-notifications": {
         title: "Notifications",
         body: "The bell keeps you posted on new messages, transaction updates, and order activity. Tap it anytime.",
@@ -2038,6 +2045,10 @@ export default {
         title: "Messages",
         body: "Stay in touch with customers by replying to their messages here.",
       },
+      "farmer-settings": {
+        title: "Settings & Preferences",
+        body: "Manage your farm store preferences in Settings — switch themes between light and dark mode and change your preferred language.",
+      },
       "farmer-transactions": {
         title: "Transactions",
         body: "Track customer transactions and update their status as you fulfill them.",
@@ -2065,6 +2076,10 @@ export default {
       "admin-messages": {
         title: "Messages",
         body: "Handle platform and support messages straight from the admin inbox.",
+      },
+      "admin-settings": {
+        title: "Settings & Preferences",
+        body: "Configure platform settings — switch between light and dark display themes and change your preferred language anytime.",
       },
       "admin-notifications": {
         title: "Notifications",

@@ -84,7 +84,7 @@ export default function ConversationItem({
             <h3
               className={`truncate ${
                 isSelected
-                  ? "font-semibold text-agri-dark dark:text-(--agri-brand-light)"
+                  ? "font-semibold text-(--agri-text)"
                   : hasUnread
                     ? "font-bold text-(--agri-text)"
                     : "font-semibold text-(--agri-text)"
