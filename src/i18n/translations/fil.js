@@ -46,6 +46,16 @@ export default {
     selectedLocation: "Napiling lokasyon",
     latitude: "Latitude",
     longitude: "Longitude",
+    locationDetectedSuccess: "Matagumpay na natukoy ang lokasyon ng bukid!",
+    permissionDenied: "Tinanggihan ang pahintulot sa lokasyon. Mangyaring payagan ang access sa lokasyon sa mga setting ng browser.",
+    detectFailed: "Hindi matukoy ang lokasyon. Mangyaring piliin ito nang manu-mano sa mapa.",
+    searchPlaceholder: "Maghanap ng address, barangay, o palatandaan...",
+    searching: "Naghahanap ng mga lokasyon...",
+    noResultsFound: "Walang nahanap na lokasyon. Subukan ang ibang paghahanap o pumili sa mapa.",
+    clickMapHint: "Pindutin ang mapa o maghanap upang itakda ang lokasyon nang manu-mano.",
+    editAddress: "I-edit ang address",
+    saveAddress: "I-save",
+    manualAddressPlaceholder: "Ilagay ang partikular na address o palatandaan ng bukid...",
   },
 
   imageViewer: {

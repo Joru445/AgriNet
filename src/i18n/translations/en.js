@@ -46,6 +46,16 @@ export default {
     selectedLocation: "Selected location",
     latitude: "Latitude",
     longitude: "Longitude",
+    locationDetectedSuccess: "Farm location detected successfully!",
+    permissionDenied: "Location permission was denied. Please allow location access in your browser settings.",
+    detectFailed: "Could not detect location. Please select it manually on the map.",
+    searchPlaceholder: "Search address, barangay, or landmark...",
+    searching: "Searching locations...",
+    noResultsFound: "No locations found. Try a different search or click on the map.",
+    clickMapHint: "Click anywhere on the map or search to set location manually.",
+    editAddress: "Edit address",
+    saveAddress: "Save",
+    manualAddressPlaceholder: "Enter specific address or farm landmark...",
   },
 
   imageViewer: {

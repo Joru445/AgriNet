@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Circle, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { Circle, MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 
 import Recenter from "./Recenter";
 import ResizeMap from "./ResizeMap";
@@ -8,6 +8,15 @@ const DEFAULT_CENTER = {
   lat: 13.9411,
   lng: 121.6243,
 };
+
+function MapClickHandler({ onClick }) {
+  useMapEvents({
+    click(e) {
+      onClick?.(e.latlng);
+    },
+  });
+  return null;
+}
 
 export default function Map({
   onProfile,
@@ -18,6 +27,8 @@ export default function Map({
   zoom = 13,
   className = "w-full h-full border border-gray-200",
   actionButton,
+  editable = false,
+  onLocationChange,
 }) {
   const isValidCenter =
     center &&
@@ -115,6 +126,9 @@ export default function Map({
           ))}
 
         {children}
+        {editable && onLocationChange && (
+          <MapClickHandler onClick={onLocationChange} />
+        )}
       </MapContainer>
 
       <button

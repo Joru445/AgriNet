@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import LocationPicker from "../location/LocationPicker";
-import useUserLocation from "../../hooks/useUserLocation";
 import Button from "../ui/Button";
 import {
   authFieldErrorClass,
@@ -25,46 +24,10 @@ export default function ProfileStep({
 }) {
   const { t } = useLanguage();
 
-  const { refreshLocation } = useUserLocation(false);
-  const [detectingLocation, setDetectingLocation] = useState(
-    () =>
-      form.role === "farmer" &&
-      !(form.location?.lat != null && form.location?.lng != null),
-  );
+  const [detectingLocation, setDetectingLocation] = useState(false);
 
   const phoneError = touched.contactNumber ? errors.contactNumber : null;
   const locationError = touched.location ? errors.location : null;
-
-  // Auto-detect the farmer's location when landing on the profile step,
-  // only if a location hasn't already been set by the user.
-  useEffect(() => {
-    if (form.role !== "farmer") return;
-    if (form.location?.lat != null && form.location?.lng != null) return;
-
-    let cancelled = false;
-
-    setDetectingLocation(true);
-
-    refreshLocation()
-      .then((location) => {
-        if (cancelled) return;
-        if (location) {
-          updateLocation(location);
-        }
-      })
-      .catch(() => {
-        // Gracefully ignore: user can fall back to manual selection
-      })
-      .finally(() => {
-        if (!cancelled) setDetectingLocation(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-    // Run once on mount only
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div className="space-y-4 w-full">
@@ -116,6 +79,7 @@ export default function ProfileStep({
             hideCoordinates
             value={form.location}
             onChange={updateLocation}
+            onDetectingChange={setDetectingLocation}
           />
 
           {detectingLocation && (
