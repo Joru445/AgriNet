@@ -26,6 +26,7 @@ export default function ResponsiveModal({
   onClose,
   onRequestClose,
   title,
+  subtitle,
   children,
   footer,
   maxWidth = "max-w-lg",
@@ -33,6 +34,7 @@ export default function ResponsiveModal({
   closeOnBackdrop = true,
   closeOnEscape = true,
   bodyClassName,
+  desktopPlacement = "center",
 }) {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
@@ -41,6 +43,7 @@ export default function ResponsiveModal({
     onClose,
     onRequestClose,
     title,
+    description: subtitle,
     children,
     footer,
     maxWidth,
@@ -48,6 +51,7 @@ export default function ResponsiveModal({
     closeOnBackdrop,
     closeOnEscape,
     bodyClassName,
+    placement: desktopPlacement,
   };
 
   if (isDesktop) {

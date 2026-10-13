@@ -132,6 +132,7 @@ export default function useProducts() {
     } catch (error) {
       console.error(error);
       showToast.error(error.message);
+      throw error;
     } finally {
       setSaving(false);
     }
@@ -156,6 +157,7 @@ export default function useProducts() {
     } catch (error) {
       console.error(error);
       showToast.error(error.message);
+      throw error;
     } finally {
       setSaving(false);
     }

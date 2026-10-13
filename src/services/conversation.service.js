@@ -37,33 +37,9 @@ export function getConversationId(uid1, uid2) {
  * Skips write if unreadCount is already 0.
  */
 export async function markConversationRead(conversationId, uid, currentUnreadCount = null) {
-  if (!conversationId || !uid) return;
-
-  // Skip redundant write if unreadCount is already known to be 0
-  if (currentUnreadCount === 0) {
-    return;
-  }
-
-  try {
-    const conversationRef = doc(db, "conversations", conversationId);
-    try {
-      await updateDoc(conversationRef, {
-        [`lastRead.${uid}`]: Date.now(),
-        [`unreadCount.${uid}`]: 0,
-      });
-    } catch {
-      await setDoc(
-        conversationRef,
-        {
-          lastRead: { [uid]: Date.now() },
-          unreadCount: { [uid]: 0 },
-        },
-        { merge: true },
-      );
-    }
-  } catch (error) {
-    console.error("Failed to mark conversation read:", error);
-  }
+  if (!conversationId || !uid || currentUnreadCount === 0) return;
+  if (uid !== auth.currentUser?.uid) throw new Error("Cannot mark another user's messages as read.");
+  return apiMarkConversationRead(conversationId);
 }
 
 /**
@@ -101,46 +77,12 @@ export async function findConversation(uid1, uid2) {
  * documents for the same pair of users.
  */
 export async function createConversation(currentUser, otherUser) {
-  const conversationId = getConversationId(currentUser.uid, otherUser.uid);
-
-  const conversationRef = doc(db, "conversations", conversationId);
-
-  await setDoc(conversationRef, {
-    participants: [currentUser.uid, otherUser.uid],
-
-    participantInfo: {
-      [currentUser.uid]: {
-        fullname: currentUser.fullname,
-        username: currentUser.username,
-        profilePicture: currentUser.profilePicture || "",
-        role: currentUser.role,
-        verificationStatus: currentUser.verificationStatus || (currentUser.verified === true ? "approved" : "not_applied"),
-        verified: currentUser.verified === true,
-      },
-
-      [otherUser.uid]: {
-        fullname: otherUser.fullname,
-        username: otherUser.username,
-        profilePicture: otherUser.profilePicture || "",
-        role: otherUser.role,
-        verificationStatus: otherUser.verificationStatus || (otherUser.verified === true ? "approved" : "not_applied"),
-        verified: otherUser.verified === true,
-      },
-    },
-
-    lastMessage: "",
-    lastMessageSender: "",
-    lastMessageAt: null,
-
-    unreadCount: {
-      [currentUser.uid]: 0,
-      [otherUser.uid]: 0,
-    },
-
-    createdAt: serverTimestamp(),
+  if (!currentUser?.uid || !otherUser?.uid) throw new Error("Missing participants.");
+  const result = await apiRequest("/v1/conversations", {
+    method: "POST",
+    body: JSON.stringify({ otherUserId: otherUser.uid }),
   });
-
-  return conversationId;
+  return result.data?.id || result.data;
 }
 
 /**
@@ -310,47 +252,14 @@ export async function apiFindOrCreateConversation(otherUserId, { findOnly = fals
       return null;
     }
 
-    console.warn("[Conversations] Backend API apiFindOrCreateConversation failed, falling back to deterministic ID:", err.message);
-    const currentUid = auth.currentUser?.uid;
-    if (!currentUid || !otherUserId) {
-      throw new Error("Missing participant IDs to create conversation.", { cause: err });
-    }
-    const conversationId = getConversationId(currentUid, otherUserId);
-    const convRef = doc(db, "conversations", conversationId);
-    await setDoc(
-      convRef,
-      {
-        participants: [currentUid, otherUserId],
-        participantInfo: {
-          [currentUid]: { joinedAt: serverTimestamp() },
-          [otherUserId]: { joinedAt: serverTimestamp() },
-        },
-        lastMessage: null,
-        unreadCount: { [currentUid]: 0, [otherUserId]: 0 },
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    );
-    return conversationId;
+    throw err;
   }
 }
 
 export async function apiMarkConversationRead(conversationId) {
-  try {
-    const currentUid = auth.currentUser?.uid;
-    if (currentUid && conversationId) {
-      await markConversationRead(conversationId, currentUid);
-    }
-    const response = await apiRequest(
-      `/v1/conversations/${conversationId}/read`,
-      { method: "PATCH" },
-    );
-    return response?.data;
-  } catch (err) {
-    console.warn("[Conversations] Backend API mark read failed, falling back to Firestore:", err.message);
-    const currentUid = auth.currentUser?.uid;
-    if (currentUid && conversationId) {
-      await markConversationRead(conversationId, currentUid);
-    }
-  }
+  const response = await apiRequest(
+    `/v1/conversations/${encodeURIComponent(conversationId)}/read`,
+    { method: "PATCH" },
+  );
+  return response?.data;
 }

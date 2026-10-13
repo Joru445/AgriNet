@@ -23,9 +23,14 @@ service cloud.firestore {
      * Only users with status == "active" can perform
      * normal application actions.
      */
+    function hasLinkedPhone() {
+      return isSignedIn() && request.auth.token.get("phone_number", null) is string;
+    }
+
     function isActive() {
       return isSignedIn()
-        && currentUser().data.status == "active";
+        && currentUser().data.status == "active"
+        && hasLinkedPhone();
     }
 
     /*
@@ -88,6 +93,7 @@ service cloud.firestore {
       		.hasAny([
         		"uid",
         		"email",
+                "phone",
         		"role",
         		"status",
 
@@ -130,10 +136,9 @@ service cloud.firestore {
 
     match /users/{userId} {
 
-      /*
-       * Profiles are publicly readable.
-       */
-      allow read: if true;
+      // These documents contain private email/phone/address and MUST NOT be public.
+      // Public profiles are served by the redacting /api/v1/users/:uid API.
+      allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
 
 
       /*
@@ -192,7 +197,8 @@ service cloud.firestore {
 
     match /farmers/{farmerId} {
 
-      allow read: if true;
+      // Public farmer information is served by /api/v1/farmers/:uid.
+      allow read: if (isSignedIn() && request.auth.uid == farmerId) || isAdmin();
 
 
       /*
@@ -239,6 +245,7 @@ service cloud.firestore {
             .hasAny([
               "uid",
               "email",
+              "phone",
               "role",
               "verified",
               "verificationStatus",
@@ -258,58 +265,11 @@ service cloud.firestore {
      */
 
     match /products/{productId} {
-
       allow read: if true;
-
-
-      allow create: if
-        isActive()
-
-        && isFarmer()
-
-        && request.resource.data.farmerId
-           == request.auth.uid
-
-        // Pre-order fields: reservedQuantity must be 0 or null on create
-        && (
-          !request.resource.data.keys()
-            .hasAny(["reservedQuantity"])
-
-          ||
-
-          request.resource.data.reservedQuantity == 0
-
-          ||
-
-          request.resource.data.reservedQuantity == null
-        );
-
-
-      allow update: if
-        (
-          isActive()
-
-          && resource.data.farmerId
-             == request.auth.uid
-
-          && request.resource.data.farmerId
-             == resource.data.farmerId
-
-          // Client cannot modify reservedQuantity (backend-only)
-          && request.resource.data.reservedQuantity
-             == resource.data.reservedQuantity
-        )
-        || isAdmin();
-
-
-      allow delete: if
-        (
-          isActive()
-
-          && resource.data.farmerId
-             == request.auth.uid
-        )
-        || isAdmin();
+      // Products are backend-controlled so users cannot alter stock, ratings,
+      // archives or the seller ID through the Firebase SDK.
+      // Unverified farmers CAN sell through the authenticated API.
+      allow create, update, delete: if false;
     }
 
 
@@ -529,35 +489,17 @@ service cloud.firestore {
      */
 
     match /conversations/{conversationId} {
-
-      allow read: if
-        isAdmin()
-        || isConversationParticipant(resource.data);
-
-
-      allow create: if
-        isConversationParticipant(request.resource.data);
-
-
-      allow update: if
-        (
-          isConversationParticipant(resource.data)
-
-          && (
-            !request.resource.data.diff(resource.data).affectedKeys().hasAny(["participants"])
-            || request.resource.data.participants == resource.data.participants
-            || (
-              request.resource.data.participants.hasAll(resource.data.participants)
-              && resource.data.participants.hasAll(request.resource.data.participants)
-            )
-          )
-        )
-        || isAdmin();
-
-
-      allow delete: if
-        isConversationParticipant(resource.data)
-        || isAdmin();
+      allow read: if isAdmin() || isConversationParticipant(resource.data);
+      // The API verifies both participants and creates canonical conversations.
+      allow create: if false;
+      // Only one's own read receipt and live-location end flags are client-editable.
+      // Unread counts and latest-message metadata are backend-managed.
+      allow update: if isActive()
+        && isConversationParticipant(resource.data)
+        && request.resource.data.participants == resource.data.participants
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(["lastRead", "endedLocations", "lastEndedLocationAt"]);
+      allow delete: if false;
     }
 
 
@@ -569,206 +511,21 @@ service cloud.firestore {
 
     match /messages/{messageId} {
 
-      allow create: if
+      // Backend must validate all message creation, including live locations.
+      allow create: if false;
 
-        isActive()
+      // Backend owns accepted inquiry transitions and all message metadata.
+      // Location updates are the only allowed client-side edits.
+      allow update: if isActive()
+        && resource.data.senderId == request.auth.uid
+        && (resource.data.type in ["text", "location", "live_location"])
+        && (resource.data.keys().hasAny(["location", "locationType"]))
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(["location", "isLive", "isEnded", "endedAt", "liveUntil", "locationEndedAt"])
+        && request.resource.data.senderId == resource.data.senderId
+        && request.resource.data.conversationId == resource.data.conversationId;
 
-        && request.resource.data.senderId
-           == request.auth.uid
-
-        && request.resource.data.conversationId
-           is string
-
-        && isParticipant(
-          request.resource.data.conversationId
-        )
-
-        && (
-          /*
-           * Normal text message.
-           */
-          request.resource.data.type
-             == "text"
-
-          ||
-
-    		/*
-     		* Image message.
-     		*/
-    		(
-      		request.resource.data.type
-         		== "image"
-
-      		&& request.resource.data.imageUrl
-         		is string
-
-      		&& request.resource.data.imageUrl
-         		!= ""
-
-      		&& (
-        		!request.resource.data.keys()
-          		.hasAny(["imageId"])
-
-        		||
-
-        		request.resource.data.imageId
-          		is string
-      		)
-    		)
-
-    		||
-
-          /*
-           * Product inquiry message.
-           */
-          (
-            request.resource.data.type
-               == "product_inquiry"
-
-            && request.resource.data.productId
-               is string
-
-            && request.resource.data.quantity
-               is number
-
-            && request.resource.data.quantity > 0
-
-            && request.resource.data.inquiryStatus
-               == "pending"
-          )
-
-          /*
-           * Static location message.
-           */
-          ||
-          (
-            request.resource.data.type
-               == "location"
-
-            && request.resource.data.location
-               is map
-
-            && request.resource.data.location.lat
-               is number
-
-            && request.resource.data.location.lng
-               is number
-          )
-
-          /*
-           * Live location message.
-           */
-          ||
-          (
-            request.resource.data.type
-               == "live_location"
-
-            && request.resource.data.location
-               is map
-
-            && request.resource.data.location.lat
-               is number
-
-            && request.resource.data.location.lng
-               is number
-
-            && request.resource.data.isLive
-               is bool
-
-            && request.resource.data.liveUntil
-               is number
-          )
-        );
-
-
-      /*
-       * Farmer accepts inquiry.
-       */
-      allow update: if
-
-        isAdmin()
-
-        ||
-
-        (
-          isFarmer()
-
-          && resource.data.type
-             == "product_inquiry"
-
-          && resource.data.inquiryStatus
-             == "pending"
-
-          && isParticipant(
-            resource.data.conversationId
-          )
-
-          && resource.data.senderId
-             != request.auth.uid
-
-          && request.resource.data.type
-             == resource.data.type
-
-          && request.resource.data.productId
-             == resource.data.productId
-
-          && request.resource.data.quantity
-             == resource.data.quantity
-
-          && request.resource.data.conversationId
-             == resource.data.conversationId
-
-          && request.resource.data.senderId
-             == resource.data.senderId
-
-          && request.resource.data.text
-             == resource.data.text
-
-          && request.resource.data.inquiryStatus
-             == "accepted"
-
-          && request.resource.data.inquiryId
-             is string
-
-          && request.resource.data.acceptedAt
-             != null
-        )
-
-        /*
-         * Sender updates their live location coordinates or stops sharing.
-         */
-        ||
-        (
-          isSignedIn()
-
-          && (
-            resource.data.type == "live_location"
-            || resource.data.type == "location"
-            || resource.data.type == "text"
-            || resource.data.keys().hasAny(["locationType"])
-            || resource.data.keys().hasAny(["location"])
-          )
-
-          && resource.data.senderId
-             == request.auth.uid
-
-          && request.resource.data.senderId
-             == resource.data.senderId
-
-          && request.resource.data.conversationId
-             == resource.data.conversationId
-        );
-
-
-      allow delete: if
-        (
-          isActive()
-
-          && resource.data.senderId
-             == request.auth.uid
-        )
-        || isAdmin();
-
+      allow delete: if false;
 
       allow read: if
         isAdmin()
@@ -1429,28 +1186,23 @@ match /notifications/{notificationId} {
 
     match /groups/{groupId} {
       allow read: if isSignedIn();
-
-      allow create: if isAdmin();
-
-      allow update: if isAdmin();
-
-      allow delete: if isAdmin();
-
-      match /memberships/{memberId} {
-        allow read, write: if isSignedIn();
-      }
-
-      match /applications/{appId} {
-        allow read, write: if isSignedIn();
-      }
+      // Group writes must run through permission-checked backend handlers.
+      allow create, update, delete: if false;
+      match /memberships/{memberId} { allow read, write: if false; }
+      match /applications/{appId} { allow read, write: if false; }
     }
 
+    // Membership and application states are backend-authoritative.
+    // Other users can see approved affiliations, not private applications.
     match /group-memberships/{membershipId} {
-      allow read, write: if isSignedIn();
+      allow get, list: if isAdmin()
+        || (isActive() && resource.data.userId == request.auth.uid)
+        || (isActive() && resource.data.status == "approved");
+      allow create, update, delete: if false;
     }
 
     match /group_memberships/{membershipId} {
-      allow read, write: if isSignedIn();
+      allow read, write: if false;
     }
 
     match /group-managers/{managerId} {
@@ -1460,11 +1212,8 @@ match /notifications/{notificationId} {
           || request.auth.uid == resource.data.userId
         );
 
-      allow create: if isAdmin();
-
-      allow update: if isAdmin();
-
-      allow delete: if isAdmin();
+      // Manager assignment must atomically create group membership + slot.
+      allow create, update, delete: if false;
     }
   }
 }

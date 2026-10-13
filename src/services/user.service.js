@@ -12,6 +12,7 @@ import {
 
 import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
+import { auth } from "../firebase/auth";
 import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
 
 const usersRef = collection(db, "users");
@@ -31,6 +32,7 @@ export async function createUser(data) {
     fullname: data.fullname,
     fullnameLower: data.fullnameLower,
     username: data.username,
+    usernameLower: String(data.username || "").trim().toLowerCase(),
     email: data.email,
     role: data.role,
 
@@ -82,6 +84,9 @@ export async function getUserProfile(uid, requesterUid) {
   }
 
   try {
+    // Only read private Firestore user data for the signed-in owner.
+    // Public profiles are served by the privacy-filtering backend endpoint.
+    if (uid !== auth.currentUser?.uid) return cached || null;
     const userDoc = await getDoc(doc(db, "users", uid));
     if (userDoc.exists()) {
       const userData = { uid: userDoc.id, ...userDoc.data() };

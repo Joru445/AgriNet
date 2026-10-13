@@ -133,9 +133,9 @@ export default function AccountSwitcher() {
         {otherAccounts.map((account) => (
           <div
             key={account.uid}
-            className="border-t border-(--agri-border-subtle) pr-4"
+            className="border-t border-(--agri-border-subtle)"
           >
-            <div className="flex w-full items-center gap-3">
+            <div className="flex w-full items-center gap-3 sm:gap-0">
               <button
                 type="button"
                 onClick={() => handleRowClick(account)}
@@ -157,7 +157,7 @@ export default function AccountSwitcher() {
                 type="button"
                 onClick={(e) => handleRemove(e, account)}
                 disabled={switching}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-(--agri-text-muted) transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
+                className="flex h-17 w-17 shrink-0 items-center justify-center text-(--agri-text-muted) transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
                 aria-label={t("settings.removeAccount") || "Remove account"}
               >
                 <i className="ri-close-line text-sm" />

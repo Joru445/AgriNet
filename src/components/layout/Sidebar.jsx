@@ -186,23 +186,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                         } ${
                           isActive
                             ? "bg-white/15 dark:bg-(--agri-brand-bg) text-white dark:text-(--agri-brand) font-semibold shadow-xs"
-                            : "text-white/70 dark:text-(--agri-text-secondary) hover:bg-white/[0.08] dark:hover:bg-(--agri-hover) hover:text-white dark:hover:text-(--agri-text) font-medium"
+                            : "text-white/70 dark:text-(--agri-text-secondary) hover:bg-white/8 dark:hover:bg-(--agri-hover) hover:text-white dark:hover:text-(--agri-text) font-medium"
                         }`
                       }
                     >
                       {({ isActive }) => (
                         <>
-                          {/* Active edge indicator */}
-                          {isActive && (
-                            <span
-                              className={`absolute rounded-full bg-emerald-400 dark:bg-(--agri-brand) ${
-                                collapsed
-                                  ? "left-0.5 top-2.5 bottom-2.5 w-1"
-                                  : "left-0 top-2 bottom-2 w-1 rounded-r-full"
-                              }`}
-                            />
-                          )}
-
                           {/* Icon */}
                           <span className="flex items-center justify-center size-5 shrink-0">
                             <i
@@ -223,11 +212,11 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                           {hasBadge && (
                             <>
                               {collapsed ? (
-                                <span className="absolute top-1 right-1 min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                                <span className="absolute top-1 right-1 min-w-3.5 h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
                                   {badgeCount > 99 ? "99+" : badgeCount}
                                 </span>
                               ) : (
-                                <span className="ml-auto shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                                <span className="ml-auto shrink-0 min-w-5 h-4.5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
                                   {badgeCount > 99 ? "99+" : badgeCount}
                                 </span>
                               )}
@@ -323,8 +312,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             onClick={() => setShowLogoutModal(true)}
             className={`${
               collapsed
-                ? "!w-11 !h-11 !p-0 justify-center mx-auto"
-                : "gap-3 px-3 py-2.5 w-full !justify-start"
+                ? "w-11! h-11! p-0! justify-center mx-auto"
+                : "gap-3 px-3 py-2.5 w-full justify-center!"
             }`}
             title={collapsed ? t("common.logout") : undefined}
             aria-label={t("common.logout")}

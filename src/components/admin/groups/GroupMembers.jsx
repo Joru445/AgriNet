@@ -6,6 +6,7 @@ import EmptyState from "../../ui/EmptyState";
 import Button from "../../ui/Button";
 import ConfirmDialog from "../../ui/ConfirmDialog";
 import UserRow from "./UserRow";
+import AddMemberModal from "./AddMemberModal";
 
 import { useLanguage } from "../../../context/LanguageContext";
 import {
@@ -15,12 +16,13 @@ import {
 } from "../../../services/group.service";
 import { showToast } from "../../../utils/toast";
 
-export default function GroupMembers({ groupId, onCountsUpdate, canRemove = true }) {
+export default function GroupMembers({ groupId, onCountsUpdate, canRemove = true, canAdd = false }) {
   const { t } = useLanguage();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [removeTarget, setRemoveTarget] = useState(null);
+  const [addOpen, setAddOpen] = useState(false);
 
   const loadMembers = useCallback(async () => {
     try {
@@ -79,6 +81,7 @@ export default function GroupMembers({ groupId, onCountsUpdate, canRemove = true
         icon="ri-user-line"
         compact
         fill
+        headerAction={canAdd ? <Button variant="primary" size="sm" icon="ri-user-add-line" onClick={() => setAddOpen(true)} className="min-h-11 text-xs">Add farmer</Button> : undefined}
       >
         {loading ? (
           <div className="space-y-2 p-3">
@@ -125,6 +128,8 @@ export default function GroupMembers({ groupId, onCountsUpdate, canRemove = true
         )}
       </DashboardSection>
 
+      <AddMemberModal open={addOpen} onClose={() => setAddOpen(false)} groupId={groupId}
+        onAdded={() => { loadMembers(); onCountsUpdate?.(); }} />
       <ConfirmDialog
         open={Boolean(removeTarget)}
         onClose={() => setRemoveTarget(null)}

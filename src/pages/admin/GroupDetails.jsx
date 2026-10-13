@@ -1,9 +1,9 @@
+import GroupWorkspace from "../../components/admin/groups/GroupWorkspace";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import SkeletonBox from "../../components/ui/SkeletonBox";
 import ErrorState from "../../components/ui/ErrorState";
-import TabButton from "../../components/ui/TabButton";
 
 import { useLanguage } from "../../context/LanguageContext";
 import {
@@ -13,18 +13,11 @@ import {
   subscribeToGroupApplications,
   subscribeToGroupMembers,
 } from "../../services/group.service";
-import GroupOverview from "../../components/admin/groups/GroupOverview";
-import GroupApplications from "../../components/admin/groups/GroupApplications";
-import GroupMembers from "../../components/admin/groups/GroupMembers";
-import GroupManagers from "../../components/admin/groups/GroupManagers";
-import GroupSettings from "../../components/admin/groups/GroupSettings";
 
-const TABS = ["overview", "applications", "members", "managers", "settings"];
 
 export default function AdminGroupDetails() {
   const { t } = useLanguage();
   const { groupId } = useParams();
-  const [tab, setTab] = useState("overview");
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -106,47 +99,6 @@ export default function AdminGroupDetails() {
     );
   }
 
-  return (
-    <div className="min-h-full p-4 md:p-6 lg:p-8">
-      <div className="mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-(--agri-text)">
-            {group?.name || "..."}
-          </h1>
-        </div>
-
-        {/* Tabs */}
-        <div className="mb-5 flex items-center gap-1 sm:gap-1.5 overflow-x-auto rounded-2xl bg-(--agri-hover)/70 p-1 sm:p-1.5 border border-(--agri-border-subtle) shadow-xs scrollbar-none touch-pan-x">
-          {TABS.map((tabKey) => (
-            <TabButton
-              key={tabKey}
-              active={tab === tabKey}
-              onClick={() => setTab(tabKey)}
-              label={t(`adminGroups.tabs.${tabKey}`)}
-              count={tabKey === "applications" ? counts.applications : undefined}
-              className="sm:flex-1 justify-center shrink-0"
-            />
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        {tab === "overview" && (
-          <GroupOverview group={group} counts={counts} />
-        )}
-        {tab === "applications" && (
-          <GroupApplications groupId={groupId} onCountsUpdate={loadCounts} />
-        )}
-        {tab === "members" && (
-          <GroupMembers groupId={groupId} onCountsUpdate={loadCounts} />
-        )}
-        {tab === "managers" && (
-          <GroupManagers groupId={groupId} />
-        )}
-        {tab === "settings" && (
-          <GroupSettings group={group} onUpdated={handleGroupUpdated} />
-        )}
-      </div>
-    </div>
-  );
+  return <GroupWorkspace group={group} groupId={groupId} counts={counts} isAdmin
+    onCountsUpdate={loadCounts} onUpdated={handleGroupUpdated} />;
 }

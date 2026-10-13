@@ -28,6 +28,27 @@ const STATUS_CONFIG = {
     classes: "bg-emerald-500/10 text-emerald-800 border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
   },
 
+  awaiting_agreement: {
+    label: "Awaiting agreement", icon: "ri-handshake-line",
+    classes: "bg-amber-500/10 text-amber-800 border-amber-500/25 dark:text-amber-300 dark:border-amber-500/30",
+  },
+  confirmed: {
+    label: "Confirmed", icon: "ri-checkbox-circle-line",
+    classes: "bg-emerald-500/10 text-emerald-800 border-emerald-500/25 dark:text-emerald-300 dark:border-emerald-500/30",
+  },
+  preparing: {
+    label: "Preparing", icon: "ri-time-line",
+    classes: "bg-blue-500/10 text-blue-800 border-blue-500/25 dark:text-blue-300 dark:border-blue-500/30",
+  },
+  ready: {
+    label: "Ready", icon: "ri-checkbox-circle-fill",
+    classes: "bg-lime-500/15 text-green-800 border-lime-500/30 dark:text-lime-300 dark:border-lime-500/30",
+  },
+  expired: {
+    label: "Expired / Unavailable", icon: "ri-calendar-close-line",
+    classes: "bg-red-500/10 text-red-800 border-red-500/25 dark:text-red-300 dark:border-red-500/30",
+  },
+
   // Blue / In-Progress states
   ongoing: {
     label: "In Progress",

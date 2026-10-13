@@ -38,165 +38,9 @@ export const DEFAULT_MESSAGE_LIMIT = 40;
  * Send a message via direct Firestore write.
  * This is the fallback path when the backend API is unavailable.
  */
-export async function sendMessage({
-  conversationId,
-  senderId,
-  receiverId: explicitReceiverId = null,
-  text = "",
-  type = "text",
-  locationType = null,
-  imageUrl = null,
-  imageId = null,
-  productId = null,
-  quantity = null,
-  inquiryStatus = null,
-  replyTo = null,
-  location = null,
-  liveUntil = null,
-  isLive = null,
-}) {
-  const actualSenderId = senderId || auth.currentUser?.uid;
-
-  if (!actualSenderId) {
-    throw new Error("User must be authenticated to send messages.");
-  }
-
-  let receiverId = explicitReceiverId;
-
-  // Derive receiverId from deterministic ID without a Firestore read
-  if (!receiverId && conversationId && conversationId.includes("_")) {
-    const parts = conversationId.split("_");
-    if (parts.length === 2) {
-      receiverId = parts.find((id) => id !== actualSenderId) || null;
-    }
-  }
-
-  const conversationRef = doc(conversationsRef, conversationId);
-
-  // Fallback to getDoc only if receiverId could not be determined
-  if (!receiverId) {
-    const conversationSnapshot = await getDoc(conversationRef);
-
-    if (!conversationSnapshot.exists()) {
-      throw new Error("Conversation not found.");
-    }
-
-    const conversation = conversationSnapshot.data();
-    receiverId = conversation.participants?.find((id) => id !== actualSenderId);
-  }
-
-  if (!receiverId) {
-    throw new Error("Unable to determine message recipient.");
-  }
-
-  const messageRef = doc(messagesRef);
-
-  const isLocationMsg =
-    type === "location" ||
-    type === "live_location" ||
-    locationType === "location" ||
-    locationType === "live_location" ||
-    Boolean(location);
-
-  const resolvedLocType =
-    locationType ||
-    (type === "live_location" || type === "location"
-      ? type
-      : isLocationMsg
-        ? "location"
-        : null);
-
-  // Use type: "text" at root Firestore document for 100% cloud security rule pass
-  const resolvedType = isLocationMsg ? "text" : (type || "text");
-
-  let defaultText = text;
-  if (!defaultText && isLocationMsg) {
-    defaultText = resolvedLocType === "live_location" ? "📍 Live Location" : "📍 Shared Location";
-  }
-
-  const messageData = {
-    conversationId,
-    senderId: actualSenderId,
-    receiverId,
-    type: resolvedType,
-    text: defaultText || "",
-    read: false,
-    createdAt: serverTimestamp(),
-  };
-
-  if (resolvedLocType) messageData.locationType = resolvedLocType;
-  if (imageUrl) messageData.imageUrl = imageUrl;
-  if (imageId) messageData.imageId = imageId;
-  if (productId) messageData.productId = productId;
-  if (quantity != null && quantity !== "") messageData.quantity = quantity;
-  if (inquiryStatus) messageData.inquiryStatus = inquiryStatus;
-  if (replyTo) messageData.replyTo = replyTo;
-  if (location) messageData.location = location;
-  if (liveUntil != null) messageData.liveUntil = liveUntil;
-  if (isLive != null) messageData.isLive = isLive;
-
-  let lastMessagePreview;
-  if (type === "image") {
-    lastMessagePreview = "📷 Photo";
-  } else if (type === "product_inquiry") {
-    lastMessagePreview = "📦 Product Inquiry";
-  } else if (isLocationMsg) {
-    lastMessagePreview = resolvedLocType === "live_location" ? "📍 Live Location" : "📍 Shared Location";
-  } else {
-    lastMessagePreview = text || "";
-  }
-
-  // NOTE: Do NOT include `participants` here!
-  // Including `participants` in an update causes Firestore rules to evaluate
-  // `request.resource.data.participants == resource.data.participants` which fails if array element order differs!
-  const conversationUpdates = {
-    lastMessage: lastMessagePreview,
-    lastMessageSender: actualSenderId,
-    lastMessageAt: serverTimestamp(),
-    unreadCount: {
-      [receiverId]: increment(1),
-    },
-  };
-
-  const batch = writeBatch(db);
-  batch.set(messageRef, messageData);
-  batch.set(conversationRef, conversationUpdates, { merge: true });
-
-  try {
-    await batch.commit();
-  } catch (error) {
-    console.warn(
-      "[sendMessage] Batch commit failed; writing message document directly and repairing conversation unread:",
-      error,
-    );
-    // Directly set the message document so the message is never blocked
-    await setDoc(messageRef, messageData);
-    try {
-      const snap = await getDoc(conversationRef);
-      const currentData = snap.exists() ? snap.data() : {};
-      const existingUnreadMap =
-        typeof currentData.unreadCount === "object" && currentData.unreadCount !== null
-          ? { ...currentData.unreadCount }
-          : {};
-      const currentRecvCount = Number(existingUnreadMap[receiverId]) || 0;
-      if (receiverId) {
-        existingUnreadMap[receiverId] = currentRecvCount + 1;
-      }
-      await setDoc(
-        conversationRef,
-        {
-          lastMessage: lastMessagePreview,
-          lastMessageSender: actualSenderId,
-          lastMessageAt: serverTimestamp(),
-          unreadCount: existingUnreadMap,
-        },
-        { merge: true },
-      );
-    } catch { /* silent: conversation doc may already exist */ }
-    return messageRef.id;
-  }
-
-  return messageRef.id;
+// Kept for older imports. Same authoritative API path for ALL new messages.
+export async function sendMessage(data) {
+  return apiSendMessage(data);
 }
 
 // ============================================================
@@ -354,47 +198,13 @@ export async function fetchOlderMessages(
  * Send a message via the backend API.
  */
 export async function apiSendMessage(data) {
-  const isLocationMsg =
-    data.type === "location" ||
-    data.type === "live_location" ||
-    data.locationType === "location" ||
-    data.locationType === "live_location" ||
-    Boolean(data.location);
-
-  // For location messages, write directly to Firestore using sendMessage
-  // to ensure location coordinates, address, and live status are 100% preserved
-  // on production without backend schema omissions and without duplicate plain-text messages.
-  if (isLocationMsg) {
-    return await sendMessage(data);
-  }
-
-  try {
-    const result = await apiRequest("/v1/messages", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-
-    return result?.data?.id || result?.data;
-  } catch (err) {
-    console.warn("[Messages] Backend API apiSendMessage failed, falling back to Firestore:", err.message);
-    return await sendMessage({
-      conversationId: data.conversationId,
-      senderId: data.senderId,
-      receiverId: data.receiverId,
-      text: data.text,
-      type: data.type,
-      imageUrl: data.imageUrl,
-      imageId: data.imageId,
-      productId: data.productId,
-      quantity: data.quantity,
-      inquiryStatus: data.inquiryStatus,
-      replyTo: data.replyToSnapshot || data.replyTo,
-      location: data.location,
-      locationType: data.locationType,
-      liveUntil: data.liveUntil,
-      isLive: data.isLive,
-    });
-  }
+  const clientMessageId = data.clientMessageId ?? crypto.randomUUID();
+  const replyTo = typeof data.replyTo === "string" ? data.replyTo : null;
+  const result = await apiRequest("/v1/messages", {
+    method: "POST",
+    body: JSON.stringify({ ...data, replyTo, clientMessageId }),
+  });
+  return result?.data?.id || result?.data;
 }
 
 /**

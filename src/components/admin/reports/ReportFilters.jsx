@@ -1,6 +1,8 @@
 import { useLanguage } from "../../../context/LanguageContext";
 import InlineSearchInput from "../../ui/InlineSearchInput";
 import Button from "../../ui/Button";
+import Select from "../../ui/Select";
+import Input from "../../ui/Input";
 
 export default function ReportFilters({
   search,
@@ -29,7 +31,7 @@ export default function ReportFilters({
         {/* Dropdowns Row */}
         <div className="flex flex-col gap-2.5 sm:gap-3 md:flex-row md:items-center">
           {/* Status Filter */}
-          <select
+          <Select
             value={status}
             onChange={(e) => onStatusChange(e.target.value)}
             className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
@@ -39,10 +41,10 @@ export default function ReportFilters({
             <option value="reviewing">{t("adminReport.reviewing")}</option>
             <option value="resolved">{t("adminReport.resolved")}</option>
             <option value="dismissed">{t("adminReport.dismissed")}</option>
-          </select>
+          </Select>
 
           {/* Target Type Filter */}
-          <select
+          <Select
             value={targetType}
             onChange={(e) => onTargetTypeChange(e.target.value)}
             className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
@@ -52,23 +54,21 @@ export default function ReportFilters({
             <option value="product">{t("adminReport.typeProduct")}</option>
             <option value="store">{t("adminReport.typeStore")}</option>
             <option value="message">{t("adminReport.typeMessage")}</option>
-          </select>
+          </Select>
 
           {/* Date From */}
-          <input
+          <Input
             type="date"
             value={dateFrom}
-            onChange={(e) => onDateFromChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            onChange={(e) => onDateFromChange(e.target.value)} className="min-w-0 flex-1 sm:min-w-36"
             title={t("adminReport.dateFrom")}
           />
 
           {/* Date To */}
-          <input
+          <Input
             type="date"
             value={dateTo}
-            onChange={(e) => onDateToChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            onChange={(e) => onDateToChange(e.target.value)} className="min-w-0 flex-1 sm:min-w-36"
             title={t("adminReport.dateTo")}
           />
 

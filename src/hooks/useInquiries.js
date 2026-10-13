@@ -10,6 +10,8 @@ import {
   apiConfirmProof,
   apiRejectProof,
   apiCancelInquiry,
+  apiAdvancePreorder,
+  apiAcceptPreorderAgreement,
 } from "../services/inquiry.service";
 
 import { getProductById } from "../services/product.service";
@@ -184,6 +186,12 @@ export default function useInquiries() {
       if (status === "ongoing") {
         await apiStartTransaction(inquiryId);
         showToast.success("Inquiry marked as ongoing.");
+      } else if (status === "preparing" || status === "ready") {
+        await apiAdvancePreorder(inquiryId, status);
+        showToast.success(status === "ready" ? "Your customer's order is ready." : "Order marked as preparing.");
+      } else if (status === "confirmed") {
+        await apiAcceptPreorderAgreement(inquiryId);
+        showToast.success("Pre-order terms accepted. The seller can begin preparation.");
       } else if (status === "cancelled") {
         await apiCancelInquiry(inquiryId);
         showToast.success("Inquiry cancelled.");

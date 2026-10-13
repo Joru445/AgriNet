@@ -77,6 +77,9 @@ jobs:
 
           echo "All required environment variables are present."
 
+      - name: Source contract tests
+        run: npm test
+
       - name: Build
         run: npm run build
 

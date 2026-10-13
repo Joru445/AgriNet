@@ -18,6 +18,7 @@ export const GROUP_PERMISSIONS = {
   APPLICATIONS_APPROVE: "applications.approve",
   APPLICATIONS_REJECT: "applications.reject",
   MEMBERS_VIEW: "members.view",
+  MEMBERS_ADD: "members.add",
   MEMBERS_REMOVE: "members.remove",
   GROUP_EDIT: "group.edit",
 };

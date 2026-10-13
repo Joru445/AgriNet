@@ -42,25 +42,33 @@ export default function SavedAccountSelector({
 }) {
   const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
+  const [choosingFor, setChoosingFor] = useState(null);
 
   if (!accounts || accounts.length === 0) return null;
 
   const visible = expanded ? accounts : accounts.slice(0, MAX_VISIBLE);
   const hasMore = accounts.length > MAX_VISIBLE && !expanded;
 
-  function handleClick(account) {
+  function handleClick(account, provider = account.provider) {
     if (passkeyLoading) return;
 
     const isSocial =
-      account.provider === "google.com" || account.provider === "facebook.com";
+      provider === "google.com" || provider === "facebook.com";
     const hasPasskey = account.hasPasskey && !isSocial;
+
+    const providers = Array.isArray(account.providers) && account.providers.length
+      ? account.providers : [account.provider].filter(Boolean);
+    if (!provider && (providers.length > 1 || account.hasPasskey)) {
+      setChoosingFor(account.uid);
+      return;
+    }
 
     if (hasPasskey) {
       onPasskeySelect(account);
     } else if (isSocial) {
-      onSocialSelect(account);
+      onSocialSelect(account, provider);
     } else {
-      onSelect(account);
+      onSelect({ ...account, provider });
     }
   }
 
@@ -75,10 +83,14 @@ export default function SavedAccountSelector({
           const providerLabel = getProviderLabel(account.provider);
 
           return (
+            <div key={account.uid}>
             <button
-              key={account.uid}
               type="button"
-              onClick={() => handleClick(account)}
+              onClick={() => {
+                const providers = Array.isArray(account.providers) && account.providers.length
+                  ? account.providers : [account.provider].filter(Boolean);
+                handleClick(account, providers.length === 1 && !account.hasPasskey ? providers[0] : null);
+              }}
               disabled={passkeyLoading}
               className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
@@ -113,6 +125,17 @@ export default function SavedAccountSelector({
                 <i className="ri-arrow-right-s-line" />
               </span>
             </button>
+            {choosingFor === account.uid && (
+              <div className="flex flex-wrap gap-2 border-t border-gray-100 bg-gray-50 px-3 py-2">
+                {(Array.isArray(account.providers) ? account.providers : [account.provider]).filter(Boolean).map((provider) => (
+                  <Button key={provider} variant="secondary" size="sm" onClick={() => handleClick(account, provider)}>
+                    {provider === "password" ? t("auth.login.password") : getProviderLabel(provider)}
+                  </Button>
+                ))}
+                {account.hasPasskey && <Button variant="secondary" size="sm" onClick={() => onPasskeySelect(account)}>{t("auth.login.passkey")}</Button>}
+              </div>
+            )}
+            </div>
           );
         })}
       </div>

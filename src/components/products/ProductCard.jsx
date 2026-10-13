@@ -14,7 +14,7 @@ import {
 import { useLiveRemainingTime } from "../../utils/productExpiration";
 import {
   getProductStock,
-  getProductInquiryState,
+  getProductAvailability,
   INQUIRY_STATE,
   LOW_STOCK_THRESHOLD,
 } from "../../utils/productStatus";
@@ -43,16 +43,12 @@ export default function ProductCard({
 
   const { remainingTime, isExpired } = useLiveRemainingTime(product);
   const stockNum = getProductStock(product);
-  const inquiryState = getProductInquiryState(product);
+  const inquiryState = getProductAvailability(product);
   const stateCode = inquiryState.code;
   const isPreorder = product.sellingMode === "preorder";
   const isLowStock =
     inquiryState.code === INQUIRY_STATE.AVAILABLE && stockNum <= LOW_STOCK_THRESHOLD;
 
-  // Auto delete / vanish completely from consumer view once duration is done
-  if (isExpired) {
-    return null;
-  }
 
   const priceNum = Number(product.price ?? 0);
   const originalPriceNum = Number(product.originalPrice ?? 0);
@@ -73,6 +69,7 @@ export default function ProductCard({
     <Link
       to={`${getProductPath(profile?.role || "consumer")}/${product.id}`}
       data-onboarding="product-card"
+      data-expired={isExpired ? "true" : undefined}
       className="group relative flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-md transition-all duration-200 hover:border-[#2D6A4F]/60 dark:hover:border-[#52b788]/60 hover:shadow-lg anim-fade-in"
     >
       {/* Top Image Container */}
@@ -83,7 +80,7 @@ export default function ProductCard({
           width={400}
           height={400}
           onError={() => setImgError(true)}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${isExpired ? "opacity-55 grayscale" : ""}`}
           loading="lazy"
         />
 
@@ -96,7 +93,11 @@ export default function ProductCard({
         </div>
 
         {/* Stock Badge - Stuck to Top Right Corner */}
-        {stateCode === INQUIRY_STATE.PREORDER_OPEN ? (
+        {stateCode === INQUIRY_STATE.EXPIRED ? (
+          <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
+            {t("products.expired")}
+          </div>
+        ) : stateCode === INQUIRY_STATE.PREORDER_OPEN ? (
           <div className="absolute top-0 right-0 z-10 rounded-bl-xl sm:rounded-bl-2xl bg-amber-500 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-white shadow-xs">
             {t("product.preOrder")}
           </div>

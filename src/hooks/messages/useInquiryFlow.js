@@ -216,7 +216,7 @@ export default function useInquiryFlow({
   );
 
   const acceptInquiry = useCallback(
-    async (inquiryMessage) => {
+    async (inquiryMessage, product, counterProposal = null) => {
       if (!inquiryMessage?.id) {
         showToast.error(t("inquiryFlow.invalidMessage"));
         return;
@@ -244,8 +244,9 @@ export default function useInquiryFlow({
           productId: inquiryMessage.productId,
           consumerId: inquiryMessage.senderId,
           quantity: inquiryMessage.quantity,
+          ...(counterProposal ? { counterOffer: true, proposal: counterProposal } : {}),
         });
-        showToast.success(t("inquiryFlow.accepted"));
+        showToast.success(counterProposal ? "Counteroffer sent. The buyer must approve it before production." : t("inquiryFlow.accepted"));
       } catch (error) {
         console.error("Failed to accept inquiry:", error);
         showToast.error(

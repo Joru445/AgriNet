@@ -25,6 +25,7 @@ export default function Modal({
   bodyClassName = "",
   panelClassName = "",
   hideTitleBar = false,
+  placement = "center",
 }) {
   const titleId = useId();
   const descriptionId = useId();
@@ -42,15 +43,20 @@ export default function Modal({
       ariaLabel={ariaLabel ?? (title ? undefined : "Dialog")}
       ariaLabelledBy={title ? titleId : undefined}
       ariaDescribedBy={description ? descriptionId : undefined}
+      positionClass={placement === "right" ? "items-stretch justify-end p-0" : undefined}
     >
       {({ close }) => (
         <motion.div
           key="modal-panel"
-          variants={modalDialog}
+          variants={placement === "right" ? {
+            initial: { opacity: 0, x: "100%" },
+            animate: { opacity: 1, x: 0, transition: { duration: 0.24 } },
+            exit: { opacity: 0, x: "100%", transition: { duration: 0.18 } },
+          } : modalDialog}
           initial="initial"
           animate="animate"
           exit="exit"
-          className={`relative mx-auto flex w-full max-h-[90dvh] flex-col overflow-hidden rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-2xl pointer-events-auto ${maxWidth} ${panelClassName}`}
+          className={`relative ${placement === "right" ? "ml-auto h-full max-h-none rounded-none border-y-0 border-r-0" : "mx-auto max-h-[90dvh] rounded-2xl"} flex w-full flex-col overflow-hidden border border-(--agri-border) bg-(--agri-card) shadow-2xl pointer-events-auto ${maxWidth} ${panelClassName}`}
         >
           {showTitleBar && (
             <div className="flex shrink-0 items-center justify-between border-b border-(--agri-border-subtle) px-5 py-4">

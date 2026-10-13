@@ -130,6 +130,24 @@ export default function InquiryRow({
         {/* Product */}
         <div className="px-4 py-4 sm:px-5">
           <Inquiry productData={productData} counterparty={counterparty} />
+          {inquiry.type === "preorder" && inquiry.agreement && (
+            <div className="mt-3 space-y-2 rounded-xl border border-(--agri-border) bg-(--agri-hover)/60 p-3 text-sm text-(--agri-text)" aria-label="Pre-order agreement terms">
+              <p className="text-xs font-bold uppercase tracking-wide text-(--agri-text-secondary)">Agreement terms {status === "awaiting_agreement" ? "· Review before accepting" : ""}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <p><span className="block text-xs text-(--agri-text-muted)">Quantity</span><strong>{inquiry.agreement.quantity} {inquiry.agreement.unit || "units"}</strong></p>
+                <p><span className="block text-xs text-(--agri-text-muted)">Total price</span><strong>₱{Number(inquiry.agreement.totalPrice ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></p>
+                <p><span className="block text-xs text-(--agri-text-muted)">Unit price</span>₱{Number(inquiry.agreement.unitPrice).toLocaleString()}</p>
+                <p><span className="block text-xs text-(--agri-text-muted)">Collection</span>{String(inquiry.agreement.collectionMethod || "coordinate_in_chat").replaceAll("_", " ")}</p>
+              </div>
+              <p className="text-xs text-(--agri-text-secondary)">
+                {inquiry.estimatedReadyAt || inquiry.agreement.readyAt
+                  ? `Estimated ready: ${new Date(inquiry.estimatedReadyAt || inquiry.agreement.readyAt).toLocaleString()}`
+                  : `Preparation lead time: ${Number(inquiry.agreement.preparationLeadHours || 0)} hours after confirmation`}
+              </p>
+              {inquiry.agreement.sellerNotes && <p className="break-words text-xs"><strong>Seller notes:</strong> {inquiry.agreement.sellerNotes}</p>}
+              {inquiry.agreement.consumerInstructions && <p className="break-words text-xs"><strong>Buyer instructions:</strong> {inquiry.agreement.consumerInstructions}</p>}
+            </div>
+          )}
 
           {/* Mobile date */}
           <p className="mt-3 text-xs text-(--agri-text-muted) font-medium sm:hidden">
@@ -176,22 +194,27 @@ export default function InquiryRow({
           />
         )}
 
-        {/* Consumer starts transaction (pre-order products when available) */}
-        {userRole === "consumer" &&
-          status === "reserved" &&
-          product?.sellingMode === "available" && (
-            <Action
-              updating={updating}
-              label={t("transactions.startTransaction")}
-              icon="ri-play-circle-line"
-              showDot={dots.startTransaction}
-              className="bg-[#2D6A4F] text-white hover:bg-[#24583F]"
-              onClick={() => {
-                acknowledgeInquiry(inquiry.id, inquiry.status);
-                onStatusChange(inquiry.id, "ongoing");
-              }}
-            />
-          )}
+        {/* Individual pre-order steps never depend on product sellingMode. */}
+        {userRole === "farmer" && inquiry.type === "preorder" && ["confirmed", "reserved"].includes(status) && (
+          <div className="flex flex-wrap gap-2">
+            <Action updating={updating} label="Start preparing" icon="ri-restaurant-line"
+              className="bg-[#2D6A4F] text-white" onClick={() => onStatusChange(inquiry.id, "preparing")} />
+            <Action updating={updating} label="Mark Ready" icon="ri-check-double-line"
+              className="bg-green-700 text-white" onClick={() => onStatusChange(inquiry.id, "ready")} />
+          </div>
+        )}
+        {userRole === "farmer" && status === "preparing" && (
+          <Action updating={updating} label="Mark this order Ready" icon="ri-check-double-line"
+            className="bg-green-700 text-white" onClick={() => onStatusChange(inquiry.id, "ready")} />
+        )}
+        {userRole === "consumer" && status === "awaiting_agreement" && (
+          <Action updating={updating} label="Accept proposed terms" icon="ri-check-line"
+            className="bg-[#2D6A4F] text-white" onClick={() => onStatusChange(inquiry.id, "confirmed")} />
+        )}
+        {userRole === "consumer" && status === "ready" && (
+          <Action updating={updating} label="Start handover" icon="ri-shopping-bag-3-line"
+            className="bg-[#2D6A4F] text-white" onClick={() => onStatusChange(inquiry.id, "ongoing")} />
+        )}
 
         {/* Consumer submits completion proof */}
         {userRole === "consumer" && status === "ongoing" && (
@@ -230,7 +253,7 @@ export default function InquiryRow({
         )}
 
         {/* Cancel */}
-        {["reserved", "accepted", "ongoing"].includes(status) && (
+        {["reserved", "accepted", "ongoing", "confirmed", "awaiting_agreement"].includes(status) && (
           <Action
             updating={updating}
             label={t("transactions.cancel")}
@@ -352,6 +375,15 @@ function Action({ updating, label, icon, showDot, className, onClick, disabled =
  * Returns banner config for the current status + role combo.
  */
 function getBanner(status, userRole, t, product) {
+  if (["awaiting_agreement", "confirmed", "preparing", "ready"].includes(status)) {
+    const message = {
+      awaiting_agreement: "Review the seller's proposed quantity, price and collection terms before confirming.",
+      confirmed: "Both parties have confirmed the order. The seller can begin preparation.",
+      preparing: "This order is being prepared. Its estimated date is not a Ready confirmation.",
+      ready: "The seller marked your individual order Ready. Coordinate pickup or handover.",
+    }[status];
+    return { message, icon: "ri-calendar-check-line", className: "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20" };
+  }
   if (userRole === "consumer") {
     if (status === "pending") {
       return {

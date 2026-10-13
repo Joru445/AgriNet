@@ -721,6 +721,8 @@ export default {
 
   transaction: {
     title: "Transaction",
+    proof: "Patunay ng Transaksyon",
+    review: "Pagsusuri ng Transaksyon",
     notFound: "Hindi nahanap ang transaction.",
     heading: {
       reviewComplete: "Suriin at tapusin ang transaction.",
@@ -1158,9 +1160,12 @@ export default {
     autoDisappear: "Awtomatikong mawawala",
     selectDuration: "Pumili ng duration",
     sellingPrice: "Presyo ng Pagbebenta",
+    price: "Presyo",
     originalPrice: "Orihinal na Presyo",
     optionalDiscount: "(Opsyonal para sa discount slash)",
     stockQuantity: "Bilang ng Stock",
+    stock: "Stock",
+    discardChanges: "Itapon ang mga hindi pa nai-save na pagbabago sa produkto?",
     availableForSale: "Available para sa pagbebenta",
     noLimit: "Walang limitasyon (Hanggang maubos ang stock)",
     setCustom: "Mag-set ng custom hours...",
@@ -1277,6 +1282,7 @@ export default {
     noFarmers: "Walang nahanap na magsasaka",
     noFarmersHint: "Subukan dagdagan ang distansya ng paghahanap mo.",
     profile: "Profile",
+    users: "Mga User",
     message: "Mensahe",
     viewProfile: "Tingnan ang Profile",
     distance: "Distansya",
@@ -1625,6 +1631,7 @@ export default {
     manageGroups: "Pamahalaan ang Mga Grupo",
     favorites: "Mga Paborito",
     profile: "Profile",
+    users: "Mga User",
   },
 
   sidebar: {
@@ -1653,6 +1660,18 @@ export default {
     placeholder: "Maghanap ng mga produkto at magsasaka.",
     clear: "I-clear ang paghahanap",
   },
+
+  marketplace: {
+    openFilters: "Buksan ang mga filter", refreshProducts: "I-refresh ang mga produkto", lastRefreshed: "Huling na-refresh {time}", sortProducts: "Ayusin ang mga produkto",
+    productsUpToDate: "Napapanahon ang mga produkto", refreshFailed: "Hindi na-refresh ang mga produkto. Nakikita pa rin ang naunang mga resulta.",
+    refreshingProducts: "Nire-refresh ang mga produkto…", releaseToRefresh: "Bitawan upang i-refresh", pullToRefresh: "Hilahin pababa upang i-refresh",
+    nearYou: "Malapit sa Iyo", nearYouSubtitle: "Mga produkto mula sa mga magsasaka sa loob ng 5 km", recentlyAdded: "Kamakailang Idinagdag",
+    recentlyAddedSubtitle: "Mga sariwang produkto mula sa lokal na magsasaka", recommended: "Inirerekomenda para sa Iyo",
+    recommendedSubtitle: "Batay sa rating, distansya, at pagiging bago", allProducts: "Lahat ng Produkto", noMoreProducts: "Wala nang produkto",
+    noProductsFound: "Walang nahanap na produkto", noProductsFoundDescription: "Subukang baguhin ang mga filter o salita sa paghahanap",
+  },
+
+  map: { enterFullscreen: "Buksan ang mapa sa buong screen", exitFullscreen: "Isara ang buong screen na mapa" },
 
   settings: {
     title: "Mga Setting",
@@ -2373,6 +2392,7 @@ export default {
       permissionsUpdated: "Na-update ang mga pahintulot.",
       removedSuccess: "Na-remove ang tagapamahala.",
       permissions: "Mga Pahintulot",
+      noPermissions: "Walang pahintulot",
     },
     assignModal: {
       title: "Magtalaga ng Tagapamahala",

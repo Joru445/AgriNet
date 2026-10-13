@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { signInWithCustomToken } from "firebase/auth";
+import { signInWithCustomToken, signOut } from "firebase/auth";
 
 import { auth } from "../firebase/auth";
 import { login } from "../services/login.service";
@@ -77,7 +77,6 @@ export function useLoginForm() {
   const [socialAuthInFlight, setSocialAuthInFlight] = useState(false);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [passkeyError, setPasskeyError] = useState(null);
-  const [savePassword, setSavePassword] = useState(false);
   const passkeyFailedAccountRef = useRef(null);
 
   const navigate = useNavigate();
@@ -139,6 +138,11 @@ export function useLoginForm() {
         }
 
         await signInWithCustomToken(auth, result.customToken);
+        if (auth.currentUser?.uid !== account.uid) {
+          await signOut(auth);
+          setPasskeyError("This passkey belongs to a different saved account.");
+          return;
+        }
       } catch (error) {
         passkeyFailedAccountRef.current = account;
 
@@ -169,14 +173,30 @@ export function useLoginForm() {
   // ── Social login ─────────────────────────────────────────────────
 
   const initiateSocialLogin = useCallback(
-    async (method) => {
+    async (method, expectedAccount = null) => {
       if (method !== "google" && method !== "facebook") return;
       if (socialAuthInFlight || loading || passkeyLoading) return;
 
       setSocialAuthInFlight(true);
 
       try {
-        await signInWithProvider(method);
+        const credential = await signInWithProvider(method, { selectAccount: method === "google" });
+        if (expectedAccount && credential.user.uid !== expectedAccount.uid) {
+          await signOut(auth);
+          throw new Error("The selected provider account does not match the saved account.");
+        }
+        const providers = [...new Set(credential.user.providerData
+          .map((item) => item.providerId)
+          .filter((provider) => ["password", "google.com", "facebook.com"].includes(provider)))];
+        saveAccount({
+          uid: credential.user.uid,
+          email: credential.user.email || "",
+          displayName: credential.user.displayName || "",
+          avatar: credential.user.photoURL || "",
+          role: "consumer",
+          provider: providers[0] || (method === "google" ? "google.com" : "facebook.com"),
+          providers,
+        });
         // Firebase Auth state updates → AuthContext picks up → navigate happens
       } catch (error) {
         if (
@@ -198,9 +218,9 @@ export function useLoginForm() {
 
   /** Social account clicked → start Google/Facebook auth */
   const handleSelectSocialAccount = useCallback(
-    (account) => {
-      const method = account.provider === "google.com" ? "google" : "facebook";
-      initiateSocialLogin(method);
+    (account, provider = account.provider) => {
+      const method = provider === "google.com" ? "google" : "facebook";
+      initiateSocialLogin(method, account);
     },
     [initiateSocialLogin],
   );
@@ -223,7 +243,6 @@ export function useLoginForm() {
     setErrors(EMPTY_ERRORS);
     setPasskeyError(null);
     setPasswordAccount(null);
-    setSavePassword(false);
     setViewMode("login");
   }, []);
 
@@ -233,7 +252,6 @@ export function useLoginForm() {
     setErrors(EMPTY_ERRORS);
     setPasskeyError(null);
     setPasswordAccount(null);
-    setSavePassword(false);
     setForm((prev) => ({ ...prev, password: "" }));
     setViewMode("saved");
   }, []);
@@ -275,6 +293,28 @@ export function useLoginForm() {
         return;
       }
 
+      if (passwordAccount && user?.uid !== passwordAccount.uid) {
+        await signOut(auth);
+        setErrors({ ...EMPTY_ERRORS, general: "This password belongs to a different saved account." });
+        return;
+      }
+
+      // Remember the successful account without retaining its password or any
+      // provider credential. This is distinct from Firebase session persistence.
+      if (user?.uid) {
+        const providers = [...new Set(user.providerData?.map((item) => item.providerId)
+          .filter((provider) => ["password", "google.com", "facebook.com"].includes(provider)) || [])];
+        saveAccount({
+          uid: user.uid,
+          email: user.email || form.email,
+          displayName: profile.displayName || "",
+          avatar: profile.avatar || "",
+          role: profile.role || "consumer",
+          provider: providers[0] || "password",
+          providers,
+        });
+      }
+
       if (profile.status === "suspended") {
         navigate("/suspended", { replace: true });
         return;
@@ -292,19 +332,6 @@ export function useLoginForm() {
       }
 
       clearSwitchEmail();
-
-      // Save password account to saved accounts if checkbox is checked
-      if (savePassword && user?.uid) {
-        const provider = user.providerData?.[0]?.providerId || "password";
-        saveAccount({
-          uid: user.uid,
-          email: form.email,
-          displayName: profile.displayName || "",
-          avatar: profile.avatar || "",
-          role: profile.role || "consumer",
-          provider,
-        });
-      }
 
       const from = location.state?.from;
       let targetPath = null;
@@ -378,8 +405,6 @@ export function useLoginForm() {
     hasSavedAccounts,
     viewMode,
     passwordAccount,
-    savePassword,
-    setSavePassword,
     handleChange,
     handleSubmit,
     handleSelectSavedAccount,

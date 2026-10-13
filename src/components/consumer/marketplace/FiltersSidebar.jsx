@@ -8,6 +8,7 @@ export default function FiltersSidebar({
   onChange,
   onReset,
   mobile = false,
+  visible = true,
 }) {
   const { t } = useLanguage();
   const [groups, setGroups] = useState([]);
@@ -263,7 +264,7 @@ export default function FiltersSidebar({
   }
 
   return (
-    <aside className="hidden lg:block w-72 shrink-0">
+    <aside aria-hidden={!visible} className={`hidden shrink-0 overflow-hidden transition-[width,opacity,transform] duration-200 ease-out lg:block ${visible ? "w-72 translate-x-0 opacity-100" : "w-0 -translate-x-2 opacity-0 pointer-events-none"}`}>
       <div className="bg-(--agri-card) rounded-2xl border border-(--agri-border) shadow-md p-5 sticky top-20 z-30 max-h-[calc(100vh-6.5rem)] overflow-y-auto scrollbar-none">
         {content}
       </div>

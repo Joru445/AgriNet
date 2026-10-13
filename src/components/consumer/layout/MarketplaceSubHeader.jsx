@@ -4,6 +4,8 @@ export default function MarketplaceSubHeader({
   searchValue,
   onSearchChange,
   onSearchSubmit,
+  onOpenFilters,
+  filtersActive,
 }) {
   return (
     <div data-onboarding="home-search" className="sticky top-0 z-40 bg-(--agri-page)/95 backdrop-blur-md">
@@ -12,6 +14,8 @@ export default function MarketplaceSubHeader({
           value={searchValue}
           onChange={onSearchChange}
           onSubmit={onSearchSubmit}
+          onOpenFilters={onOpenFilters}
+          filtersActive={filtersActive}
         />
       </div>
     </div>

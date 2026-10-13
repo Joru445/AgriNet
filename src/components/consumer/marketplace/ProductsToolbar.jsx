@@ -1,41 +1,33 @@
 import { useLanguage } from "../../../context/LanguageContext";
 import Button from "../../ui/Button";
+import Select from "../../ui/Select";
 
 export default function ProductsToolbar({
   total = 0,
   loading = false,
   sort,
   onSort,
-  onOpenFilters,
+  onRefresh,
+  refreshing = false,
+  lastRefreshedAt,
 }) {
   const { t } = useLanguage();
   return (
-    <div className="flex items-center justify-end gap-3 sm:gap-4 min-w-0">
+    <div className="flex min-w-0 items-center gap-2">
 
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
-        {/* Mobile Filters */}
-        <Button
-          variant="secondary"
-          size="sm"
-          icon="ri-filter-3-line"
-          onClick={onOpenFilters}
-          className="lg:hidden px-2.5 sm:px-3 h-8 text-xs shrink-0 whitespace-nowrap"
-        >
-          {t("nearby.filters")}
-        </Button>
-
+      <div className="ml-auto flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
+        <Button variant="secondary" size="icon-sm" icon={refreshing ? "ri-loader-4-line animate-spin" : "ri-refresh-line"}
+          disabled={loading || refreshing} onClick={onRefresh} aria-label={t("marketplace.refreshProducts")}
+          title={lastRefreshedAt ? t("marketplace.lastRefreshed", { time: new Date(lastRefreshedAt).toLocaleTimeString() }) : t("marketplace.refreshProducts")}
+          className="h-11 w-11 shrink-0 sm:h-8 sm:w-8" />
         {/* Sort */}
-        <select
-          value={sort}
-          onChange={(e) => onSort(e.target.value)}
-          className="bg-(--agri-card) text-(--agri-text) px-2.5 sm:px-3 h-8 sm:h-9 border border-(--agri-border) rounded-xl font-semibold outline-none text-xs sm:text-sm cursor-pointer focus:border-[#2D6A4F] dark:focus:border-[#52b788] transition-colors shrink-0 max-w-[130px] sm:max-w-none"
-        >
+        <Select label="" aria-label={t("marketplace.sortProducts")} value={sort} onChange={(e) => onSort(e.target.value)} className="min-w-0 flex-1 sm:w-36 sm:flex-none" selectClassName="h-11 min-w-0 truncate rounded-xl py-0 text-xs sm:h-8">
           <option value="relevant">{t("consumer.sort.relevant")}</option>
           <option value="newest">{t("consumer.sort.newest")}</option>
           <option value="price-low">{t("consumer.sort.priceLow")}</option>
           <option value="price-high">{t("consumer.sort.priceHigh")}</option>
           <option value="rating">{t("consumer.sort.highestRated")}</option>
-        </select>
+        </Select>
       </div>
     </div>
   );

@@ -1,190 +1,134 @@
-﻿import { useState } from "react";
-
+import { useEffect, useState } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
 import Button from "../../ui/Button";
-import Modal from "../../ui/Modal";
+import ResponsiveModal from "../../ui/ResponsiveModal";
 import ProductForm from "./ProductForm";
 import ProductImageUploader from "./ProductImageUploader";
 
-export default function ProductModal({
-  open,
-  product,
-  saving,
-  onClose,
-  onSubmit,
-}) {
-  return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      maxWidth="max-w-2xl"
-      hideTitleBar
-      bodyClassName="p-0"
-      ariaLabel={product ? "Edit Product" : "Add Product"}
-      panelClassName="border border-gray-300 dark:border-gray-700 rounded-2xl"
-    >
-      <ProductModalContent
-        key={product?.id ?? "new-product"}
-        product={product}
-        saving={saving}
-        onClose={onClose}
-        onSubmit={onSubmit}
-      />
-    </Modal>
-  );
-}
-
-function ProductModalContent({ product, saving, onClose, onSubmit }) {
-  const { t } = useLanguage();
-  const [form, setForm] = useState(() => ({
-    ...initialForm,
-    ...product,
-    images: product?.images ?? [],
-  }));
-
-  // §21/§22 edit guards — mirrored from the backend's authoritative rules:
-  // a pre-order's limit can never be lowered below units already reserved,
-  // and a pre-order with reservations cannot be switched to "available"
-  // (that would double-sell: consumers could buy while reservations exist).
-  const reservedCount = Number(form.reservedQuantity ?? 0) || 0;
-  const switchingModeWithReservations =
-    product?.sellingMode === "preorder" &&
-    reservedCount > 0 &&
-    form.sellingMode !== "preorder";
-  const limitBelowReserved =
-    form.sellingMode === "preorder" &&
-    reservedCount > 0 &&
-    (!Number.isInteger(Number(form.preOrderLimit)) ||
-      Number(form.preOrderLimit) < reservedCount);
-
-  const isValid = Boolean(
-    form.name?.trim() &&
-    form.category?.trim() &&
-    form.unit?.trim() &&
-    form.price !== "" &&
-    !isNaN(Number(form.price)) &&
-    Number(form.price) > 0 &&
-    form.stock !== "" &&
-    !isNaN(Number(form.stock)) &&
-    Number(form.stock) >= 0 &&
-    form.images &&
-    form.images.length > 0 &&
-    !switchingModeWithReservations &&
-    // Pre-order validation
-    (form.sellingMode !== "preorder" || (
-      form.expectedAvailableDate &&
-      form.preOrderDeadline &&
-      form.preOrderLimit &&
-      Number(form.preOrderLimit) > 0 &&
-      !limitBelowReserved &&
-      new Date(form.preOrderDeadline) < new Date(form.expectedAvailableDate)
-    ))
-  );
-
-  function handleChange(e) {
-    const { name, value, type, checked } = e.target;
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  }
-
-  function handleImages(images) {
-    setForm((prev) => ({
-      ...prev,
-      images,
-    }));
-  }
-
-  function handleSubmit() {
-    if (!isValid || saving) return;
-    onSubmit(form);
-  }
-
-  return (
-    <>
-      {/* Header - AgriNet System Green */}
-      <div className="px-5 sm:px-6 py-4 flex justify-between items-center bg-[#2D6A4F] text-white border-b-2 border-[#1B4332] shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0 border border-white/20 shadow-xs">
-            <i className={`${product ? "ri-edit-box-line" : "ri-plant-line"} text-xl text-white`} />
-          </div>
-          <div>
-            <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-              {product ? t("products.editProductTitle") : t("products.addProductTitle")}
-            </h2>
-            <p className="text-xs font-medium text-emerald-100">
-              {product ? t("products.updateDetails") : t("products.listNew")}
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 active:bg-white/25 transition-colors cursor-pointer shrink-0"
-          title={t("common.close")}
-        >
-          <i className="ri-close-line text-2xl text-white" />
-        </button>
-      </div>
-
-      {/* Form Content */}
-      <div className="px-5 sm:px-6 py-5 space-y-5">
-        <ProductImageUploader images={form.images} onChange={handleImages} />
-        <div className="h-px bg-gray-300 dark:bg-gray-700 w-full" />
-        <ProductForm form={form} onChange={handleChange} />
-
-        {/* Bottom Actions inside scrollable content */}
-        <div className="pt-3 border-t border-gray-300 dark:border-gray-700">
-          {(switchingModeWithReservations || limitBelowReserved) && (
-            <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
-              <i className="ri-alert-line mt-0.5 shrink-0" />
-              <span>
-                {switchingModeWithReservations
-                  ? t("products.modeSwitchWithReservations")
-                  : t("products.limitBelowReserved")}
-              </span>
-            </div>
-          )}
-          <div className="flex justify-end items-center gap-3">
-            <Button variant="cancel" size="md" onClick={onClose}>
-              {t("common.cancel")}
-            </Button>
-
-            <Button
-              variant="primary"
-              size="md"
-              disabled={!isValid}
-              loading={saving}
-              onClick={handleSubmit}
-            >
-              {saving
-                ? t("products.saving")
-                : product
-                  ? t("products.saveChanges")
-                  : t("products.createProduct")}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-const initialForm = {
-  name: "",
-  category: "",
-  price: "",
-  originalPrice: "",
-  stock: "",
-  unit: "",
-  available: true,
-  durationHours: "",
-  images: [],
-  sellingMode: "available",
-  expectedAvailableDate: "",
-  preOrderDeadline: "",
-  preOrderLimit: "",
+const EMPTY = {
+  name: "", description: "", category: "", price: "", originalPrice: "",
+  stock: "", unit: "", available: true, durationHours: "", images: [],
+  sellingMode: "available", preorderPolicy: "made_to_order", preparationLeadHours: "",
+  expectedAvailableDate: "", preOrderDeadline: "", preOrderLimit: "",
 };
+const STEPS = ["Details", "Pricing", "Order settings"];
+
+function formatDateInput(value) {
+  if (!value) return "";
+  try {
+    const date = value.toDate?.() ?? new Date(value);
+    return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : "";
+  } catch { return ""; }
+}
+
+export default function ProductModal({ open, product, saving, onClose, onSubmit }) {
+  const { t } = useLanguage();
+  const [dirty, setDirty] = useState(false);
+  const [step, setStep] = useState(1);
+  useEffect(() => {
+    if (open) {
+      setDirty(false);
+      setStep(1);
+    }
+  }, [open, product?.id]);
+  const requestClose = () => {
+    if (!dirty || window.confirm(t("products.discardChanges"))) onClose();
+  };
+  return (
+    <ResponsiveModal open={open} onClose={requestClose} maxWidth="max-w-[40rem]" bodyClassName="flex min-h-0 flex-col overflow-hidden p-0"
+      title={product ? "Edit product" : "New product"}
+      subtitle={`Step ${step} of 3 · ${STEPS[step - 1]}`}
+      ariaLabel={product ? "Edit product" : "Create product"} desktopPlacement="right">
+      <Editor key={product?.id || "new"} product={product} saving={saving} onClose={requestClose} onSubmit={onSubmit} onDirtyChange={setDirty} step={step} setStep={setStep} />
+    </ResponsiveModal>
+  );
+}
+
+function Editor({ product, saving, onClose, onSubmit, onDirtyChange, step, setStep }) {
+  const [errors, setErrors] = useState({});
+  const [form, setForm] = useState(() => ({
+    ...EMPTY, ...product, images: product?.images ?? [],
+    expectedAvailableDate: formatDateInput(product?.expectedAvailableDate),
+    preOrderDeadline: formatDateInput(product?.preOrderDeadline),
+    preorderPolicy: product?.preorderPolicy ?? (product?.sellingMode === "preorder" ? "scheduled_batch" : "made_to_order"),
+  }));
+  const reserved = Number(product?.reservedQuantity || 0);
+  const invalidSwitch = product?.sellingMode === "preorder" && reserved > 0 && form.sellingMode !== "preorder";
+  const isValidStep = (value) => {
+    if (value === 1) return Boolean(form.name?.trim() && form.name.length <= 120 && form.description?.length <= 2000 && form.category && form.unit && form.images?.length);
+    if (value === 2) return Number(form.price) > 0 && form.stock !== "" && Number.isInteger(Number(form.stock)) && Number(form.stock) >= 0 && !invalidSwitch;
+    if (form.sellingMode !== "preorder") return true;
+    const policy = form.preorderPolicy || "made_to_order";
+    return Number.isInteger(Number(form.preOrderLimit)) && Number(form.preOrderLimit) >= Math.max(1, reserved)
+      && (policy !== "made_to_order" || Number(form.preparationLeadHours) > 0)
+      && (policy === "made_to_order" || Boolean(form.expectedAvailableDate))
+      && (policy !== "scheduled_batch" || Boolean(form.preOrderDeadline))
+      && (!form.expectedAvailableDate || !form.preOrderDeadline || new Date(form.preOrderDeadline) < new Date(form.expectedAvailableDate));
+  };
+  function handleChange(event) {
+    const { name, value, type, checked } = event.target;
+    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    setErrors((previous) => ({ ...previous, [name]: "" }));
+    onDirtyChange(true);
+  }
+  function validateCurrentStep() {
+    const nextErrors = {};
+    if (step === 1) {
+      if (!form.name?.trim()) nextErrors.name = "Enter a product name.";
+      if (!form.category) nextErrors.category = "Choose a category.";
+      if (!form.unit) nextErrors.unit = "Choose a unit.";
+      if (!form.images?.length) nextErrors.images = "Add at least one image.";
+    } else if (step === 2) {
+      if (!(Number(form.price) > 0)) nextErrors.price = "Enter a valid selling price.";
+      if (!Number.isInteger(Number(form.stock)) || Number(form.stock) < 0) nextErrors.stock = "Stock must be a non-negative whole number.";
+    } else if (form.sellingMode === "preorder") {
+      const policy = form.preorderPolicy || "made_to_order";
+      if (!Number.isInteger(Number(form.preOrderLimit)) || Number(form.preOrderLimit) < Math.max(1, reserved)) nextErrors.preOrderLimit = "Enter a valid pre-order quantity.";
+      if (policy === "made_to_order" && !(Number(form.preparationLeadHours) > 0)) nextErrors.preparationLeadHours = "Made-to-order products need preparation hours.";
+      if (policy !== "made_to_order" && !form.expectedAvailableDate) nextErrors.expectedAvailableDate = "Choose the expected ready date.";
+      if (policy === "scheduled_batch" && !form.preOrderDeadline) nextErrors.preOrderDeadline = "Choose an ordering deadline.";
+    }
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0 && isValidStep(step);
+  }
+  async function next() {
+    if (!validateCurrentStep()) return;
+    if (step < 3) setStep(step + 1);
+    else if (!saving) {
+      try {
+        await onSubmit({ ...form, description: form.description.trim(),
+          ...(form.sellingMode === "preorder" && form.preorderPolicy === "made_to_order"
+            ? { expectedAvailableDate: null, preOrderDeadline: null } : {}) });
+      } catch (error) {
+        const message = error?.message || "Could not save this product.";
+        const field = /preparation|lead time/i.test(message) ? "preparationLeadHours"
+          : /pre-order limit|capacity/i.test(message) ? "preOrderLimit"
+            : /expected.*date/i.test(message) ? "expectedAvailableDate"
+              : /cutoff|deadline/i.test(message) ? "preOrderDeadline" : "general";
+        setErrors({ [field]: message });
+      }
+    }
+  }
+  return <div className="flex min-h-0 flex-1 flex-col">
+    <div className="shrink-0 grid grid-cols-3 gap-2 border-b border-(--agri-border) px-3 py-3 sm:px-6">
+      {STEPS.map((label, index) => <button key={label} type="button" disabled={index + 1 > step}
+        onClick={() => setStep(index + 1)} aria-current={step === index + 1 ? "step" : undefined}
+        className={`min-h-11 rounded-lg px-1 text-xs font-semibold transition ${step === index + 1 ? "bg-[#2D6A4F] text-white" : "bg-(--agri-hover) text-(--agri-text-secondary) disabled:opacity-50"}`}>
+        <span className="sm:hidden">{index + 1}. {label.split(" ")[0]}</span><span className="hidden sm:inline">{index + 1}. {label}</span>
+      </button>)}
+    </div>
+    <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6">
+      {step === 1 && <ProductImageUploader images={form.images} onChange={(images) => { setForm((prev) => ({ ...prev, images })); onDirtyChange(true); }} />}
+      <ProductForm form={form} onChange={handleChange} step={step} errors={errors} />
+      {errors.images && <p role="alert" className="text-sm text-red-600">{errors.images}</p>}
+      {errors.general && <p role="alert" className="text-sm text-red-600">{errors.general}</p>}
+      {invalidSwitch && <p role="alert" className="text-sm text-red-600">Committed pre-orders must be completed or cancelled before switching the listing mode.</p>}
+    </div>
+    <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-(--agri-border) bg-(--agri-card) px-4 py-3 sm:px-6">
+      <Button variant="secondary" size="md" onClick={step === 1 ? onClose : () => setStep(step - 1)}>{step === 1 ? "Cancel" : "Back"}</Button>
+      <Button variant="primary" size="md" disabled={saving} loading={saving} onClick={next}>
+        {step < 3 ? "Continue" : product ? "Save changes" : "Publish product"}
+      </Button>
+    </footer>
+  </div>;
+}

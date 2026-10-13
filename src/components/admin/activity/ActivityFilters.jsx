@@ -1,6 +1,8 @@
 import { useLanguage } from "../../../context/LanguageContext";
 import InlineSearchInput from "../../ui/InlineSearchInput";
 import Button from "../../ui/Button";
+import Select from "../../ui/Select";
+import Input from "../../ui/Input";
 
 const AUDIT_ACTIONS = [
   "user_suspended",
@@ -46,7 +48,7 @@ export default function ActivityFilters({
 
         {/* Dropdowns Row */}
         <div className="flex flex-col gap-2.5 sm:gap-3 md:flex-row md:items-center">
-          <select
+          <Select
             value={action}
             onChange={(e) => onActionChange(e.target.value)}
             className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
@@ -55,9 +57,9 @@ export default function ActivityFilters({
             {AUDIT_ACTIONS.map((a) => (
               <option key={a} value={a}>{formatAction(a)}</option>
             ))}
-          </select>
+          </Select>
 
-          <select
+          <Select
             value={targetType}
             onChange={(e) => onTargetTypeChange(e.target.value)}
             className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
@@ -66,21 +68,19 @@ export default function ActivityFilters({
             {TARGET_TYPES.map((t2) => (
               <option key={t2} value={t2}>{t2.charAt(0).toUpperCase() + t2.slice(1)}</option>
             ))}
-          </select>
+          </Select>
 
-          <input
+          <Input
             type="date"
             value={dateFrom}
-            onChange={(e) => onDateFromChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            onChange={(e) => onDateFromChange(e.target.value)} className="min-w-0 flex-1 sm:min-w-36"
             title={t("adminActivity.dateFrom")}
           />
 
-          <input
+          <Input
             type="date"
             value={dateTo}
-            onChange={(e) => onDateToChange(e.target.value)}
-            className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
+            onChange={(e) => onDateToChange(e.target.value)} className="min-w-0 flex-1 sm:min-w-36"
             title={t("adminActivity.dateTo")}
           />
 

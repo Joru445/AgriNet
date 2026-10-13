@@ -1,4 +1,10 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import ResponsiveModal from "../ui/ResponsiveModal";
+import Button from "../ui/Button";
+import Input from "../ui/Input";
+import Select from "../ui/Select";
+import Textarea from "../ui/Textarea";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import MessageImage from "./MessageImage";
@@ -16,6 +22,20 @@ export default function ProductInquiryMessage({
 }) {
   const { profile } = useAuth();
   const { t } = useLanguage();
+  const [counterOpen, setCounterOpen] = useState(false);
+  const [counter, setCounter] = useState({ quantity: "", unitPrice: "", collectionMethod: "coordinate_in_chat", readyAt: "", sellerNotes: "" });
+  const [counterSaving, setCounterSaving] = useState(false);
+  async function submitCounterOffer() {
+    if (Number(counter.quantity) <= 0 || Number(counter.unitPrice) <= 0) return;
+    try {
+      setCounterSaving(true);
+      await onAccept(message, product, {
+        ...counter, quantity: Number(counter.quantity), unitPrice: Number(counter.unitPrice),
+        readyAt: counter.readyAt ? new Date(counter.readyAt).toISOString() : null,
+      });
+      setCounterOpen(false);
+    } finally { setCounterSaving(false); }
+  }
 
   const isOwn = message.senderId === profile.uid;
   const isFarmer = profile.role === "farmer";
@@ -150,7 +170,13 @@ export default function ProductInquiryMessage({
               </button>
             )}
 
-            {(message.inquiryStatus === "accepted" || message.inquiryStatus === "reserved") && (
+            {showAccept && product.sellingMode === "preorder" && <Button variant="secondary" size="sm" fullWidth
+              className="mt-2" onClick={() => {
+                setCounter({ quantity: String(message.quantity || 1), unitPrice: String(product.price || 0),
+                  collectionMethod: "coordinate_in_chat", readyAt: "", sellerNotes: "" });
+                setCounterOpen(true);
+              }}>Propose different terms</Button>}
+            {(["accepted", "reserved", "confirmed", "awaiting_agreement"].includes(message.inquiryStatus)) && (
               <div className="mt-3 space-y-2">
                 <div
                   className={`rounded-lg px-3 py-1.5 text-center text-xs font-semibold flex items-center justify-center gap-1.5 border ${
@@ -161,9 +187,8 @@ export default function ProductInquiryMessage({
                 >
                   <i className={message.inquiryStatus === "reserved" ? "ri-calendar-schedule-line" : "ri-checkbox-circle-fill"} />
                   <span>
-                    {message.inquiryStatus === "reserved"
-                      ? t("productInquiryMsg.preOrderReserved")
-                      : t("productInquiryMsg.inquiryAccepted")}
+                    {message.inquiryStatus === "awaiting_agreement" ? "Pre-order awaiting buyer agreement" :
+                      ["reserved", "confirmed"].includes(message.inquiryStatus) ? "Pre-order confirmed" : t("productInquiryMsg.inquiryAccepted")}
                   </span>
                 </div>
                 <Link
@@ -184,6 +209,34 @@ export default function ProductInquiryMessage({
           </div>
         </div>
       </div>
+
+      <ResponsiveModal open={counterOpen} onClose={() => setCounterOpen(false)} title="Propose pre-order terms" maxWidth="max-w-lg">
+        <div className="space-y-4 p-2">
+          <p className="text-sm text-(--agri-text-secondary)">The consumer must accept these terms before their order is confirmed. Their capacity is reserved only after agreement.</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Quantity" type="number" min="1" step="1" value={counter.quantity}
+              onChange={(e) => setCounter((v) => ({ ...v, quantity: e.target.value }))} required />
+            <Input label="Price per unit (₱)" type="number" min="0.01" step="0.01" value={counter.unitPrice}
+              onChange={(e) => setCounter((v) => ({ ...v, unitPrice: e.target.value }))} required />
+          </div>
+          <Select label="Collection method" value={counter.collectionMethod}
+            onChange={(e) => setCounter((v) => ({ ...v, collectionMethod: e.target.value }))}>
+            <option value="coordinate_in_chat">Coordinate in chat</option>
+            <option value="pickup">Buyer pickup</option>
+            <option value="delivery">Delivery (coordinate arrangements)</option>
+          </Select>
+          <Input label="Proposed ready time" type="datetime-local" value={counter.readyAt}
+            onChange={(e) => setCounter((v) => ({ ...v, readyAt: e.target.value }))} />
+          <Textarea label="Notes for buyer" maxLength={500} value={counter.sellerNotes}
+            onChange={(e) => setCounter((v) => ({ ...v, sellerNotes: e.target.value }))} rows={3} />
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setCounterOpen(false)}>Cancel</Button>
+            <Button variant="primary" loading={counterSaving}
+              disabled={!Number(counter.quantity) || !Number(counter.unitPrice) || counterSaving}
+              onClick={submitCounterOffer}>Send counteroffer</Button>
+          </div>
+        </div>
+      </ResponsiveModal>
 
       {statusText && isOwn && (
         <span className="text-[11px] text-(--agri-text-muted) font-normal px-1 mt-1 select-none leading-none">

@@ -95,7 +95,10 @@ export async function apiRequest(endpoint, options = {}) {
 
   const headers = new Headers(fetchOptions.headers);
 
-  headers.set("Content-Type", "application/json");
+  // Only send Content-Type for requests with a JSON body. Avoid GET preflights.
+  if (fetchOptions.body != null && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
 
   if (currentUser) {
     try {
@@ -121,9 +124,13 @@ export async function apiRequest(endpoint, options = {}) {
     }
   }
 
+  // Never replay an ambiguous non-idempotent mutation. A timeout can mean
+  // the server committed the write but its response was lost.
+  const method = (fetchOptions.method || "GET").toUpperCase();
+  const safeRetries = ["GET", "HEAD", "OPTIONS"].includes(method) ? retries : 0;
   let lastError;
 
-  for (let attempt = 0; attempt <= retries; attempt++) {
+  for (let attempt = 0; attempt <= safeRetries; attempt++) {
     try {
       const url = buildUrl(endpoint);
       const response = await fetchWithTimeout(
@@ -154,7 +161,7 @@ export async function apiRequest(endpoint, options = {}) {
       lastError = error;
 
       if (
-        attempt < retries &&
+        attempt < safeRetries &&
         (isNetworkError(error) || (error.status && isRetryable(error.status)))
       ) {
         await new Promise((resolve) =>

@@ -101,7 +101,7 @@ facebookProvider.addScope("email");
  *
  * @param {string} method "google" | "facebook"
  * @param {Object} [options]
- * @param {string} [options.loginHint] Email hint for Google's account chooser
+ * @param {boolean} [options.selectAccount] Force Google's account chooser
  * @returns {Promise<import("firebase/auth").UserCredential>}
  */
 export async function signInWithProvider(method, options = {}) {
@@ -114,8 +114,12 @@ export async function signInWithProvider(method, options = {}) {
 
   if (!provider) throw new Error(`Unsupported provider: ${method}`);
 
-  if (method === "google" && options.loginHint) {
-    googleProvider.setCustomParameters({ login_hint: options.loginHint });
+  if (method === "google") {
+    // login_hint can silently prefer an identity. Saved-account selection must
+    // preserve Google's explicit account chooser instead.
+    googleProvider.setCustomParameters({
+      prompt: options.selectAccount === false ? "" : "select_account",
+    });
   }
 
   return signInWithPopup(auth, provider);

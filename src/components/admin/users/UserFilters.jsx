@@ -1,5 +1,7 @@
 import { useLanguage } from "../../../context/LanguageContext";
 import InlineSearchInput from "../../ui/InlineSearchInput";
+import Select from "../../ui/Select";
+import Input from "../../ui/Input";
 
 export default function UserFilters({
   search,
@@ -23,7 +25,7 @@ export default function UserFilters({
         />
 
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-          <select
+          <Select
             value={sortBy}
             onChange={(e) => onSortByChange(e.target.value)}
             className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
@@ -31,9 +33,9 @@ export default function UserFilters({
             <option value="default">{t("adminUser.sortDefault")}</option>
             <option value="name-asc">{t("adminUser.sortAz")}</option>
             <option value="name-desc">{t("adminUser.sortZa")}</option>
-          </select>
+          </Select>
 
-          <select
+          <Select
             value={role}
             onChange={(e) => onRoleChange(e.target.value)}
             className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
@@ -42,9 +44,9 @@ export default function UserFilters({
             <option value="consumer">{t("roles.consumer")}</option>
             <option value="farmer">{t("roles.farmer")}</option>
             <option value="admin">{t("roles.admin")}</option>
-          </select>
+          </Select>
 
-          <select
+          <Select
             value={status}
             onChange={(e) => onStatusChange(e.target.value)}
             className="rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:bg-(--agri-card) focus:ring-2 focus:ring-[#2D6A4F]/15 cursor-pointer shadow-2xs"
@@ -52,7 +54,7 @@ export default function UserFilters({
             <option value="all">{t("adminUser.allStatus")}</option>
             <option value="active">{t("adminStatus.active")}</option>
             <option value="suspended">{t("adminStatus.suspended")}</option>
-          </select>
+          </Select>
         </div>
       </div>
     </div>

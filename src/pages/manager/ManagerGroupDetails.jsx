@@ -1,3 +1,4 @@
+import GroupWorkspace from "../../components/admin/groups/GroupWorkspace";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -15,12 +16,7 @@ import { GROUP_PERMISSIONS } from "../../constants/groupPermissions";
 
 import SkeletonBox from "../../components/ui/SkeletonBox";
 import ErrorState from "../../components/ui/ErrorState";
-import TabButton from "../../components/ui/TabButton";
 
-import GroupOverview from "../../components/admin/groups/GroupOverview";
-import GroupApplications from "../../components/admin/groups/GroupApplications";
-import GroupMembers from "../../components/admin/groups/GroupMembers";
-import GroupSettings from "../../components/admin/groups/GroupSettings";
 
 export default function ManagerGroupDetails() {
   const { groupId } = useParams();
@@ -34,7 +30,6 @@ export default function ManagerGroupDetails() {
   const [manager, setManager] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [tab, setTab] = useState("overview");
   const [counts, setCounts] = useState({ members: 0, applications: 0 });
 
   const permissions = useMemo(() => {
@@ -43,14 +38,6 @@ export default function ManagerGroupDetails() {
     }
     return manager?.permissions ?? [];
   }, [isAdmin, manager?.permissions]);
-
-  const availableTabs = useMemo(() => {
-    const tabs = ["overview"];
-    if (isAdmin || permissions.includes(GROUP_PERMISSIONS.APPLICATIONS_VIEW)) tabs.push("applications");
-    if (isAdmin || permissions.includes(GROUP_PERMISSIONS.MEMBERS_VIEW)) tabs.push("members");
-    if (isAdmin || permissions.includes(GROUP_PERMISSIONS.GROUP_EDIT)) tabs.push("settings");
-    return tabs;
-  }, [isAdmin, permissions]);
 
   const loadGroup = useCallback(async () => {
     try {
@@ -111,13 +98,6 @@ export default function ManagerGroupDetails() {
     };
   }, [groupId, loadGroup, loadCounts]);
 
-  // Auto-select first available tab if current tab is not available
-  useEffect(() => {
-    if (manager && !availableTabs.includes(tab)) {
-      setTab(availableTabs[0] || "overview");
-    }
-  }, [manager, tab, availableTabs]);
-
   const handleGroupUpdated = useCallback(() => {
     loadGroup();
     loadCounts();
@@ -150,53 +130,6 @@ export default function ManagerGroupDetails() {
     );
   }
 
-  return (
-    <div className="min-h-full p-4 md:p-6 lg:p-8">
-      <div className="mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-(--agri-text)">
-            {group?.name || "..."}
-          </h1>
-        </div>
-
-        {/* Tabs */}
-        <div className="mb-5 flex items-center gap-1 sm:gap-1.5 overflow-x-auto rounded-2xl bg-(--agri-hover)/70 p-1 sm:p-1.5 border border-(--agri-border-subtle) shadow-xs scrollbar-none touch-pan-x">
-          {availableTabs.map((tabKey) => (
-            <TabButton
-              key={tabKey}
-              active={tab === tabKey}
-              onClick={() => setTab(tabKey)}
-              label={t(`managerGroups.tabs.${tabKey}`)}
-              count={tabKey === "applications" ? counts.applications : undefined}
-              className="sm:flex-1 justify-center shrink-0"
-            />
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        {tab === "overview" && (
-          <GroupOverview group={group} counts={counts} />
-        )}
-        {tab === "applications" && (
-          <GroupApplications
-            groupId={groupId}
-            onCountsUpdate={loadCounts}
-            canApprove={isAdmin || permissions.includes(GROUP_PERMISSIONS.APPLICATIONS_APPROVE)}
-            canReject={isAdmin || permissions.includes(GROUP_PERMISSIONS.APPLICATIONS_REJECT)}
-          />
-        )}
-        {tab === "members" && (
-          <GroupMembers
-            groupId={groupId}
-            onCountsUpdate={loadCounts}
-            canRemove={isAdmin || permissions.includes(GROUP_PERMISSIONS.MEMBERS_REMOVE)}
-          />
-        )}
-        {tab === "settings" && (
-          <GroupSettings group={group} onUpdated={handleGroupUpdated} />
-        )}
-      </div>
-    </div>
-  );
+  return <GroupWorkspace group={group} groupId={groupId} counts={counts}
+    isAdmin={isAdmin} permissions={permissions} onCountsUpdate={loadCounts} onUpdated={handleGroupUpdated} />;
 }

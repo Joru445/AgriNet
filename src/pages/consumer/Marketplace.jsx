@@ -1,6 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import useMarketplace from "../../hooks/useMarketplace";
+import usePullToRefresh from "../../hooks/usePullToRefresh";
+import { showToast } from "../../utils/toast";
+import { useCallback } from "react";
+import { useLanguage } from "../../context/LanguageContext";
+import useMediaQuery from "../../hooks/useMediaQuery";
 
 import CategoryChips from "../../components/consumer/layout/CategoryChips";
 import FiltersSidebar from "../../components/consumer/marketplace/FiltersSidebar";
@@ -29,6 +34,9 @@ const LOAD_MORE_GRID =
   "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 lg:gap-6";
 
 export default function Marketplace() {
+  const { t } = useLanguage();
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const [desktopFiltersVisible, setDesktopFiltersVisible] = useState(true);
   const {
     loading,
     error,
@@ -43,6 +51,9 @@ export default function Marketplace() {
     showFilters,
     setShowFilters,
     reloadProducts,
+    refreshProducts,
+    refreshing,
+    lastRefreshedAt,
 
     // Discovery sections
     nearbyProducts,
@@ -54,6 +65,16 @@ export default function Marketplace() {
     loadingMore,
     loadMore,
   } = useMarketplace();
+
+  const handleRefresh = useCallback(async () => {
+    try {
+      await refreshProducts();
+      showToast.success(t("marketplace.productsUpToDate"));
+    } catch (error) {
+      showToast.error(error?.message || t("marketplace.refreshFailed"));
+    }
+  }, [refreshProducts, t]);
+  const { pullDistance } = usePullToRefresh(handleRefresh, !refreshing && !loading);
 
   // ── Infinite scroll sentinel ─────────────────────────────────
   const sentinelRef = useRef(null);
@@ -79,13 +100,24 @@ export default function Marketplace() {
   }, [loading, hasMore, loadingMore, loadMore]);
 
   const showDiscovery = !hasActiveFilters;
+  const openFilters = () => {
+    if (isDesktop) setDesktopFiltersVisible((visible) => !visible);
+    else setShowFilters(true);
+  };
 
   return (
     <>
-      <main className="w-full min-w-0 max-w-6xl mx-auto pb-8 space-y-4">
+      <main data-marketplace-root className="w-full min-w-0 max-w-6xl mx-auto pb-8 space-y-4">
+        {(pullDistance > 0 || refreshing) && <div className="sticky top-0 z-30 flex justify-center pointer-events-none" role="status">
+          <span className="rounded-b-xl border border-(--agri-border) bg-(--agri-card) px-4 py-2 text-xs font-bold text-(--agri-text) shadow" style={{ transform: `translateY(${Math.min(pullDistance, 40)}px)` }}>
+            <i className={`ri-refresh-line mr-2 ${refreshing ? "animate-spin" : ""}`} />{refreshing ? t("marketplace.refreshingProducts") : pullDistance >= 72 ? t("marketplace.releaseToRefresh") : t("marketplace.pullToRefresh")}
+          </span>
+        </div>}
         <MarketplaceSubHeader
           searchValue={filters.search}
           onSearchChange={(value) => updateFilter("search", value)}
+          onOpenFilters={openFilters}
+          filtersActive={hasActiveFilters || (isDesktop && desktopFiltersVisible)}
         />
 
         <CategoryChips
@@ -98,6 +130,7 @@ export default function Marketplace() {
             filters={filters}
             onChange={updateFilter}
             onReset={resetFilters}
+            visible={desktopFiltersVisible}
           />
 
           <section className="min-w-0 flex-1 space-y-4">
@@ -106,7 +139,9 @@ export default function Marketplace() {
               loading={loading}
               sort={filters.sort}
               onSort={(value) => updateFilter("sort", value)}
-              onOpenFilters={() => setShowFilters(true)}
+              onRefresh={handleRefresh}
+              refreshing={refreshing}
+              lastRefreshedAt={lastRefreshedAt}
             />
 
             {loading ? (
@@ -122,8 +157,8 @@ export default function Marketplace() {
               <div className="space-y-8">
                 {nearbyProducts.length > 0 && (
                   <DiscoverySection
-                    title="Near You"
-                    subtitle="Products from farmers within 5 km"
+                    title={t("marketplace.nearYou")}
+                    subtitle={t("marketplace.nearYouSubtitle")}
                   >
                     <ProductGrid
                       products={nearbyProducts}
@@ -134,8 +169,8 @@ export default function Marketplace() {
 
                 {recentProducts.length > 0 && (
                   <DiscoverySection
-                    title="Recently Added"
-                    subtitle="Fresh products from local farmers"
+                    title={t("marketplace.recentlyAdded")}
+                    subtitle={t("marketplace.recentlyAddedSubtitle")}
                   >
                     <ProductGrid
                       products={recentProducts}
@@ -146,8 +181,8 @@ export default function Marketplace() {
 
                 {relevantProducts.length > 0 && (
                   <DiscoverySection
-                    title="Recommended for You"
-                    subtitle="Based on ratings, distance, and freshness"
+                    title={t("marketplace.recommended")}
+                    subtitle={t("marketplace.recommendedSubtitle")}
                     alignItems="items-center"
                   >
                     <ProductGrid
@@ -159,7 +194,7 @@ export default function Marketplace() {
 
                 {/* All Products grid with infinite scroll */}
                 {filteredProducts.length > 0 && (
-                  <DiscoverySection title="All Products">
+                  <DiscoverySection title={t("marketplace.allProducts")}>
                     <ProductGrid
                       products={filteredProducts}
                       gridClassName={LOAD_MORE_GRID}
@@ -177,7 +212,7 @@ export default function Marketplace() {
 
                     {!hasMore && filteredProducts.length > 0 && (
                       <p className="text-center text-sm text-gray-400 py-4">
-                        No more products
+                        {t("marketplace.noMoreProducts")}
                       </p>
                     )}
                   </DiscoverySection>
@@ -200,15 +235,15 @@ export default function Marketplace() {
 
                 {!hasMore && filteredProducts.length > 0 && (
                   <p className="text-center text-sm text-gray-400 py-4">
-                    No more products
+                    {t("marketplace.noMoreProducts")}
                   </p>
                 )}
 
                 {filteredProducts.length === 0 && (
                   <EmptyState
                     icon="ri-shopping-basket-2-line"
-                    title="No products found"
-                    description="Try adjusting your filters or search terms"
+                    title={t("marketplace.noProductsFound")}
+                    description={t("marketplace.noProductsFoundDescription")}
                   />
                 )}
               </div>

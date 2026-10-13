@@ -8,7 +8,9 @@
     "build": "node scripts/generate-fcm-sw.js && vite build",
     "generate-fcm-sw": "node scripts/generate-fcm-sw.js",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test scripts/test-release-contracts.mjs"
+    ,"check:i18n": "node scripts/check-translations.mjs"
   },
   "dependencies": {
     "@simplewebauthn/browser": "^14.0.0",

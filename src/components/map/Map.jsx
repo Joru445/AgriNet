@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Circle, MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
+import L from "leaflet";
+import { Circle, MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { useLanguage } from "../../context/LanguageContext";
 
 import Recenter from "./Recenter";
 import ResizeMap from "./ResizeMap";
@@ -18,6 +20,32 @@ function MapClickHandler({ onClick }) {
   return null;
 }
 
+function FullscreenControl({ fullscreen, onToggle, label }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const control = L.control({ position: "topleft" });
+    control.onAdd = () => {
+      const container = L.DomUtil.create("div", "leaflet-bar agrinet-fullscreen-control");
+      const button = L.DomUtil.create("button", "agrinet-map-control", container);
+      button.type = "button";
+      button.setAttribute("aria-label", label);
+      button.title = label;
+      button.innerHTML = `<i class="${fullscreen ? "ri-fullscreen-exit-line" : "ri-fullscreen-line"}" aria-hidden="true"></i>`;
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.on(button, "click", (event) => {
+        L.DomEvent.stop(event);
+        onToggle();
+      });
+      return container;
+    };
+    control.addTo(map);
+    return () => control.remove();
+  }, [map, fullscreen, label, onToggle]);
+
+  return null;
+}
+
 export default function Map({
   onProfile,
   center,
@@ -30,6 +58,7 @@ export default function Map({
   editable = false,
   onLocationChange,
 }) {
+  const { t } = useLanguage();
   const isValidCenter =
     center &&
     typeof center.lat === "number" &&
@@ -74,7 +103,7 @@ export default function Map({
   return (
     <div
       ref={wrapperRef}
-      className={`relative overflow-hidden bg-white ${
+      className={`relative overflow-hidden bg-(--agri-card) ${
         fullscreen ? "fixed inset-0 z-9995" : "h-80 md:h-96"
       } ${onProfile ? "rounded-xl" : "rounded-none"}`}
     >
@@ -89,6 +118,11 @@ export default function Map({
         />
 
         <ResizeMap fullscreen={fullscreen} />
+        <FullscreenControl
+          fullscreen={fullscreen}
+          onToggle={toggleFullscreen}
+          label={t(fullscreen ? "map.exitFullscreen" : "map.enterFullscreen")}
+        />
 
         <Recenter center={mapCenter} zoom={zoom} />
 
@@ -131,22 +165,8 @@ export default function Map({
         )}
       </MapContainer>
 
-      <button
-        type="button"
-        onClick={toggleFullscreen}
-        className="absolute top-3 right-3 z-9995 w-10 h-10 rounded-sm bg-white/95 shadow-lg border-2 border-gray-400 hover:bg-gray-100"
-      >
-        <i
-          className={
-            fullscreen
-              ? "ri-fullscreen-exit-line text-lg"
-              : "ri-fullscreen-line text-lg"
-          }
-        />
-      </button>
-
       {actionButton && (
-        <div className="absolute top-3 right-16 z-9995">{actionButton}</div>
+        <div className="absolute top-3 right-3 z-9995">{actionButton}</div>
       )}
     </div>
   );

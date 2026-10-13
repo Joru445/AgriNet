@@ -712,6 +712,8 @@ export default {
 
   transaction: {
     title: "Transaction",
+    proof: "Transaction Proof",
+    review: "Transaction Review",
     notFound: "Transaction not found.",
     heading: {
       reviewComplete: "Review and complete the transaction.",
@@ -1143,9 +1145,12 @@ export default {
     autoDisappear: "Auto-disappear",
     selectDuration: "Select duration",
     sellingPrice: "Selling Price",
+    price: "Price",
     originalPrice: "Original Price",
     optionalDiscount: "(Optional for discount slash)",
     stockQuantity: "Stock Quantity",
+    stock: "Stock",
+    discardChanges: "Discard unsaved product changes?",
     availableForSale: "Available for sale",
     noLimit: "No limit (Until out of stock)",
     setCustom: "Set custom hours...",
@@ -1261,6 +1266,7 @@ export default {
     noFarmers: "No farmers found",
     noFarmersHint: "Try increasing your search distance.",
     profile: "Profile",
+    users: "Users",
     message: "Message",
     viewProfile: "View Profile",
     distance: "Distance",
@@ -1599,6 +1605,7 @@ export default {
     manageGroups: "Manage Groups",
     favorites: "Favorites",
     profile: "Profile",
+    users: "Users",
   },
 
   sidebar: {
@@ -1627,6 +1634,18 @@ export default {
     placeholder: "Search for products and farmers.",
     clear: "Clear search",
   },
+
+  marketplace: {
+    openFilters: "Open filters", refreshProducts: "Refresh products", lastRefreshed: "Last refreshed {time}", sortProducts: "Sort products",
+    productsUpToDate: "Products are up to date", refreshFailed: "Could not refresh products. Your previous results are still visible.",
+    refreshingProducts: "Refreshing products…", releaseToRefresh: "Release to refresh", pullToRefresh: "Pull down to refresh",
+    nearYou: "Near You", nearYouSubtitle: "Products from farmers within 5 km", recentlyAdded: "Recently Added",
+    recentlyAddedSubtitle: "Fresh products from local farmers", recommended: "Recommended for You",
+    recommendedSubtitle: "Based on ratings, distance, and freshness", allProducts: "All Products", noMoreProducts: "No more products",
+    noProductsFound: "No products found", noProductsFoundDescription: "Try adjusting your filters or search terms",
+  },
+
+  map: { enterFullscreen: "Enter full screen map", exitFullscreen: "Exit full screen map" },
 
   settings: {
     title: "Settings",
@@ -2331,6 +2350,7 @@ export default {
       permissionsUpdated: "Permissions updated.",
       removedSuccess: "Manager removed.",
       permissions: "Permissions",
+      noPermissions: "No permissions",
     },
     assignModal: {
       title: "Assign Manager",

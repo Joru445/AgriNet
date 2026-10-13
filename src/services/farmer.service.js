@@ -23,6 +23,7 @@ export async function createFarmerProfile(data) {
     fullname: data.fullname,
     fullnameLower: data.fullnameLower,
     username: data.username,
+    usernameLower: String(data.username || "").trim().toLowerCase(),
     email: data.email,
 
     profilePicture: data.profilePicture || "",
@@ -208,6 +209,8 @@ export async function getFarmerById(uid) {
   }
 
   try {
+    // Never fall back to another farmer's unredacted Firestore document.
+    if (uid !== auth.currentUser?.uid) return null;
     const farmerDoc = await getDoc(doc(db, "farmers", uid));
     if (farmerDoc.exists()) {
       const farmerData = { uid: farmerDoc.id, role: "farmer", ...farmerDoc.data() };

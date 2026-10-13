@@ -3,7 +3,6 @@ import { getMessagesPath } from "../../utils/routes";
 import { useLanguage } from "../../context/LanguageContext";
 import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
-import { apiMarkProductAsAvailable } from "../../services/product.service";
 import { getProductInquiryState } from "../../utils/productStatus";
 import { showToast } from "../../utils/toast";
 
@@ -45,16 +44,6 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
     navigate(`/farmer/products`);
   }
 
-  async function handleMarkAvailable() {
-    try {
-      await apiMarkProductAsAvailable(product.id);
-      showToast.success(t("productDetails.markAvailableSuccess"));
-      onProductUpdate?.();
-    } catch (error) {
-      showToast.error(error.message || t("productDetails.markAvailableError"));
-    }
-  }
-
   const inquiryLabel = !canInquire
     ? t(inquiryState.labelKey)
     : isSignedIn
@@ -84,11 +73,11 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
         <div className="space-y-2">
           {isPreorder && (
             <button
-              onClick={handleMarkAvailable}
+              onClick={() => navigate("/farmer/transactions")}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-amber-500/20 transition hover:bg-amber-600 active:scale-[0.99] cursor-pointer"
             >
-              <i className="ri-store-2-line text-lg" />
-              {t("productDetails.markAsAvailable")}
+              <i className="ri-calendar-check-line text-lg" />
+              Manage pre-orders and mark each Ready
             </button>
           )}
           <button

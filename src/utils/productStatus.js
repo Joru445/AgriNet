@@ -42,6 +42,24 @@ export const INQUIRY_STATE = {
   PREORDER_UNAVAILABLE: "PREORDER_UNAVAILABLE",
 };
 
+/** One availability interpretation for marketplace filtering and product UI. */
+export function getProductAvailability(product, now = Date.now()) {
+  const state = getProductInquiryState(product, now);
+  const unavailable = {
+    [INQUIRY_STATE.EXPIRED]: "expired",
+    [INQUIRY_STATE.OUT_OF_STOCK]: "out_of_stock",
+    [INQUIRY_STATE.UNAVAILABLE]: "unavailable",
+    [INQUIRY_STATE.PREORDER_UNAVAILABLE]: "unavailable",
+    [INQUIRY_STATE.PREORDER_ENDED]: "unavailable",
+    [INQUIRY_STATE.PREORDER_FULL]: "out_of_stock",
+    [INQUIRY_STATE.PREORDER_OPEN]: "preorder",
+  };
+  if (state.code === INQUIRY_STATE.AVAILABLE) {
+    return { ...state, status: isLowStock(product) ? "low_stock" : "in_stock" };
+  }
+  return { ...state, status: unavailable[state.code] || "unavailable" };
+}
+
 export const LOW_STOCK_THRESHOLD = 5;
 
 export function getProductStock(product) {

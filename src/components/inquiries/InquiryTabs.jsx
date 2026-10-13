@@ -7,6 +7,10 @@ export default function InquiryTabs({ activeTab, onChange }) {
       id: "all",
       label: t("transactions.status.all"),
     },
+    { id: "awaiting_agreement", label: "Negotiating" },
+    { id: "confirmed", label: "Confirmed" },
+    { id: "preparing", label: "Preparing" },
+    { id: "ready", label: "Ready" },
     {
       id: "reserved",
       label: t("transactions.status.reserved"),

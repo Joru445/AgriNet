@@ -14,8 +14,6 @@ export default function Login() {
     hasSavedAccounts,
     viewMode,
     passwordAccount,
-    savePassword,
-    setSavePassword,
     handleChange,
     handleSubmit,
     handleSelectSavedAccount,
@@ -41,8 +39,6 @@ export default function Login() {
         hasSavedAccounts={hasSavedAccounts}
         viewMode={viewMode}
         passwordAccount={passwordAccount}
-        savePassword={savePassword}
-        onSavePasswordChange={setSavePassword}
         onChange={handleChange}
         onSubmit={handleSubmit}
         onSocialLogin={initiateSocialLogin}

@@ -1,9 +1,12 @@
 import { useLanguage } from "../../context/LanguageContext";
+import Button from "./Button";
 
 export default function SearchBar({
   value = "",
   onChange,
   onSubmit,
+  onOpenFilters,
+  filtersActive = false,
 }) {
   const { t } = useLanguage();
 
@@ -80,6 +83,12 @@ export default function SearchBar({
             >
               <i className="ri-close-circle-fill text-lg" />
             </button>
+          )}
+
+          {onOpenFilters && (
+            <Button type="button" variant={filtersActive ? "subtle" : "secondary"} size="icon-sm"
+              icon="ri-filter-3-line" onClick={onOpenFilters} aria-label={t("marketplace.openFilters")}
+              aria-pressed={filtersActive} title={t("marketplace.openFilters")} className="shrink-0" />
           )}
 
           {/*displayLocation && (

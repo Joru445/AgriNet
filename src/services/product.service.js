@@ -27,7 +27,7 @@ export async function getProducts() {
 
   const snapshot = await getDocs(q);
 
-  return snapshot.docs.map((doc) => ({
+  return snapshot.docs.filter((doc) => !doc.data().archivedAt).map((doc) => ({
     id: doc.id,
     ...doc.data(),
   }));
@@ -55,130 +55,17 @@ export async function getFarmerProducts(farmerId) {
 
   const snapshot = await getDocs(q);
 
-  return snapshot.docs.map((doc) => ({
+  return snapshot.docs.filter((doc) => !doc.data().archivedAt).map((doc) => ({
     id: doc.id,
     ...doc.data(),
   }));
 }
 
-export async function createProduct(data) {
-  const docRef = await addDoc(productsRef, {
-    name: data.name,
-    category: data.category,
-    price: Number(data.price),
-    originalPrice:
-      data.originalPrice !== "" &&
-      data.originalPrice != null &&
-      !isNaN(Number(data.originalPrice)) &&
-      Number(data.originalPrice) > 0
-        ? Number(data.originalPrice)
-        : null,
-    stock: Number(data.stock),
-    unit: data.unit,
-
-    farmerId: data.farmerId,
-
-    images: data.images || [],
-
-    available: data.available ?? true,
-
-    durationHours:
-      data.durationHours !== "" &&
-      data.durationHours != null &&
-      !isNaN(Number(data.durationHours)) &&
-      Number(data.durationHours) > 0
-        ? Number(data.durationHours)
-        : null,
-
-    expiresAt:
-      data.durationHours !== "" &&
-      data.durationHours != null &&
-      !isNaN(Number(data.durationHours)) &&
-      Number(data.durationHours) > 0
-        ? new Date(Date.now() + Number(data.durationHours) * 3600 * 1000)
-        : null,
-
-    ratingSummary: {
-      average: 0,
-      count: 0,
-    },
-
-    // Pre-order fields
-    sellingMode: data.sellingMode === "preorder" ? "preorder" : "available",
-    expectedAvailableDate:
-      data.sellingMode === "preorder" && data.expectedAvailableDate
-        ? new Date(data.expectedAvailableDate)
-        : null,
-    preOrderDeadline:
-      data.sellingMode === "preorder" && data.preOrderDeadline
-        ? new Date(data.preOrderDeadline)
-        : null,
-    preOrderLimit:
-      data.sellingMode === "preorder" && data.preOrderLimit
-        ? Number(data.preOrderLimit)
-        : null,
-    reservedQuantity: data.sellingMode === "preorder" ? 0 : null,
-
-    createdAt: serverTimestamp(),
-  });
-
-  // Invalidate related caches
-  pageCache.invalidate("homeProducts");
-  pageCache.invalidate("marketplaceProducts");
-  pageCache.invalidatePrefix(`storeProfile:${data.farmerId}`);
-  pageCache.invalidatePrefix(`farmerDashboard:${data.farmerId}`);
-
-  return docRef.id;
-}
-
-export async function updateProduct(id, data) {
-  const updatePayload = { ...data };
-  if (data.durationHours !== undefined) {
-    const durNum =
-      data.durationHours !== "" &&
-      data.durationHours != null &&
-      !isNaN(Number(data.durationHours)) &&
-      Number(data.durationHours) > 0
-        ? Number(data.durationHours)
-        : null;
-
-    updatePayload.durationHours = durNum;
-    updatePayload.expiresAt = durNum
-      ? new Date(Date.now() + durNum * 3600 * 1000)
-      : null;
-  }
-
-  await updateDoc(doc(db, "products", id), updatePayload);
-
-  // Invalidate related caches
-  pageCache.invalidate("homeProducts");
-  pageCache.invalidate("marketplaceProducts");
-  pageCache.invalidate(`product:${id}`);
-
-  // Invalidate store profile and farmer dashboard if farmerId is available
-  if (data.farmerId) {
-    pageCache.invalidatePrefix(`storeProfile:${data.farmerId}`);
-    pageCache.invalidatePrefix(`farmerDashboard:${data.farmerId}`);
-  }
-}
-
-export async function deleteProduct(id) {
-  // Get the product first to find the farmerId for cache invalidation
-  const productDoc = await getDoc(doc(db, "products", id));
-  const farmerId = productDoc.exists() ? productDoc.data().farmerId : null;
-
-  await deleteDoc(doc(db, "products", id));
-
-  // Invalidate related caches
-  pageCache.invalidate("homeProducts");
-  pageCache.invalidate("marketplaceProducts");
-  pageCache.invalidate(`product:${id}`);
-
-  if (farmerId) {
-    pageCache.invalidatePrefix(`storeProfile:${farmerId}`);
-    pageCache.invalidatePrefix(`farmerDashboard:${farmerId}`);
-  }
-}
+// Legacy exported function names remain for older components, but all mutations
+// must go through the same validated backend path.
+export const createProduct = (data) => apiCreateProduct(data);
+export const updateProduct = (id, data) => apiUpdateProduct(id, data);
+export const deleteProduct = (id) => apiDeleteProduct(id);
 
 export async function getMarketplaceProductsPage({ pageSize = 24, cursor } = {}) {
   const constraints = [orderBy("createdAt", "desc"), limit(pageSize)];
@@ -186,7 +73,7 @@ export async function getMarketplaceProductsPage({ pageSize = 24, cursor } = {})
   if (cursor) constraints.splice(1, 0, startAfter(cursor));
 
   const productSnapshot = await getDocs(query(productsRef, ...constraints));
-  const products = productSnapshot.docs.map((productDoc) => ({
+  const products = productSnapshot.docs.filter((productDoc) => !productDoc.data().archivedAt).map((productDoc) => ({
     id: productDoc.id,
     ...productDoc.data(),
   }));
@@ -316,7 +203,7 @@ async function getFarmersByIds(ids) {
  * preserved for easy rollback.
  */
 
-export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, category, available, sellingMode, farmerId } = {}) {
+export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, category, available, sellingMode, farmerId, groupId } = {}) {
   try {
     const params = new URLSearchParams();
     params.set("limit", String(pageSize));
@@ -328,6 +215,7 @@ export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, 
     if (available !== undefined) params.set("available", String(available));
     if (sellingMode) params.set("sellingMode", sellingMode);
     if (farmerId) params.set("farmerId", farmerId);
+    if (groupId) params.set("groupId", groupId);
 
     const data = await apiRequest(`/v1/products/marketplace?${params}`, {
       requireAuth: false,
@@ -339,8 +227,11 @@ export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, 
       hasMore: data.hasMore ?? false,
     };
   } catch (err) {
-    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
-    return getMarketplaceProductsPage({ pageSize, cursor });
+    // API cursors and direct Firestore cursors are NOT compatible. Never
+    // return unfiltered products when a backend filter or cursor was requested.
+    if (cursor || category || available !== undefined || sellingMode || farmerId || groupId) throw err;
+    console.warn("[Products] Backend unavailable; using unfiltered first-page read:", err.message);
+    return getMarketplaceProductsPage({ pageSize });
   }
 }
 
@@ -368,42 +259,55 @@ export async function apiGetFarmerProducts(farmerId) {
   }
 }
 
+const MUTABLE_PRODUCT_FIELDS = [
+  "name", "description", "category", "price", "originalPrice", "stock", "unit", "images",
+  "available", "durationHours", "sellingMode", "expectedAvailableDate",
+  "preOrderDeadline", "preOrderLimit", "preorderPolicy", "preparationLeadHours",
+];
+
+export function productPayload(form) {
+  // UI forms contain farmerId/id and read-only metadata. The server derives
+  // the seller identity from the authenticated Firebase token.
+  return Object.fromEntries(MUTABLE_PRODUCT_FIELDS
+    .filter((key) => form[key] !== undefined)
+    .map((key) => {
+      if (["price", "originalPrice", "stock", "durationHours", "preparationLeadHours", "preOrderLimit"].includes(key)
+        && form[key] !== "" && form[key] !== null) {
+        return [key, Number(form[key])];
+      }
+      return [key, form[key]];
+    }));
+}
+
 export async function apiCreateProduct(productData) {
-  try {
-    const data = await apiRequest("/v1/products", {
-      method: "POST",
-      body: JSON.stringify(productData),
-    });
-    return data.data ?? null;
-  } catch (err) {
-    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
-    return createProduct(productData);
-  }
+  const data = await apiRequest("/v1/products", {
+    method: "POST",
+    body: JSON.stringify(productPayload(productData)),
+  });
+  pageCache.invalidate("marketplaceProducts");
+  pageCache.invalidate("homeProducts");
+  return data.data ?? null;
 }
 
 export async function apiUpdateProduct(id, productData) {
-  try {
-    const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      body: JSON.stringify(productData),
-    });
-    return data.data ?? null;
-  } catch (err) {
-    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
-    return updateProduct(id, productData);
-  }
+  const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(productPayload(productData)),
+  });
+  pageCache.invalidate("marketplaceProducts");
+  pageCache.invalidate("homeProducts");
+  pageCache.invalidate(`product:${id}`);
+  return data.data ?? null;
 }
 
 export async function apiDeleteProduct(id) {
-  try {
-    const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}`, {
-      method: "DELETE",
-    });
-    return data.data ?? null;
-  } catch (err) {
-    console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
-    return deleteProduct(id);
-  }
+  const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+  pageCache.invalidate("marketplaceProducts");
+  pageCache.invalidate("homeProducts");
+  pageCache.invalidate(`product:${id}`);
+  return data.data ?? null;
 }
 
 export async function apiToggleProductAvailability(id) {

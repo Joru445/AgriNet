@@ -143,20 +143,12 @@ export default defineConfig(({ command, mode }) => {
                 },
               },
             },
-            // Cloudinary images (product photos, avatars)
+            // Do not persist Cloudinary images to PWA cache: some paths contain
+            // private transaction proofs. Public assets remain browser-cacheable
+            // under Cloudinary's own HTTP headers.
             {
               urlPattern: /^https:\/\/res\.cloudinary\.com\/.*/i,
-              handler: 'StaleWhileRevalidate',
-              options: {
-                cacheName: 'cloudinary-images',
-                expiration: {
-                  maxEntries: 200,
-                  maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
+              handler: 'NetworkOnly',
             },
             // Leaflet tile maps
             {

@@ -4,7 +4,6 @@ import useProductReviews from "../../hooks/useProductReviews";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
-import { isProductExpired } from "../../utils/productExpiration";
 
 import ProductGallery from "../../components/products/ProductGallery";
 import ProductInfo from "../../components/products/ProductInfo";
@@ -34,7 +33,7 @@ export default function ProductDetails() {
 
   const isOwner = product?.farmerId === profile?.uid;
 
-  if (!loading && (!product || (isProductExpired(product) && !isOwner))) {
+  if (!loading && !product) {
     return (
       <main className="mx-auto max-w-7xl px-4 py-8">
         <EmptyState

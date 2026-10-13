@@ -25,6 +25,11 @@ function getPrimaryProvider(user) {
   return providers[0] || null;
 }
 
+function getProviders(user) {
+  return [...new Set(user?.providerData?.map((item) => item.providerId)
+    .filter((provider) => ["password", "google.com", "facebook.com"].includes(provider)) || [])];
+}
+
 /**
  * Manages saved accounts and account switching.
  *
@@ -56,7 +61,6 @@ export function useSavedAccounts() {
     savedUidRef.current = profile.uid;
 
     const provider = getPrimaryProvider(user);
-    if (provider === "password") return;
 
     const updated = saveAccount({
       uid: profile.uid,
@@ -65,6 +69,7 @@ export function useSavedAccounts() {
       avatar: profile.avatar,
       role: profile.role,
       provider,
+      providers: getProviders(user),
     });
     setSavedAccounts(updated);
   }, [profile, user]);
@@ -85,6 +90,7 @@ export function useSavedAccounts() {
         avatar: data.avatar,
         role: data.role,
         provider,
+        providers: getProviders(user),
       });
       setSavedAccounts(updated);
     },
@@ -155,7 +161,12 @@ export function useSavedAccounts() {
         // The passkey may belong to a different account than selected.
         // AuthContext will update with the actual authenticated UID.
         // We return success — the caller can verify the UID matches if needed.
-        return { success: true, uid: auth.currentUser?.uid };
+        const uid = auth.currentUser?.uid;
+        if (uid !== account.uid) {
+          await signOut(auth);
+          return { success: false, error: "account-mismatch" };
+        }
+        return { success: true, uid };
       } catch (error) {
         // User cancelled or authentication failed
         if (error.name === "NotAllowedError") {
@@ -192,7 +203,11 @@ export function useSavedAccounts() {
           await signOut(auth);
         }
         const method = account.provider === "google.com" ? "google" : "facebook";
-        await signInWithProvider(method, { loginHint: account.email });
+        const credential = await signInWithProvider(method, { selectAccount: method === "google" });
+        if (credential.user.uid !== account.uid) {
+          await signOut(auth);
+          throw new Error("The selected provider account does not match the saved account.");
+        }
         return;
       }
 
@@ -208,6 +223,10 @@ export function useSavedAccounts() {
 
           if (result?.customToken) {
             await signInWithCustomToken(auth, result.customToken);
+            if (auth.currentUser?.uid !== account.uid) {
+              await signOut(auth);
+              throw new Error("The selected passkey does not match the saved account.");
+            }
             sessionStorage.removeItem("agrinet_switch_email");
             return;
           }

@@ -6,7 +6,7 @@ import { getGroups, getGroupMembers, getUserApprovedGroups } from "../services/g
 import useUserLocation from "./useUserLocation";
 import { getDistanceKm } from "../utils/distance";
 import { isProductExpired } from "../utils/productExpiration";
-import { isProductBuyable, getProductInquiryState } from "../utils/productStatus";
+import { getProductAvailability, getProductInquiryState } from "../utils/productStatus";
 import * as pageCache from "../utils/pageCache";
 
 const PRODUCTS_PER_PAGE = 12;
@@ -62,12 +62,16 @@ async function enrichProductsWithFarmerGroups(rawProducts) {
  * Compute a relevance score for a product.
  * Relevance = rating (0-40) + distance (0-30) + freshness (0-30).
  */
+function getTimestampMs(value) {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") return new Date(value).getTime() || 0;
+  return value?.toDate?.()?.getTime?.() ?? (value?.seconds ?? 0) * 1000;
+}
+
 function scoreRelevance(product, now) {
   const rating = Number(product.productRating ?? 0);
 
-  const createdAt =
-    product.createdAt?.toDate?.()?.getTime?.() ??
-    (product.createdAt?.seconds ?? 0) * 1000;
+  const createdAt = getTimestampMs(product.createdAt);
 
   const ageDays = Math.max(0, (now - createdAt) / (1000 * 60 * 60 * 24));
 
@@ -105,8 +109,7 @@ function applyClientFilters(
   products,
   filters,
   userLocation,
-  groupFarmerIds = new Set(),
-  allGroups = [],
+  // Group filtering is server-side; kept separate from local search.
 ) {
   let data = [...products];
 
@@ -134,108 +137,14 @@ function applyClientFilters(
     });
   }
 
-  // Filter by selected Group / Organization
-  if (filters.group && String(filters.group).trim() !== "") {
-    const target = String(filters.group).trim().toLowerCase();
-    const matchedGroup = allGroups.find(
-      (g) =>
-        String(g.name || "").trim().toLowerCase() === target ||
-        String(g.id || "") === String(filters.group),
-    );
-    const targetGroupId = matchedGroup?.id || filters.group;
-    const targetGroupName = String(matchedGroup?.name || filters.group).trim().toLowerCase();
-
-    data = data.filter((product) => {
-      // 1. Check if the product's farmer is an approved member of this group
-      const farmerId = product.farmerId || product.farmer?.uid || product.farmer?.id;
-      if (farmerId && groupFarmerIds.has(farmerId)) {
-        return true;
-      }
-
-      // 2. Direct product group identifiers
-      if (
-        (product.groupId &&
-          (String(product.groupId) === String(targetGroupId) ||
-            String(product.groupId).toLowerCase() === targetGroupName)) ||
-        (product.groupName &&
-          String(product.groupName).toLowerCase() === targetGroupName) ||
-        (product.organization &&
-          String(product.organization).toLowerCase() === targetGroupName) ||
-        (product.organizationId &&
-          String(product.organizationId) === String(targetGroupId))
-      ) {
-        return true;
-      }
-
-      // 3. String or object product.group
-      if (typeof product.group === "string") {
-        const pGroup = String(product.group).trim().toLowerCase();
-        if (pGroup === targetGroupName || product.group === targetGroupId) return true;
-      } else if (product.group && typeof product.group === "object") {
-        if (
-          String(product.group.id || "") === String(targetGroupId) ||
-          String(product.group.groupId || "") === String(targetGroupId) ||
-          String(product.group.name || "").toLowerCase() === targetGroupName ||
-          String(product.group.groupName || "").toLowerCase() === targetGroupName
-        ) {
-          return true;
-        }
-      }
-
-      // 4. Array product.groups
-      if (Array.isArray(product.groups) && product.groups.length > 0) {
-        const hasMatch = product.groups.some((g) => {
-          if (typeof g === "string") {
-            const str = g.toLowerCase();
-            return str === targetGroupName || g === targetGroupId;
-          }
-          return (
-            String(g?.groupId || "") === String(targetGroupId) ||
-            String(g?.id || "") === String(targetGroupId) ||
-            String(g?.groupName || "").toLowerCase() === targetGroupName ||
-            String(g?.name || "").toLowerCase() === targetGroupName
-          );
-        });
-        if (hasMatch) return true;
-      }
-
-      // 5. Farmer's groups array or object
-      if (Array.isArray(product.farmer?.groups) && product.farmer.groups.length > 0) {
-        const hasFarmerGroup = product.farmer.groups.some((g) => {
-          if (typeof g === "string") {
-            const str = g.trim().toLowerCase();
-            return str === targetGroupName || g.trim() === targetGroupId;
-          }
-          return (
-            String(g?.groupId || g?.id || "").trim() === targetGroupId ||
-            String(g?.groupName || g?.name || "").trim().toLowerCase() === targetGroupName
-          );
-        });
-        if (hasFarmerGroup) return true;
-      }
-
-      if (typeof product.farmer?.group === "string") {
-        const fGroup = String(product.farmer.group).trim().toLowerCase();
-        if (fGroup === targetGroupName || product.farmer.group === targetGroupId) return true;
-      } else if (product.farmer?.group && typeof product.farmer.group === "object") {
-        if (
-          String(product.farmer.group.id || "") === String(targetGroupId) ||
-          String(product.farmer.group.groupId || "") === String(targetGroupId) ||
-          String(product.farmer.group.name || "").toLowerCase() === targetGroupName ||
-          String(product.farmer.group.groupName || "").toLowerCase() === targetGroupName
-        ) {
-          return true;
-        }
-      }
-
-      return false;
-    });
-  }
+  // Group membership filtering is enforced by the backend against
+  // approved group-memberships, not arbitrary product.group text values.
 
   data = data.filter((product) => {
-    if (isProductExpired(product)) return false;
-
-    if (!filters.showUnavailable && !isProductBuyable(product)) return false;
+    // Keep the explicit expiry gate for immediate lifecycle exclusion; the
+    // shared evaluator below handles every availability state consistently.
+    if (isProductExpired(product) && !filters.showUnavailable) return false;
+    if (!filters.showUnavailable && !getProductAvailability(product).allowed) return false;
 
     const price = Number(product.price ?? 0);
     const rating = Number(product.productRating ?? 0);
@@ -258,6 +167,10 @@ export default function useMarketplace() {
   const { location: userLocation } = useUserLocation();
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState(null);
+  const refreshInFlightRef = useRef(false);
+  const requestVersionRef = useRef(0);
   const [error, setError] = useState(null);
   const [products, setProducts] = useState(() => pageCache.get(CACHE_KEY) ?? []);
   const [hasMore, setHasMore] = useState(true);
@@ -346,7 +259,7 @@ export default function useMarketplace() {
   useEffect(() => {
     const timer = setInterval(() => {
       setNow(Date.now());
-    }, 1000);
+    }, 60_000);
     return () => clearInterval(timer);
   }, []);
 
@@ -362,19 +275,22 @@ export default function useMarketplace() {
   // Build the backend filter key. This is a stable string that changes
   // only when the server-relevant filters change (category, sellingMode, showUnavailable).
   const backendFilterKey = useMemo(
-    () => `${filters.category}|${filters.sellingMode}|${filters.showUnavailable}`,
-    [filters.category, filters.sellingMode, filters.showUnavailable],
+    () => `${filters.category}|${filters.sellingMode}|${filters.showUnavailable}|${filters.group}`,
+    [filters.category, filters.sellingMode, filters.showUnavailable, filters.group],
   );
 
-  const loadProducts = useCallback(async ({ reset = false } = {}) => {
+  const loadProducts = useCallback(async ({ reset = false, soft = false } = {}) => {
+    const version = reset ? ++requestVersionRef.current : requestVersionRef.current;
     try {
       setError(null);
 
       if (reset) {
-        setLoading(true);
-        cursorRef.current = null;
+        if (!soft) setLoading(true);
+        // Keep old cards while refreshing; invalidate the cached first page.
+        pageCache.invalidate(CACHE_KEY);
+        if (!soft) cursorRef.current = null;
       } else {
-        if (loadingMoreRef.current) return;
+        if (loadingMoreRef.current || refreshInFlightRef.current) return false;
         setLoadingMore(true);
         loadingMoreRef.current = true;
       }
@@ -394,6 +310,11 @@ export default function useMarketplace() {
       }
       if (!activeFilters.showUnavailable) {
         apiFilters.available = true;
+      }
+      if (activeFilters.group) {
+        const matched = activeAllGroups.find((g) =>
+          g.id === activeFilters.group || String(g.name).toLowerCase() === String(activeFilters.group).toLowerCase());
+        apiFilters.groupId = matched?.id ?? activeFilters.group;
       }
 
       if (reset) {
@@ -451,6 +372,7 @@ export default function useMarketplace() {
           };
         });
 
+        if (version !== requestVersionRef.current) return false;
         setProducts(final);
         cursorRef.current = cursor;
         setHasMore(backendHasMore);
@@ -463,6 +385,7 @@ export default function useMarketplace() {
           ...apiFilters,
         });
 
+        if (version !== requestVersionRef.current) return false;
         if (result.products.length > 0) {
           const enriched = await enrichProductsWithFarmerGroups(result.products);
           setProducts((current) => {
@@ -475,15 +398,34 @@ export default function useMarketplace() {
         cursorRef.current = result.cursor;
         setHasMore(result.hasMore && result.products.length > 0);
       }
+      return true;
     } catch (err) {
       console.error(err);
-      setError(err);
+      if (!soft && version === requestVersionRef.current) setError(err);
+      if (soft) throw err;
+      return false;
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      loadingMoreRef.current = false;
+      if (version === requestVersionRef.current) {
+        setLoading(false);
+        setLoadingMore(false);
+        loadingMoreRef.current = false;
+      }
     }
   }, []);
+
+  const refreshProducts = useCallback(async () => {
+    if (refreshInFlightRef.current) return false;
+    refreshInFlightRef.current = true;
+    setRefreshing(true);
+    try {
+      await loadProducts({ reset: true, soft: true });
+      setLastRefreshedAt(Date.now());
+      return true;
+    } finally {
+      refreshInFlightRef.current = false;
+      setRefreshing(false);
+    }
+  }, [loadProducts]);
 
   const hasActiveFilters =
     filters.search.trim() !== "" ||
@@ -547,7 +489,7 @@ export default function useMarketplace() {
         break;
       default:
         data.sort(
-          (a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0),
+          (a, b) => getTimestampMs(b.createdAt) - getTimestampMs(a.createdAt),
         );
     }
 
@@ -580,13 +522,15 @@ export default function useMarketplace() {
 
   const recentProducts = useMemo(() => {
     return [...marketplaceProducts]
+      .filter((product) => getProductAvailability(product, now).allowed)
       .filter((product) => product?.createdAt)
-      .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
+      .sort((a, b) => getTimestampMs(b.createdAt) - getTimestampMs(a.createdAt))
       .slice(0, DISCOVERY_SECTION_SIZE);
-  }, [marketplaceProducts]);
+  }, [marketplaceProducts, now]);
 
   const relevantProducts = useMemo(() => {
     return [...marketplaceProducts]
+      .filter((product) => getProductAvailability(product, now).allowed)
       .map((product) => ({
         ...product,
         relevanceScore: scoreRelevance(product, now),
@@ -643,6 +587,9 @@ export default function useMarketplace() {
     hasMore,
     loadMore: () => loadProducts(),
     reloadProducts: () => loadProducts({ reset: true }),
+    refreshProducts,
+    refreshing,
+    lastRefreshedAt,
 
     // Discovery sections (for default/discovery state)
     nearbyProducts,

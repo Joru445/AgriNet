@@ -30,8 +30,8 @@ export default function InquiryCard({
       ? (inquiry.consumerSnapshot ?? consumer)
       : inquiry.farmerSnapshot;
 
-  const price = Number(productData?.price) || 0;
-  const quantity = Number(productData?.quantity) || 0;
+  const price = Number(inquiry.agreement?.unitPrice ?? productData?.price) || 0;
+  const quantity = Number(inquiry.agreement?.quantity ?? productData?.quantity) || 0;
   const total = price * quantity;
 
   const isReviewed =
@@ -46,29 +46,30 @@ export default function InquiryCard({
   if (userRole === "farmer" && ["accepted", "proof_submitted"].includes(status)) showDot = true;
 
   function handlePrimaryAction() {
-    // Consumer may only start a reserved pre-order transaction after the
-    // farmer has marked the product available (mirrors InquiryRow and the
-    // backend's start gate).
-    const isConsumerReserved =
-      userRole === "consumer" &&
-      status === "reserved" &&
-      productData?.sellingMode === "available";
-    if (isConsumerReserved || (status === "accepted" && userRole === "farmer")) {
-      acknowledgeInquiry(inquiry.id, inquiry.status);
-      onStatusChange(inquiry.id, "ongoing");
-    } else if (status === "reserved") {
-      // Waiting for availability — the only honest action is the conversation.
-      openConversation();
-    } else if (status === "accepted" || status === "ongoing") {
-      navigate(`${getInquiriesPath(userRole)}/${inquiry.id}/proof`);
-    } else if (status === "awaiting_proof" || status === "proof_submitted") {
-      navigate(`${getInquiriesPath(userRole)}/${inquiry.id}/proof`);
-    } else if (status === "completed") {
-      if (!isReviewed && userRole === "consumer") {
-        navigate(`${getInquiriesPath(userRole)}/${inquiry.id}/review`);
-      } else {
-        navigate(`${getInquiriesPath(userRole)}/${inquiry.id}/proof`);
-      }
+    const preorder = inquiry.type === "preorder";
+    if (preorder && userRole === "farmer" && ["confirmed", "reserved"].includes(status)) {
+      onStatusChange(inquiry.id, "preparing"); return;
+    }
+    if (preorder && userRole === "farmer" && status === "preparing") {
+      onStatusChange(inquiry.id, "ready"); return;
+    }
+    if (preorder && userRole === "consumer" && status === "awaiting_agreement") {
+      onStatusChange(inquiry.id, "confirmed"); return;
+    }
+    if (preorder && userRole === "consumer" && status === "ready") {
+      onStatusChange(inquiry.id, "ongoing"); return;
+    }
+    if (status === "accepted" && userRole === "farmer") {
+      onStatusChange(inquiry.id, "ongoing"); return;
+    }
+    if (["awaiting_agreement", "confirmed", "preparing", "reserved", "accepted"].includes(status)) {
+      openConversation(); return;
+    }
+    if (["ongoing", "awaiting_proof", "proof_submitted"].includes(status)) {
+      navigate(`${getInquiriesPath(userRole)}/${inquiry.id}/proof`); return;
+    }
+    if (status === "completed") {
+      navigate(`${getInquiriesPath(userRole)}/${inquiry.id}/${!isReviewed && userRole === "consumer" ? "review" : "proof"}`);
     }
   }
 
@@ -78,7 +79,7 @@ export default function InquiryCard({
     navigate(`${getMessagesPath(userRole)}?conversation=${inquiry.conversationId}`);
   }
 
-  const primaryLabel = getPrimaryLabel(status, userRole, isReviewed, t, productData);
+  const primaryLabel = getPrimaryLabel(status, userRole, isReviewed, t, productData, inquiry.type);
 
   return (
     <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-md transition-all hover:shadow-lg hover:border-[#2D6A4F]/40 dark:hover:border-[#52b788]/40">
@@ -147,6 +148,18 @@ export default function InquiryCard({
           </div>
         </div>
 
+        {inquiry.type === "preorder" && inquiry.agreement && (
+          <div className="rounded-lg border border-(--agri-border) bg-(--agri-hover)/40 p-2 text-xs text-(--agri-text-secondary)">
+            <strong>{status === "awaiting_agreement" ? "Review before accepting" : "Agreed terms"} · v{inquiry.agreementVersion || 1}</strong>
+            <p>{Number(inquiry.agreement.quantity)} {inquiry.agreement.unit || "units"} at ₱{Number(inquiry.agreement.unitPrice).toLocaleString()} each · total ₱{Number(inquiry.agreement.totalPrice).toLocaleString()}</p>
+            <p>Collection: {inquiry.agreement.collectionMethod?.replaceAll("_", " ") || "Coordinate in chat"}</p>
+            {(inquiry.estimatedReadyAt || inquiry.agreement.readyAt)
+              ? <p>Estimated ready: {new Date(inquiry.estimatedReadyAt || inquiry.agreement.readyAt).toLocaleString()}</p>
+              : <p>Lead time: {Number(inquiry.agreement.preparationLeadHours || 0)} hours after buyer confirmation</p>}
+            {inquiry.agreement.sellerNotes && <p className="whitespace-pre-wrap">Seller: {inquiry.agreement.sellerNotes}</p>}
+            {inquiry.agreement.consumerInstructions && <p className="whitespace-pre-wrap">Buyer: {inquiry.agreement.consumerInstructions}</p>}
+          </div>
+        )}
         {/* Counterparty & Date */}
         <div className="flex items-center justify-between border-t border-(--agri-border-subtle) pt-2.5 text-xs text-(--agri-text-muted)">
           <div className="flex items-center gap-2 min-w-0">
@@ -216,14 +229,11 @@ export default function InquiryCard({
   );
 }
 
-function getPrimaryLabel(status, userRole, isReviewed, t, productData) {
+function getPrimaryLabel(status, userRole, isReviewed, t, productData, type) {
   if (userRole === "consumer") {
-    if (status === "reserved") {
-      // Only actionable after the farmer marks the product available.
-      return productData?.sellingMode === "available"
-        ? t("transactions.startTransaction")
-        : t("transactions.viewConversation");
-    }
+    if (type === "preorder" && status === "awaiting_agreement") return "Accept proposed terms";
+    if (type === "preorder" && status === "ready") return "Start handover";
+    if (type === "preorder" && ["confirmed", "reserved", "preparing"].includes(status)) return "View conversation";
     if (status === "accepted") return t("transactions.viewConversation");
     if (status === "ongoing") return t("transactions.markComplete");
     if (status === "awaiting_proof") return t("transactions.uploadProof");
@@ -232,6 +242,8 @@ function getPrimaryLabel(status, userRole, isReviewed, t, productData) {
     if (status === "completed" && isReviewed) return t("transactions.viewReview");
   }
   if (userRole === "farmer") {
+    if (type === "preorder" && ["reserved", "confirmed"].includes(status)) return "Start preparing";
+    if (type === "preorder" && status === "preparing") return "Mark Ready";
     if (status === "accepted") return t("transactions.startTransaction");
     if (status === "proof_submitted") return t("transactions.reviewProof");
     if (status === "completed") return t("transactions.viewTransaction");

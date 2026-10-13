@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import ResponsiveModal from "../../ui/ResponsiveModal";
 import Button from "../../ui/Button";
+import Input from "../../ui/Input";
 import SkeletonBox from "../../ui/SkeletonBox";
 
 import { useLanguage } from "../../../context/LanguageContext";
@@ -115,14 +116,8 @@ export default function AssignManagerModal({
       <div className="mt-4 space-y-4">
         {/* Search */}
         <div>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("adminGroups.assignModal.searchPlaceholder")}
-            className="w-full rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/50 px-3.5 py-2.5 text-sm text-(--agri-text) outline-none transition focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/10"
-            autoFocus
-          />
+          <Input label="Search any account (farmer, consumer, admin)" value={query} onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("adminGroups.assignModal.searchPlaceholder")} autoFocus />
         </div>
 
         {/* Search Results */}
