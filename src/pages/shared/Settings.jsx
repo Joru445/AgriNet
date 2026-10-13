@@ -11,6 +11,7 @@ import UserIdentity from "../../components/ui/UserIdentity";
 import FarmerVerification from "../../components/farmer/verification/FarmerVerification";
 import AccountSwitcher from "../../components/settings/AccountSwitcher";
 import PasskeyManager from "../../components/settings/PasskeyManager";
+import DeviceSessions from "../../components/settings/DeviceSessions";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -145,6 +146,8 @@ export default function Settings() {
             </div>
           </SectionCard>
         </section>
+
+        <DeviceSessions />
 
         {/* ── Farmer Verification (farmers only) ──────────── */}
         {profile?.role === "farmer" && <FarmerVerification />}

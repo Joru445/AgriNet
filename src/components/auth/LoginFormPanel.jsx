@@ -80,6 +80,7 @@ export default function LoginFormPanel({
   onSelectSavedAccount,
   onSelectSocialAccount,
   onSelectPasskeyAccount,
+  onQuickSwitch,
   onPasskeyRetry,
   onUseAnotherAccount,
   onBackToSaved,
@@ -107,6 +108,7 @@ export default function LoginFormPanel({
           onSelect={onSelectSavedAccount}
           onSocialSelect={onSelectSocialAccount}
           onPasskeySelect={onSelectPasskeyAccount}
+          onQuickSwitch={onQuickSwitch}
           onUseAnother={onUseAnotherAccount}
         />
 

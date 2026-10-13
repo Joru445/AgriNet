@@ -38,6 +38,7 @@ export default function SavedAccountSelector({
   onSelect,
   onSocialSelect,
   onPasskeySelect,
+  onQuickSwitch,
   onUseAnother,
 }) {
   const { t } = useLanguage();
@@ -49,8 +50,10 @@ export default function SavedAccountSelector({
   const visible = expanded ? accounts : accounts.slice(0, MAX_VISIBLE);
   const hasMore = accounts.length > MAX_VISIBLE && !expanded;
 
-  function handleClick(account, provider = account.provider) {
+  async function handleClick(account, provider = account.provider) {
     if (passkeyLoading) return;
+
+    if (await onQuickSwitch?.(account)) return;
 
     const isSocial =
       provider === "google.com" || provider === "facebook.com";

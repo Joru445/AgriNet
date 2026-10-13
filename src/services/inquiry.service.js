@@ -1,24 +1,18 @@
-import { collection, doc, getDoc, limit, onSnapshot, orderBy, query, where } from "firebase/firestore";
-import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
+import { subscribeToRealtime } from "./api/realtime.client";
 
-// Realtime reads may use Firestore with owner-only rules. Every state-changing
-// operation is authoritative on the backend (no direct Firestore write path).
-const inquiriesRef = collection(db, "inquiries");
 const INQUIRY_PAGE_SIZE = 50;
 
 export function subscribeUserInquiries(uid, role, callback, onError) {
   if (!uid || !role || !callback) return () => {};
-  const field = role === "farmer" ? "farmerId" : "consumerId";
-  return onSnapshot(query(inquiriesRef, where(field, "==", uid), orderBy("createdAt", "desc"), limit(INQUIRY_PAGE_SIZE)),
-    (snapshot) => callback(snapshot.docs.map((d) => ({ id: d.id, ...d.data() }))),
-    (error) => { console.error("Inquiry subscription failed", error); onError?.(error); });
+  return subscribeToRealtime("/v1/inquiries/stream", callback, (error) => {
+    console.error("Inquiry subscription failed", error); onError?.(error);
+  });
 }
 
 export async function getInquiry(inquiryId) {
   if (!inquiryId || typeof inquiryId !== "string") throw new Error("Invalid inquiry ID");
-  const snap = await getDoc(doc(db, "inquiries", inquiryId));
-  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+  return apiGetInquiryById(inquiryId);
 }
 
 export async function apiGetInquiries({ cursor, limit: pageSize } = {}) {

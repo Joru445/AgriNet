@@ -19,6 +19,7 @@ export default function Login() {
     handleSelectSavedAccount,
     handleSelectSocialAccount,
     handleSelectPasskeyAccount,
+    activateQuickSession,
     handlePasskeyRetry,
     handleUseAnotherAccount,
     handleBackToSaved,
@@ -45,6 +46,7 @@ export default function Login() {
         onSelectSavedAccount={handleSelectSavedAccount}
         onSelectSocialAccount={handleSelectSocialAccount}
         onSelectPasskeyAccount={handleSelectPasskeyAccount}
+        onQuickSwitch={activateQuickSession}
         onPasskeyRetry={handlePasskeyRetry}
         onUseAnotherAccount={handleUseAnotherAccount}
         onBackToSaved={handleBackToSaved}

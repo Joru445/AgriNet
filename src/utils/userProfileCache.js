@@ -60,7 +60,9 @@ function sanitizeProfile(data) {
 }
 
 function stripPrivateFields(data, requesterUid) {
-  if (!requesterUid || requesterUid === data.uid) return data;
+  // Only the profile owner may read private fields from a locally cached
+  // record. An absent viewer must be treated as an anonymous outsider.
+  if (requesterUid === data.uid) return data;
   const vis = data.profileVisibility || {};
   const result = { ...data };
   for (const field of PRIVATE_FIELDS) {

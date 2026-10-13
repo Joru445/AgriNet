@@ -6,6 +6,10 @@ import { auth } from "../firebase/auth";
 import { login } from "../services/login.service";
 import { getSavedAccounts, saveAccount } from "../services/savedAccounts.service";
 import {
+  activateRetainedSession,
+  getRetainedSessionStatus,
+} from "../services/multiAccountSession.service";
+import {
   authenticateWithPasskey,
   PasskeyError,
   PasskeyErrorType,
@@ -111,18 +115,33 @@ export function useLoginForm() {
   // ── Saved-account actions ──────────────────────────────────────────
 
   /** Password account clicked → show password-only form */
-  const handleSelectSavedAccount = useCallback((account) => {
+  const activateQuickSession = useCallback(async (account) => {
+    if (!account?.uid) return false;
+    if (await getRetainedSessionStatus(account.uid) !== "available") return false;
+    try {
+      await activateRetainedSession(account.uid);
+      clearSwitchEmail();
+      navigate(getRoleHome(account.role), { replace: true });
+      return true;
+    } catch {
+      return false;
+    }
+  }, [navigate]);
+
+  const handleSelectSavedAccount = useCallback(async (account) => {
+    if (await activateQuickSession(account)) return;
     setPasswordAccount(account);
     setForm((prev) => ({ ...prev, email: account.email, password: "" }));
     setErrors(EMPTY_ERRORS);
     setPasskeyError(null);
     setViewMode("password");
-  }, []);
+  }, [activateQuickSession]);
 
   /** Passkey account clicked → start passkey auth immediately */
   const handleSelectPasskeyAccount = useCallback(
     async (account) => {
       if (passkeyLoading || loading) return;
+      if (await activateQuickSession(account)) return;
 
       setPasskeyLoading(true);
       setPasskeyError(null);
@@ -167,7 +186,7 @@ export function useLoginForm() {
         setPasskeyLoading(false);
       }
     },
-    [passkeyLoading, loading],
+    [passkeyLoading, loading, activateQuickSession],
   );
 
   // ── Social login ─────────────────────────────────────────────────
@@ -176,6 +195,7 @@ export function useLoginForm() {
     async (method, expectedAccount = null) => {
       if (method !== "google" && method !== "facebook") return;
       if (socialAuthInFlight || loading || passkeyLoading) return;
+      if (expectedAccount && await activateQuickSession(expectedAccount)) return;
 
       setSocialAuthInFlight(true);
 
@@ -192,6 +212,7 @@ export function useLoginForm() {
           uid: credential.user.uid,
           email: credential.user.email || "",
           displayName: credential.user.displayName || "",
+          username: "",
           avatar: credential.user.photoURL || "",
           role: "consumer",
           provider: providers[0] || (method === "google" ? "google.com" : "facebook.com"),
@@ -213,12 +234,12 @@ export function useLoginForm() {
         setSocialAuthInFlight(false);
       }
     },
-    [socialAuthInFlight, loading, passkeyLoading],
+    [socialAuthInFlight, loading, passkeyLoading, activateQuickSession],
   );
 
   /** Social account clicked → start Google/Facebook auth */
   const handleSelectSocialAccount = useCallback(
-    (account, provider = account.provider) => {
+    async (account, provider = account.provider) => {
       const method = provider === "google.com" ? "google" : "facebook";
       initiateSocialLogin(method, account);
     },
@@ -307,8 +328,9 @@ export function useLoginForm() {
         saveAccount({
           uid: user.uid,
           email: user.email || form.email,
-          displayName: profile.displayName || "",
-          avatar: profile.avatar || "",
+          displayName: profile.fullname || profile.displayName || user.displayName || "",
+          username: profile.username || "",
+          avatar: profile.profilePicture || profile.avatar || user.photoURL || "",
           role: profile.role || "consumer",
           provider: providers[0] || "password",
           providers,
@@ -410,6 +432,7 @@ export function useLoginForm() {
     handleSelectSavedAccount,
     handleSelectSocialAccount,
     handleSelectPasskeyAccount,
+    activateQuickSession,
     handlePasskeyRetry,
     handleUseAnotherAccount,
     handleBackToSaved,

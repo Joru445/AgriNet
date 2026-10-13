@@ -12,6 +12,11 @@ const STATUS_CONFIG = {
     icon: "ri-checkbox-circle-fill",
     classes: "bg-emerald-500/10 text-emerald-800 border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
   },
+  active: {
+    label: "Active",
+    icon: "ri-checkbox-circle-fill",
+    classes: "bg-emerald-500/10 text-emerald-800 border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
+  },
   approved: {
     label: "Approved",
     icon: "ri-checkbox-circle-fill",
@@ -92,6 +97,11 @@ const STATUS_CONFIG = {
   suspended: {
     label: "Suspended",
     icon: "ri-prohibited-line",
+    classes: "bg-red-500/10 text-red-800 border-red-500/25 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30",
+  },
+  revoked: {
+    label: "Logged out",
+    icon: "ri-logout-box-r-line",
     classes: "bg-red-500/10 text-red-800 border-red-500/25 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30",
   },
 

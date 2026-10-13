@@ -7,6 +7,14 @@ import { useAuth } from "../context/AuthContext";
 import { signInWithProvider } from "../services/auth.service";
 import { authenticateWithPasskey } from "../services/webauthn.service";
 import {
+  activateRetainedSession,
+  getRetainedSessionStatus,
+  removeRetainedSession,
+  retainCurrentSession,
+  signOutAllRetainedSessions,
+} from "../services/multiAccountSession.service";
+import { getRoleHome } from "../utils/routes";
+import {
   getSavedAccounts,
   saveAccount,
   removeAccount as removeSavedAccount,
@@ -45,6 +53,7 @@ export function useSavedAccounts() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [savedAccounts, setSavedAccounts] = useState(() => getSavedAccounts());
+  const [sessionStatuses, setSessionStatuses] = useState({});
   const savedUidRef = useRef(null);
 
   // Auto-save profile when it first loads (handles social auth and page refreshes)
@@ -65,8 +74,9 @@ export function useSavedAccounts() {
     const updated = saveAccount({
       uid: profile.uid,
       email: profile.email,
-      displayName: profile.displayName,
-      avatar: profile.avatar,
+      displayName: profile.fullname || profile.displayName || user.displayName,
+      username: profile.username,
+      avatar: profile.profilePicture || profile.avatar || user.photoURL,
       role: profile.role,
       provider,
       providers: getProviders(user),
@@ -78,6 +88,22 @@ export function useSavedAccounts() {
     setSavedAccounts(getSavedAccounts());
   }, []);
 
+  const refreshSessionStatuses = useCallback(async (accounts = savedAccounts) => {
+    const statuses = await Promise.all(accounts.map(async (account) => [
+      account.uid,
+      await getRetainedSessionStatus(account.uid),
+    ]));
+    setSessionStatuses(Object.fromEntries(statuses));
+  }, [savedAccounts]);
+
+  useEffect(() => {
+    let cancelled = false;
+    refreshSessionStatuses().catch(() => {
+      if (!cancelled) setSessionStatuses({});
+    });
+    return () => { cancelled = true; };
+  }, [refreshSessionStatuses]);
+
   const saveCurrentAccount = useCallback(
     (profileData) => {
       const data = profileData || profile;
@@ -86,8 +112,9 @@ export function useSavedAccounts() {
       const updated = saveAccount({
         uid: data.uid,
         email: data.email,
-        displayName: data.displayName,
-        avatar: data.avatar,
+        displayName: data.fullname || data.displayName || user?.displayName,
+        username: data.username,
+        avatar: data.profilePicture || data.avatar || user?.photoURL,
         role: data.role,
         provider,
         providers: getProviders(user),
@@ -97,11 +124,17 @@ export function useSavedAccounts() {
     [profile, user],
   );
 
-  const removeAccount = useCallback((uid) => {
+  const removeAccount = useCallback(async (uid) => {
     const updated = removeSavedAccount(uid);
     setSavedAccounts(updated);
+    await removeRetainedSession(uid);
     return updated;
   }, []);
+
+  const logoutAllSessions = useCallback(async () => {
+    await signOutAllRetainedSessions();
+    await refreshSessionStatuses();
+  }, [refreshSessionStatuses]);
 
   /**
    * Signs out the current Firebase user (if any), then navigates to the login
@@ -114,7 +147,7 @@ export function useSavedAccounts() {
    * The email is additionally stored in sessionStorage as a fallback.
    */
   const navigateToLogin = useCallback(
-    async (account) => {
+    async (account, { retainCurrent = true } = {}) => {
       if (account?.email) {
         sessionStorage.setItem("agrinet_switch_email", account.email);
       }
@@ -124,7 +157,8 @@ export function useSavedAccounts() {
       navigate(loginUrl, { replace: true, state: { fromSwitch: true } });
 
       if (auth.currentUser) {
-        await signOut(auth);
+        if (retainCurrent) await retainCurrentSession(auth.currentUser);
+        else await signOut(auth);
       }
     },
     [navigate],
@@ -143,10 +177,7 @@ export function useSavedAccounts() {
         return { success: false, error: "no-email" };
       }
 
-      // Sign out current user first
-      if (auth.currentUser) {
-        await signOut(auth);
-      }
+      if (auth.currentUser) await retainCurrentSession(auth.currentUser);
 
       try {
         const result = await authenticateWithPasskey(account.email);
@@ -192,6 +223,25 @@ export function useSavedAccounts() {
     async (account) => {
       if (!account?.uid) return;
 
+      if (auth.currentUser?.uid === account.uid) {
+        return { success: true, alreadyAuthenticated: true };
+      }
+
+      if (sessionStatuses[account.uid] === "available") {
+        try {
+          await activateRetainedSession(account.uid);
+          await refreshSessionStatuses();
+          navigate(getRoleHome(account.role), { replace: true });
+          return { success: true, quickSwitched: true };
+        } catch {
+          // An invalid retained session falls through to the existing Option A
+          // challenge without affecting any unrelated retained account.
+          await refreshSessionStatuses();
+        }
+      }
+
+      if (auth.currentUser) await retainCurrentSession(auth.currentUser);
+
       const isSocialAccount =
         account.provider === "google.com" || account.provider === "facebook.com";
 
@@ -199,9 +249,6 @@ export function useSavedAccounts() {
 
       if (isSocialAccount) {
         // Social auth opens a popup/redirect flow — sign out first.
-        if (auth.currentUser) {
-          await signOut(auth);
-        }
         const method = account.provider === "google.com" ? "google" : "facebook";
         const credential = await signInWithProvider(method, { selectAccount: method === "google" });
         if (credential.user.uid !== account.uid) {
@@ -214,10 +261,6 @@ export function useSavedAccounts() {
       if (hasPasskey) {
         // Passkey auth must happen while signed out: sign out first, then
         // authenticate through the platform authenticator.
-        if (auth.currentUser) {
-          await signOut(auth);
-        }
-
         try {
           const result = await authenticateWithPasskey(account.email);
 
@@ -255,11 +298,8 @@ export function useSavedAccounts() {
       const loginUrl = `/login${email ? `?email=${encodeURIComponent(email)}` : ""}`;
       navigate(loginUrl, { replace: true, state: { fromSwitch: true } });
 
-      if (auth.currentUser) {
-        await signOut(auth);
-      }
     },
-    [navigate],
+    [navigate, refreshSessionStatuses, sessionStatuses],
   );
 
   return {
@@ -272,5 +312,8 @@ export function useSavedAccounts() {
     switchToAccount,
     switchWithPasskey,
     refresh,
+    refreshSessionStatuses,
+    sessionStatuses,
+    logoutAllSessions,
   };
 }

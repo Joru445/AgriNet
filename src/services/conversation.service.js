@@ -1,20 +1,6 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  onSnapshot,
-  query,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-
-import { db } from "../firebase/firestore";
 import { auth } from "../firebase/auth";
 import { apiRequest } from "./api/api.client";
-
-const conversationsRef = collection(db, "conversations");
+import { subscribeToRealtime } from "./api/realtime.client";
 
 /**
  * Generate a deterministic ID for a one-to-one conversation.
@@ -49,22 +35,7 @@ export async function markConversationRead(conversationId, uid, currentUnreadCou
 export async function findConversation(uid1, uid2) {
   if (!uid1 || !uid2) return null;
 
-  try {
-    const conversationId = getConversationId(uid1, uid2);
-    const conversationRef = doc(db, "conversations", conversationId);
-    const snapshot = await getDoc(conversationRef);
-
-    if (snapshot.exists()) {
-      return {
-        id: snapshot.id,
-        ...snapshot.data(),
-      };
-    }
-  } catch (error) {
-    console.error("Failed to find conversation:", error);
-  }
-
-  return null;
+  return apiFindOrCreateConversation(uid2, { findOnly: true });
 }
 
 /**
@@ -89,57 +60,25 @@ export async function createConversation(currentUser, otherUser) {
  * Get a conversation by ID.
  */
 export async function getConversation(conversationId) {
-  const conversationRef = doc(db, "conversations", conversationId);
-
-  const snapshot = await getDoc(conversationRef);
-
-  if (!snapshot.exists()) {
-    return null;
-  }
-
-  return {
-    id: snapshot.id,
-    ...snapshot.data(),
-  };
+  return apiGetConversationById(conversationId);
 }
 
 /**
  * Subscribe to all conversations belonging to a user.
  */
 export function subscribeUserConversations(uid, callback) {
-  const q = query(
-    conversationsRef,
-    where("participants", "array-contains", uid),
-  );
-
-  return onSnapshot(
-    q,
-    (snapshot) => {
-      const docs = snapshot.docs.map((conversation) => ({
-        id: conversation.id,
-        ...conversation.data(),
-      }));
-
-      docs.sort(
-        (a, b) =>
-          (b.lastMessageAt?.seconds ?? 0) - (a.lastMessageAt?.seconds ?? 0),
-      );
-
-      callback(docs);
-    },
-    (error) => {
-      console.error("Conversation listener error:", error);
-    },
-  );
+  if (!uid) return () => {};
+  return subscribeToRealtime("/v1/conversations/stream", callback, (error) => console.error("Conversation listener error:", error));
 }
 
 /**
  * Update a conversation.
  */
 export async function updateConversation(conversationId, data) {
-  const conversationRef = doc(db, "conversations", conversationId);
-
-  await updateDoc(conversationRef, data);
+  // Only explicit, backend-validated conversation mutations are supported.
+  // Generic client-side Firestore patching would bypass device-session checks.
+  if (data?.endedLocations) return updateConversationEndedLocations(conversationId, Object.keys(data.endedLocations));
+  throw new Error("Unsupported conversation update.");
 }
 
 /**
@@ -148,30 +87,7 @@ export async function updateConversation(conversationId, data) {
  */
 export async function updateConversationEndedLocation(conversationId, messageId) {
   if (!conversationId || !messageId) return;
-  try {
-    const conversationRef = doc(db, "conversations", conversationId);
-    await updateDoc(conversationRef, {
-      [`endedLocations.${messageId}`]: true,
-      lastEndedLocationAt: Date.now(),
-    });
-  } catch (error) {
-    console.warn("[Conversations] updateDoc endedLocations failed, attempting setDoc merge:", error);
-    try {
-      const conversationRef = doc(db, "conversations", conversationId);
-      await setDoc(
-        conversationRef,
-        {
-          endedLocations: {
-            [messageId]: true,
-          },
-          lastEndedLocationAt: Date.now(),
-        },
-        { merge: true },
-      );
-    } catch (innerError) {
-      console.error("[Conversations] Failed to set endedLocations in conversation:", innerError);
-    }
-  }
+  await updateConversationEndedLocations(conversationId, [messageId]);
 }
 
 /**
@@ -179,33 +95,10 @@ export async function updateConversationEndedLocation(conversationId, messageId)
  */
 export async function updateConversationEndedLocations(conversationId, messageIds) {
   if (!conversationId || !messageIds?.length) return;
-  const updates = {
-    lastEndedLocationAt: Date.now(),
-  };
-  const mapUpdates = {};
-  messageIds.forEach((id) => {
-    updates[`endedLocations.${id}`] = true;
-    mapUpdates[id] = true;
+  await apiRequest(`/v1/conversations/${encodeURIComponent(conversationId)}/ended-locations`, {
+    method: "PATCH",
+    body: JSON.stringify({ messageIds }),
   });
-
-  try {
-    const conversationRef = doc(db, "conversations", conversationId);
-    await updateDoc(conversationRef, updates);
-  } catch {
-    try {
-      const conversationRef = doc(db, "conversations", conversationId);
-      await setDoc(
-        conversationRef,
-        {
-          endedLocations: mapUpdates,
-          lastEndedLocationAt: Date.now(),
-        },
-        { merge: true },
-      );
-    } catch (innerError) {
-      console.error("[Conversations] Failed to update endedLocations in conversation:", innerError);
-    }
-  }
 }
 
 /*

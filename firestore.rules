@@ -188,6 +188,16 @@ service cloud.firestore {
       }
     }
 
+    // Device-session records are security-sensitive and backend-only. Firebase
+    // rules cannot bind a standard Firebase ID token to one browser session.
+    match /userSessions/{userId}/sessions/{sessionId} {
+      allow read, write: if false;
+    }
+
+    match /userSecurityEvents/{userId}/events/{eventId} {
+      allow read, write: if false;
+    }
+
 
     /*
      * ============================================================

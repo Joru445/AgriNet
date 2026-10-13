@@ -19,3 +19,103 @@ test("registration preserves unverified farmer profiles", () => {
 test("marketplace forwards group IDs", () => {
   assert.match(src("src/services/product.service.js"), /groupId/);
 });
+
+class MemoryStorage {
+  #values = new Map();
+  getItem(key) { return this.#values.get(key) ?? null; }
+  setItem(key, value) { this.#values.set(key, String(value)); }
+  removeItem(key) { this.#values.delete(key); }
+}
+
+const savedAccountService = await import("../src/services/savedAccounts.service.js");
+
+test("saved-account migration deduplicates and strips credentials", () => {
+  globalThis.localStorage = new MemoryStorage();
+  localStorage.setItem("agrinet_saved_accounts", JSON.stringify([
+    { uid: "a", email: "a@example.com", displayName: "A", password: "secret", refreshToken: "token", provider: "password" },
+    { uid: "a", email: "duplicate@example.com", provider: "google.com" },
+    { uid: "b", email: "b@example.com", provider: "google.com", accessToken: "token" },
+  ]));
+
+  const accounts = savedAccountService.getSavedAccounts();
+  assert.equal(accounts.length, 2);
+  assert.deepEqual(Object.keys(accounts[0]).sort(), ["avatar", "displayName", "email", "hasPasskey", "provider", "providers", "role", "uid", "username"]);
+  assert.equal(JSON.stringify(accounts).includes("secret"), false);
+  assert.equal(JSON.stringify(accounts).includes("refreshToken"), false);
+  assert.equal(JSON.stringify(accounts).includes("accessToken"), false);
+});
+
+test("saved-account updates are UID-idempotent and retain safe display metadata", () => {
+  globalThis.localStorage = new MemoryStorage();
+  savedAccountService.saveAccount({ uid: "a", email: "a@example.com", displayName: "A", username: "grower", provider: "password" });
+  const accounts = savedAccountService.saveAccount({ uid: "a", email: "a@example.com", providers: ["google.com"] });
+  assert.equal(accounts.length, 1);
+  assert.equal(accounts[0].displayName, "A");
+  assert.equal(accounts[0].username, "grower");
+  assert.deepEqual(accounts[0].providers, ["password", "google.com"]);
+});
+
+test("public profiles use privacy-filtering APIs and owner-aware routes", () => {
+  const profileHook = src("src/hooks/usePublicProfile.js");
+  assert.doesNotMatch(profileHook, /getDoc\(doc\(db, "users", uid\)\)/);
+  assert.match(profileHook, /getUserProfile\(uid, authProfile\?\.uid\)/);
+  assert.match(profileHook, /getFarmerById\(uid\)/);
+});
+
+test("cached private contact fields are visible only to their owner", async () => {
+  globalThis.localStorage = new MemoryStorage();
+  globalThis.sessionStorage = new MemoryStorage();
+  const cache = await import("../src/utils/userProfileCache.js");
+  cache.clearUserProfileCache();
+  cache.setCachedUserProfile("owner", {
+    uid: "owner",
+    fullname: "Owner",
+    email: "owner@example.com",
+    phone: "09170000000",
+    profileVisibility: { email: "private", phone: "private" },
+  });
+  assert.equal(cache.getCachedUserProfile("owner", "owner").email, "owner@example.com");
+  assert.equal(cache.getCachedUserProfile("owner", "viewer").email, undefined);
+  assert.equal(cache.getCachedUserProfile("owner").phone, undefined);
+});
+
+test("persistent auth waits for Firebase local persistence before route state", () => {
+  const firebaseAuth = src("src/firebase/auth.js");
+  const authContext = src("src/context/AuthContext.jsx");
+  assert.match(firebaseAuth, /browserLocalPersistence/);
+  assert.match(firebaseAuth, /setPersistence\(auth, browserLocalPersistence\)/);
+  assert.match(authContext, /authPersistenceReady\.finally\(subscribe\)/);
+  assert.match(authContext, /beforeAuthStateChanged/);
+  assert.match(authContext, /pageCache\.clearAll\(\)/);
+});
+
+test("quick switching uses Firebase-managed named sessions without token storage", () => {
+  const manager = src("src/services/multiAccountSession.service.js");
+  assert.match(manager, /initializeApp\(firebaseConfig, name\)/);
+  assert.match(manager, /setPersistence\(secondaryAuth, browserLocalPersistence\)/);
+  assert.match(manager, /updateCurrentUser\(auth, retainedUser\)/);
+  assert.match(manager, /await reload\(retainedUser\)/);
+  assert.doesNotMatch(manager, /refreshToken|accessToken|idToken|password/);
+});
+
+test("device sessions use an opaque per-account handle and disclose the Firebase boundary", () => {
+  const deviceSession = src("src/services/deviceSession.service.js");
+  const apiClient = src("src/services/api/api.client.js");
+  const sessionsUi = src("src/components/settings/DeviceSessions.jsx");
+  assert.match(deviceSession, /agrinet_device_session_v1_/);
+  assert.match(deviceSession, /never a Firebase credential/);
+  assert.match(apiClient, /X-AgriNet-Session/);
+  assert.match(sessionsUi, /scopeNotice/);
+  assert.match(sessionsUi, /logoutOtherDeviceSessions/);
+  assert.match(sessionsUi, /logoutAllDeviceSessions/);
+});
+
+test("private realtime subscriptions use the authenticated backend stream", () => {
+  const stream = src("src/services/api/realtime.client.js");
+  assert.match(stream, /X-AgriNet-Session/);
+  assert.match(stream, /Authorization/);
+  assert.doesNotMatch(stream, /\?token=|access_token/);
+  assert.match(src("src/services/message.service.js"), /subscribeToRealtime/);
+  assert.match(src("src/services/notification.service.js"), /subscribeToRealtime/);
+  assert.match(src("src/services/inquiry.service.js"), /subscribeToRealtime/);
+});

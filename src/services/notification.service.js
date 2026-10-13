@@ -1,16 +1,5 @@
-import {
-  collection,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
-
-import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
-
-const notificationsRef = collection(db, "notifications");
+import { subscribeToRealtime } from "./api/realtime.client";
 
 // Pagination batch size for the notification list.
 export const NOTIFICATIONS_PAGE_SIZE = 6;
@@ -65,25 +54,7 @@ export function subscribeUserNotifications(
     return () => {};
   }
 
-  const q = query(
-    notificationsRef,
-    where("recipientId", "==", userId),
-    orderBy("createdAt", "desc"),
-    limit(pageSize),
-  );
-
-  return onSnapshot(
-    q,
-    (snapshot) => {
-      const notifications = snapshot.docs.map((notification) => ({
-        id: notification.id,
-        ...notification.data(),
-      }));
-
-      callback(notifications);
-    },
-    onError,
-  );
+  return subscribeToRealtime("/v1/notifications/stream", (items) => callback(items.slice(0, pageSize)), onError);
 }
 
 /**
@@ -100,20 +71,9 @@ export function subscribeUnreadNotifications(
     return () => {};
   }
 
-  const q = query(
-    notificationsRef,
-    where("recipientId", "==", userId),
-    where("read", "==", false),
-    limit(UNREAD_COUNT_LIMIT),
-  );
-
-  return onSnapshot(
-    q,
-    (snapshot) => {
-      callback(snapshot.size);
-    },
-    onError,
-  );
+  return subscribeToRealtime("/v1/notifications/stream", (items) => {
+    callback(items.filter((item) => item.read === false).slice(0, UNREAD_COUNT_LIMIT).length);
+  }, onError);
 }
 
 // ============================================================

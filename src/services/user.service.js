@@ -68,11 +68,10 @@ export async function getUserProfile(uid, requesterUid) {
   }
 
   try {
-    const endpoint = requesterUid && requesterUid !== uid
-      ? `/v1/users/${uid}?requester=${requesterUid}`
-      : `/v1/users/${uid}`;
-
-    const result = await apiRequest(endpoint, { requireAuth: false });
+    // apiRequest forwards the current Firebase token when one exists; the API
+    // derives viewer identity from that token instead of accepting a spoofable
+    // requester UID query parameter.
+    const result = await apiRequest(`/v1/users/${uid}`, { requireAuth: false });
     const profile = result.user;
 
     if (profile && profile.role) {

@@ -7,17 +7,30 @@ import {
   useState,
 } from "react";
 
-import { onAuthStateChanged, signOut, reload } from "firebase/auth";
+import { beforeAuthStateChanged, onAuthStateChanged, signOut, reload } from "firebase/auth";
 import {
   doc,
   onSnapshot,
 } from "firebase/firestore";
 
-import { auth } from "../firebase/auth";
+import { auth, authPersistenceReady } from "../firebase/auth";
 import { db } from "../firebase/firestore";
 import { apiSyncTransactionStats } from "../services/user.service";
 import { getCachedUserProfile } from "../utils/userProfileCache";
-import { getSavedAccounts } from "../services/savedAccounts.service";
+import { getSavedAccounts, saveAccount } from "../services/savedAccounts.service";
+import {
+  pruneRetainedSessions,
+  removeRetainedSession,
+  retainCurrentSession,
+  signOutAllRetainedSessions,
+} from "../services/multiAccountSession.service";
+import * as pageCache from "../utils/pageCache";
+import { recordAuthDiagnostic } from "../utils/authDiagnostics";
+import {
+  clearDeviceSession,
+  ensureCurrentDeviceSession,
+  isDeviceSessionRejection,
+} from "../services/deviceSession.service";
 
 const AuthContext = createContext();
 
@@ -40,9 +53,19 @@ export function AuthProvider({ children }) {
   // apiSyncTransactionStats must run once after login,
   // not on every profile snapshot emission (which would cause a feedback loop).
   const statsSyncedRef = useRef(false);
+  const activeUidRef = useRef(null);
+  const hadAuthenticatedSessionRef = useRef(false);
+  const explicitLogoutRef = useRef(false);
 
   async function logout() {
+    explicitLogoutRef.current = true;
+    if (auth.currentUser?.uid) await removeRetainedSession(auth.currentUser.uid);
     await signOut(auth);
+  }
+
+  async function logoutAllAccounts() {
+    explicitLogoutRef.current = true;
+    await signOutAllRetainedSessions();
   }
 
   async function refreshAuthUser() {
@@ -59,14 +82,35 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let unsubscribeProfile = null;
     let unsubscribeFarmer = null;
+    let disposed = false;
 
-    const unsubscribeAuth = onAuthStateChanged(
+    const unsubscribeBeforeAuth = beforeAuthStateChanged(auth, () => {
+      // Do not let the previous account's private UI remain visible while
+      // Firebase atomically changes the default Auth currentUser.
+      setLoading(true);
+      setProfile(null);
+      setFarmer(null);
+    });
+
+    let unsubscribeAuth = () => {};
+    const subscribe = () => {
+      if (disposed) return;
+      unsubscribeAuth = onAuthStateChanged(
       auth,
       (firebaseUser) => {
         // Firebase Auth initialization is complete: the persisted session has
         // been restored or confirmed absent. This is the ONLY point where the
         // app may distinguish "authenticated" from "signed out".
         setAuthInitializing(false);
+
+        const previousUid = activeUidRef.current;
+        if (previousUid !== firebaseUser?.uid) {
+          // All app-private page cache entries must be re-fetched for the
+          // account that is becoming active.
+          pageCache.clearAll();
+          statsSyncedRef.current = false;
+        }
+        activeUidRef.current = firebaseUser?.uid || null;
 
         // Clean up previous listeners.
         unsubscribeProfile?.();
@@ -76,6 +120,11 @@ export function AuthProvider({ children }) {
         unsubscribeFarmer = null;
 
         if (!firebaseUser) {
+          recordAuthDiagnostic(
+            hadAuthenticatedSessionRef.current ? "firebase-session-ended" : "firebase-no-restored-session",
+            { reason: explicitLogoutRef.current ? "explicit-logout" : "firebase-auth-state-null" },
+          );
+          explicitLogoutRef.current = false;
           setUser(null);
           setProfile(null);
           setFarmer(null);
@@ -85,11 +134,35 @@ export function AuthProvider({ children }) {
           return;
         }
 
+        hadAuthenticatedSessionRef.current = true;
+        recordAuthDiagnostic("firebase-session-restored", { hasSession: true });
         setLoading(true);
         setUser(firebaseUser);
         setEmailVerified(Boolean(firebaseUser.emailVerified));
         setProfile(null);
         setFarmer(null);
+
+        const listenerUid = firebaseUser.uid;
+        // Device registration is the private-data bootstrap. Profile reads now
+        // cross the API session boundary rather than a client Firestore rule.
+        ensureCurrentDeviceSession(firebaseUser)
+          .then(() => import("../services/api/api.client").then(({ apiRequest }) => apiRequest("/v1/users/me/profile")))
+          .then((result) => {
+            if (auth.currentUser?.uid !== listenerUid) return;
+            const privateProfile = result.data;
+            setProfile(privateProfile?.user || null);
+            setFarmer(privateProfile?.farmer || null);
+            if (!statsSyncedRef.current && privateProfile?.user?.role === "consumer") {
+              statsSyncedRef.current = true;
+              apiSyncTransactionStats().catch(() => {});
+            }
+            setLoading(false);
+          })
+          .catch((error) => {
+            recordAuthDiagnostic("private-profile-unavailable", { code: error?.data?.code || error?.code || "unknown" });
+            setLoading(true);
+          });
+        return;
 
         const userRef = doc(
           db,
@@ -99,14 +172,14 @@ export function AuthProvider({ children }) {
 
         // Capture the UID this listener was created for so stale callbacks
         // from a previous user's snapshot cannot overwrite the current state.
-        const listenerUid = firebaseUser.uid;
+        const legacyListenerUid = firebaseUser.uid;
 
         unsubscribeProfile = onSnapshot(
           userRef,
           (snapshot) => {
             // Guard: ignore if the authenticated user has changed since this
             // listener was created (e.g. rapid account switching).
-            if (auth.currentUser?.uid !== listenerUid) return;
+            if (auth.currentUser?.uid !== legacyListenerUid) return;
 
             if (!snapshot.exists()) {
               setProfile(null);
@@ -140,7 +213,7 @@ export function AuthProvider({ children }) {
             const farmerRef = doc(
               db,
               "farmers",
-              listenerUid,
+              legacyListenerUid,
             );
 
             unsubscribeFarmer?.();
@@ -149,7 +222,7 @@ export function AuthProvider({ children }) {
               farmerRef,
               (farmerSnapshot) => {
                 // Guard: same check for farmer listener.
-                if (auth.currentUser?.uid !== listenerUid) return;
+                if (auth.currentUser?.uid !== legacyListenerUid) return;
 
                 setFarmer(
                   farmerSnapshot.exists()
@@ -188,15 +261,81 @@ export function AuthProvider({ children }) {
           },
         );
       },
-    );
+      (error) => {
+        // Network and Firestore errors are not sign-outs. Keep route guards in
+        // loading state and allow Firebase to retry its managed session.
+        recordAuthDiagnostic("firebase-auth-listener-error", { code: error?.code || "unknown", hasSession: Boolean(auth.currentUser) });
+        setLoading(true);
+      },
+      );
+    };
+
+    // setPersistence may migrate Firebase's SDK-managed state asynchronously.
+    // Subscribing only after it settles prevents a transient null user from
+    // redirecting a persisted browser/PWA session to /login.
+    authPersistenceReady.finally(subscribe);
 
     return () => {
+      disposed = true;
+      unsubscribeBeforeAuth();
       unsubscribeAuth();
 
       unsubscribeProfile?.();
       unsubscribeFarmer?.();
     };
   }, []);
+
+  useEffect(() => {
+    const handleDeviceSessionRevoked = async (event) => {
+      const uid = event.detail?.uid;
+      if (!uid || uid !== auth.currentUser?.uid) return;
+      recordAuthDiagnostic("device-session-rejected", { reason: event.detail?.code || "unknown" });
+      clearDeviceSession(uid);
+      // Only the active account is removed. Named Auth instances for other
+      // retained accounts remain untouched, preserving Option B isolation.
+      await removeRetainedSession(uid).catch(() => {});
+      await signOut(auth).catch(() => {});
+    };
+    globalThis.addEventListener?.("agrinet:device-session-revoked", handleDeviceSessionRevoked);
+    return () => globalThis.removeEventListener?.("agrinet:device-session-revoked", handleDeviceSessionRevoked);
+  }, []);
+
+  // Persist just enough local metadata to offer a later sign-in choice. No
+  // password, OAuth credential, or Firebase token is ever written here.
+  useEffect(() => {
+    if (!user?.uid || profile?.uid !== user.uid) return;
+    const providers = [...new Set(
+      (user.providerData || [])
+        .map((provider) => provider.providerId)
+        .filter((provider) => ["password", "google.com", "facebook.com"].includes(provider)),
+    )];
+    const accounts = saveAccount({
+      uid: user.uid,
+      email: user.email || profile.email || "",
+      displayName: profile.fullname || user.displayName || "",
+      username: profile.username || "",
+      avatar: profile.profilePicture || user.photoURL || "",
+      role: profile.role || "consumer",
+      provider: providers[0] || null,
+      providers,
+    });
+    retainCurrentSession(user).catch((error) => {
+      // A failure to create one retained session must never log out this
+      // account or mutate the independently retained sessions of other users.
+      recordAuthDiagnostic("quick-switch-retention-unavailable", { code: error?.code || "unknown" });
+    });
+    pruneRetainedSessions(accounts.map((entry) => entry.uid)).catch(() => {});
+    ensureCurrentDeviceSession(user).catch((error) => {
+      // A registry outage or offline launch must never be interpreted as a
+      // Firebase logout. A known revoked handle is the one exception.
+      if (isDeviceSessionRejection(error)) {
+        clearDeviceSession(user.uid);
+      }
+      recordAuthDiagnostic("device-session-registration-unavailable", {
+        code: error?.data?.code || error?.code || "unknown",
+      });
+    });
+  }, [user, profile]);
 
   const account = profile
     ? {
@@ -282,6 +421,7 @@ export function AuthProvider({ children }) {
         reloadUser: refreshAuthUser,
 
         logout,
+        logoutAllAccounts,
       }}
     >
       {children}

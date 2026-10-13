@@ -1,4 +1,5 @@
 import { auth } from "../../firebase/auth";
+import { getCurrentDeviceSessionId } from "../deviceSession.service";
 
 // import.meta.env.DEV is true for `vite dev` and false for `vite build`.
 //
@@ -43,7 +44,7 @@ function isRetryable(status) {
  * "https://host/api" in production), so an endpoint may be written either as
  * "/v1/..." or as "/api/v1/..." — both resolve to "<base>/v1/...".
  */
-function buildUrl(endpoint) {
+export function buildApiUrl(endpoint) {
   const raw = String(endpoint ?? "");
   const path = raw.startsWith("/") ? raw : `/${raw}`;
 
@@ -94,6 +95,8 @@ export async function apiRequest(endpoint, options = {}) {
   const currentUser = auth.currentUser;
 
   const headers = new Headers(fetchOptions.headers);
+  const deviceSessionId = getCurrentDeviceSessionId(currentUser?.uid);
+  if (deviceSessionId) headers.set("X-AgriNet-Session", deviceSessionId);
 
   // Only send Content-Type for requests with a JSON body. Avoid GET preflights.
   if (fetchOptions.body != null && !headers.has("Content-Type")) {
@@ -132,7 +135,7 @@ export async function apiRequest(endpoint, options = {}) {
 
   for (let attempt = 0; attempt <= safeRetries; attempt++) {
     try {
-      const url = buildUrl(endpoint);
+      const url = buildApiUrl(endpoint);
       const response = await fetchWithTimeout(
         url,
         { ...fetchOptions, headers },
@@ -153,6 +156,11 @@ export async function apiRequest(endpoint, options = {}) {
         );
         error.status = response.status;
         error.data = data;
+        if (["SESSION_REVOKED", "SESSION_NOT_FOUND", "SESSION_BINDING_MISMATCH"].includes(data?.code)) {
+          globalThis.dispatchEvent?.(new CustomEvent("agrinet:device-session-revoked", {
+            detail: { uid: currentUser?.uid || null, code: data.code },
+          }));
+        }
         throw error;
       }
 

@@ -21,7 +21,9 @@ function getProviderLabel(provider) {
 function AccountMetadata({ account, t }) {
   const parts = [];
   if (account.role) parts.push(t(`roles.${account.role}`) || account.role);
-  parts.push(getProviderLabel(account.provider));
+  const providers = account.providers?.length ? account.providers : [account.provider];
+  const labels = [...new Set(providers.filter(Boolean).map(getProviderLabel))];
+  if (labels.length) parts.push(labels.join(" / "));
   if (account.hasPasskey) parts.push(t("settings.passkey") || "Passkey");
 
   return (
@@ -39,6 +41,8 @@ export default function AccountSwitcher() {
     removeAccount,
     switchToAccount,
     navigateToLogin,
+    sessionStatuses,
+    logoutAllSessions,
   } = useSavedAccounts();
 
   const [confirmTarget, setConfirmTarget] = useState(null);
@@ -60,19 +64,31 @@ export default function AccountSwitcher() {
     }
   }
 
-  function handleRowClick(account) {
+  async function handleRowClick(account) {
     if (switching) return;
     if (account.uid === currentAccount?.uid) return;
+    if (sessionStatuses[account.uid] === "available") {
+      setSwitching(true);
+      try {
+        await switchToAccount(account);
+      } catch (error) {
+        console.error("Failed to quick switch accounts:", error);
+        showToast.error(t("common.error") || "Failed to switch account");
+      } finally {
+        setSwitching(false);
+      }
+      return;
+    }
     setConfirmTarget(account);
   }
 
-  function handleRemove(e, account) {
+  async function handleRemove(e, account) {
     e.stopPropagation();
     if (account.uid === currentAccount?.uid) {
       setRemoveTarget(account);
       return;
     }
-    removeAccount(account.uid);
+    await removeAccount(account.uid);
     showToast.success(t("settings.accountRemoved"));
   }
 
@@ -80,10 +96,10 @@ export default function AccountSwitcher() {
     if (!removeTarget) return;
     const target = removeTarget;
     setRemoveTarget(null);
-    removeAccount(target.uid);
+    await removeAccount(target.uid);
     showToast.success(t("settings.accountRemoved"));
     try {
-      await navigateToLogin(null);
+      await navigateToLogin(null, { retainCurrent: false });
     } catch (error) {
       console.error(
         "Failed to sign out after removing current account:",
@@ -102,6 +118,20 @@ export default function AccountSwitcher() {
     }
   }
 
+  async function handleLogoutAll() {
+    if (switching) return;
+    setSwitching(true);
+    try {
+      await logoutAllSessions();
+      showToast.success("Logged out of all retained sessions");
+    } catch (error) {
+      console.error("Failed to log out all retained sessions:", error);
+      showToast.error(t("common.error") || "Failed to log out all accounts");
+    } finally {
+      setSwitching(false);
+    }
+  }
+
   if (!currentAccount) return null;
 
   return (
@@ -115,18 +145,32 @@ export default function AccountSwitcher() {
         <div className="flex items-center gap-3 px-4 py-3 bg-(--agri-brand-bg)/30">
           <Avatar
             src={currentAccount.avatar}
-            name={currentAccount.email}
+            name={currentAccount.displayName || currentAccount.email}
             size="xs"
           />
           <div className="min-w-0 flex-1">
             <span className="block text-sm font-semibold text-(--agri-text) truncate">
-              {currentAccount.email}
+              {currentAccount.displayName || currentAccount.email}
             </span>
             <AccountMetadata account={currentAccount} t={t} />
+            <span className={`block text-[11px] ${sessionStatuses[currentAccount.uid] === "available" ? "text-emerald-700 dark:text-emerald-300" : "text-(--agri-text-muted)"}`}>
+              {sessionStatuses[currentAccount.uid] === "available"
+                ? "Quick switching enabled"
+                : "Quick switching unavailable"}
+            </span>
           </div>
           <span className="shrink-0 rounded-full bg-(--agri-brand) px-2 py-0.5 text-[10px] font-bold text-white">
             {t("settings.currentAccount")}
           </span>
+          <button
+            type="button"
+            onClick={(event) => handleRemove(event, currentAccount)}
+            disabled={switching}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-(--agri-text-muted) transition hover:bg-red-500/10 hover:text-red-500 disabled:opacity-50 cursor-pointer"
+            aria-label={t("settings.removeAccount") || "Remove account"}
+          >
+            <i className="ri-close-line text-sm" />
+          </button>
         </div>
 
         {/* Other saved accounts */}
@@ -142,14 +186,19 @@ export default function AccountSwitcher() {
                 disabled={switching}
                 className="flex min-w-0 flex-1 items-center gap-3 text-left transition hover:bg-(--agri-brand-bg)/30 disabled:opacity-50 cursor-pointer px-4 py-3"
               >
-                <Avatar src={account.avatar} name={account.email} size="xs" />
+                <Avatar src={account.avatar} name={account.displayName || account.email} size="xs" />
 
                 <div className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold text-(--agri-text) truncate">
-                    {account.email}
+                    {account.displayName || account.email}
                   </span>
 
                   <AccountMetadata account={account} t={t} />
+                  <span className={`block text-[11px] ${sessionStatuses[account.uid] === "available" ? "text-emerald-700 dark:text-emerald-300" : "text-(--agri-text-muted)"}`}>
+                    {sessionStatuses[account.uid] === "available"
+                      ? "Quick switch ready"
+                      : "Sign in required"}
+                  </span>
                 </div>
               </button>
 
@@ -182,6 +231,20 @@ export default function AccountSwitcher() {
             </span>
           </button>
         </div>
+
+        {otherAccounts.length > 0 && (
+          <div className="border-t border-(--agri-border-subtle)">
+            <button
+              type="button"
+              onClick={handleLogoutAll}
+              disabled={switching}
+              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-(--agri-text-secondary) transition hover:bg-(--agri-hover) disabled:opacity-50 cursor-pointer"
+            >
+              <i className="ri-logout-box-r-line text-lg" />
+              Log out all accounts on this device
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Switch confirmation */}

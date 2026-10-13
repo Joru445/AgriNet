@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 import { db } from "../firebase/firestore";
 import { getUserProfile } from "../services/user.service";
@@ -150,24 +150,12 @@ export default function usePublicProfile() {
 
       const isOwnProfile = authProfile?.uid === uid;
 
-      // 1. Fetch user doc and farmer doc directly from Firestore in parallel
-      const [userSnap, farmerSnap] = await Promise.all([
-        getDoc(doc(db, "users", uid)).catch(() => null),
-        getDoc(doc(db, "farmers", uid)).catch(() => null),
+      // Public profiles must use the privacy-filtering API. The complete
+      // authenticated profile is merged below only for its owner.
+      const [user, farmerData] = await Promise.all([
+        getUserProfile(uid, authProfile?.uid).catch(() => null),
+        getFarmerById(uid).catch(() => null),
       ]);
-
-      let user = userSnap?.exists() ? { uid: userSnap.id, ...userSnap.data() } : null;
-      let farmerData = farmerSnap?.exists() ? { uid: farmerSnap.id, ...farmerSnap.data() } : null;
-
-      // 2. If neither exists directly, fallback to services
-      if (!user && !farmerData) {
-        const [fallbackUser, fallbackFarmer] = await Promise.all([
-          getUserProfile(uid, authProfile?.uid).catch(() => null),
-          getFarmerById(uid).catch(() => null),
-        ]);
-        user = fallbackUser;
-        farmerData = fallbackFarmer;
-      }
 
       if (!user && !farmerData) {
         setProfile(null);

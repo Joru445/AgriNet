@@ -1,9 +1,31 @@
 const STORAGE_KEY = "agrinet_saved_accounts";
 const MAX_ACCOUNTS = 5;
+const ALLOWED_PROVIDERS = ["password", "google.com", "facebook.com"];
+
+function safeAccount(candidate) {
+  if (!candidate?.uid || typeof candidate.uid !== "string") return null;
+  const providers = [...new Set(
+    (Array.isArray(candidate.providers) ? candidate.providers : [candidate.provider])
+      .filter((provider) => ALLOWED_PROVIDERS.includes(provider)),
+  )];
+  return {
+    uid: candidate.uid,
+    email: typeof candidate.email === "string" ? candidate.email : "",
+    displayName: typeof candidate.displayName === "string" ? candidate.displayName : "",
+    username: typeof candidate.username === "string" ? candidate.username : "",
+    avatar: typeof candidate.avatar === "string" ? candidate.avatar : "",
+    role: typeof candidate.role === "string" ? candidate.role : "consumer",
+    provider: ALLOWED_PROVIDERS.includes(candidate.provider)
+      ? candidate.provider
+      : providers[0] || null,
+    providers,
+    hasPasskey: candidate.hasPasskey === true,
+  };
+}
 
 /**
  * Returns the list of saved accounts from localStorage.
- * Each entry: { uid, email, displayName, avatar, role, provider, hasPasskey }
+ * Each entry contains only display and account-selection metadata.
  *
  * provider: "password" | "google.com" | "facebook.com" | null
  * hasPasskey: boolean (metadata only — no credential data stored)
@@ -18,20 +40,10 @@ export function getSavedAccounts() {
     // registry never contains passwords, OAuth tokens, or Firebase tokens.
     const seen = new Set();
     const accounts = parsed.reduce((list, candidate) => {
-      if (!candidate?.uid || seen.has(candidate.uid)) return list;
-      seen.add(candidate.uid);
-      const providers = [...new Set((Array.isArray(candidate.providers) ? candidate.providers : [candidate.provider])
-        .filter((provider) => ["password", "google.com", "facebook.com"].includes(provider)))];
-      list.push({
-        uid: candidate.uid,
-        email: typeof candidate.email === "string" ? candidate.email : "",
-        displayName: typeof candidate.displayName === "string" ? candidate.displayName : "",
-        avatar: typeof candidate.avatar === "string" ? candidate.avatar : "",
-        role: typeof candidate.role === "string" ? candidate.role : "consumer",
-        provider: providers[0] || null,
-        providers,
-        hasPasskey: candidate.hasPasskey === true,
-      });
+      const account = safeAccount(candidate);
+      if (!account || seen.has(account.uid)) return list;
+      seen.add(account.uid);
+      list.push(account);
       return list;
     }, []);
     if (JSON.stringify(accounts) !== JSON.stringify(parsed)) persist(accounts);
@@ -56,6 +68,7 @@ export function saveAccount({
   uid,
   email,
   displayName,
+  username,
   avatar,
   role,
   provider,
@@ -73,13 +86,14 @@ export function saveAccount({
     ...(Array.isArray(existing.providers) ? existing.providers : [existing.provider]),
     ...(Array.isArray(providers) ? providers : []),
     provider,
-  ].filter((value) => ["password", "google.com", "facebook.com"].includes(value)))];
+  ].filter((value) => ALLOWED_PROVIDERS.includes(value)))];
   const entry = {
     uid,
-    email: email || "",
-    displayName: displayName || "",
-    avatar: avatar || "",
-    role: role || "consumer",
+    email: email || existing.email || "",
+    displayName: displayName || existing.displayName || "",
+    username: username || existing.username || "",
+    avatar: avatar || existing.avatar || "",
+    role: role || existing.role || "consumer",
     provider: provider || providerList[0] || null,
     providers: providerList,
     hasPasskey:

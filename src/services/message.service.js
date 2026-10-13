@@ -1,32 +1,9 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  increment,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-  setDoc,
-  startAfter,
-  updateDoc,
-  where,
-  writeBatch,
-} from "firebase/firestore";
-
-import { db } from "../firebase/firestore";
-import { auth } from "../firebase/auth";
 import { apiRequest } from "./api/api.client";
+import { subscribeToRealtime } from "./api/realtime.client";
 import {
   getPermanentlyEndedLocations,
   markLocationPermanentlyEnded,
 } from "../utils/endedLocations";
-import { updateConversationEndedLocation } from "./conversation.service";
-
-const messagesRef = collection(db, "messages");
-const conversationsRef = collection(db, "conversations");
 
 export const DEFAULT_MESSAGE_LIMIT = 40;
 
@@ -56,19 +33,10 @@ export function subscribeMessages(
   callback,
   limitCount = DEFAULT_MESSAGE_LIMIT,
 ) {
-  const q = query(
-    messagesRef,
-    where("conversationId", "==", conversationId),
-    orderBy("createdAt", "desc"),
-    limit(limitCount),
-  );
-
-  return onSnapshot(
-    q,
-    (snapshot) => {
+  return subscribeToRealtime(`/v1/messages/${encodeURIComponent(conversationId)}/stream`,
+    (streamedMessages) => {
       const permanentlyEnded = getPermanentlyEndedLocations();
-      const docs = snapshot.docs.map((docSnap) => {
-        const rawData = docSnap.data();
+      const docs = streamedMessages.slice(-limitCount).map((rawData) => {
         const data = {
           ...rawData,
           createdAt: rawData.createdAt || { seconds: Math.floor(Date.now() / 1000) },
@@ -80,9 +48,8 @@ export function subscribeMessages(
           data.locationType === "location" ||
           data.locationType === "live_location";
 
-        if (isLocationMsg && docSnap.id && permanentlyEnded.has(docSnap.id)) {
+        if (isLocationMsg && data.id && permanentlyEnded.has(data.id)) {
           return {
-            id: docSnap.id,
             ...data,
             isLive: false,
             isEnded: true,
@@ -90,30 +57,17 @@ export function subscribeMessages(
           };
         }
         return {
-          id: docSnap.id,
           ...data,
         };
       });
 
-      // Reverse so UI receives chronological ascending order
-      docs.reverse();
-
-      const oldestDocSnapshot =
-        snapshot.docs.length > 0
-          ? snapshot.docs[snapshot.docs.length - 1]
-          : null;
-
-      const hasMore = snapshot.docs.length >= limitCount;
-
       callback(docs, {
-        oldestDocSnapshot,
-        hasMore,
-        totalLoadedInSnapshot: snapshot.docs.length,
+        oldestDocSnapshot: null,
+        hasMore: false,
+        totalLoadedInSnapshot: docs.length,
       });
     },
-    (error) => {
-      console.error("Message listener error:", error);
-    },
+    (error) => console.error("Message listener error:", error),
   );
 }
 
@@ -133,61 +87,8 @@ export async function fetchOlderMessages(
     return { messages: [], oldestDocSnapshot: null, hasMore: false };
   }
 
-  try {
-    const q = query(
-      messagesRef,
-      where("conversationId", "==", conversationId),
-      orderBy("createdAt", "desc"),
-      startAfter(lastDocSnapshot),
-      limit(limitCount),
-    );
-
-    const snapshot = await getDocs(q);
-
-    const permanentlyEnded = getPermanentlyEndedLocations();
-    const docs = snapshot.docs.map((docSnap) => {
-      const data = docSnap.data();
-      const isLocationMsg =
-        Boolean(data.location) ||
-        data.type === "location" ||
-        data.type === "live_location" ||
-        data.locationType === "location" ||
-        data.locationType === "live_location";
-
-      if (isLocationMsg && docSnap.id && permanentlyEnded.has(docSnap.id)) {
-        return {
-          id: docSnap.id,
-          ...data,
-          isLive: false,
-          isEnded: true,
-          endedAt: data.endedAt || Date.now(),
-        };
-      }
-      return {
-        id: docSnap.id,
-        ...data,
-      };
-    });
-
-    // Reverse to chronological order
-    docs.reverse();
-
-    const oldestDocSnapshot =
-      snapshot.docs.length > 0
-        ? snapshot.docs[snapshot.docs.length - 1]
-        : null;
-
-    const hasMore = snapshot.docs.length >= limitCount;
-
-    return {
-      messages: docs,
-      oldestDocSnapshot,
-      hasMore,
-    };
-  } catch (error) {
-    console.error("Failed to fetch older messages:", error);
-    return { messages: [], oldestDocSnapshot: null, hasMore: false };
-  }
+  const result = await apiGetMessages(conversationId, { cursor: lastDocSnapshot?.id || null, limit: limitCount });
+  return { messages: result.messages, oldestDocSnapshot: null, hasMore: result.hasMore };
 }
 
 // ============================================================
@@ -212,18 +113,7 @@ export async function apiSendMessage(data) {
  */
 export async function updateLiveLocation(messageId, location) {
   if (!messageId || !location) return;
-  try {
-    const messageRef = doc(messagesRef, messageId);
-    await updateDoc(messageRef, {
-      "location.lat": location.lat,
-      "location.lng": location.lng,
-      "location.accuracy": location.accuracy ?? null,
-      "location.heading": location.heading ?? null,
-      "location.updatedAt": Date.now(),
-    });
-  } catch (err) {
-    console.error("[Messages] Failed to update live location:", err);
-  }
+  await apiRequest(`/v1/messages/${encodeURIComponent(messageId)}/live-location`, { method: "PATCH", body: JSON.stringify({ location }) });
 }
 
 /**
@@ -233,54 +123,7 @@ export async function stopLiveLocation(messageId, conversationId = null) {
   if (!messageId) return;
   markLocationPermanentlyEnded(messageId);
 
-  // 1. Direct update to message document
-  try {
-    const messageRef = doc(messagesRef, messageId);
-    await updateDoc(messageRef, {
-      isLive: false,
-      isEnded: true,
-      endedAt: Date.now(),
-    });
-  } catch (err) {
-    console.warn("[Messages] Failed to stop live location with updateDoc, trying setDoc merge:", err);
-    try {
-      const messageRef = doc(messagesRef, messageId);
-      await setDoc(
-        messageRef,
-        {
-          isLive: false,
-          isEnded: true,
-          endedAt: Date.now(),
-        },
-        { merge: true },
-      );
-    } catch (innerErr) {
-      console.error("[Messages] Failed setDoc fallback for stop live location:", innerErr);
-    }
-  }
-
-  // 2. Resolve conversationId if not explicitly provided
-  let targetConvId = conversationId;
-  if (!targetConvId) {
-    try {
-      const messageRef = doc(messagesRef, messageId);
-      const snap = await getDoc(messageRef);
-      if (snap.exists()) {
-        targetConvId = snap.data()?.conversationId;
-      }
-    } catch (lookupErr) {
-      console.warn("[Messages] Could not lookup conversationId for ended message:", lookupErr);
-    }
-  }
-
-  // 3. Update conversation document for guaranteed real-time receiver sync
-  if (targetConvId) {
-    try {
-      await updateConversationEndedLocation(targetConvId, messageId);
-    } catch (convErr) {
-      console.error("[Messages] Failed to update conversation endedLocations:", convErr);
-    }
-  }
+  await apiRequest(`/v1/messages/${encodeURIComponent(messageId)}/end-live-location`, { method: "PATCH", body: JSON.stringify({ conversationId }) });
 }
 
 export async function apiGetMessages(conversationId, { cursor = null, limit: pageSize = 40 } = {}) {
