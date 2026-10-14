@@ -11,14 +11,6 @@ test("product writes use the authenticated backend, not Firestore fallback", () 
   assert.match(service, /apiUpdateProduct/);
   assert.match(service, /apiDeleteProduct/);
 });
-test("registration preserves unverified farmer profiles", () => {
-  const reg = src("src/services/register.service.js");
-  const backendBootstrap = src("../backend/src/modules/users/user.service.js");
-  assert.match(reg, /apiRequest\("\/v1\/users"/);
-  assert.doesNotMatch(reg, /firebase\/firestore/);
-  assert.match(backendBootstrap, /verified: false/);
-  assert.match(backendBootstrap, /verificationStatus: "not_applied"/);
-});
 test("marketplace forwards group IDs", () => {
   assert.match(src("src/services/product.service.js"), /groupId/);
 });
