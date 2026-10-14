@@ -85,11 +85,14 @@ test("saved-account updates are UID-idempotent and retain safe display metadata"
   assert.deepEqual(accounts[0].providers, ["password", "google.com"]);
 });
 
-test("public profiles use privacy-filtering APIs and owner-aware routes", () => {
+test("public profiles use the dedicated public-safe profile projection", () => {
   const profileHook = src("src/hooks/usePublicProfile.js");
+  const userService = src("src/services/user.service.js");
   assert.doesNotMatch(profileHook, /getDoc\(doc\(db, "users", uid\)\)/);
-  assert.match(profileHook, /getUserProfile\(uid, authProfile\?\.uid\)/);
-  assert.match(profileHook, /getFarmerById\(uid\)/);
+  assert.match(profileHook, /getPublicProfileByUsername/);
+  assert.match(profileHook, /getPublicProfile\(uid\)/);
+  assert.match(userService, /\/v1\/users\/public\//);
+  assert.match(userService, /\/v1\/users\/by-username\//);
 });
 
 test("cached private contact fields are visible only to their owner", async () => {
@@ -138,6 +141,13 @@ test("device sessions use an opaque per-account handle and disclose the Firebase
   assert.match(sessionsUi, /scopeNotice/);
   assert.match(sessionsUi, /logoutOtherDeviceSessions/);
   assert.match(sessionsUi, /logoutAllDeviceSessions/);
+  assert.match(deviceSession, /registrationByUid/);
+  assert.match(deviceSession, /SESSION_REGISTRATION_UNCONFIRMED/);
+  assert.match(deviceSession, /authUser: user/);
+  assert.match(deviceSession, /deviceSessionId: sessionId/);
+  assert.match(src("src/context/AuthContext.jsx"), /deviceSessionReady/);
+  assert.match(src("src/context/AuthContext.jsx"), /device-session-missing-recovery/);
+  assert.match(apiClient, /agrinet:device-session-missing/);
 });
 
 test("private realtime subscriptions use the authenticated backend stream", () => {
@@ -148,4 +158,47 @@ test("private realtime subscriptions use the authenticated backend stream", () =
   assert.match(src("src/services/message.service.js"), /subscribeToRealtime/);
   assert.match(src("src/services/notification.service.js"), /subscribeToRealtime/);
   assert.match(src("src/services/inquiry.service.js"), /subscribeToRealtime/);
+  assert.match(stream, /waitingForSession/);
+  assert.match(stream, /agrinet:device-session-ready/);
+  assert.doesNotMatch(stream, /SESSION_PENDING[\s\S]{0,300}retry\(\)/);
+});
+
+test("profile maps keep Leaflet and translation imports separate", () => {
+  const map = src("src/components/map/Map.jsx");
+  const profile = src("src/pages/shared/UnifiedProfilePage.jsx");
+  assert.match(map, /import L from "leaflet"/);
+  assert.match(map, /useLanguage/);
+  assert.doesNotMatch(map, /import\s*\{[^}]*\bt\b[^}]*\}\s*from\s*["']leaflet["']/);
+  assert.match(profile, /PublicProfileHeader/);
+  assert.match(src("src/components/location/LocationPicker.jsx"), /LocationMap/);
+});
+
+test("the lazy profile map has one explicit Vite optimization group", () => {
+  const viteConfig = src("vite.config.js");
+  const profile = src("src/pages/shared/UnifiedProfilePage.jsx");
+  const map = src("src/components/map/Map.jsx");
+
+  // React Leaflet is first reached through Profile -> LocationPicker -> Map.
+  // Keeping its ESM package and Leaflet's CommonJS package in one optimizer
+  // group prevents Vite from mixing generated interop exports after a lazy
+  // route is discovered.
+  assert.match(profile, /FarmerSection/);
+  assert.match(map, /from "react-leaflet"/);
+  assert.match(viteConfig, /optimizeDeps:\s*\{[\s\S]*?include:\s*\[[\s\S]*?["']leaflet["'][\s\S]*?["']react-leaflet["'][\s\S]*?["']@react-leaflet\/core["']/);
+});
+
+test("unified profiles use the public projection and UID-based owner access", () => {
+  const page = src("src/pages/shared/UnifiedProfilePage.jsx");
+  const hook = src("src/hooks/usePublicProfile.js");
+  const routes = src("src/routes/AppRoutes.jsx");
+
+  assert.match(page, /authUser\.uid === profile\.uid/);
+  assert.match(page, /isOwner=\{isOwner\}/);
+  assert.match(page, /getPublicProfilePath\(updated\)/);
+  assert.match(hook, /getPublicProfileByUsername/);
+  assert.match(hook, /payload\.profile\.role !== "farmer"/);
+  assert.match(hook, /getPublicFarmerProductsPage/);
+  assert.match(hook, /Promise\.allSettled/);
+  assert.match(routes, /path="\/me" element={<Profile \/>}/);
+  assert.match(routes, /path="\/:username" element={<PublicProfile \/>}/);
 });

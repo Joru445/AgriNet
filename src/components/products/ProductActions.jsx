@@ -73,7 +73,7 @@ export default function ProductActions({ product, farmer, isOwner, onProductUpda
         <div className="space-y-2">
           {isPreorder && (
             <button
-              onClick={() => navigate("/farmer/transactions")}
+              onClick={() => navigate("/transactions")}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-amber-500/20 transition hover:bg-amber-600 active:scale-[0.99] cursor-pointer"
             >
               <i className="ri-calendar-check-line text-lg" />

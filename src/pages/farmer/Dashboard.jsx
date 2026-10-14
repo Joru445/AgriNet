@@ -98,7 +98,7 @@ export default function Dashboard() {
         {/* ── Tier 5: Action Required ─────────────────────────── */}
         {!loading && pendingCount > 0 && (
           <a
-            href="/farmer/transactions"
+            href="/transactions"
             className="flex items-center gap-3 rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-4 py-3.5 transition hover:border-amber-300 dark:hover:border-amber-500/50 shadow-2xs"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400">

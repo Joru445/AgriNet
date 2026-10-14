@@ -2,8 +2,9 @@
  * In-memory + storage cache for user & farmer profiles.
  * Provides instantaneous synchronous lookup so avatars never flash letter initials.
  *
- * Full profile data is cached. Private fields (email, phone, location) are
- * stripped at read time based on the requester's identity.
+ * Memory may retain the current response briefly; browser storage is limited
+ * to public-safe fields. Base64 is not encryption and must never be relied on
+ * to protect owner-only account data.
  */
 
 const memoryCache = new Map();
@@ -66,11 +67,21 @@ function stripPrivateFields(data, requesterUid) {
   const vis = data.profileVisibility || {};
   const result = { ...data };
   for (const field of PRIVATE_FIELDS) {
-    if ((vis[field] || DEFAULT_VISIBILITY) === "private") {
+    const visibility = field === "location" ? (vis.location || vis.address || DEFAULT_VISIBILITY) : (vis[field] || DEFAULT_VISIBILITY);
+    if (visibility === "private") {
       delete result[field];
     }
   }
   return result;
+}
+
+function storageProfile(data) {
+  const profile = sanitizeProfile(data);
+  if (!profile) return null;
+  delete profile.email;
+  delete profile.phone;
+  delete profile.location;
+  return profile;
 }
 
 // Hydrate from storage once on load (checks sessionStorage first, then localStorage)
@@ -98,7 +109,7 @@ try {
   if (memoryCache.size > 0) {
     const obj = {};
     memoryCache.forEach((val, key) => {
-      obj[key] = val;
+      obj[key] = storageProfile(val);
     });
     const encoded = encodePayload(obj);
     if (encoded) {
@@ -120,7 +131,7 @@ function persistToStorage() {
     // Keep max 200 profiles in storage
     const entries = Array.from(memoryCache.entries()).slice(-200);
     entries.forEach(([uid, data]) => {
-      const sanitized = sanitizeProfile(data);
+      const sanitized = storageProfile(data);
       if (sanitized) {
         obj[uid] = sanitized;
       }

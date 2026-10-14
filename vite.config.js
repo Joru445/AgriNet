@@ -22,6 +22,16 @@ export default defineConfig(({ command, mode }) => {
   const BACKEND_URL = (configuredApiUrl || DEFAULT_API_URL).replace(/\/api\/?$/, '')
 
   return {
+    // Leaflet 1.x is CommonJS while React Leaflet is ESM.  Vite 8's
+    // dependency optimizer gives Leaflet a generated CommonJS interop export
+    // (currently named `t`).  Profile editing discovers React Leaflet through
+    // a lazy route, so without an explicit optimization group Vite can serve a
+    // newly optimized react-leaflet module next to an older Leaflet artifact.
+    // Optimize the complete map dependency graph together during server start
+    // instead of discovering part of it when /me is first opened.
+    optimizeDeps: {
+      include: ["leaflet", "react-leaflet", "@react-leaflet/core"],
+    },
     server: {
       host: '0.0.0.0',
       port: 3000,

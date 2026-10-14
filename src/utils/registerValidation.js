@@ -13,8 +13,11 @@ export const PH_PHONE_REGEX = /^(09|\+639)\d{9}$/;
 // Allowed characters in full name: letters, spaces, hyphens, periods, apostrophes
 export const FULLNAME_REGEX = /^[a-zA-ZÀ-ÿ\s.\-']+$/;
 
-// Username format: alphanumeric, underscore, dot (3-25 chars)
-export const USERNAME_REGEX = /^[a-zA-Z0-9_.]+$/;
+// Mirrors the backend canonical public-route identifier validation.
+export const USERNAME_REGEX = /^[a-z0-9][a-z0-9._]{2,29}$/;
+export const RESERVED_USERNAMES = new Set([
+  "admin", "farmer", "manage", "marketplace", "nearby", "messages", "transactions", "settings", "notifications", "favorites", "groups", "product", "profile", "me", "login", "register", "landing", "suspended", "verify-account", "forgot-password", "passkey-test", "users", "api", "assets", "index", "privacy", "terms",
+]);
 
 /**
  * Validates Step 1: Account Information
@@ -40,10 +43,12 @@ export function validateStep1(form) {
     errors.username = t("validation.usernameRequired");
   } else if (trimmedUsername.length < 3) {
     errors.username = t("validation.usernameMin");
-  } else if (trimmedUsername.length > 25) {
+  } else if (trimmedUsername.length > 30) {
     errors.username = t("validation.usernameMax");
   } else if (!USERNAME_REGEX.test(trimmedUsername)) {
     errors.username = t("validation.usernameInvalid");
+  } else if (RESERVED_USERNAMES.has(trimmedUsername)) {
+    errors.username = t("validation.usernameReserved");
   }
 
   // 3. Email

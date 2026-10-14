@@ -47,7 +47,7 @@ export default function InquiryOverview({ loading = false }) {
 
   const headerAction = (
     <Link
-      to="/farmer/transactions"
+      to="/transactions"
       className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#2D6A4F] hover:text-[#1B4332] dark:text-(--agri-brand) transition hover:underline"
     >
       {t("farmer.viewAll")}
@@ -143,7 +143,7 @@ function InquiryOverviewRow({ inquiry }) {
 
   return (
     <Link
-      to="/farmer/transactions"
+      to="/transactions"
       className="flex items-center gap-3 p-3 transition hover:bg-(--agri-hover)/60"
     >
       {image ? (

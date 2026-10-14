@@ -76,7 +76,7 @@ export default function AccountStep({
           <input
             value={form.username}
             placeholder="juan123"
-            onChange={(e) => updateField("username", e.target.value)}
+            onChange={(e) => updateField("username", e.target.value.toLowerCase())}
             onBlur={() => setFieldTouched?.("username")}
             className={`${authInputBaseClass} pl-10 pr-3 ${
               usernameError

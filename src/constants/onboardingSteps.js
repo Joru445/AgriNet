@@ -10,6 +10,8 @@
  *             under `onboarding.steps.<id>.title` / `.body`.
  */
 
+import { getPublicProfilePath } from "../utils/routes";
+
 const TARGET = {
   search: '[data-onboarding="home-search"]',
   productCard: '[data-onboarding="product-card"]',
@@ -83,7 +85,7 @@ const farmerSteps = [
     id: "farmer-store",
             target: TARGET.storeHeader,
     path: (profile) =>
-      profile?.uid ? `/farmer/profile/${profile.uid}` : null,
+      profile?.uid ? getPublicProfilePath(profile) : null,
   },
   {
     id: "farmer-products",
@@ -98,7 +100,7 @@ const farmerSteps = [
   {
     id: "farmer-settings",
     target: TARGET.preferences,
-    path: "/farmer/settings",
+    path: "/settings",
     interactive: true,
   },
   {
@@ -142,7 +144,7 @@ const adminSteps = [
   {
     id: "admin-settings",
     target: TARGET.preferences,
-    path: "/admin/settings",
+    path: "/settings",
     interactive: true,
   },
   {
@@ -181,14 +183,9 @@ const NAV_KEYS_BY_PATH = {
 
   "/farmer": "nav-dashboard",
   "/farmer/products": "nav-products",
-  "/farmer/messages": "nav-messages",
-  "/farmer/transactions": "nav-transactions",
-  "/farmer/settings": "nav-settings",
 
   "/admin": "nav-dashboard",
   "/admin/reports": "nav-reports",
-  "/admin/messages": "nav-messages",
-  "/admin/settings": "nav-settings",
 };
 
 export function getOnboardingNavKey(path) {

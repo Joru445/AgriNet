@@ -206,7 +206,7 @@ export default function AccountSwitcher() {
                 type="button"
                 onClick={(e) => handleRemove(e, account)}
                 disabled={switching}
-                className="flex h-17 w-17 shrink-0 items-center justify-center text-(--agri-text-muted) transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
+                className="flex h-21 w-17 shrink-0 items-center justify-center text-(--agri-text-muted) transition hover:bg-red-500/10 hover:text-red-500 cursor-pointer disabled:opacity-50"
                 aria-label={t("settings.removeAccount") || "Remove account"}
               >
                 <i className="ri-close-line text-sm" />

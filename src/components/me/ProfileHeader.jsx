@@ -38,7 +38,7 @@ export default function ProfileHeader({
 
   const isFarmer = profile.role === "farmer";
   const displayName = profile.fullname || t("profile.unnamedUser");
-  const roleLabel = isFarmer ? t("roles.farmer") : t("roles.consumer");
+  const roleLabel = profile.role === "admin" ? t("roles.admin") : (isFarmer ? t("roles.farmer") : t("roles.consumer"));
 
   const openAvatarViewer = () =>
     setFullscreenImage({
@@ -156,7 +156,7 @@ export default function ProfileHeader({
                   {displayName}
                 </h1>
 
-                {(profile.verificationStatus === "approved" || profile.verified) && (
+                {isFarmer && profile.verificationStatus === "approved" && (
                   <i
                     className="ri-verified-badge-fill text-lg text-[#2D6A4F] dark:text-(--agri-brand)"
                     title={t("common.verifiedFarmer")}

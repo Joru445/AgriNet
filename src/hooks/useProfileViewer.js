@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getPublicProfilePath } from "../utils/routes";
 
 /**
  * Avatar click → navigate to profile OR open lightbox.
@@ -26,11 +27,8 @@ export default function useProfileViewer() {
       const uid = targetUser?.uid || targetUser?.id;
       if (!uid) return;
 
-      const profileUrl = `/profile/${uid}`;
-      const farmerProfileUrl = `/farmer/profile/${uid}`;
-      const isOnProfile =
-        location.pathname === profileUrl ||
-        location.pathname === farmerProfileUrl;
+      const profileUrl = getPublicProfilePath(targetUser);
+      const isOnProfile = location.pathname === profileUrl || location.pathname === `/profile/${uid}` || location.pathname === `/farmer/profile/${uid}`;
 
       if (isOnProfile) {
         setLightbox({

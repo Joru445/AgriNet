@@ -35,7 +35,7 @@ export default function DashboardStats({ stats = {}, loading = false }) {
         title={t("farmer.statPreOrders")}
         value={stats.preorderCount ?? 0}
         description={t("farmer.statPreOrdersDesc")}
-        to="/farmer/transactions"
+        to="/transactions"
       />
 
       <StatCard
@@ -59,7 +59,7 @@ export default function DashboardStats({ stats = {}, loading = false }) {
         title={t("farmer.statUnreadMessages")}
         value={stats.unreadMessages ?? 0}
         description={t("farmer.statUnreadMessagesDesc")}
-        to="/farmer/messages"
+        to="/messages"
       />
     </div>
   );

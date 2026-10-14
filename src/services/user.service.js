@@ -1,5 +1,6 @@
 import { apiRequest } from "./api/api.client";
 import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
+import { invalidatePrefix } from "../utils/pageCache";
 
 const USER_PAGE_SIZE = 100;
 
@@ -46,6 +47,20 @@ export async function getUserProfile(uid, requesterUid) {
   return cached || null;
 }
 
+// This endpoint is intentionally public-safe even for the owner. It powers
+// public pages and "View as others" without reading owner-only cache fields.
+export async function getPublicProfile(uid) {
+  if (!uid || typeof uid !== "string") throw new Error("Invalid user UID.");
+  const result = await apiRequest(`/v1/users/public/${encodeURIComponent(uid)}`, { requireAuth: false });
+  return result.data ?? null;
+}
+
+export async function getPublicProfileByUsername(username) {
+  if (!username || typeof username !== "string") throw new Error("Invalid username.");
+  const result = await apiRequest(`/v1/users/by-username/${encodeURIComponent(username)}`, { requireAuth: false });
+  return result.data ?? null;
+}
+
 /*
  * ============================================================
  * UPDATE MY PROFILE (BACKEND)
@@ -58,6 +73,10 @@ export async function updateMyProfile(data) {
     body: JSON.stringify(data),
   });
 
+  if (result.user?.uid) {
+    setCachedUserProfile(result.user.uid, result.user);
+    invalidatePrefix("publicProfile:");
+  }
   return result.user;
 }
 

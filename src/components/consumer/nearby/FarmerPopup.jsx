@@ -3,6 +3,7 @@ import { useLanguage } from "../../../context/LanguageContext";
 import Avatar from "../../ui/Avatar";
 import ImageViewerModal from "../../ui/ImageViewerModal";
 import useProfileViewer from "../../../hooks/useProfileViewer";
+import { getPublicProfilePath } from "../../../utils/routes";
 
 export default function FarmerPopup({ farmer, onMessage }) {
   const { t } = useLanguage();
@@ -79,7 +80,7 @@ export default function FarmerPopup({ farmer, onMessage }) {
       {/* Actions */}
       <div className="mt-3 flex gap-2">
         <Link
-          to={`/profile/${farmer.uid}`}
+          to={getPublicProfilePath(farmer)}
           className="flex-1 rounded-xl border border-[#2D6A4F] py-2 text-center text-xs font-semibold !text-[#2D6A4F] dark:text-(--agri-brand) hover:!bg-[#2D6A4F] hover:!text-white transition shadow-xs"
         >
           {t("nearby.profile")}

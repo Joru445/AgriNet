@@ -1,15 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { uploadProfilePicture } from "../services/cloudinary.service";
-import { updateMyProfile, getUserProfile } from "../services/user.service";
+import { updateMyProfile, getUserProfile, getPublicProfile } from "../services/user.service";
 import { getFarmerById } from "../services/farmer.service";
-import { getFarmerProducts } from "../services/product.service";
-import {
-  getFarmerReviewCount,
-  getAverageFarmerRating,
-} from "../services/farmer-review.service";
 
 import { showToast } from "../utils/toast";
+import { RESERVED_USERNAMES, USERNAME_REGEX } from "../utils/registerValidation";
 
 export default function useProfile(profile) {
   const [loading, setLoading] = useState(!profile?.uid);
@@ -55,12 +51,7 @@ export default function useProfile(profile) {
     profilePictureId: profile?.profilePictureId || "",
   }));
 
-  const [stats, setStats] = useState({
-    products: 0,
-    reviews: 0,
-    inquiries: 0,
-    completed: 0,
-  });
+  const [stats, setStats] = useState(null);
 
   // Cleanup blob URLs on unmount
   useEffect(() => {
@@ -131,15 +122,15 @@ export default function useProfile(profile) {
       return;
     }
 
-    if (!/^[a-z0-9._]+$/.test(trimmedUsername)) {
-      showToast.error("Username can only contain lowercase letters, numbers, dots, and underscores.");
+    if (!USERNAME_REGEX.test(trimmedUsername) || RESERVED_USERNAMES.has(trimmedUsername)) {
+      showToast.error("Choose an available lowercase username with 3–30 letters, numbers, dots, or underscores.");
       return;
     }
 
     setSaving(true);
 
     try {
-      await updateMyProfile({
+      const updated = await updateMyProfile({
         username: trimmedUsername.toLowerCase(),
         fullname: trimmedFullname,
         fullnameLower: trimmedFullname.toLowerCase(),
@@ -164,6 +155,7 @@ export default function useProfile(profile) {
 
       showToast.success("Profile updated!");
       setEditing(false);
+      return updated;
     } catch (error) {
       showToast.error(error.message);
     } finally {
@@ -191,20 +183,9 @@ export default function useProfile(profile) {
 
   const loadStats = useCallback(async (uid) => {
     try {
-      const [products, reviews, rating] = await Promise.all([
-        getFarmerProducts(uid),
-        getFarmerReviewCount(uid),
-        getAverageFarmerRating(uid),
-      ]);
-
-      setStats({
-        products: products.length,
-        reviews,
-        inquiries: 0,
-        completed: 0,
-      });
-
-      return rating;
+      const projection = await getPublicProfile(uid);
+      setStats(projection?.stats || null);
+      return projection?.stats?.reputation?.averageRating || 0;
     } catch (error) {
       console.error(error);
       return 0;
@@ -229,9 +210,8 @@ export default function useProfile(profile) {
 
         if (user.role === "farmer") {
           farmer = await getFarmerById(profile.uid);
-
-          rating = await loadStats(profile.uid);
         }
+        rating = await loadStats(profile.uid);
 
         setForm({
           ...user,
@@ -318,6 +298,10 @@ export default function useProfile(profile) {
       setUploadingAvatar(false);
     }
   }
+
+  useEffect(() => {
+    hasLoadedRef.current = false;
+  }, [profile?.uid]);
 
   useEffect(() => {
     if (!hasLoadedRef.current && profile?.uid) {

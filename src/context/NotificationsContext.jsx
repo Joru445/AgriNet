@@ -43,7 +43,7 @@ function mergeFirstPage(current, firstPage) {
 }
 
 export function NotificationsProvider({ children }) {
-  const { profile } = useAuth();
+  const { profile, deviceSessionReady } = useAuth();
 
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -66,7 +66,7 @@ export function NotificationsProvider({ children }) {
     setHasMore(false);
     hasLoadedPagesRef.current = false;
 
-    if (!profile?.uid) {
+    if (!profile?.uid || !deviceSessionReady) {
       setLoading(false);
       return;
     }
@@ -111,10 +111,10 @@ export function NotificationsProvider({ children }) {
       unsubscribeList();
       unsubscribeUnread();
     };
-  }, [profile?.uid]);
+  }, [profile?.uid, deviceSessionReady]);
 
   const loadMoreNotifications = useCallback(async () => {
-    if (!profile?.uid || loadingMore || !hasMore) return;
+    if (!profile?.uid || !deviceSessionReady || loadingMore || !hasMore) return;
 
     hasLoadedPagesRef.current = true;
     setLoadingMore(true);
@@ -138,7 +138,7 @@ export function NotificationsProvider({ children }) {
     } finally {
       setLoadingMore(false);
     }
-  }, [profile?.uid, loadingMore, hasMore, cursor]);
+  }, [profile?.uid, deviceSessionReady, loadingMore, hasMore, cursor]);
 
   const markAsRead = useCallback(async (notification) => {
     if (!notification || notification.read) return;

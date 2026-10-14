@@ -17,9 +17,10 @@ export function subscribeToRealtime(endpoint, onSnapshot, onError = () => {}) {
   let closed = false;
   let retryTimer = null;
   let attempts = 0;
+  let waitingForSession = false;
 
   const retry = () => {
-    if (closed || (typeof navigator !== "undefined" && !navigator.onLine)) return;
+    if (closed || waitingForSession || (typeof navigator !== "undefined" && !navigator.onLine)) return;
     const delay = Math.min(30_000, 750 * 2 ** attempts) + Math.floor(Math.random() * 400);
     attempts += 1;
     retryTimer = setTimeout(connect, delay);
@@ -31,13 +32,30 @@ export function subscribeToRealtime(endpoint, onSnapshot, onError = () => {}) {
       const user = auth.currentUser;
       const token = await user?.getIdToken();
       const sessionId = getCurrentDeviceSessionId(user?.uid);
-      if (!token || !sessionId) throw new Error("A current device session is required.");
+      if (!token || !sessionId) {
+        waitingForSession = true;
+        const error = Object.assign(new Error("A current device session is required."), { code: "SESSION_PENDING" });
+        onError(error);
+        return;
+      }
 
       const response = await fetch(buildApiUrl(endpoint), {
         headers: { Authorization: `Bearer ${token}`, "X-AgriNet-Session": sessionId, Accept: "text/event-stream" },
         signal: controller.signal,
       });
-      if (!response.ok || !response.body) throw new Error(`Realtime connection failed (${response.status}).`);
+      if (!response.ok || !response.body) {
+        let payload = null;
+        try { payload = await response.json(); } catch { /* SSE errors may be empty. */ }
+        const error = Object.assign(new Error(payload?.message || `Realtime connection failed (${response.status}).`), {
+          status: response.status,
+          code: payload?.code,
+        });
+        if (["SESSION_REVOKED", "SESSION_NOT_FOUND", "SESSION_BINDING_MISMATCH"].includes(error.code)) {
+          notifySessionRevoked(error.code);
+          return;
+        }
+        throw error;
+      }
       attempts = 0;
 
       const reader = response.body.getReader();
@@ -72,8 +90,15 @@ export function subscribeToRealtime(endpoint, onSnapshot, onError = () => {}) {
   };
 
   const resume = () => { if (!closed && !retryTimer) connect(); };
+  const resumeWhenSessionReady = (event) => {
+    if (event.detail?.uid && event.detail.uid !== auth.currentUser?.uid) return;
+    waitingForSession = false;
+    attempts = 0;
+    resume();
+  };
   window.addEventListener("online", resume);
+  globalThis.addEventListener?.("agrinet:device-session-ready", resumeWhenSessionReady);
   connect();
 
-  return () => { closed = true; clearTimeout(retryTimer); window.removeEventListener("online", resume); controller.abort(); };
+  return () => { closed = true; clearTimeout(retryTimer); window.removeEventListener("online", resume); globalThis.removeEventListener?.("agrinet:device-session-ready", resumeWhenSessionReady); controller.abort(); };
 }

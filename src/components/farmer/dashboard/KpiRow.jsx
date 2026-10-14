@@ -25,10 +25,10 @@ export default function KpiRow({ stats = {}, loading = false }) {
               <>
                 <StatCard compact title={t("farmer.statProducts")} value={stats.totalProducts ?? 0} to="/farmer/products" />
                 <StatCard compact title={t("farmer.statAvailable")} value={stats.availableProducts ?? 0} to="/farmer/products" />
-                <StatCard compact title={t("farmer.statPreOrders")} value={stats.preorderCount ?? 0} to="/farmer/transactions" />
-                <StatCard compact title={t("farmer.statInquiries")} value={stats.totalInquiries ?? 0} to="/farmer/transactions" />
-                <StatCard compact title={t("farmer.statOngoing")} value={stats.ongoingInquiries ?? 0} to="/farmer/transactions" />
-                <StatCard compact title={t("farmer.statCompleted")} value={stats.completedInquiries ?? 0} to="/farmer/transactions" />
+                <StatCard compact title={t("farmer.statPreOrders")} value={stats.preorderCount ?? 0} to="/transactions" />
+                <StatCard compact title={t("farmer.statInquiries")} value={stats.totalInquiries ?? 0} to="/transactions" />
+                <StatCard compact title={t("farmer.statOngoing")} value={stats.ongoingInquiries ?? 0} to="/transactions" />
+                <StatCard compact title={t("farmer.statCompleted")} value={stats.completedInquiries ?? 0} to="/transactions" />
               </>
             )}
         </div>

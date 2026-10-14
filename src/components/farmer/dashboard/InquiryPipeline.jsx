@@ -75,7 +75,7 @@ function PreOrderSummary({ stats }) {
           <span className="font-black text-sm text-(--agri-text)">{preorderCount}</span>
         </Link>
         <Link
-          to="/farmer/transactions"
+          to="/transactions"
           className="flex items-center justify-between gap-2 rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 px-3 py-2.5 text-xs transition hover:border-[#2D6A4F]/40 hover:bg-(--agri-hover) shadow-2xs"
         >
           <div className="flex items-center gap-2 min-w-0">
@@ -87,7 +87,7 @@ function PreOrderSummary({ stats }) {
           <span className="font-black text-sm text-(--agri-text)">{reservedCount}</span>
         </Link>
         <Link
-          to="/farmer/transactions"
+          to="/transactions"
           className="flex items-center justify-between gap-2 rounded-xl border border-(--agri-border-subtle) bg-(--agri-hover)/30 px-3 py-2.5 text-xs transition hover:border-[#2D6A4F]/40 hover:bg-(--agri-hover) shadow-2xs"
         >
           <div className="flex items-center gap-2 min-w-0">

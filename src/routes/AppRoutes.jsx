@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 
 import HomeRedirect from "./HomeRedirect";
 import PublicRoute from "./PublicRoute";
@@ -63,6 +63,13 @@ const PasskeyTest = lazy(() => import("../pages/test/PasskeyTest"));
 
 const NotFound = lazy(() => import("../pages/NotFound"));
 
+function LegacyRedirect({ to }) {
+  const location = useLocation();
+  const params = useParams();
+  const pathname = typeof to === "function" ? to(params) : to;
+  return <Navigate replace to={`${pathname}${location.search}${location.hash}`} />;
+}
+
 export default function AppRoutes() {
   return (
     <Suspense fallback={null}>
@@ -118,6 +125,26 @@ export default function AppRoutes() {
           <Route path="/settings/*" element={<Settings />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/favorites" element={<Favorites />} />
+
+          {/* Legacy shared URLs remain bookmark-safe while all new navigation
+              uses the canonical unprefixed location. */}
+          <Route path="/farmer/product/:id" element={<LegacyRedirect to={({ id }) => `/product/${encodeURIComponent(id)}`} />} />
+          <Route path="/farmer/profile/:uid" element={<PublicProfile />} />
+          <Route path="/farmer/transactions" element={<LegacyRedirect to="/transactions" />} />
+          <Route path="/farmer/transactions/:inquiryId/proof" element={<LegacyRedirect to={({ inquiryId }) => `/transactions/${encodeURIComponent(inquiryId)}/proof`} />} />
+          <Route path="/farmer/transactions/:inquiryId/review" element={<LegacyRedirect to={({ inquiryId }) => `/transactions/${encodeURIComponent(inquiryId)}/review`} />} />
+          <Route path="/farmer/messages" element={<LegacyRedirect to="/messages" />} />
+          <Route path="/farmer/me" element={<LegacyRedirect to="/me" />} />
+          <Route path="/farmer/settings/*" element={<LegacyRedirect to={({ "*": rest }) => `/settings${rest ? `/${rest}` : ""}`} />} />
+          <Route path="/farmer/notifications" element={<LegacyRedirect to="/notifications" />} />
+          <Route path="/admin/messages" element={<LegacyRedirect to="/messages" />} />
+          <Route path="/admin/me" element={<LegacyRedirect to="/me" />} />
+          <Route path="/admin/settings/*" element={<LegacyRedirect to={({ "*": rest }) => `/settings${rest ? `/${rest}` : ""}`} />} />
+          <Route path="/admin/notifications" element={<LegacyRedirect to="/notifications" />} />
+
+          {/* Kept last among application paths: a username may only consume
+              one root segment and cannot shadow static routes. */}
+          <Route path="/:username" element={<PublicProfile />} />
         </Route>
 
         {/* ── SHARED AUTHENTICATED (groups) ─────────────────── */}
@@ -142,33 +169,10 @@ export default function AppRoutes() {
             <Route element={<AppLayout />}>
               <Route path="/farmer" element={<FarmerDashboard />} />
 
-              <Route path="/farmer/product/:id" element={<ProductDetails />} />
-
               <Route path="/farmer/products" element={<MyProducts />} />
-
-              <Route path="/farmer/profile/:uid" element={<PublicProfile />} />
-
-              <Route path="/farmer/transactions" element={<Inquiries />} />
-
-              <Route
-                path="/farmer/transactions/:inquiryId/proof"
-                element={<TransactionProof />}
-              />
-
-              <Route
-                path="/farmer/transactions/:inquiryId/review"
-                element={<TransactionReview />}
-              />
 
               <Route path="/farmer/reviews" element={<Reviews />} />
 
-              <Route path="/farmer/messages" element={<Messages />} />
-
-              <Route path="/farmer/me" element={<Profile />} />
-
-              <Route path="/farmer/settings/*" element={<Settings />} />
-
-              <Route path="/farmer/notifications" element={<Notifications />} />
             </Route>
           </Route>
         </Route>
@@ -204,13 +208,6 @@ export default function AppRoutes() {
                 element={<TransactionReview />}
               />
 
-              <Route path="/admin/messages" element={<Messages />} />
-
-              <Route path="/admin/me" element={<Profile />} />
-
-              <Route path="/admin/settings/*" element={<Settings />} />
-
-              <Route path="/admin/notifications" element={<Notifications />} />
             </Route>
           </Route>
         </Route>

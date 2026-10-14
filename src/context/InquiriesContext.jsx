@@ -24,7 +24,7 @@ const InquiriesContext = createContext({
  * This reduces Firestore reads by 50% for the inquiries collection.
  */
 export function InquiriesProvider({ children }) {
-  const { profile } = useAuth();
+  const { profile, deviceSessionReady } = useAuth();
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,7 +47,7 @@ export function InquiriesProvider({ children }) {
     setLoading(true);
     setError(null);
 
-    if (!profile?.uid || !profile?.role) {
+    if (!profile?.uid || !profile?.role || !deviceSessionReady) {
       setLoading(false);
       return;
     }
@@ -100,7 +100,7 @@ export function InquiriesProvider({ children }) {
     );
 
     return unsubscribe;
-  }, [profile?.uid, profile?.role]);
+  }, [profile?.uid, profile?.role, deviceSessionReady]);
 
   return (
     <InquiriesContext.Provider value={{ inquiries, loading, error }}>

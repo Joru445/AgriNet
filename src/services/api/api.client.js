@@ -95,13 +95,18 @@ export async function apiRequest(endpoint, options = {}) {
     timeout = DEFAULT_TIMEOUT,
     retries = MAX_RETRIES,
     requireAuth = true,
+    // Session bootstrap may run while Firebase's default Auth instance is
+    // switching accounts. Callers can bind a request to the user/handle they
+    // are establishing rather than accidentally borrowing the new default.
+    authUser,
+    deviceSessionId: explicitDeviceSessionId,
     ...fetchOptions
   } = options;
 
-  const currentUser = auth.currentUser;
+  const currentUser = authUser || auth.currentUser;
 
   const headers = new Headers(fetchOptions.headers);
-  const deviceSessionId = getCurrentDeviceSessionId(currentUser?.uid);
+  const deviceSessionId = explicitDeviceSessionId ?? getCurrentDeviceSessionId(currentUser?.uid);
   if (deviceSessionId) headers.set("X-AgriNet-Session", deviceSessionId);
 
   // Only send Content-Type for requests with a JSON body. Avoid GET preflights.
@@ -162,9 +167,14 @@ export async function apiRequest(endpoint, options = {}) {
         );
         error.status = response.status;
         error.data = data;
-        if (["SESSION_REVOKED", "SESSION_NOT_FOUND", "SESSION_BINDING_MISMATCH"].includes(data?.code)) {
+        if (["SESSION_REVOKED", "SESSION_BINDING_MISMATCH"].includes(data?.code)) {
           globalThis.dispatchEvent?.(new CustomEvent("agrinet:device-session-revoked", {
             detail: { uid: currentUser?.uid || null, code: data.code },
+          }));
+        }
+        if (data?.code === "SESSION_NOT_FOUND") {
+          globalThis.dispatchEvent?.(new CustomEvent("agrinet:device-session-missing", {
+            detail: { uid: currentUser?.uid || null },
           }));
         }
         throw error;

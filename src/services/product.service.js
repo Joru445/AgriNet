@@ -1,7 +1,5 @@
 import {
-  addDoc,
   collection,
-  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -9,9 +7,7 @@ import {
   limit,
   orderBy,
   query,
-  serverTimestamp,
   startAfter,
-  updateDoc,
   where,
 } from "firebase/firestore";
 
@@ -60,6 +56,26 @@ export async function getFarmerProducts(farmerId) {
     id: doc.id,
     ...doc.data(),
   }));
+}
+
+/**
+ * Public profile/store listings are served by the backend.  Unlike the legacy
+ * Firestore helper above, this applies the same public-listing rules for
+ * anonymous visitors and cannot turn a missing farmer record into a profile
+ * failure.
+ */
+export async function getPublicFarmerProductsPage(farmerId, { cursor, limit: pageSize = 24 } = {}) {
+  if (!farmerId) return { products: [], cursor: null, hasMore: false };
+  const params = new URLSearchParams({ limit: String(pageSize) });
+  if (cursor) params.set("cursor", cursor);
+  const result = await apiRequest(`/v1/products/farmer/${encodeURIComponent(farmerId)}?${params.toString()}`, {
+    requireAuth: false,
+  });
+  return {
+    products: result.data ?? [],
+    cursor: result.cursor ?? null,
+    hasMore: result.hasMore === true,
+  };
 }
 
 // Legacy exported function names remain for older components, but all mutations

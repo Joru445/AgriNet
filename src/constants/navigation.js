@@ -21,14 +21,14 @@ export const farmerNavigation = [
     group: "marketplace",
   },
   {
-    to: "/farmer/transactions",
+    to: "/transactions",
     icon: "ri-file-list-3-line",
     labelKey: "nav.transactions",
     bottom: true,
     group: "marketplace",
   },
   {
-    to: "/farmer/messages",
+    to: "/messages",
     icon: "ri-message-3-line",
     labelKey: "nav.messages",
     bottom: true,
@@ -42,7 +42,7 @@ export const farmerNavigation = [
     group: "communication",
   },
   {
-    to: "/farmer/settings",
+    to: "/settings",
     icon: "ri-settings-3-line",
     labelKey: "nav.settings",
     bottom: true,
@@ -125,14 +125,14 @@ export const adminNavigation = [
     group: "main",
   },
   {
-    to: "/admin/messages",
+    to: "/messages",
     icon: "ri-message-3-line",
     labelKey: "nav.messages",
     bottom: true,
     group: "communication",
   },
   {
-    to: "/admin/settings",
+    to: "/settings",
     icon: "ri-settings-3-line",
     labelKey: "nav.settings",
     bottom: true,

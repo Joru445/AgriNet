@@ -27,7 +27,7 @@ const ConversationsContext = createContext({
  * fully hydrated conversation objects without additional Firestore reads.
  */
 export function ConversationsProvider({ children }) {
-  const { profile } = useAuth();
+  const { profile, deviceSessionReady } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +40,7 @@ export function ConversationsProvider({ children }) {
     setConversations([]);
     setLoading(true);
 
-    if (!profile?.uid) {
+    if (!profile?.uid || !deviceSessionReady) {
       setLoading(false);
       return;
     }
@@ -196,7 +196,7 @@ export function ConversationsProvider({ children }) {
     return () => {
       unsubscribe();
     };
-  }, [profile?.uid]);
+  }, [profile?.uid, deviceSessionReady]);
 
   return (
     <ConversationsContext.Provider value={{ conversations, loading }}>

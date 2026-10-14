@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 
 import Avatar from "../ui/Avatar";
@@ -10,11 +9,10 @@ import ImageViewerModal from "../ui/ImageViewerModal";
 import ReportModal from "../reports/ReportModal";
 
 import useClickOutside from "../../hooks/useClickOutside";
-import { getProfilePath } from "../../utils/routes";
+import { getPublicProfilePath } from "../../utils/routes";
 import useProfileViewer from "../../hooks/useProfileViewer";
 
 export default function ChatHeader({ user }) {
-  const { profile } = useAuth();
   const { t } = useLanguage();
 
   const navigate = useNavigate();
@@ -30,12 +28,10 @@ export default function ChatHeader({ user }) {
   const targetUid = user.uid || user.id;
   const isAdmin = user.role === "admin";
 
-  const profilePath = getProfilePath(profile.role)
-
   function handleAction() {
     setMenuOpen(false);
     if (targetUid) {
-      navigate(`${profilePath}/${targetUid}`);
+      navigate(getPublicProfilePath(user));
     }
   }
 
@@ -59,7 +55,7 @@ export default function ChatHeader({ user }) {
               <h3 className="font-semibold text-(--agri-text) truncate">
                 {user.fullname}
               </h3>
-              {(user.verificationStatus === "approved" || user.verified) && (
+              {user.role === "farmer" && user.verificationStatus === "approved" && (
                 <span
                   title={t("common.verifiedFarmer")}
                   aria-label={t("common.verifiedFarmer")}

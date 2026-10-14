@@ -15,12 +15,12 @@ import { showToast } from "../../utils/toast";
 export default function PublicProfileHeader({
   profile,
   role,
-  averageRating,
-  reviewCount,
-  stats,
   groups = [],
+  isOwner = false,
   onMessage,
   onGroupClick,
+  onEdit,
+  onSettings,
 }) {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -30,7 +30,7 @@ export default function PublicProfileHeader({
 
   const isFarmer = role === "farmer";
 
-  const name = profile.storeName || profile.fullname || profile.username;
+  const name = profile.fullname || profile.username;
   const initials = getInitials(name);
   const joinedDate = profile.createdAt?.seconds
     ? new Date(profile.createdAt.seconds * 1000).toLocaleDateString("en-PH", {
@@ -131,7 +131,7 @@ export default function PublicProfileHeader({
                 <h1 className="text-xl sm:text-2xl font-bold text-[#1B4332] dark:text-(--agri-text) [text-shadow:_0_1px_2px_rgba(255,255,255,0.9),_0_0_8px_rgba(255,255,255,0.8)] dark:[text-shadow:0_1px_3px_rgba(0,0,0,0.8)] truncate">
                   {name}
                 </h1>
-                {(profile.verificationStatus === "approved" || profile.verified) && (
+                {isFarmer && profile.verificationStatus === "approved" && (
                   <span
                     title={t("common.verifiedFarmer")}
                     aria-label={t("common.verifiedFarmer")}
@@ -145,7 +145,7 @@ export default function PublicProfileHeader({
                 @{profile.username}
               </p>
               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                <RoleBadge role={isFarmer ? "farmer" : "consumer"} />
+                <RoleBadge role={role} />
                 {isFarmer && groups?.map((g) => (
                   <GroupBadge
                     key={g.groupId}
@@ -162,7 +162,26 @@ export default function PublicProfileHeader({
 
           {/* Right side: Actions - fills full width in 2-cols on mobile, inline on desktop */}
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto sm:ml-auto pb-1 sm:pb-3">
-            {onMessage && (
+            {isOwner ? (
+              <>
+                <button
+                  type="button"
+                  onClick={onEdit}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] px-4 sm:px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1B4332] cursor-pointer"
+                >
+                  <i className="ri-edit-line" />
+                  <span>{t("common.edit")}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onSettings}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-(--agri-border) bg-(--agri-card) px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) transition hover:bg-(--agri-hover) cursor-pointer"
+                >
+                  <i className="ri-settings-3-line" />
+                  <span>{t("profile.settings")}</span>
+                </button>
+              </>
+            ) : onMessage && (
               <button
                 type="button"
                 onClick={onMessage}
@@ -173,7 +192,7 @@ export default function PublicProfileHeader({
               </button>
             )}
 
-            {user && isFarmer && user.role !== "farmer" && (
+            {!isOwner && user && isFarmer && user.role !== "farmer" && (
               <button
                 type="button"
                 onClick={() => toggleFavorite("farmer", targetUid)}
@@ -198,33 +217,19 @@ export default function PublicProfileHeader({
               <span>{t("storeProfile.share")}</span>
             </button>
 
-            <button
+            {!isOwner && <button
               type="button"
               onClick={() => setShowReportModal(true)}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-(--agri-border) bg-(--agri-card) px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) transition hover:bg-(--agri-hover) cursor-pointer"
             >
               <i className="ri-flag-line" />
               <span>{t("storeProfile.report")}</span>
-            </button>
+            </button>}
           </div>
         </div>
 
         {/* Stats Row */}
         <div className="flex flex-wrap items-center gap-4 sm:gap-6 py-3 sm:py-4 border-t border-(--agri-border-subtle)">
-          {isFarmer && (
-            <div className="flex items-center gap-1.5">
-              <i className="ri-star-fill text-amber-500" />
-              <span className="text-sm font-bold text-(--agri-text)">
-                {averageRating != null && !isNaN(Number(averageRating))
-                  ? Number(averageRating).toFixed(1)
-                  : "N/A"}
-              </span>
-              <span className="text-xs text-(--agri-text-muted)">
-                ({reviewCount || 0})
-              </span>
-            </div>
-          )}
-
           {fullLocation && (
             <div className="flex items-center gap-1.5 text-sm text-(--agri-text-muted)">
               <i className="ri-map-pin-line" />

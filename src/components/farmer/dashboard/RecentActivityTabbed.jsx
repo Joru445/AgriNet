@@ -211,7 +211,7 @@ function RecentInquiriesList() {
         return (
           <li key={inquiry.id}>
             <Link
-              to="/farmer/transactions"
+              to="/transactions"
               className="group flex items-center justify-between gap-3 px-3.5 py-3 transition hover:bg-(--agri-hover)/60"
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">

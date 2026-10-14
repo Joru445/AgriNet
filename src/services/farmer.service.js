@@ -1,5 +1,4 @@
 import { apiRequest } from "./api/api.client";
-import { setCachedUserProfile } from "../utils/userProfileCache";
 
 export async function createFarmerProfile(data) {
   // Created atomically by the Firebase-authenticated /v1/users bootstrap.
@@ -69,10 +68,7 @@ export async function getFarmerById(uid) {
     });
     const farmer = result.data;
 
-    if (farmer) {
-      setCachedUserProfile(uid, { ...farmer, role: "farmer" });
-      return farmer;
-    }
+    if (farmer) return farmer;
   } catch {}
 
   return null;

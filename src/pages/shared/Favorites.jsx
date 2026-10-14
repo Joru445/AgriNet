@@ -10,6 +10,7 @@ import { getFarmers } from "../../services/farmer.service";
 import ProductCard from "../../components/products/ProductCard";
 import ProductGridSkeleton from "../../components/products/ProductGridSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
+import { getPublicProfilePath } from "../../utils/routes";
 import LoginRequired from "../../components/ui/LoginRequired";
 import Loading from "../../components/ui/Loading";
 
@@ -168,7 +169,7 @@ function FarmerCard({ farmer }) {
 
   return (
     <Link
-      to={`/profile/${farmer.id || farmer.uid}`}
+      to={getPublicProfilePath(farmer)}
       className="flex items-center gap-4 rounded-xl border border-(--agri-border) bg-(--agri-card) p-4 shadow-sm transition-all duration-200 hover:border-[#2D6A4F]/40 dark:hover:border-[#52b788]/40 hover:shadow-md anim-fade-in"
     >
       <div className="h-14 w-14 shrink-0 rounded-full bg-[#2D6A4F]/10 flex items-center justify-center overflow-hidden">

@@ -1,246 +1,141 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getUserProfile } from "../services/user.service";
-import { getFarmerById } from "../services/farmer.service";
-import { getFarmerProducts } from "../services/product.service";
-import { getFarmerReviews, enrichFarmerReviews } from "../services/farmer-review.service";
+
+import { getPublicProfile, getPublicProfileByUsername } from "../services/user.service";
+import { getPublicFarmerProductsPage } from "../services/product.service";
+import { enrichFarmerReviews, getFarmerReviews } from "../services/farmer-review.service";
 import { getProductReviewSummaries } from "../services/product-review.service";
-import { useAuth } from "../context/AuthContext";
 import * as pageCache from "../utils/pageCache";
 
-const CACHE_KEY = (uid) => `publicProfile:${uid}`;
-const CACHE_TTL = 3 * 60 * 1000; // 3 minutes
+const CACHE_TTL = 3 * 60 * 1000;
 
+function profileError(error) {
+  if (error?.status === 404) return { kind: "not-found", error };
+  if (error?.status === 401 || error?.status === 403) return { kind: "unavailable", error };
+  return { kind: "network", error };
+}
+
+/**
+ * Loads only the public-safe profile projection first.  Farmer-only sections
+ * are intentionally independent: a failed products or reviews request must
+ * never make a valid consumer, admin, or farmer profile appear missing.
+ */
 export default function usePublicProfile() {
-  const { uid } = useParams();
-  const { profile: authProfile } = useAuth();
-
+  const { uid, username } = useParams();
   const [loading, setLoading] = useState(true);
-  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(false);
   const [loadingReviews, setLoadingReviews] = useState(false);
-
   const [profile, setProfile] = useState(null);
-  const [role, setRole] = useState(null);
-
   const [products, setProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [reviewCount, setReviewCount] = useState(0);
-  const [averageRating, setAverageRating] = useState(0);
-
-  // Consumer-only transaction stats
-  const [stats, setStats] = useState({
-    loading: false,
-    completedDeals: 0,
-    totalDeals: 0,
-  });
-
-  const loadConsumerStats = useCallback(async (targetUid, userData = null) => {
-    try {
-      // 1. Direct check on user profile document synced stats
-      const userCompleted = Number(
-        userData?.completedDeals ??
-          userData?.transactionStats?.completedDeals ??
-          userData?.dealsCompleted ??
-          -1,
-      );
-      const userTotal = Number(
-        userData?.totalDeals ??
-          userData?.transactionStats?.totalDeals ??
-          userData?.dealsTotal ??
-          -1,
-      );
-
-      if (userCompleted >= 0 && userTotal >= 0) {
-        return {
-          completedDeals: userCompleted,
-          totalDeals: Math.max(userTotal, userCompleted),
-        };
-      }
-
-      let completed = userCompleted >= 0 ? userCompleted : 0;
-      let total = userTotal >= 0 ? userTotal : 0;
-
-      return {
-        completedDeals: completed,
-        totalDeals: total > 0 ? total : completed,
-      };
-    } catch (error) {
-      console.error("Failed to load consumer stats:", error);
-      return {
-        completedDeals: Number(userData?.completedDeals || 0),
-        totalDeals: Number(userData?.totalDeals || userData?.completedDeals || 0),
-      };
-    }
-  }, []);
+  const [stats, setStats] = useState(null);
+  const [error, setError] = useState(null);
+  const requestRef = useRef(0);
 
   const loadProfile = useCallback(async () => {
-    if (!uid) {
+    const requestId = ++requestRef.current;
+    const routeKey = username
+      ? `publicProfile:username:${username.toLowerCase()}`
+      : `publicProfile:uid:${uid}`;
+    if (!uid && !username) {
       setLoading(false);
       return;
     }
 
+    const applyProjection = (projection) => {
+      if (requestRef.current !== requestId) return false;
+      setProfile(projection.profile);
+      setStats(projection.stats ?? null);
+      setProducts(projection.products ?? []);
+      setReviews(projection.reviews ?? []);
+      setError(null);
+      setLoading(false);
+      return true;
+    };
+
+    const cachedRoute = pageCache.get(routeKey);
+    if (cachedRoute && applyProjection(cachedRoute)) return;
+
+    setLoading(true);
+    setError(null);
+    setProducts([]);
+    setReviews([]);
+    setLoadingProducts(false);
+    setLoadingReviews(false);
+
     try {
-      setLoading(true);
+      const payload = username
+        ? await getPublicProfileByUsername(username)
+        : await getPublicProfile(uid);
+      if (!payload?.profile) throw Object.assign(new Error("Profile not found."), { status: 404 });
 
-      // Check cache first
-      const cacheKey = CACHE_KEY(uid);
-      const cached = pageCache.get(cacheKey);
-      if (cached && cached.profile && cached.role) {
-        setProfile(cached.profile);
-        setRole(cached.role);
-        setProducts(cached.products || []);
-        setReviews(cached.reviews || []);
-        setReviewCount(cached.reviewCount || 0);
-        setAverageRating(cached.averageRating || 0);
-        setStats(cached.stats || { loading: false, completedDeals: 0, totalDeals: 0 });
-        setLoading(false);
-        setLoadingProducts(false);
-        setLoadingReviews(false);
+      const projection = { profile: payload.profile, stats: payload.stats ?? null, products: [], reviews: [] };
+      if (!applyProjection(projection)) return;
+
+      if (payload.profile.role !== "farmer") {
+        pageCache.set(`publicProfile:uid:${payload.profile.uid}`, projection, CACHE_TTL);
+        pageCache.set(routeKey, projection, CACHE_TTL);
         return;
       }
+      setLoadingProducts(true);
+      setLoadingReviews(true);
 
-      const isOwnProfile = authProfile?.uid === uid;
-
-      // Public profiles must use the privacy-filtering API. The complete
-      // authenticated profile is merged below only for its owner.
-      const [user, farmerData] = await Promise.all([
-        getUserProfile(uid, authProfile?.uid).catch(() => null),
-        getFarmerById(uid).catch(() => null),
+      const [productResult, reviewResult] = await Promise.allSettled([
+        getPublicFarmerProductsPage(payload.profile.uid),
+        getFarmerReviews(payload.profile.uid),
       ]);
+      if (requestRef.current !== requestId) return;
 
-      if (!user && !farmerData) {
-        setProfile(null);
-        setRole(null);
-        setStats({ loading: false, completedDeals: 0, totalDeals: 0 });
-        setLoading(false);
-        return;
-      }
+      const loadedProducts = productResult.status === "fulfilled" ? productResult.value.products : [];
+      const loadedReviews = reviewResult.status === "fulfilled" ? reviewResult.value : [];
+      const summaries = await getProductReviewSummaries(loadedProducts.map((item) => item.id)).catch(() => new Map());
+      if (requestRef.current !== requestId) return;
 
-      // 3. Determine the target user's role:
-      // A user is a FARMER if:
-      // - farmerData document exists, OR
-      // - user.role === "farmer"
-      // Otherwise, the user is a CONSUMER.
-      const detectedRole =
-        farmerData || user?.role === "farmer"
-          ? "farmer"
-          : (user?.role || (isOwnProfile ? authProfile?.role : null) || "consumer");
-
-      const userResult = {
-        ...(user || {}),
-        ...(farmerData || {}),
-        ...(isOwnProfile && authProfile ? authProfile : {}),
-        role: detectedRole,
-      };
-
-      setProfile(userResult);
-      setRole(detectedRole);
-
-      let loadedProducts = [];
-      let loadedReviews = [];
-      let loadedReviewCount = 0;
-      let loadedAverageRating = 0;
-      let loadedStats = { loading: false, completedDeals: 0, totalDeals: 0 };
-
-      if (detectedRole === "farmer") {
-        setLoadingReviews(true);
-        setLoadingProducts(true);
-
-        try {
-          const [productsData, reviewsData] = await Promise.all([
-            getFarmerProducts(uid).catch(() => []),
-            getFarmerReviews(uid).catch(() => []),
-          ]);
-
-          const productIds = productsData.map((p) => p.id);
-          const reviewSummaries = await getProductReviewSummaries(productIds).catch(() => new Map());
-
-          loadedProducts = productsData.map((p) => {
-            const summary = reviewSummaries.get(p.id);
-            return {
-              ...p,
-              productRating: summary?.average ?? 0,
-              reviewCount: summary?.count ?? 0,
-            };
-          });
-
-          loadedReviews = reviewsData;
-          loadedReviewCount = reviewsData.length;
-          loadedAverageRating =
-            loadedReviewCount > 0
-              ? Number(
-                  reviewsData.reduce(
-                    (sum, r) => sum + Number(r.rating || 0),
-                    0,
-                  ) / loadedReviewCount
-                )
-              : Number(farmerData?.rating || user?.rating || 0);
-
-          setProducts(loadedProducts);
-          setReviews(loadedReviews);
-          setReviewCount(Number(loadedReviewCount) || 0);
-          setAverageRating(Number(loadedAverageRating) || 0);
-
-          // Enrich reviews in the background
-          enrichFarmerReviews(loadedReviews)
-            .then((enriched) => setReviews(enriched))
-            .catch(() => {});
-        } catch (error) {
-          console.error("Failed to load public profile data:", error);
-        } finally {
-          setLoadingProducts(false);
-          setLoadingReviews(false);
-        }
-      } else {
-        setLoadingProducts(false);
-        setLoadingReviews(false);
-
-        setStats({ loading: true, completedDeals: 0, totalDeals: 0 });
-        loadedStats = await loadConsumerStats(uid, userResult);
-        setStats({ loading: false, ...loadedStats });
-      }
-
-      // Cache everything from the freshly loaded local values (not stale state)
-      pageCache.set(
-        cacheKey,
-        {
-          profile: userResult,
-          role: detectedRole,
-          products: loadedProducts,
-          reviews: loadedReviews,
-          reviewCount: loadedReviewCount,
-          averageRating: loadedAverageRating,
-          stats: loadedStats,
-        },
-        CACHE_TTL,
-      );
-    } catch (error) {
-      console.error("Failed to load public profile:", error);
+      const productsWithRatings = loadedProducts.map((item) => ({
+        ...item,
+        productRating: summaries.get(item.id)?.average ?? item.ratingSummary?.average ?? 0,
+        reviewCount: summaries.get(item.id)?.count ?? item.ratingSummary?.count ?? 0,
+      }));
+      const cached = { profile: payload.profile, stats: payload.stats ?? null, products: productsWithRatings, reviews: loadedReviews };
+      pageCache.set(`publicProfile:uid:${payload.profile.uid}`, cached, CACHE_TTL);
+      pageCache.set(routeKey, cached, CACHE_TTL);
+      setProducts(productsWithRatings);
+      setReviews(loadedReviews);
+      setLoadingProducts(false);
+      setLoadingReviews(false);
+      enrichFarmerReviews(loadedReviews)
+        .then((enriched) => {
+          if (requestRef.current === requestId) setReviews(enriched);
+        })
+        .catch(() => {});
+    } catch (loadError) {
+      if (requestRef.current !== requestId) return;
       setProfile(null);
-    } finally {
+      setStats(null);
+      setProducts([]);
+      setReviews([]);
+      setError(profileError(loadError));
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadConsumerStats is stable, deps intentionally curated
-  }, [uid, loadConsumerStats, authProfile?.uid]);
+  }, [uid, username]);
 
   useEffect(() => {
     loadProfile();
+    return () => { requestRef.current += 1; };
   }, [loadProfile]);
 
   return {
     loading,
     loadingProducts,
     loadingReviews,
-
     profile,
-    role,
-
+    role: profile?.role ?? null,
     products,
-
     reviews,
-    averageRating,
-    reviewCount,
-
     stats,
+    error,
+    reload: loadProfile,
+    averageRating: stats?.reputation?.averageRating ?? null,
+    reviewCount: stats?.reputation?.reviewCount ?? 0,
   };
 }

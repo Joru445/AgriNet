@@ -30,10 +30,10 @@ export default function FarmerSection({ form, stats, editing, onChange, onVisibi
   const vis = form.profileVisibility || {};
 
   const statsItems = [
-    { key: "products", icon: "ri-shopping-bag-3-line", value: stats.products ?? 0 },
-    { key: "reviews", icon: "ri-star-line", value: stats.reviews ?? 0 },
-    { key: "inquiries", icon: "ri-chat-3-line", value: stats.inquiries ?? 0 },
-    { key: "completed", icon: "ri-check-double-line", value: stats.completed ?? 0 },
+    { key: "products", icon: "ri-shopping-bag-3-line", value: stats?.farmer?.activeProducts ?? 0 },
+    { key: "reviews", icon: "ri-star-line", value: stats?.reputation?.reviewCount ?? 0 },
+    { key: "transactions", icon: "ri-chat-3-line", value: stats?.transactions?.total ?? 0 },
+    { key: "completed", icon: "ri-check-double-line", value: stats?.transactions?.completed ?? 0 },
   ];
 
   return (

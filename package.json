@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "node --test scripts/test-release-contracts.mjs",
+    "test:browser": "node --test scripts/test-leaflet-browser.mjs",
     "test:rules": "firebase.cmd emulators:exec --project agrinet-security-test --only auth,firestore \"node --test test/firestore.rules.test.mjs\"",
     "emulators": "firebase.cmd emulators:start --project agrinet-security-test --only auth,firestore",
     "check:i18n": "node scripts/check-translations.mjs"
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@firebase/rules-unit-testing": "^5.0.2",
+    "@playwright/test": "^1.64.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",

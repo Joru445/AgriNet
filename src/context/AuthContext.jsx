@@ -43,6 +43,9 @@ export function AuthProvider({ children }) {
   // Firebase identity and backend/session reachability are intentionally
   // distinct. An offline PWA must not keep the whole shell in a loader.
   const [backendStatus, setBackendStatus] = useState("pending");
+  // `ready` means the backend has confirmed the opaque device session for
+  // this exact Firebase account. Authenticated streams must wait for it.
+  const [deviceSessionStatus, setDeviceSessionStatus] = useState("idle");
 
   // true until Firebase Auth has restored the persisted session (or confirmed
   // there is none). During this window NOTHING may render as "signed out".
@@ -60,6 +63,7 @@ export function AuthProvider({ children }) {
   const activeUidRef = useRef(null);
   const hadAuthenticatedSessionRef = useRef(false);
   const explicitLogoutRef = useRef(false);
+  const missingSessionRecoveryRef = useRef(new Set());
 
   async function logout() {
     explicitLogoutRef.current = true;
@@ -94,6 +98,7 @@ export function AuthProvider({ children }) {
       setLoading(true);
       setProfile(null);
       setFarmer(null);
+      setDeviceSessionStatus("pending");
     });
 
     let unsubscribeAuth = () => {};
@@ -113,6 +118,7 @@ export function AuthProvider({ children }) {
           // account that is becoming active.
           pageCache.clearAll();
           statsSyncedRef.current = false;
+          missingSessionRecoveryRef.current.clear();
         }
         activeUidRef.current = firebaseUser?.uid || null;
 
@@ -136,6 +142,7 @@ export function AuthProvider({ children }) {
           setLoading(false);
           statsSyncedRef.current = false;
           setBackendStatus("idle");
+          setDeviceSessionStatus("idle");
           return;
         }
 
@@ -147,12 +154,19 @@ export function AuthProvider({ children }) {
         setProfile(null);
         setFarmer(null);
         setBackendStatus("pending");
+        setDeviceSessionStatus("pending");
 
         const listenerUid = firebaseUser.uid;
         // Device registration is the private-data bootstrap. Profile reads now
         // cross the API session boundary rather than a client Firestore rule.
         ensureCurrentDeviceSession(firebaseUser)
-          .then(() => import("../services/api/api.client").then(({ apiRequest }) => apiRequest("/v1/users/me/profile")))
+          .then((session) => {
+            if (!session) throw new Error("Device session registration was not confirmed.");
+            if (auth.currentUser?.uid !== listenerUid) return null;
+            setDeviceSessionStatus("ready");
+            globalThis.dispatchEvent?.(new CustomEvent("agrinet:device-session-ready", { detail: { uid: listenerUid } }));
+            return import("../services/api/api.client").then(({ apiRequest }) => apiRequest("/v1/users/me/profile"));
+          })
           .then((result) => {
             if (auth.currentUser?.uid !== listenerUid) return;
             const privateProfile = result.data;
@@ -167,7 +181,9 @@ export function AuthProvider({ children }) {
             setLoading(false);
           })
           .catch((error) => {
-            recordAuthDiagnostic("private-profile-unavailable", { code: error?.data?.code || error?.code || "unknown" });
+            const code = error?.data?.code || error?.code || "unknown";
+            setDeviceSessionStatus(isDeviceSessionRejection(error) ? "revoked" : "unavailable");
+            recordAuthDiagnostic("private-profile-unavailable", { code, status: error?.status || null, sessionReady: false });
             // Do not turn a transport outage into an auth failure or an
             // infinite loader. Only display a profile already cached for this
             // exact Firebase UID; it never authorizes new mutations.
@@ -323,6 +339,34 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    const recoverMissingSession = async (event) => {
+      const uid = event.detail?.uid;
+      const activeUser = auth.currentUser;
+      if (!uid || uid !== activeUser?.uid || missingSessionRecoveryRef.current.has(uid)) return;
+      // A missing record can happen after a backend data reset or an old local
+      // browser handle. It is not a revocation: discard that local handle and
+      // create one replacement once while Firebase authentication is valid.
+      missingSessionRecoveryRef.current.add(uid);
+      clearDeviceSession(uid);
+      setDeviceSessionStatus("pending");
+      recordAuthDiagnostic("device-session-missing-recovery", { sessionReady: false });
+      try {
+        const session = await ensureCurrentDeviceSession(activeUser);
+        if (!session || auth.currentUser?.uid !== uid) return;
+        setDeviceSessionStatus("ready");
+        globalThis.dispatchEvent?.(new CustomEvent("agrinet:device-session-ready", { detail: { uid } }));
+        // Let the existing private-profile bootstrap own the protected retry.
+        setTimeout(() => globalThis.dispatchEvent?.(new CustomEvent("agrinet:profile-bootstrap-complete", { detail: { uid } })), 0);
+      } catch (error) {
+        setDeviceSessionStatus("unavailable");
+        recordAuthDiagnostic("device-session-missing-recovery-failed", { code: error?.data?.code || error?.code || "unknown", status: error?.status || null, sessionReady: false });
+      }
+    };
+    globalThis.addEventListener?.("agrinet:device-session-missing", recoverMissingSession);
+    return () => globalThis.removeEventListener?.("agrinet:device-session-missing", recoverMissingSession);
+  }, []);
+
+  useEffect(() => {
     async function retryPrivateBootstrap() {
       const activeUser = auth.currentUser;
       if (!activeUser || backendStatus === "available") return;
@@ -335,6 +379,8 @@ export function AuthProvider({ children }) {
         setFarmer(result.data?.farmer || null);
         if (result.data?.user) setCachedUserProfile(activeUser.uid, result.data.user);
         setBackendStatus("available");
+        setDeviceSessionStatus("ready");
+        globalThis.dispatchEvent?.(new CustomEvent("agrinet:device-session-ready", { detail: { uid: activeUser.uid } }));
       } catch {
         // The online event is advisory; retain the usable offline shell and
         // wait for the next connectivity restoration instead of signing out.
@@ -462,6 +508,8 @@ export function AuthProvider({ children }) {
         loading,
         profileLoading: loading && !authInitializing,
         backendStatus,
+        deviceSessionStatus,
+        deviceSessionReady: deviceSessionStatus === "ready",
 
         suspended: profile?.status === "suspended",
         emailVerified: isEmailVerified,
