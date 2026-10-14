@@ -148,14 +148,23 @@
   --bottom-nav-height: 4rem;
   --bottom-nav-breathing-room: 0.75rem;
   --app-header-h: calc(3.75rem + env(safe-area-inset-top, 0px));
+  --marketplace-search-h: 4rem;
+  --marketplace-card-gap: 0.625rem;
   --app-bottom-nav-h: calc(
     var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + var(--bottom-nav-breathing-room)
   );
 }
 
+@media (min-width: 640px) {
+  :root {
+    --marketplace-card-gap: 1rem;
+  }
+}
+
 @media (min-width: 1024px) {
   :root {
     --app-header-h: calc(4rem + env(safe-area-inset-top, 0px));
+    --marketplace-card-gap: 1.25rem;
   }
 }
 
@@ -448,6 +457,15 @@ h1, h2, h3, h4 {
   animation: slideInUp 0.25s ease-out both;
 }
 
+.marketplace-card-enter {
+  animation: slideInUp 0.22s ease-out both;
+}
+
+.range-thumb::-webkit-slider-runnable-track { background: transparent; }
+.range-thumb::-webkit-slider-thumb { appearance: none; pointer-events: auto; height: 1.15rem; width: 1.15rem; border-radius: 9999px; background: var(--agri-brand); border: 2px solid var(--agri-card); box-shadow: 0 1px 3px rgba(0, 0, 0, .22); cursor: grab; }
+.range-thumb::-moz-range-track { background: transparent; }
+.range-thumb::-moz-range-thumb { pointer-events: auto; height: 1.15rem; width: 1.15rem; border-radius: 9999px; background: var(--agri-brand); border: 2px solid var(--agri-card); box-shadow: 0 1px 3px rgba(0, 0, 0, .22); cursor: grab; }
+
 .anim-pop-in {
   animation: popIn 0.2s ease-out both;
 }
@@ -614,6 +632,10 @@ h1, h2, h3, h4 {
   }
 
   .animate-reply-flash {
+    animation: none !important;
+  }
+
+  .marketplace-card-enter {
     animation: none !important;
   }
 }

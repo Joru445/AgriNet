@@ -5,10 +5,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase/firestore";
 import { useAuth } from "./AuthContext";
 import { subscribeUserInquiries } from "../services/inquiry.service";
+import { apiSyncTransactionStats } from "../services/user.service";
 
 const InquiriesContext = createContext({
   inquiries: [],
@@ -86,11 +85,9 @@ export function InquiriesProvider({ children }) {
             current.completedDeals !== completed ||
             current.totalDeals !== total
           ) {
-            updateDoc(doc(db, "users", listenerUid), {
-              completedDeals: completed,
-              totalDeals: total,
-              cancelledDeals: cancelled,
-            }).catch(() => {});
+            // The server derives these values from authoritative inquiries;
+            // clients must not write profile statistics directly.
+            apiSyncTransactionStats().catch(() => {});
           }
         }
       },

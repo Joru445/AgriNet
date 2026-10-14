@@ -115,7 +115,7 @@ export default function AppRoutes() {
           />
           <Route path="/messages" element={<Messages />} />
           <Route path="/me" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings/*" element={<Settings />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/favorites" element={<Favorites />} />
         </Route>
@@ -166,7 +166,7 @@ export default function AppRoutes() {
 
               <Route path="/farmer/me" element={<Profile />} />
 
-              <Route path="/farmer/settings" element={<Settings />} />
+              <Route path="/farmer/settings/*" element={<Settings />} />
 
               <Route path="/farmer/notifications" element={<Notifications />} />
             </Route>
@@ -208,7 +208,7 @@ export default function AppRoutes() {
 
               <Route path="/admin/me" element={<Profile />} />
 
-              <Route path="/admin/settings" element={<Settings />} />
+              <Route path="/admin/settings/*" element={<Settings />} />
 
               <Route path="/admin/notifications" element={<Notifications />} />
             </Route>

@@ -1,7 +1,5 @@
 import * as authService from "./auth.service";
-import { doc, getDoc, writeBatch, serverTimestamp } from "firebase/firestore";
-
-import { db } from "../firebase/firestore";
+import { apiRequest } from "./api/api.client";
 
 /**
  * Creates common AgriNet user and role profiles in Firestore.
@@ -21,53 +19,25 @@ export async function createAgriNetProfile(user, profileData) {
     throw new Error("Authenticated user with a valid UID is required to create a profile.");
   }
 
-  const existingSnap = await getDoc(doc(db, "users", user.uid));
-  if (existingSnap.exists()) {
-    return user;
-  }
-
-  const batch = writeBatch(db);
-  const userRef = doc(db, "users", user.uid);
-
-  batch.set(userRef, {
-    uid: user.uid,
-    fullname: profileData.fullname,
-    fullnameLower: profileData.fullname.toLowerCase(),
-    username: profileData.username.toLowerCase(),
-    usernameLower: profileData.username.trim().toLowerCase(),
-    email: profileData.email || user.email || "",
-    role: profileData.role,
-    profilePicture: profileData.profilePicture || "",
-    profilePictureId: profileData.profilePictureId || "",
-    phone: profileData.contactNumber || profileData.phone || "",
-    bio: "",
-    location: profileData.location,
-    status: "active",
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-
-  if (profileData.role === "farmer") {
-    const farmerRef = doc(db, "farmers", user.uid);
-    batch.set(farmerRef, {
-      uid: user.uid,
+  await apiRequest("/v1/users", {
+    method: "POST",
+    // The one-time profile bootstrap is Firebase-token authenticated and
+    // intentionally precedes device-session creation. The server derives UID.
+    body: JSON.stringify({
       fullname: profileData.fullname,
-      fullnameLower: profileData.fullname.toLowerCase(),
-      username: profileData.username.toLowerCase(),
-      usernameLower: profileData.username.trim().toLowerCase(),
+      fullnameLower: profileData.fullname?.trim().toLowerCase(),
+      username: profileData.username,
       email: profileData.email || user.email || "",
-      profilePicture: profileData.profilePicture || "",
-      profilePictureId: "",
-      description: "",
+      phone: profileData.contactNumber || profileData.phone || "",
       location: profileData.location,
-      rating: 0,
-      verified: false,
-      verificationStatus: "not_applied",
-      createdAt: serverTimestamp(),
-    });
-  }
-
-  await batch.commit();
+      profilePicture: profileData.profilePicture || user.photoURL || "",
+      profilePictureId: profileData.profilePictureId || "",
+      role: profileData.role,
+    }),
+  });
+  globalThis.dispatchEvent?.(new CustomEvent("agrinet:profile-bootstrap-complete", {
+    detail: { uid: user.uid },
+  }));
 
   return user;
 }

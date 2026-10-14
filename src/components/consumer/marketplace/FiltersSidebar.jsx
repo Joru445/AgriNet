@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
 import { getGroups } from "../../../services/group.service";
 import Button from "../../ui/Button";
+import RangeSlider from "../../ui/RangeSlider";
+import Select from "../../ui/Select";
 
 export default function FiltersSidebar({
   filters,
@@ -10,67 +12,80 @@ export default function FiltersSidebar({
   mobile = false,
   visible = true,
 }) {
+
   const { t } = useLanguage();
   const [groups, setGroups] = useState([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const [groupsError, setGroupsError] = useState(false);
+  const mountedRef = useRef(true);
+  const [priceRange, setPriceRange] = useState([
+    filters.minPrice,
+    filters.maxPrice || 10000,
+  ]);
+  useEffect(() => () => { mountedRef.current = false; }, []);
+
+  // Groups are intentionally loaded only when the Group dropdown opens. The
+  // service supplies a shared cached value or shared in-flight request, so
+  // opening either desktop or mobile controls never duplicates a network read.
+  const loadGroups = useCallback(async () => {
+    setGroupsLoading(true);
+    setGroupsError(false);
+    try {
+      const data = await getGroups();
+      if (mountedRef.current) setGroups(Array.isArray(data) ? data : []);
+    } catch {
+      if (mountedRef.current) setGroupsError(true);
+    } finally {
+      if (mountedRef.current) setGroupsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    getGroups()
-      .then((data) => {
-        if (cancelled || !Array.isArray(data)) return;
-        const seen = new Set();
-        const valid = [];
-        for (const g of data) {
-          const name = g?.name?.trim();
-          if (name && !seen.has(name.toLowerCase())) {
-            seen.add(name.toLowerCase());
-            valid.push({ ...g, name });
-          }
-        }
-        setGroups(valid);
-      })
-      .catch(() => {
-        if (!cancelled) setGroups([]);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  const hasActiveFilters =
+    setPriceRange([filters.minPrice, filters.maxPrice || 10000]);
+  }, [filters.minPrice, filters.maxPrice]);
+  const active =
     Boolean(filters.search) ||
-    (filters.category && filters.category !== "All") ||
+    filters.category !== "All" ||
     filters.distance < 10 ||
     filters.minPrice > 0 ||
     filters.maxPrice > 0 ||
     filters.rating > 0 ||
-    Boolean(filters.showUnavailable) ||
-    (filters.sellingMode && filters.sellingMode !== "all") ||
-    (filters.group && filters.group !== "");
+    filters.showUnavailable ||
+    filters.sellingMode !== "all" ||
+    Boolean(filters.group);
+  const groupOptions = [
+    { value: "", label: t("nearby.allGroups") },
+    ...groups.map((group) => ({ value: group.id || group.name, label: group.name })),
+  ];
+  if (filters.group && !groupOptions.some((group) => group.value === filters.group)) {
+    groupOptions.push({ value: filters.group, label: `${t("nearby.selectedGroup")}: ${filters.group}` });
+  }
+  const groupStatus = groupsLoading
+    ? t("nearby.loadingGroups")
+    : groupsError
+      ? t("nearby.groupsLoadFailed")
+      : groups.length === 0
+        ? t("nearby.noGroups")
+        : undefined;
 
   const content = (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-(--agri-border)">
-        <h3 className="font-bold text-[#1B4332] dark:text-(--agri-text) flex items-center gap-2 text-base">
-          <i className="ri-filter-3-line text-[#2D6A4F] dark:text-(--agri-brand) text-lg" />
+      <div className="flex items-center justify-between border-b border-(--agri-border) pb-3">
+        <h3 className="flex items-center gap-2 text-base font-bold text-[#1B4332] dark:text-(--agri-text)">
+          <i className="ri-filter-3-line text-lg text-[#2D6A4F] dark:text-(--agri-brand)" />
           {t("nearby.filters")}
         </h3>
-
-        {hasActiveFilters && (
+        {active && (
           <Button variant="ghost" size="sm" onClick={onReset}>
             {t("nearby.resetAll")}
           </Button>
         )}
       </div>
-
-      {/* Selling Mode Filter */}
-      <div>
-        <label className="block mb-2 text-xs font-bold text-(--agri-text) flex items-center gap-1.5">
+      <fieldset>
+        <legend className="mb-2 flex items-center gap-1.5 text-xs font-bold text-(--agri-text)">
           <i className="ri-store-2-line text-(--agri-text-muted)" />
           {t("nearby.sellingMode")}
-        </label>
-
+        </legend>
         <div className="flex gap-2">
           {[
             { value: "all", label: t("nearby.all") },
@@ -81,191 +96,119 @@ export default function FiltersSidebar({
               key={option.value}
               type="button"
               onClick={() => onChange("sellingMode", option.value)}
-              className={`flex-1 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                (filters.sellingMode || "all") === option.value
-                  ? "bg-[#2D6A4F]/10 border-[#2D6A4F]/40 text-[#2D6A4F] dark:bg-[#2D6A4F]/20 dark:border-[#52b788] dark:text-[#52b788]"
-                  : "border-(--agri-border) text-(--agri-text-secondary) hover:border-gray-400 dark:hover:border-neutral-500 bg-(--agri-input-bg)"
-              }`}
+              className={`flex-1 rounded-xl border px-3 py-2 text-xs font-semibold transition-all ${filters.sellingMode === option.value ? "border-[#2D6A4F]/40 bg-[#2D6A4F]/10 text-[#2D6A4F] dark:border-[#52b788] dark:bg-[#2D6A4F]/20 dark:text-[#52b788]" : "border-(--agri-border) bg-(--agri-input-bg) text-(--agri-text-secondary)"}`}
             >
               {option.label}
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Group Filter */}
-      {groups.length > 0 && (
-        <div>
-          <label className="block mb-2 text-xs font-bold text-(--agri-text) flex items-center gap-1.5">
-            <i className="ri-team-line text-(--agri-text-muted)" />
-            {t("nearby.group")}
-          </label>
-
-          <select
-            value={
-              groups.find(
-                (g) =>
-                  g.name?.toLowerCase() === (filters.group || "").toLowerCase() ||
-                  g.id === filters.group,
-              )?.name ||
-              filters.group ||
-              ""
-            }
-            onChange={(e) => onChange("group", e.target.value)}
-            className="w-full border border-(--agri-input-border) rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F] dark:focus:border-emerald-500 bg-(--agri-input-bg) text-(--agri-text) cursor-pointer"
-          >
-            <option value="">{t("nearby.allGroups")}</option>
-            {groups.map((group) => (
-              <option key={group.id || group.name} value={group.name}>
-                {group.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Distance Filter */}
+      </fieldset>
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-xs font-bold text-(--agri-text) flex items-center gap-1.5">
-            <i className="ri-map-pin-range-line text-(--agri-text-muted)" />
-            {t("nearby.distanceLabel", { distance: filters.distance })}
-          </label>
-        </div>
-
+        <div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-(--agri-text)"><i className="ri-team-line text-(--agri-text-muted)" />{t("nearby.group")}</div>
+        <Select
+          value={filters.group || ""}
+          onChange={(event) => onChange("group", event.target.value)}
+          options={groupOptions}
+          onOpenChange={(open) => { if (open) loadGroups(); }}
+          loading={groupsLoading}
+          statusMessage={groupStatus}
+          onRetry={groupsError ? loadGroups : undefined}
+          retryLabel={t("ui.retry")}
+          aria-label={t("nearby.group")}
+        />
+      </div>
+      <div>
+        <label className="mb-2 flex items-center gap-1.5 text-xs font-bold text-(--agri-text)">
+          <i className="ri-map-pin-range-line text-(--agri-text-muted)" />
+          {t("nearby.distanceLabel", { distance: filters.distance })}
+        </label>
         <input
           type="range"
           min={0.5}
           max={10}
           step={0.5}
           value={filters.distance}
-          onChange={(e) => onChange("distance", Number(e.target.value))}
-          className="w-full accent-[#2D6A4F] dark:accent-[#52b788] cursor-pointer"
+          onChange={(event) => onChange("distance", Number(event.target.value))}
+          className="w-full cursor-pointer accent-[#2D6A4F] dark:accent-[#52b788]"
         />
-
-        <div className="flex justify-between text-xs text-(--agri-text-muted) mt-1">
+        <div className="mt-1 flex justify-between text-xs text-(--agri-text-muted)">
           <span>0.5 km</span>
           <span>5 km</span>
           <span>10 km</span>
         </div>
       </div>
-
-      {/* Price Range Filter */}
       <div>
-        <label className="block mb-2 text-xs font-bold text-(--agri-text) flex items-center gap-1.5">
+        <label className="mb-2 flex items-center gap-1.5 text-xs font-bold text-(--agri-text)">
           <i className="ri-money-dollar-circle-line text-(--agri-text-muted)" />
           {t("nearby.priceRange")}
         </label>
-
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-(--agri-text-muted)">
-              ₱
-            </span>
-            <input
-              type="number"
-              min="0"
-              value={filters.minPrice > 0 ? filters.minPrice : ""}
-              onChange={(e) =>
-                onChange("minPrice", Math.max(0, Number(e.target.value) || 0))
-              }
-              className="w-full border border-(--agri-input-border) bg-(--agri-input-bg) text-(--agri-text) rounded-xl pl-7 pr-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F] dark:focus:border-emerald-500"
-              placeholder={t("nearby.minPrice")}
-            />
-          </div>
-
-          <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-(--agri-text-muted)">
-              ₱
-            </span>
-            <input
-              type="number"
-              min="0"
-              value={filters.maxPrice > 0 ? filters.maxPrice : ""}
-              onChange={(e) =>
-                onChange("maxPrice", Math.max(0, Number(e.target.value) || 0))
-              }
-              className="w-full border border-(--agri-input-border) bg-(--agri-input-bg) text-(--agri-text) rounded-xl pl-7 pr-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F] dark:focus:border-emerald-500"
-              placeholder={t("nearby.maxPrice")}
-            />
-          </div>
-        </div>
+        <RangeSlider
+          label={t("nearby.priceRange")}
+          value={priceRange}
+          onChange={setPriceRange}
+          onCommit={([minPrice, maxPrice]) => {
+            onChange("minPrice", minPrice);
+            onChange("maxPrice", maxPrice === 10000 ? 0 : maxPrice);
+          }}
+        />
+        {(filters.minPrice > 0 || filters.maxPrice > 0) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-2"
+            onClick={() => {
+              setPriceRange([0, 10000]);
+              onChange("minPrice", 0);
+              onChange("maxPrice", 0);
+            }}
+          >
+            {t("marketplace.resetPriceRange")}
+          </Button>
+        )}
       </div>
-
-      {/* Minimum Rating */}
-      <div>
-        <label className="block mb-2 text-xs font-bold text-(--agri-text) flex items-center gap-1.5">
+      <fieldset>
+        <legend className="mb-2 flex items-center gap-1.5 text-xs font-bold text-(--agri-text)">
           <i className="ri-star-smile-line text-(--agri-text-muted)" />
           {t("nearby.minRating")}
-        </label>
-
+        </legend>
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((rating) => (
             <button
               key={rating}
               type="button"
+              aria-label={`${rating} stars`}
               onClick={() =>
-                onChange("rating", filters.rating >= rating ? rating - 1 : rating)
+                onChange(
+                  "rating",
+                  filters.rating >= rating ? rating - 1 : rating,
+                )
               }
-              className={`w-9 h-9 rounded-xl border flex items-center justify-center transition cursor-pointer ${
-                filters.rating >= rating
-                  ? "bg-amber-500/15 border-amber-400 text-amber-500 shadow-xs"
-                  : "border-(--agri-border) text-(--agri-text-muted) hover:border-amber-300 hover:text-amber-400 bg-(--agri-input-bg)"
-              }`}
+              className={`grid h-9 w-9 place-items-center rounded-xl border ${filters.rating >= rating ? "border-amber-400 bg-amber-500/15 text-amber-500" : "border-(--agri-border) bg-(--agri-input-bg) text-(--agri-text-muted)"}`}
             >
               <i className="ri-star-fill text-sm" />
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Availability Filter */}
-      <div className="pt-4 border-t border-(--agri-border)">
-        <label className="block mb-2 text-xs font-bold text-(--agri-text) flex items-center gap-1.5">
-          <i className="ri-inbox-archive-line text-(--agri-text-muted)" />
-          {t("nearby.availability")}
-        </label>
-
-        <label className="flex items-center justify-between p-3 rounded-xl border border-(--agri-border) bg-(--agri-surface-subtle) hover:bg-(--agri-hover) hover:border-(--agri-border) transition-all cursor-pointer select-none">
-          <div className="flex items-center gap-2.5">
-            <input
-              type="checkbox"
-              id="show-unavailable-checkbox"
-              checked={Boolean(filters.showUnavailable)}
-              onChange={(e) => onChange("showUnavailable", e.target.checked)}
-              className="w-4 h-4 rounded border-(--agri-input-border) bg-(--agri-input-bg) text-[#2D6A4F] dark:text-(--agri-brand) accent-[#2D6A4F] dark:accent-[#52b788] focus:ring-[#2D6A4F] cursor-pointer"
-            />
-            <div>
-              <span className="block text-xs font-bold text-(--agri-text)">
-                {t("nearby.showUnavailable")}
-              </span>
-              <span className="block text-[10px] text-(--agri-text-muted) font-medium">
-                {t("nearby.showUnavailableHint")}
-              </span>
-            </div>
-          </div>
-
-          <span
-            className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-colors ${
-              filters.showUnavailable
-                ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
-                : "bg-(--agri-hover) text-(--agri-text-muted) border border-(--agri-border-subtle)"
-            }`}
-          >
-            {filters.showUnavailable ? t("nearby.shown") : t("nearby.hidden")}
-          </span>
+      </fieldset>
+      <div className="border-t border-(--agri-border) pt-4">
+        <label className="mb-2 flex items-center gap-1.5 text-xs font-bold text-(--agri-text)"><i className="ri-inbox-archive-line text-(--agri-text-muted)" />{t("nearby.availability")}</label>
+        <label className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-(--agri-border) bg-(--agri-surface-subtle) px-3 py-2 transition-colors hover:bg-(--agri-hover)">
+          <input type="checkbox" checked={Boolean(filters.showUnavailable)} onChange={(event) => onChange("showUnavailable", event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 rounded border-(--agri-input-border) accent-[#2D6A4F]" />
+          <span className="min-w-0 flex-1"><span className="block text-xs font-bold text-(--agri-text)">{t("nearby.showUnavailable")}</span><span className="block text-[10px] font-medium text-(--agri-text-muted)">{t("nearby.showUnavailableHint")}</span></span>
+          <span className="shrink-0 rounded-full border border-(--agri-border-subtle) bg-(--agri-hover) px-1.5 py-0.5 text-[10px] font-bold text-(--agri-text-muted)">{filters.showUnavailable ? t("nearby.shown") : t("nearby.hidden")}</span>
         </label>
       </div>
     </div>
   );
 
-  if (mobile) {
-    return content;
-  }
-
+  if (mobile) return content;
+  
   return (
-    <aside aria-hidden={!visible} className={`hidden shrink-0 overflow-hidden transition-[width,opacity,transform] duration-200 ease-out lg:block ${visible ? "w-72 translate-x-0 opacity-100" : "w-0 -translate-x-2 opacity-0 pointer-events-none"}`}>
-      <div className="bg-(--agri-card) rounded-2xl border border-(--agri-border) shadow-md p-5 sticky top-20 z-30 max-h-[calc(100vh-6.5rem)] overflow-y-auto scrollbar-none">
+    <aside
+      aria-hidden={!visible}
+      className={`hidden shrink-0 overflow-hidden transition-[width,opacity,transform] duration-200 ease-out lg:block ${visible ? "w-72 translate-x-0 opacity-100" : "pointer-events-none w-0 -translate-x-2 opacity-0"}`}
+    >
+      <div className="sticky z-20 max-h-[calc(100vh-var(--marketplace-search-h)-0.75rem)] overflow-y-auto rounded-2xl border border-(--agri-border) bg-(--agri-card) p-5 shadow-md scrollbar-none" style={{ top: "calc(var(--marketplace-search-h) + 0.75rem)" }}>
         {content}
       </div>
     </aside>

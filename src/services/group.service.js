@@ -2,28 +2,28 @@
 // Groups API Service
 // ============================================================
 //
-// Frontend service for the Groups API with resilient Firestore fallbacks.
+// Frontend service for the Groups API. Membership and manager data are private
+// and therefore never falls back to client Firestore reads.
 // Uses the centralized apiRequest client for all HTTP calls.
 // ============================================================
 
 import { apiRequest } from "./api/api.client";
 import * as pageCache from "../utils/pageCache";
-import { db } from "../firebase/firestore";
 import { auth } from "../firebase/auth";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  query,
-  where,
-} from "firebase/firestore";
 import { getUserProfile } from "./user.service";
 import { GROUP_PERMISSIONS } from "../constants/groupPermissions";
 
 const GROUPS_BASE = "/v1/groups";
 const APPROVED_GROUPS_CACHE_TTL = 2 * 60 * 1000;
+const PUBLIC_GROUPS_CACHE_KEY = "all_groups";
+const PUBLIC_GROUPS_CACHE_TTL = 24 * 60 * 60 * 1000;
+let publicGroupsRequest = null;
+let publicGroupsCacheVersion = 0;
+
+function invalidatePublicGroupsCache() {
+  publicGroupsCacheVersion += 1;
+  pageCache.invalidate(PUBLIC_GROUPS_CACHE_KEY);
+}
 
 function approvedGroupsCacheKey(userId) {
   return `approvedUserGroups:${userId}`;
@@ -44,54 +44,41 @@ function invalidateApprovedGroupsCache(userId) {
  * @returns {Promise<Array>} Array of group objects
  */
 export async function getGroups() {
-  const cacheKey = "all_groups";
-  const cached = pageCache.get(cacheKey);
+  const cached = pageCache.get(PUBLIC_GROUPS_CACHE_KEY);
+  if (cached) return cached;
 
-  // 1. Direct Firestore first for immediate response
-  try {
-    const snapshot = await getDocs(collection(db, "groups"));
-    const list = snapshot.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .filter((g) => g.active !== false && g.name && String(g.name).trim() !== "");
-    
-    // Deduplicate by normalized name
-    const uniqueMap = new Map();
-    for (const g of list) {
-      const norm = String(g.name).trim().toLowerCase();
-      if (!uniqueMap.has(norm)) {
-        uniqueMap.set(norm, { ...g, name: String(g.name).trim() });
+  // Desktop and mobile filters can open concurrently. Share the same public
+  // request instead of issuing one request per mounted filter component.
+  if (publicGroupsRequest) return publicGroupsRequest;
+
+  // Public group discovery is served by the redacting public API and can use
+  // the in-memory cache while offline; do not expose raw group documents.
+  // Failures are deliberately not cached as successful empty results.
+  const requestVersion = publicGroupsCacheVersion;
+  publicGroupsRequest = apiRequest(`${GROUPS_BASE}?active=true`, { requireAuth: false })
+    .then((data) => {
+      const uniqueMap = new Map();
+      for (const group of data?.data ?? []) {
+        if (group?.active === false || !group?.name || !String(group.name).trim()) continue;
+        const name = String(group.name).trim();
+        const normalizedName = name.toLowerCase();
+        if (!uniqueMap.has(normalizedName)) uniqueMap.set(normalizedName, { ...group, name });
       }
-    }
-    const cleanList = Array.from(uniqueMap.values());
-    if (cleanList.length > 0) {
-      pageCache.set(cacheKey, cleanList, 5 * 60 * 1000);
-      return cleanList;
-    }
-  } catch (err) {
-    console.warn("[group.service] Firestore getDocs failed, trying API:", err);
-  }
-
-  // 2. API fallback
-  try {
-    const data = await apiRequest(`${GROUPS_BASE}?active=true`);
-    const rawList = (data?.data ?? []).filter(
-      (g) => g.active !== false && g.name && String(g.name).trim() !== "",
-    );
-    const uniqueMap = new Map();
-    for (const g of rawList) {
-      const norm = String(g.name).trim().toLowerCase();
-      if (!uniqueMap.has(norm)) {
-        uniqueMap.set(norm, { ...g, name: String(g.name).trim() });
+      const groups = Array.from(uniqueMap.values());
+      // Empty is a valid, cacheable response; it prevents repeated requests
+      // when no active groups exist.
+      // Do not repopulate the cache from a list that predates a group
+      // mutation which invalidated it while this request was in flight.
+      if (requestVersion === publicGroupsCacheVersion) {
+        pageCache.set(PUBLIC_GROUPS_CACHE_KEY, groups, PUBLIC_GROUPS_CACHE_TTL);
       }
-    }
-    const cleanList = Array.from(uniqueMap.values());
-    if (cleanList.length > 0) {
-      pageCache.set(cacheKey, cleanList, 5 * 60 * 1000);
-      return cleanList;
-    }
-  } catch {}
+      return groups;
+    })
+    .finally(() => {
+      publicGroupsRequest = null;
+    });
 
-  return cached || [];
+  return publicGroupsRequest;
 }
 
 /**
@@ -104,21 +91,8 @@ export async function getGroup(groupId) {
   const cacheKey = `group_${groupId}`;
   const cached = pageCache.get(cacheKey);
 
-  // 1. Direct Firestore first for lightning fast load
   try {
-    const snap = await getDoc(doc(db, "groups", groupId));
-    if (snap.exists()) {
-      const g = { id: snap.id, ...snap.data() };
-      pageCache.set(cacheKey, g, 5 * 60 * 1000);
-      return g;
-    }
-  } catch (err) {
-    console.warn("[group.service] Firestore getDoc failed, trying API:", err);
-  }
-
-  // 2. API fallback
-  try {
-    const data = await apiRequest(`${GROUPS_BASE}/${encodeURIComponent(groupId)}`);
+    const data = await apiRequest(`${GROUPS_BASE}/${encodeURIComponent(groupId)}`, { requireAuth: false });
     if (data?.data) {
       pageCache.set(cacheKey, data.data, 5 * 60 * 1000);
       return data.data;
@@ -138,7 +112,7 @@ export async function createGroup(groupData) {
     method: "POST",
     body: JSON.stringify(groupData),
   });
-  pageCache.invalidate("all_groups");
+  invalidatePublicGroupsCache();
   return data.data;
 }
 
@@ -153,7 +127,7 @@ export async function updateGroup(groupId, updates) {
     method: "PATCH",
     body: JSON.stringify(updates),
   });
-  pageCache.invalidate("all_groups");
+  invalidatePublicGroupsCache();
   pageCache.invalidate(`group_${groupId}`);
   return data.data;
 }
@@ -167,7 +141,7 @@ export async function deleteGroup(groupId) {
   await apiRequest(`${GROUPS_BASE}/${encodeURIComponent(groupId)}`, {
     method: "DELETE",
   });
-  pageCache.invalidate("all_groups");
+  invalidatePublicGroupsCache();
   pageCache.invalidate(`group_${groupId}`);
   return true;
 }
@@ -258,9 +232,6 @@ export function subscribeToMyMembership(groupId, userId, callback) {
   if (!groupId || !userId || typeof callback !== "function") {
     return () => {};
   }
-  const membershipId = `${groupId}_${userId}`;
-  const unsubs = [];
-
   const trigger = async () => {
     try {
       const mem = await getMyMembership(groupId);
@@ -270,65 +241,10 @@ export function subscribeToMyMembership(groupId, userId, callback) {
     }
   };
 
-  // Immediate fetch
   trigger();
-
-  // Listen directly to compound doc
-  try {
-    unsubs.push(
-      onSnapshot(
-        doc(db, "group-memberships", membershipId),
-        (snap) => {
-          if (snap.exists()) {
-            const data = snap.data();
-            const status = data.status || "pending";
-            if (status === "rejected" || status === "removed" || status === "approved") {
-              try {
-                localStorage.removeItem(`pending_app_${groupId}_${userId}`);
-              } catch {}
-            }
-            const res = {
-              id: snap.id,
-              groupId,
-              userId,
-              ...data,
-              status,
-              appliedAt: toIsoStringSafe(data.appliedAt || data.createdAt),
-              joinedAt: toIsoStringSafe(data.joinedAt),
-              rejectedAt: toIsoStringSafe(data.rejectedAt),
-              removedAt: toIsoStringSafe(data.removedAt),
-              updatedAt: toIsoStringSafe(data.updatedAt),
-            };
-            pageCache.set(`membership_${groupId}_${userId}`, res, 5 * 60 * 1000);
-            callback(res);
-          } else {
-            trigger();
-          }
-        },
-        (err) => {
-          console.warn("[group.service] subscribeToMyMembership compound snapshot error:", err);
-        }
-      )
-    );
-  } catch {}
-
-  // Listen to collection query for this user
-  try {
-    const q = query(collection(db, "group-memberships"), where("userId", "==", userId));
-    unsubs.push(
-      onSnapshot(
-        q,
-        () => trigger(),
-        (err) => {
-          console.warn("[group.service] subscribeToMyMembership query snapshot error:", err);
-        }
-      )
-    );
-  } catch {}
-
-  return () => {
-    unsubs.forEach((u) => u?.());
-  };
+  const onChanged = () => trigger();
+  globalThis.addEventListener?.("agrinet:groups-changed", onChanged);
+  return () => globalThis.removeEventListener?.("agrinet:groups-changed", onChanged);
 }
 
 /**
@@ -343,7 +259,6 @@ export function subscribeToMyMemberships(userId, callback) {
     return () => {};
   }
 
-  const unsubs = [];
   const trigger = async () => {
     try {
       const list = await getMyMemberships();
@@ -353,18 +268,9 @@ export function subscribeToMyMemberships(userId, callback) {
     }
   };
 
-  try {
-    const q = query(collection(db, "group-memberships"), where("userId", "==", userId));
-    unsubs.push(
-      onSnapshot(q, () => trigger(), (err) => {
-        console.warn("[group.service] subscribeToMyMemberships query error:", err);
-      })
-    );
-  } catch {}
-
-  return () => {
-    unsubs.forEach((u) => u?.());
-  };
+  trigger();
+  globalThis.addEventListener?.("agrinet:groups-changed", trigger);
+  return () => globalThis.removeEventListener?.("agrinet:groups-changed", trigger);
 }
 
 // ============================================================
@@ -379,29 +285,8 @@ export function subscribeToMyMemberships(userId, callback) {
  * @returns {Promise<Object|null>}
  */
 export async function getMembership(groupId, userId) {
-  try {
-    const data = await apiRequest(
-      `${GROUPS_BASE}/${encodeURIComponent(groupId)}/memberships/${encodeURIComponent(userId)}`,
-    );
-    if (data?.data) return data.data;
-  } catch {}
-
-  try {
-    const snap = await getDoc(doc(db, "group-memberships", `${groupId}_${userId}`));
-    if (snap.exists()) {
-      const data = snap.data();
-      const appliedAt = data.appliedAt?.toDate ? data.appliedAt.toDate().toISOString() : data.appliedAt;
-      const joinedAt = data.joinedAt?.toDate ? data.joinedAt.toDate().toISOString() : data.joinedAt;
-      return {
-        id: snap.id,
-        ...data,
-        appliedAt: appliedAt || data.appliedAt,
-        joinedAt: joinedAt || data.joinedAt,
-      };
-    }
-  } catch {}
-
-  return null;
+  const data = await apiRequest(`${GROUPS_BASE}/${encodeURIComponent(groupId)}/memberships/${encodeURIComponent(userId)}`);
+  return data?.data ?? null;
 }
 
 /**
@@ -674,13 +559,6 @@ export async function getGroupManager(groupId, userId) {
       `${GROUPS_BASE}/${encodeURIComponent(groupId)}/managers/${encodeURIComponent(userId)}`,
     );
     if (data?.data) return data.data;
-  } catch {}
-
-  try {
-    const snap = await getDoc(doc(db, "group-managers", `${groupId}_${userId}`));
-    if (snap.exists()) {
-      return { id: snap.id, ...snap.data() };
-    }
   } catch {}
 
   return null;

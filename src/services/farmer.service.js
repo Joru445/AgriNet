@@ -1,44 +1,9 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  setDoc,
-  serverTimestamp,
-  where,
-} from "firebase/firestore";
-
-import { db } from "../firebase/firestore";
-import { auth } from "../firebase/auth";
 import { apiRequest } from "./api/api.client";
 import { setCachedUserProfile } from "../utils/userProfileCache";
-import { getFarmerProducts } from "./product.service";
-import { getFarmerReviews } from "./farmer-review.service";
 
 export async function createFarmerProfile(data) {
-  await setDoc(doc(db, "farmers", data.uid), {
-    uid: data.uid,
-
-    fullname: data.fullname,
-    fullnameLower: data.fullnameLower,
-    username: data.username,
-    usernameLower: String(data.username || "").trim().toLowerCase(),
-    email: data.email,
-
-    profilePicture: data.profilePicture || "",
-    profilePictureId: "",
-
-    description: "",
-
-    location: data.location,
-
-    rating: 0,
-    verified: false,
-    verificationStatus: "not_applied",
-
-    createdAt: serverTimestamp(),
-  });
+  // Created atomically by the Firebase-authenticated /v1/users bootstrap.
+  return data;
 }
 
 export async function getFarmers({ hasProducts = false, lat, lng, maxDistance, cursor, limit } = {}) {
@@ -60,110 +25,14 @@ export async function getFarmers({ hasProducts = false, lat, lng, maxDistance, c
   };
 }
 
-export async function getFarmerDashboard(farmerId = null) {
+export async function getFarmerDashboard() {
   try {
     const result = await apiRequest("/v1/farmers/dashboard");
-    if (result?.data) {
-      return result.data;
-    }
+    return result?.data || { summary: {}, recentProducts: [], recentReviews: [] };
   } catch (err) {
-    console.warn("[FarmerDashboard] Backend API unavailable, computing from Firebase Firestore:", err?.message);
-  }
-
-  const uid = farmerId || auth.currentUser?.uid;
-  if (!uid) {
-    return { summary: {}, recentProducts: [], recentReviews: [] };
-  }
-
-  try {
-    // 1. Products
-    const products = await getFarmerProducts(uid).catch(() => []);
-    const totalProducts = products.length;
-    let availableProducts = 0;
-    let unavailableProducts = 0;
-    let preorderCount = 0;
-
-    products.forEach((p) => {
-      const isPreorder = p.sellingMode === "preorder" || Boolean(p.preorder);
-      if (isPreorder) preorderCount++;
-      const isAvail = p.available !== false && (isPreorder || Number(p.stock) > 0);
-      if (isAvail) availableProducts++;
-      else unavailableProducts++;
-    });
-
-    // 2. Inquiries
-    let inquiries = [];
-    try {
-      const inqRef = collection(db, "inquiries");
-      const inqQuery = query(inqRef, where("farmerId", "==", uid));
-      const inqSnap = await getDocs(inqQuery);
-      inquiries = inqSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    } catch (e) {
-      console.warn("[FarmerDashboard] Inquiries fetch fallback error:", e);
-    }
-
-    let pendingInquiries = 0;
-    let acceptedInquiries = 0;
-    let reservedInquiries = 0;
-    let ongoingInquiries = 0;
-    let completedInquiries = 0;
-    let cancelledInquiries = 0;
-
-    inquiries.forEach((inq) => {
-      const st = inq.status;
-      if (st === "pending") pendingInquiries++;
-      else if (st === "accepted") acceptedInquiries++;
-      else if (st === "reserved") reservedInquiries++;
-      else if (st === "completed") completedInquiries++;
-      else if (st === "cancelled" || st === "rejected") cancelledInquiries++;
-
-      if (st === "ongoing" || st === "accepted" || st === "reserved") {
-        ongoingInquiries++;
-      }
-    });
-
-    // 3. Reviews
-    let reviews = [];
-    reviews = await getFarmerReviews(uid).catch(() => []);
-
-    const reviewCount = reviews.length;
-    const averageRating =
-      reviewCount > 0
-        ? Number(
-            (
-              reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) /
-              reviewCount
-            ).toFixed(1),
-          )
-        : 0;
-
-    return {
-      summary: {
-        products: {
-          total: totalProducts,
-          available: availableProducts,
-          unavailable: unavailableProducts,
-          preorder: preorderCount,
-        },
-        reviews: {
-          average: averageRating,
-          count: reviewCount,
-        },
-        inquiries: {
-          total: inquiries.length,
-          pending: pendingInquiries,
-          accepted: acceptedInquiries,
-          reserved: reservedInquiries,
-          ongoing: ongoingInquiries,
-          completed: completedInquiries,
-          cancelled: cancelledInquiries,
-        },
-      },
-      recentProducts: products.slice(0, 4),
-      recentReviews: reviews.slice(0, 4),
-    };
-  } catch (fallbackError) {
-    console.error("[FarmerDashboard] Firestore fallback failed:", fallbackError);
+    // Private dashboard data never falls back to Firestore: a backend outage
+    // must leave a safe empty state rather than bypass device-session checks.
+    console.warn("[FarmerDashboard] Backend API unavailable:", err?.message);
     return { summary: {}, recentProducts: [], recentReviews: [] };
   }
 }
@@ -204,22 +73,7 @@ export async function getFarmerById(uid) {
       setCachedUserProfile(uid, { ...farmer, role: "farmer" });
       return farmer;
     }
-  } catch {
-    // API request failed; fallback to direct Firestore read
-  }
-
-  try {
-    // Never fall back to another farmer's unredacted Firestore document.
-    if (uid !== auth.currentUser?.uid) return null;
-    const farmerDoc = await getDoc(doc(db, "farmers", uid));
-    if (farmerDoc.exists()) {
-      const farmerData = { uid: farmerDoc.id, role: "farmer", ...farmerDoc.data() };
-      setCachedUserProfile(uid, farmerData);
-      return farmerData;
-    }
-  } catch (firestoreErr) {
-    console.error("Firestore fallback getFarmerById failed:", firestoreErr);
-  }
+  } catch {}
 
   return null;
 }

@@ -15,8 +15,18 @@ function notifySessionRevoked(code) {
 export function subscribeToRealtime(endpoint, onSnapshot, onError = () => {}) {
   const controller = new AbortController();
   let closed = false;
+  let retryTimer = null;
+  let attempts = 0;
 
-  (async () => {
+  const retry = () => {
+    if (closed || (typeof navigator !== "undefined" && !navigator.onLine)) return;
+    const delay = Math.min(30_000, 750 * 2 ** attempts) + Math.floor(Math.random() * 400);
+    attempts += 1;
+    retryTimer = setTimeout(connect, delay);
+  };
+
+  const connect = async () => {
+    retryTimer = null;
     try {
       const user = auth.currentUser;
       const token = await user?.getIdToken();
@@ -28,6 +38,7 @@ export function subscribeToRealtime(endpoint, onSnapshot, onError = () => {}) {
         signal: controller.signal,
       });
       if (!response.ok || !response.body) throw new Error(`Realtime connection failed (${response.status}).`);
+      attempts = 0;
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -51,10 +62,18 @@ export function subscribeToRealtime(endpoint, onSnapshot, onError = () => {}) {
           if (event === "error") onError(Object.assign(new Error("Realtime stream failed."), { code: data.code }));
         }
       }
+      retry();
     } catch (error) {
-      if (!closed && error.name !== "AbortError") onError(error);
+      if (!closed && error.name !== "AbortError") {
+        onError(error);
+        retry();
+      }
     }
-  })();
+  };
 
-  return () => { closed = true; controller.abort(); };
+  const resume = () => { if (!closed && !retryTimer) connect(); };
+  window.addEventListener("online", resume);
+  connect();
+
+  return () => { closed = true; clearTimeout(retryTimer); window.removeEventListener("online", resume); controller.abort(); };
 }

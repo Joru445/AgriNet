@@ -1,21 +1,5 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-  setDoc,
-} from "firebase/firestore";
-
-import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
-import { auth } from "../firebase/auth";
 import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
-
-const usersRef = collection(db, "users");
 
 const USER_PAGE_SIZE = 100;
 
@@ -26,29 +10,8 @@ const USER_PAGE_SIZE = 100;
  */
 
 export async function createUser(data) {
-  await setDoc(doc(db, "users", data.uid), {
-    uid: data.uid,
-
-    fullname: data.fullname,
-    fullnameLower: data.fullnameLower,
-    username: data.username,
-    usernameLower: String(data.username || "").trim().toLowerCase(),
-    email: data.email,
-    role: data.role,
-
-    profilePicture: data.profilePicture || "",
-    profilePictureId: data.profilePictureId || "",
-
-    phone: data.phone,
-    bio: "",
-
-    location: data.location,
-
-    status: "active",
-
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  const result = await apiRequest("/v1/users", { method: "POST", body: JSON.stringify(data) });
+  return result.user;
 }
 
 /*
@@ -78,23 +41,7 @@ export async function getUserProfile(uid, requesterUid) {
       setCachedUserProfile(uid, profile);
       return profile;
     }
-  } catch {
-    // API failed or unavailable; fallback to direct Firestore document read
-  }
-
-  try {
-    // Only read private Firestore user data for the signed-in owner.
-    // Public profiles are served by the privacy-filtering backend endpoint.
-    if (uid !== auth.currentUser?.uid) return cached || null;
-    const userDoc = await getDoc(doc(db, "users", uid));
-    if (userDoc.exists()) {
-      const userData = { uid: userDoc.id, ...userDoc.data() };
-      setCachedUserProfile(uid, userData);
-      return userData;
-    }
-  } catch (firestoreErr) {
-    console.error("Firestore fallback getUserProfile failed:", firestoreErr);
-  }
+  } catch {}
 
   return cached || null;
 }
@@ -134,7 +81,7 @@ export async function apiSyncTransactionStats() {
 
 /*
  * ============================================================
- * SUBSCRIBE TO USERS (intentional Firebase realtime)
+ * SUBSCRIBE TO USERS (authorized backend refresh)
  * ============================================================
  *
  * Used by the Admin User Management page.
@@ -145,28 +92,16 @@ export function subscribeUsers(callback, onError) {
     return () => {};
   }
 
-  const usersQuery = query(
-    usersRef,
-    orderBy("createdAt", "desc"),
-    limit(USER_PAGE_SIZE),
-  );
-
-  return onSnapshot(
-    usersQuery,
-    (snapshot) => {
-      const users = snapshot.docs.map((userDoc) => ({
-        uid: userDoc.id,
-        ...userDoc.data(),
-      }));
-
-      callback(users);
-    },
-    (error) => {
-      console.error("Failed to subscribe to users:", error);
-
-      onError?.(error);
-    },
-  );
+  let closed = false;
+  const load = async () => {
+    try {
+      const result = await apiRequest(`/v1/users?limit=${USER_PAGE_SIZE}`);
+      if (!closed) callback(result.users || []);
+    } catch (error) { if (!closed) onError?.(error); }
+  };
+  load();
+  const timer = setInterval(load, 30_000);
+  return () => { closed = true; clearInterval(timer); };
 }
 
 /*

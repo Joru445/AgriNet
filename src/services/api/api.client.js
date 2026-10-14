@@ -59,15 +59,21 @@ export function buildApiUrl(endpoint) {
 async function fetchWithTimeout(url, options, timeout) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
+  const { signal: callerSignal, ...fetchOptions } = options;
+  const abortFromCaller = () => controller.abort();
+
+  if (callerSignal?.aborted) controller.abort();
+  else callerSignal?.addEventListener("abort", abortFromCaller, { once: true });
 
   try {
     const response = await fetch(url, {
-      ...options,
+      ...fetchOptions,
       signal: controller.signal,
     });
     return response;
   } finally {
     clearTimeout(timeoutId);
+    callerSignal?.removeEventListener("abort", abortFromCaller);
   }
 }
 
@@ -167,6 +173,10 @@ export async function apiRequest(endpoint, options = {}) {
       return data;
     } catch (error) {
       lastError = error;
+
+      // A caller cancellation is intentional (for example, replacing an old
+      // catalog query) and must not be retried as a transient network error.
+      if (fetchOptions.signal?.aborted) throw error;
 
       if (
         attempt < safeRetries &&

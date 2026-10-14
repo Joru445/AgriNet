@@ -5,16 +5,28 @@ import { useAuth } from "../context/AuthContext";
 import Loading from "../components/ui/Loading";
 
 export default function RoleRoute({ allowedRole }) {
-  const { user, profile, loading, suspended, phoneVerified } = useAuth();
+  const { user, profile, loading, suspended, phoneVerified, backendStatus } = useAuth();
   const location = useLocation();
 
   if (loading) {
     return <Loading />;
   }
 
-  if (!user || !profile) {
+  if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
+
+  if (!profile && backendStatus !== "available") {
+    return (
+      <main className="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center p-6 text-center">
+        <i className="ri-wifi-off-line mb-3 text-3xl text-(--agri-brand)" />
+        <h1 className="text-lg font-bold text-(--agri-text)">Account data is unavailable offline</h1>
+        <p className="mt-2 text-sm text-(--agri-text-muted)">Your saved session remains secure. Reconnect to verify this device and load private account data.</p>
+      </main>
+    );
+  }
+
+  if (!profile) return <Navigate to="/login" state={{ from: location }} replace />;
 
   // Suspended users cannot access normal application routes.
   if (suspended) {

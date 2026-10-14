@@ -1,92 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-
 import { apiGetMarketplaceProducts } from "../services/product.service";
-import { getGroups, getGroupMembers, getUserApprovedGroups } from "../services/group.service";
+
 import useUserLocation from "./useUserLocation";
+
 import { getDistanceKm } from "../utils/distance";
 import { isProductExpired } from "../utils/productExpiration";
-import { getProductAvailability, getProductInquiryState } from "../utils/productStatus";
+import { getProductAvailability } from "../utils/productStatus";
+
 import * as pageCache from "../utils/pageCache";
 
-const PRODUCTS_PER_PAGE = 12;
-const BACKEND_PAGE_SIZE = 24;
-const CACHE_KEY = "marketplaceProducts";
-const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
-const DISCOVERY_NEARBY_RADIUS_KM = 5;
-const DISCOVERY_SECTION_SIZE = 4;
-const DISCOVERY_RECOMMENDED_SIZE = 6;
+import {
+  loadPublicMarketplaceCache,
+  savePublicMarketplaceCache,
+} from "../utils/publicMarketplaceCache";
 
-/**
- * Enriches products with their farmer's approved group affiliations.
- * Uses cached results when available to minimize network calls.
- */
-async function enrichProductsWithFarmerGroups(rawProducts) {
-  if (!Array.isArray(rawProducts) || rawProducts.length === 0) return rawProducts;
-
-  const farmerIds = [
-    ...new Set(
-      rawProducts
-        .map((p) => p.farmerId || p.farmer?.uid || p.farmer?.id)
-        .filter(Boolean),
-    ),
-  ];
-
-  if (farmerIds.length === 0) return rawProducts;
-
-  const farmerGroupsMap = new Map();
-  await Promise.all(
-    farmerIds.map(async (fId) => {
-      try {
-        const groups = await getUserApprovedGroups(fId);
-        farmerGroupsMap.set(fId, Array.isArray(groups) ? groups : []);
-      } catch {
-        farmerGroupsMap.set(fId, []);
-      }
-    }),
-  );
-
-  return rawProducts.map((p) => {
-    const fId = p.farmerId || p.farmer?.uid || p.farmer?.id;
-    const groups = farmerGroupsMap.get(fId) || p.farmer?.groups || [];
-    return {
-      ...p,
-      farmer: p.farmer
-        ? { ...p.farmer, groups }
-        : { uid: fId, groups },
-    };
-  });
-}
-
-/**
- * Compute a relevance score for a product.
- * Relevance = rating (0-40) + distance (0-30) + freshness (0-30).
- */
-function getTimestampMs(value) {
-  if (typeof value === "number") return value;
-  if (typeof value === "string") return new Date(value).getTime() || 0;
-  return value?.toDate?.()?.getTime?.() ?? (value?.seconds ?? 0) * 1000;
-}
-
-function scoreRelevance(product, now) {
-  const rating = Number(product.productRating ?? 0);
-
-  const createdAt = getTimestampMs(product.createdAt);
-
-  const ageDays = Math.max(0, (now - createdAt) / (1000 * 60 * 60 * 24));
-
-  const ratingScore = Math.min(rating / 5, 1) * 40;
-
-  const distanceScore =
-    product.distance != null
-      ? Math.max(0, 1 - product.distance / 20) * 30
-      : 0;
-
-  const freshnessScore = Math.max(0, 1 - ageDays / 30) * 30;
-
-  return ratingScore + distanceScore + freshnessScore;
-}
-
+const PAGE_SIZE = 24;
+// The memory cache matches the persisted public-listing retention window. A
+// catalog entry is not revalidated merely because the former two-minute TTL
+// elapsed; normal eviction still bounds storage and a true cache miss loads.
+const CACHE_TTL = 24 * 60 * 60 * 1000;
 const DEFAULT_FILTERS = {
   search: "",
   category: "All",
@@ -100,500 +33,315 @@ const DEFAULT_FILTERS = {
   group: "",
 };
 
-/**
- * Apply client-side filters (search, distance, price, rating, availability)
- * to a product list.  These filters require runtime data the backend does
- * not have (user location, instant-search UX, cross-field price/range).
- */
-function applyClientFilters(
-  products,
-  filters,
-  userLocation,
-  // Group filtering is server-side; kept separate from local search.
-) {
-  let data = [...products];
+const catalogKey = (filters) => `marketplaceCatalog:${JSON.stringify(filters)}`;
 
-  if (filters.search.trim()) {
-    const keyword = filters.search.trim().toLowerCase();
-    data = data.filter(
-      (product) =>
-        product.name?.toLowerCase().includes(keyword) ||
-        product.category?.toLowerCase().includes(keyword) ||
-        product.farmer?.fullname?.toLowerCase().includes(keyword) ||
-        product.farmer?.username?.toLowerCase().includes(keyword) ||
-        product.farmer?.storeName?.toLowerCase().includes(keyword),
-    );
-  }
-
-  // Filter by category
-  if (filters.category && filters.category !== "All") {
-    const targetCat = filters.category.toLowerCase();
-    data = data.filter((product) => {
-      const pCat = String(product.category || "").toLowerCase();
-      if (targetCat === "others" || targetCat === "other") {
-        return pCat === "others" || pCat === "other";
-      }
-      return pCat === targetCat;
-    });
-  }
-
-  // Group membership filtering is enforced by the backend against
-  // approved group-memberships, not arbitrary product.group text values.
-
-  data = data.filter((product) => {
-    // Keep the explicit expiry gate for immediate lifecycle exclusion; the
-    // shared evaluator below handles every availability state consistently.
-    if (isProductExpired(product) && !filters.showUnavailable) return false;
-    if (!filters.showUnavailable && !getProductAvailability(product).allowed) return false;
-
-    const price = Number(product.price ?? 0);
-    const rating = Number(product.productRating ?? 0);
-    const matchesMinPrice = filters.minPrice > 0 ? price >= filters.minPrice : true;
-    const matchesMaxPrice = filters.maxPrice > 0 ? price <= filters.maxPrice : true;
-    const matchesDistance =
-      !userLocation ||
-      product.distance == null ||
-      product.distance <= filters.distance;
-    const matchesRating = rating >= filters.rating;
-
-    return matchesMinPrice && matchesMaxPrice && matchesDistance && matchesRating;
+function decorateDistance(items, location) {
+  return items.map((product) => {
+    const { lat, lng } = product.farmer?.location || {};
+    return !location || lat == null || lng == null
+      ? { ...product, distance: null }
+      : {
+          ...product,
+          distance: getDistanceKm(location.lat, location.lng, lat, lng),
+        };
   });
+}
 
-  return data;
+// API order is never changed on the client: this only applies runtime-only filters.
+function filterRuntime(items, filters, location) {
+  const search = filters.search.trim().toLowerCase();
+  return items.filter((product) => {
+    if (
+      search &&
+      ![
+        product.name,
+        product.category,
+        product.farmer?.fullname,
+        product.farmer?.username,
+        product.farmer?.storeName,
+      ].some((part) =>
+        String(part || "")
+          .toLowerCase()
+          .includes(search),
+      )
+    )
+      return false;
+    if (isProductExpired(product) && !filters.showUnavailable) return false;
+    if (!filters.showUnavailable && !getProductAvailability(product).allowed)
+      return false;
+    const price = Number(product.price || 0);
+    if (
+      (filters.minPrice && price < filters.minPrice) ||
+      (filters.maxPrice && price > filters.maxPrice)
+    )
+      return false;
+    if (Number(product.productRating || 0) < filters.rating) return false;
+    return !(
+      location &&
+      product.distance != null &&
+      product.distance > filters.distance
+    );
+  });
 }
 
 export default function useMarketplace() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { location: userLocation } = useUserLocation();
+  const [fetchedProducts, setFetchedProducts] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(0);
+  const [columns, setColumns] = useState(2);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [lastRefreshedAt, setLastRefreshedAt] = useState(null);
-  const refreshInFlightRef = useRef(false);
-  const requestVersionRef = useRef(0);
   const [error, setError] = useState(null);
-  const [products, setProducts] = useState(() => pageCache.get(CACHE_KEY) ?? []);
   const [hasMore, setHasMore] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
   const cursorRef = useRef(null);
-  const loadingMoreRef = useRef(false);
+  const inFlightRef = useRef(false);
+  const requestIdRef = useRef(0);
+  const requestControllerRef = useRef(null);
+  const columnsRef = useRef(columns);
+  columnsRef.current = columns;
 
   const filters = useMemo(
     () => ({
-      search: searchParams.get("search") ?? DEFAULT_FILTERS.search,
-      category: searchParams.get("category") ?? DEFAULT_FILTERS.category,
+      search: searchParams.get("search") || DEFAULT_FILTERS.search,
+      category: searchParams.get("category") || DEFAULT_FILTERS.category,
       distance: Number(
-        searchParams.get("distance") ??
-          localStorage.getItem("agri_consumer_distance") ??
+        searchParams.get("distance") ||
+          localStorage.getItem("agri_consumer_distance") ||
           DEFAULT_FILTERS.distance,
       ),
-      minPrice: Number(
-        searchParams.get("minPrice") ?? DEFAULT_FILTERS.minPrice,
-      ),
-      maxPrice: Number(
-        searchParams.get("maxPrice") ?? DEFAULT_FILTERS.maxPrice,
-      ),
-      rating: Number(searchParams.get("rating") ?? DEFAULT_FILTERS.rating),
-      sort: searchParams.get("sort") ?? DEFAULT_FILTERS.sort,
+      minPrice: Number(searchParams.get("minPrice") || 0),
+      maxPrice: Number(searchParams.get("maxPrice") || 0),
+      rating: Number(searchParams.get("rating") || 0),
+      sort: searchParams.get("sort") || DEFAULT_FILTERS.sort,
       showUnavailable: searchParams.get("showUnavailable") === "true",
-      sellingMode: searchParams.get("sellingMode") ?? DEFAULT_FILTERS.sellingMode,
-      group: searchParams.get("group") ?? DEFAULT_FILTERS.group,
+      sellingMode:
+        searchParams.get("sellingMode") || DEFAULT_FILTERS.sellingMode,
+      group: searchParams.get("group") || DEFAULT_FILTERS.group,
     }),
     [searchParams],
   );
-
-  const [allGroups, setAllGroups] = useState([]);
-  const [groupFarmerIds, setGroupFarmerIds] = useState(() => new Set());
-
-  useEffect(() => {
-    let cancelled = false;
-    getGroups()
-      .then((list) => {
-        if (!cancelled && Array.isArray(list)) {
-          setAllGroups(list);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!filters.group || String(filters.group).trim() === "") {
-      setGroupFarmerIds(new Set());
-      return;
-    }
-
-    async function fetchGroupMembers() {
-      try {
-        const groupsList = allGroups.length > 0 ? allGroups : await getGroups();
-        const target = String(filters.group).trim().toLowerCase();
-        const found = groupsList.find(
-          (g) =>
-            String(g.name || "").trim().toLowerCase() === target ||
-            String(g.id || "") === String(filters.group),
-        );
-        if (found?.id) {
-          const members = await getGroupMembers(found.id);
-          if (!cancelled && Array.isArray(members)) {
-            const ids = new Set(members.map((m) => m.userId).filter(Boolean));
-            setGroupFarmerIds(ids);
-          }
-        }
-      } catch (err) {
-        console.warn("[useMarketplace] fetchGroupMembers error:", err);
-      }
-    }
-
-    fetchGroupMembers();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [filters.group, allGroups]);
-
-  // Auto-tick every second so expired listings disappear immediately without refresh
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setNow(Date.now());
-    }, 60_000);
-    return () => clearInterval(timer);
-  }, []);
-
+  const queryKey = useMemo(() => JSON.stringify(filters), [filters]);
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
-  const userLocationRef = useRef(userLocation);
-  userLocationRef.current = userLocation;
-  const groupFarmerIdsRef = useRef(groupFarmerIds);
-  groupFarmerIdsRef.current = groupFarmerIds;
-  const allGroupsRef = useRef(allGroups);
-  allGroupsRef.current = allGroups;
 
-  // Build the backend filter key. This is a stable string that changes
-  // only when the server-relevant filters change (category, sellingMode, showUnavailable).
-  const backendFilterKey = useMemo(
-    () => `${filters.category}|${filters.sellingMode}|${filters.showUnavailable}|${filters.group}`,
-    [filters.category, filters.sellingMode, filters.showUnavailable, filters.group],
+  // A wider grid can reveal more already-buffered cards immediately. It does
+  // not reset pagination or discard cards when the available width changes.
+  useEffect(() => {
+    if (!fetchedProducts.length) return;
+    setVisibleCount((current) =>
+      Math.max(current, Math.min(columns, fetchedProducts.length)),
+    );
+  }, [columns, fetchedProducts.length]);
+
+  const requestPage = useCallback(
+    async ({ reset = false, background = false } = {}) => {
+      if ((inFlightRef.current && !reset) || (!reset && !hasMore)) return false;
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        if (!fetchedProducts.length)
+          setError(
+            new Error("Offline: saved marketplace data is unavailable."),
+          );
+        setLoading(false);
+        return false;
+      }
+      // A manual refresh or query reset supersedes a pending pagination fetch.
+      // The request ID also protects state when an API/fallback cannot abort.
+      if (reset) requestControllerRef.current?.abort();
+      const requestId = ++requestIdRef.current;
+      const controller = new AbortController();
+      requestControllerRef.current = controller;
+      inFlightRef.current = true;
+      if (reset) {
+        if (!background) setLoading(true);
+        setError(null);
+        cursorRef.current = null;
+      } else setLoadingMore(true);
+      try {
+        const active = filtersRef.current;
+        const result = await apiGetMarketplaceProducts({
+          limit: PAGE_SIZE,
+          cursor: reset ? undefined : cursorRef.current,
+          category: active.category !== "All" ? active.category : undefined,
+          available: active.showUnavailable ? undefined : true,
+          sellingMode:
+            active.sellingMode !== "all" ? active.sellingMode : undefined,
+          groupId: active.group || undefined,
+          sort: active.sort,
+          signal: controller.signal,
+        });
+        if (requestId !== requestIdRef.current) return false;
+        setFetchedProducts((current) => {
+          const merged = reset
+            ? result.products
+            : [...current, ...result.products];
+          return Array.from(
+            new Map(merged.map((item) => [item.id, item])).values(),
+          );
+        });
+        cursorRef.current = result.cursor || null;
+        setHasMore(Boolean(result.hasMore && result.cursor));
+        if (reset)
+          setVisibleCount(Math.min(columnsRef.current, result.products.length));
+        return true;
+      } catch (requestError) {
+        if (requestId === requestIdRef.current && requestError?.name !== "AbortError") {
+          setError(requestError);
+        }
+        return false;
+      } finally {
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+          setLoadingMore(false);
+          inFlightRef.current = false;
+          requestControllerRef.current = null;
+        }
+      }
+    },
+    [fetchedProducts.length, hasMore],
   );
 
-  const loadProducts = useCallback(async ({ reset = false, soft = false } = {}) => {
-    const version = reset ? ++requestVersionRef.current : requestVersionRef.current;
-    try {
-      setError(null);
-
-      if (reset) {
-        if (!soft) setLoading(true);
-        // Keep old cards while refreshing; invalidate the cached first page.
-        pageCache.invalidate(CACHE_KEY);
-        if (!soft) cursorRef.current = null;
-      } else {
-        if (loadingMoreRef.current || refreshInFlightRef.current) return false;
-        setLoadingMore(true);
-        loadingMoreRef.current = true;
-      }
-
-      const activeFilters = filtersRef.current;
-      const activeLocation = userLocationRef.current;
-      const activeGroupFarmerIds = groupFarmerIdsRef.current;
-      const activeAllGroups = allGroupsRef.current;
-
-      // Build backend-supported filter params.
-      const apiFilters = {};
-      if (activeFilters.category && activeFilters.category !== "All") {
-        apiFilters.category = activeFilters.category;
-      }
-      if (activeFilters.sellingMode && activeFilters.sellingMode !== "all") {
-        apiFilters.sellingMode = activeFilters.sellingMode;
-      }
-      if (!activeFilters.showUnavailable) {
-        apiFilters.available = true;
-      }
-      if (activeFilters.group) {
-        const matched = activeAllGroups.find((g) =>
-          g.id === activeFilters.group || String(g.name).toLowerCase() === String(activeFilters.group).toLowerCase());
-        apiFilters.groupId = matched?.id ?? activeFilters.group;
-      }
-
-      if (reset) {
-        // Reset: fetch fresh data from the beginning.
-        let allProducts = [];
-        let cursor = null;
-        let backendHasMore = true;
-        let fetchCount = 0;
-        const maxFetches = 5; // safety limit to avoid unbounded loops
-
-        while (fetchCount < maxFetches) {
-          const result = await apiGetMarketplaceProducts({
-            limit: BACKEND_PAGE_SIZE,
-            cursor,
-            ...apiFilters,
-          });
-
-          const enriched = await enrichProductsWithFarmerGroups(result.products);
-          allProducts = [...allProducts, ...enriched];
-          cursor = result.cursor;
-          backendHasMore = result.hasMore;
-          fetchCount++;
-
-          const withDistance = allProducts.map((product) => {
-            const lat = product.farmer?.location?.lat;
-            const lng = product.farmer?.location?.lng;
-            if (!activeLocation || lat == null || lng == null) {
-              return { ...product, distance: null };
-            }
-            return {
-              ...product,
-              distance: getDistanceKm(activeLocation.lat, activeLocation.lng, lat, lng),
-            };
-          });
-          const filtered = applyClientFilters(
-            withDistance,
-            activeFilters,
-            activeLocation,
-            activeGroupFarmerIds,
-            activeAllGroups,
-          );
-          if (filtered.length >= PRODUCTS_PER_PAGE || !backendHasMore) break;
-        }
-
-        // Compute distances for the final set.
-        const final = allProducts.map((product) => {
-          const lat = product.farmer?.location?.lat;
-          const lng = product.farmer?.location?.lng;
-          if (!activeLocation || lat == null || lng == null) {
-            return { ...product, distance: null };
+  useEffect(() => {
+    // Ignore an old query response when this effect restores a new cached
+    // query. A restored cache deliberately does not revalidate in background.
+    requestControllerRef.current?.abort();
+    requestIdRef.current += 1;
+    const cacheKey = catalogKey(filters);
+    const cached = pageCache.get(cacheKey);
+    const publicCached = cached ? null : loadPublicMarketplaceCache(cacheKey);
+    const restored =
+      cached ||
+      (publicCached
+        ? {
+            products: publicCached.products,
+            cursor: publicCached.cursor || null,
+            hasMore: Boolean(publicCached.hasMore && publicCached.cursor),
           }
-          return {
-            ...product,
-            distance: getDistanceKm(activeLocation.lat, activeLocation.lng, lat, lng),
-          };
-        });
+        : null);
+    if (restored) {
+      cursorRef.current = restored.cursor;
+      setFetchedProducts(restored.products);
+      setHasMore(restored.hasMore);
+      setVisibleCount(Math.min(columnsRef.current, restored.products.length));
+      setError(null);
+      setLoading(false);
+    } else {
+      setFetchedProducts([]);
+      setVisibleCount(0);
+      requestPage({ reset: true });
+    }
+    // The serialized query intentionally restores or starts pagination for
+    // every filter/sort change. Cached entries are intentionally not stale-
+    // revalidated; pull-to-refresh is the explicit freshness control.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryKey]);
 
-        if (version !== requestVersionRef.current) return false;
-        setProducts(final);
-        cursorRef.current = cursor;
-        setHasMore(backendHasMore);
-        pageCache.set(CACHE_KEY, final, CACHE_TTL);
-      } else {
-        // Append: fetch the next backend page and add new products.
-        const result = await apiGetMarketplaceProducts({
-          limit: BACKEND_PAGE_SIZE,
-          cursor: cursorRef.current,
-          ...apiFilters,
-        });
+  useEffect(() => {
+    // Cache empty result sets too: an already-loaded empty query is still a
+    // usable result and should not repeatedly fetch on remount.
+    if (loading || error) return;
+    pageCache.set(
+      catalogKey(filters),
+      { products: fetchedProducts, cursor: cursorRef.current, hasMore },
+      CACHE_TTL,
+    );
+    savePublicMarketplaceCache(fetchedProducts, catalogKey(filters), {
+      cursor: cursorRef.current,
+      hasMore,
+    });
+  }, [error, fetchedProducts, filters, hasMore, loading]);
 
-        if (version !== requestVersionRef.current) return false;
-        if (result.products.length > 0) {
-          const enriched = await enrichProductsWithFarmerGroups(result.products);
-          setProducts((current) => {
-            const existingIds = new Set(current.map((p) => p.id));
-            const newProducts = enriched.filter((p) => !existingIds.has(p.id));
-            return newProducts.length > 0 ? [...current, ...newProducts] : current;
-          });
-        }
+  const products = useMemo(
+    () => decorateDistance(fetchedProducts, userLocation),
+    [fetchedProducts, userLocation],
+  );
+  const filteredProducts = useMemo(
+    () => filterRuntime(products, filters, userLocation),
+    [products, filters, userLocation],
+  );
+  const visibleProducts = useMemo(
+    () => filteredProducts.slice(0, visibleCount),
+    [filteredProducts, visibleCount],
+  );
 
-        cursorRef.current = result.cursor;
-        setHasMore(result.hasMore && result.products.length > 0);
-      }
+  const revealNextRow = useCallback(async () => {
+    const remaining = filteredProducts.length - visibleCount;
+    if (remaining >= columnsRef.current) {
+      setVisibleCount((count) =>
+        Math.min(filteredProducts.length, count + columnsRef.current),
+      );
       return true;
-    } catch (err) {
-      console.error(err);
-      if (!soft && version === requestVersionRef.current) setError(err);
-      if (soft) throw err;
+    }
+    if (!hasMore) {
+      if (remaining > 0) setVisibleCount((count) => count + remaining);
       return false;
-    } finally {
-      if (version === requestVersionRef.current) {
-        setLoading(false);
-        setLoadingMore(false);
-        loadingMoreRef.current = false;
-      }
     }
-  }, []);
+    return requestPage();
+  }, [filteredProducts.length, hasMore, requestPage, visibleCount]);
 
-  const refreshProducts = useCallback(async () => {
-    if (refreshInFlightRef.current) return false;
-    refreshInFlightRef.current = true;
-    setRefreshing(true);
-    try {
-      await loadProducts({ reset: true, soft: true });
-      setLastRefreshedAt(Date.now());
-      return true;
-    } finally {
-      refreshInFlightRef.current = false;
-      setRefreshing(false);
-    }
-  }, [loadProducts]);
+  const updateFilter = useCallback(
+    (key, value) => {
+      const params = new URLSearchParams(searchParams);
+      if (key === "distance")
+        localStorage.setItem("agri_consumer_distance", String(value));
+      if (key === "showUnavailable")
+        value ? params.set(key, "true") : params.delete(key);
+      else if (key === "search" || key === "group")
+        value ? params.set(key, value) : params.delete(key);
+      else if (
+        value === DEFAULT_FILTERS[key] ||
+        Number(value) === DEFAULT_FILTERS[key]
+      )
+        params.delete(key);
+      else params.set(key, value);
+      setSearchParams(params);
+    },
+    [searchParams, setSearchParams],
+  );
 
   const hasActiveFilters =
     filters.search.trim() !== "" ||
-    filters.category !== DEFAULT_FILTERS.category ||
+    filters.category !== "All" ||
     filters.minPrice > 0 ||
     filters.maxPrice > 0 ||
     filters.rating > 0 ||
     filters.showUnavailable ||
     filters.sellingMode !== "all" ||
-    filters.group !== "";
-
-  // Re-fetch only when server-side filters change or on initial mount.
-  useEffect(() => {
-    loadProducts({ reset: true });
-  }, [loadProducts, backendFilterKey]);
-
-  const marketplaceProducts = useMemo(
-    () =>
-      products.map((product) => {
-        const lat = product.farmer?.location?.lat;
-        const lng = product.farmer?.location?.lng;
-
-        if (!userLocation || lat == null || lng == null) {
-          return { ...product, distance: null };
-        }
-
-        return {
-          ...product,
-          distance: getDistanceKm(userLocation.lat, userLocation.lng, lat, lng),
-        };
-      }),
-    [products, userLocation],
-  );
-
-  const filteredProducts = useMemo(() => {
-    let data = applyClientFilters(
-      marketplaceProducts,
-      filters,
-      userLocation,
-      groupFarmerIds,
-      allGroups,
-    );
-
-    switch (filters.sort) {
-      case "price-low":
-        data.sort((a, b) => a.price - b.price);
-        break;
-      case "price-high":
-        data.sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        data.sort((a, b) => (b.productRating ?? 0) - (a.productRating ?? 0));
-        break;
-      case "relevant":
-        data = data
-          .map((product) => ({
-            ...product,
-            relevanceScore: scoreRelevance(product, now),
-          }))
-          .sort((a, b) => b.relevanceScore - a.relevanceScore);
-        break;
-      default:
-        data.sort(
-          (a, b) => getTimestampMs(b.createdAt) - getTimestampMs(a.createdAt),
-        );
+    filters.group !== "" ||
+    filters.distance !== DEFAULT_FILTERS.distance;
+  const refreshProducts = useCallback(async () => {
+    if (refreshing) return false;
+    setRefreshing(true);
+    try {
+      return await requestPage({ reset: true, background: true });
+    } finally {
+      setRefreshing(false);
     }
-
-    return data;
-  }, [marketplaceProducts, filters, userLocation, now, groupFarmerIds, allGroups]);
-
-  // ── Discovery sections ─────────────────────────────────────────
-  // These are computed from marketplaceProducts (unfiltered) and are
-  // only displayed when no search/filter is active.
-
-  const nearbyProducts = useMemo(() => {
-    if (!userLocation) return [];
-
-    return marketplaceProducts
-      .filter((product) => {
-        const distance = Number(product.distance);
-        return (
-          Number.isFinite(distance) &&
-          distance <= DISCOVERY_NEARBY_RADIUS_KM &&
-          // Canonical eligibility: excludes expired listings, ended/full
-          // pre-orders, unavailable and out-of-stock products — while
-          // including open pre-orders even when their future stock is 0.
-          // Explicit `now` keeps the section current as deadlines pass.
-          getProductInquiryState(product, now).allowed
-        );
-      })
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, DISCOVERY_SECTION_SIZE);
-  }, [marketplaceProducts, userLocation, now]);
-
-  const recentProducts = useMemo(() => {
-    return [...marketplaceProducts]
-      .filter((product) => getProductAvailability(product, now).allowed)
-      .filter((product) => product?.createdAt)
-      .sort((a, b) => getTimestampMs(b.createdAt) - getTimestampMs(a.createdAt))
-      .slice(0, DISCOVERY_SECTION_SIZE);
-  }, [marketplaceProducts, now]);
-
-  const relevantProducts = useMemo(() => {
-    return [...marketplaceProducts]
-      .filter((product) => getProductAvailability(product, now).allowed)
-      .map((product) => ({
-        ...product,
-        relevanceScore: scoreRelevance(product, now),
-      }))
-      .sort((a, b) => b.relevanceScore - a.relevanceScore)
-      .slice(0, DISCOVERY_RECOMMENDED_SIZE);
-  }, [marketplaceProducts, now]);
-
-  function updateFilter(key, value) {
-    const params = new URLSearchParams(searchParams);
-    const defaultValue = DEFAULT_FILTERS[key];
-
-    if (key === "distance") {
-      localStorage.setItem("agri_consumer_distance", String(value));
-    }
-
-    if (key === "search") {
-      value ? params.set(key, value) : params.delete(key);
-    } else if (key === "showUnavailable") {
-      value ? params.set(key, "true") : params.delete(key);
-    } else if (key === "sellingMode") {
-      value && value !== "all" ? params.set(key, value) : params.delete(key);
-    } else if (key === "group") {
-      value ? params.set(key, value) : params.delete(key);
-    } else if (key === "rating" || key === "minPrice" || key === "maxPrice") {
-      Number(value) > 0 ? params.set(key, value) : params.delete(key);
-    } else if (value !== defaultValue && Number(value) !== defaultValue) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-
-    params.delete("page");
-    setSearchParams(params);
-  }
-
+  }, [refreshing, requestPage]);
   return {
     loading,
     loadingMore,
+    refreshing,
     error,
-    products: marketplaceProducts,
-    filteredProducts,
-    totalProducts: filteredProducts.length,
     filters,
-    hasActiveFilters,
+    products,
+    filteredProducts,
+    visibleProducts,
+    totalProducts: filteredProducts.length,
+    hasMore,
+    showFilters,
+    setShowFilters,
     updateFilter,
+    hasActiveFilters,
+    setColumns: (count) => setColumns(Math.max(2, Number(count) || 2)),
+    revealNextRow,
+    reloadProducts: () => requestPage({ reset: true }),
+    refreshProducts,
     resetFilters: () => {
       localStorage.removeItem("agri_consumer_distance");
       setSearchParams({});
     },
-    userLocation,
-    showFilters,
-    setShowFilters,
-    hasMore,
-    loadMore: () => loadProducts(),
-    reloadProducts: () => loadProducts({ reset: true }),
-    refreshProducts,
-    refreshing,
-    lastRefreshedAt,
-
-    // Discovery sections (for default/discovery state)
-    nearbyProducts,
-    recentProducts,
-    relevantProducts,
   };
 }

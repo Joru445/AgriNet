@@ -13,11 +13,34 @@ test("product writes use the authenticated backend, not Firestore fallback", () 
 });
 test("registration preserves unverified farmer profiles", () => {
   const reg = src("src/services/register.service.js");
-  assert.match(reg, /verified: false/);
-  assert.match(reg, /verificationStatus: "not_applied"/);
+  const backendBootstrap = src("../backend/src/modules/users/user.service.js");
+  assert.match(reg, /apiRequest\("\/v1\/users"/);
+  assert.doesNotMatch(reg, /firebase\/firestore/);
+  assert.match(backendBootstrap, /verified: false/);
+  assert.match(backendBootstrap, /verificationStatus: "not_applied"/);
 });
 test("marketplace forwards group IDs", () => {
   assert.match(src("src/services/product.service.js"), /groupId/);
+});
+
+test("marketplace uses cache-or-fetch, never focus or reconnect revalidation", () => {
+  const marketplace = src("src/pages/consumer/Marketplace.jsx");
+  const hook = src("src/hooks/useMarketplace.js");
+  assert.doesNotMatch(marketplace, /addEventListener\("focus"/);
+  assert.doesNotMatch(marketplace, /addEventListener\("online"/);
+  assert.match(hook, /if \(restored\)[\s\S]*?else \{[\s\S]*?requestPage\(\{ reset: true \}\)/);
+  assert.match(hook, /requestControllerRef\.current\?\.abort\(\)/);
+  assert.match(hook, /signal: controller\.signal/);
+});
+
+test("marketplace group options are lazy, cached, and deduplicated", () => {
+  const filters = src("src/components/consumer/marketplace/FiltersSidebar.jsx");
+  const groups = src("src/services/group.service.js");
+  assert.doesNotMatch(filters, /getGroups\(\)\s*\.then/);
+  assert.match(filters, /onOpenChange=\{\(open\) => \{ if \(open\) loadGroups\(\); \}\}/);
+  assert.match(groups, /if \(cached\) return cached/);
+  assert.match(groups, /if \(publicGroupsRequest\) return publicGroupsRequest/);
+  assert.match(groups, /invalidatePublicGroupsCache\(\)/);
 });
 
 class MemoryStorage {
@@ -28,6 +51,21 @@ class MemoryStorage {
 }
 
 const savedAccountService = await import("../src/services/savedAccounts.service.js");
+const publicMarketplaceCache = await import("../src/utils/publicMarketplaceCache.js");
+
+test("public marketplace cache preserves cursor pagination and is explicitly invalidated", () => {
+  globalThis.localStorage = new MemoryStorage();
+  publicMarketplaceCache.savePublicMarketplaceCache(
+    [{ id: "product-a" }],
+    "query-a",
+    { cursor: "cursor-a", hasMore: true },
+  );
+  assert.deepEqual(publicMarketplaceCache.loadPublicMarketplaceCache("query-a").products, [{ id: "product-a" }]);
+  assert.equal(publicMarketplaceCache.loadPublicMarketplaceCache("query-a").cursor, "cursor-a");
+  assert.equal(publicMarketplaceCache.loadPublicMarketplaceCache("query-a").hasMore, true);
+  publicMarketplaceCache.invalidatePublicMarketplaceCache();
+  assert.equal(publicMarketplaceCache.loadPublicMarketplaceCache("query-a"), null);
+});
 
 test("saved-account migration deduplicates and strips credentials", () => {
   globalThis.localStorage = new MemoryStorage();

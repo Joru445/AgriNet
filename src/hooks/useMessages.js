@@ -5,9 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import { showToast } from "../utils/toast";
 
-import { doc, onSnapshot } from "firebase/firestore";
 import { auth } from "../firebase/auth";
-import { db } from "../firebase/firestore";
 
 import {
   apiGetConversationById,
@@ -147,38 +145,11 @@ export default function useMessages() {
   const [conversationEndedLocations, setConversationEndedLocations] = useState({});
   const clearReply = useCallback(() => setReplyTo(null), []);
 
-  // Real-time listener on active conversation document for ended locations
+  // Conversation SSE already supplies endedLocations. Reset the local mirror
+  // on navigation; do not open a legacy Firestore listener.
   useEffect(() => {
-    const convId = activeConversation?.id;
-    if (!convId) {
-      setConversationEndedLocations({});
-      return;
-    }
-
-    const convRef = doc(db, "conversations", convId);
-    const unsubscribe = onSnapshot(
-      convRef,
-      (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          if (data?.endedLocations) {
-            setConversationEndedLocations(data.endedLocations);
-            // Sync to permanent local storage
-            Object.keys(data.endedLocations).forEach((id) => {
-              if (data.endedLocations[id]) {
-                markLocationPermanentlyEnded(id);
-              }
-            });
-          }
-        }
-      },
-      (err) => {
-        console.warn("[useMessages] onSnapshot for conversation doc error:", err);
-      },
-    );
-
-    return () => unsubscribe();
-  }, [activeConversation?.id]);
+    setConversationEndedLocations(activeConversation?.endedLocations || {});
+  }, [activeConversation?.id, activeConversation?.endedLocations]);
 
   // Clear pending reply when switching conversations
   useEffect(() => {

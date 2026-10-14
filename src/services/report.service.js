@@ -1,18 +1,4 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
-
-import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
-
-const reportsRef = collection(db, "reports");
 
 const REPORT_STATUSES = ["pending", "reviewing", "resolved", "dismissed"];
 
@@ -91,7 +77,7 @@ export async function getActiveReportForTarget({
 
 /*
  * ============================================================
- * GET REPORT (direct Firestore read)
+ * GET REPORT (authorized backend API)
  * ============================================================
  */
 
@@ -100,16 +86,16 @@ export async function getReport(reportId) {
     throw new Error("Report ID is required.");
   }
 
-  const snapshot = await getDoc(doc(db, "reports", reportId));
-
-  if (!snapshot.exists()) {
-    return null;
+  // Admins use the report-detail endpoint. A reporter can only resolve a
+  // report from their own server-filtered list.
+  try {
+    const result = await apiRequest(`/v1/admin/reports/${encodeURIComponent(reportId)}`);
+    return result.data ?? null;
+  } catch (error) {
+    if (error.status !== 403) throw error;
+    const mine = await apiRequest("/v1/admin/reports/mine?limit=100");
+    return (mine.data || []).find((item) => item.id === reportId) || null;
   }
-
-  return {
-    id: snapshot.id,
-    ...snapshot.data(),
-  };
 }
 
 /*
@@ -192,7 +178,7 @@ export async function apiGetAdminReport(reportId) {
 
 /*
  * ============================================================
- * REALTIME LISTENERS (intentional Firebase)
+ * Server-authorized refresh listeners
  * ============================================================
  *
  * These stay on direct Firestore for live updates.
@@ -203,65 +189,16 @@ export function subscribeUserReports(reporterId, callback, onError) {
     return () => {};
   }
 
-  let primaryUnsub = null;
-  let fallbackUnsub = null;
-  let fallbackActive = false;
-
-  const reportsQuery = query(
-    reportsRef,
-    where("reporterId", "==", reporterId),
-    orderBy("createdAt", "desc"),
-    limit(100),
-  );
-
-  primaryUnsub = onSnapshot(
-    reportsQuery,
-    (snapshot) => {
-      const reports = snapshot.docs.map((reportDoc) => ({
-        id: reportDoc.id,
-        ...reportDoc.data(),
-      }));
-
-      callback(reports);
-    },
-    (error) => {
-      console.warn("subscribeUserReports: primary failed, trying fallback:", error);
-      primaryUnsub?.();
-      primaryUnsub = null;
-      fallbackActive = true;
-
-      const fallbackQuery = query(
-        reportsRef,
-        where("reporterId", "==", reporterId),
-        limit(100),
-      );
-
-      fallbackUnsub = onSnapshot(
-        fallbackQuery,
-        (snapshot) => {
-          const reports = snapshot.docs.map((reportDoc) => ({
-            id: reportDoc.id,
-            ...reportDoc.data(),
-          }));
-          reports.sort((a, b) => {
-            const timeA = a.createdAt?.toMillis?.() || a.createdAt?.seconds || 0;
-            const timeB = b.createdAt?.toMillis?.() || b.createdAt?.seconds || 0;
-            return timeB - timeA;
-          });
-          callback(reports);
-        },
-        onError,
-      );
-    },
-  );
-
-  return () => {
-    if (fallbackActive) {
-      fallbackUnsub?.();
-    } else {
-      primaryUnsub?.();
-    }
+  let closed = false;
+  const load = async () => {
+    try {
+      const result = await apiRequest("/v1/admin/reports/mine?limit=100");
+      if (!closed) callback(result.data || []);
+    } catch (error) { if (!closed) onError?.(error); }
   };
+  load();
+  const timer = setInterval(load, 30_000);
+  return () => { closed = true; clearInterval(timer); };
 }
 
 export function subscribeReports(callback, onError, maxLimit = 100) {
@@ -269,58 +206,14 @@ export function subscribeReports(callback, onError, maxLimit = 100) {
     return () => {};
   }
 
-  let primaryUnsub = null;
-  let fallbackUnsub = null;
-  let fallbackActive = false;
-
-  const reportsQuery = query(
-    reportsRef,
-    orderBy("createdAt", "desc"),
-    limit(maxLimit),
-  );
-
-  primaryUnsub = onSnapshot(
-    reportsQuery,
-    (snapshot) => {
-      const reports = snapshot.docs.map((reportDoc) => ({
-        id: reportDoc.id,
-        ...reportDoc.data(),
-      }));
-
-      callback(reports);
-    },
-    (error) => {
-      console.warn("subscribeReports: primary failed, trying fallback:", error);
-      primaryUnsub?.();
-      primaryUnsub = null;
-      fallbackActive = true;
-
-      const fallbackQuery = query(reportsRef, limit(maxLimit));
-
-      fallbackUnsub = onSnapshot(
-        fallbackQuery,
-        (snapshot) => {
-          const reports = snapshot.docs.map((reportDoc) => ({
-            id: reportDoc.id,
-            ...reportDoc.data(),
-          }));
-          reports.sort((a, b) => {
-            const timeA = a.createdAt?.toMillis?.() || a.createdAt?.seconds || 0;
-            const timeB = b.createdAt?.toMillis?.() || b.createdAt?.seconds || 0;
-            return timeB - timeA;
-          });
-          callback(reports);
-        },
-        onError,
-      );
-    },
-  );
-
-  return () => {
-    if (fallbackActive) {
-      fallbackUnsub?.();
-    } else {
-      primaryUnsub?.();
-    }
+  let closed = false;
+  const load = async () => {
+    try {
+      const result = await apiRequest(`/v1/admin/reports?limit=${Math.min(maxLimit, 100)}`);
+      if (!closed) callback(result.data || []);
+    } catch (error) { if (!closed) onError?.(error); }
   };
+  load();
+  const timer = setInterval(load, 30_000);
+  return () => { closed = true; clearInterval(timer); };
 }

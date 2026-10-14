@@ -1,10 +1,5 @@
 import SkeletonBox from "../ui/SkeletonBox";
 
-/**
- * Skeleton that mirrors the shared consumer ProductCard
- * (src/components/common/ProductCard.jsx) so the loading state
- * has the same structure, aspect ratio and footer.
- */
 export default function ProductCardSkeleton({ showFooter = true }) {
   return (
     <div className="flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-md">

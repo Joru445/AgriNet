@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { collection, getDocs, query, where } from "firebase/firestore";
-
-import { db } from "../firebase/firestore";
 import { getUserProfile } from "../services/user.service";
 import { getFarmerById } from "../services/farmer.service";
 import { getFarmerProducts } from "../services/product.service";
@@ -62,52 +59,6 @@ export default function usePublicProfile() {
 
       let completed = userCompleted >= 0 ? userCompleted : 0;
       let total = userTotal >= 0 ? userTotal : 0;
-
-      // 2. Direct inquiry query (works when viewer is the consumer or authorized)
-      try {
-        const inqRef = collection(db, "inquiries");
-        const q = query(inqRef, where("consumerId", "==", targetUid));
-        const inqSnap = await getDocs(q);
-        if (!inqSnap.empty) {
-          const docs = inqSnap.docs.map((d) => d.data());
-          const comp = docs.filter(
-            (d) => d.status === "completed" || d.status === "resolved",
-          ).length;
-          const tot = docs.length;
-          return {
-            completedDeals: comp,
-            totalDeals: Math.max(tot, comp),
-          };
-        }
-      } catch {
-        // Expected for other users due to inquiry privacy rules
-      }
-
-      // 3. Public reviews collection fallback (readable by all users)
-      try {
-        const revRef = collection(db, "reviews");
-        const qRev = query(revRef, where("reviewerId", "==", targetUid));
-        const revSnap = await getDocs(qRev);
-        if (!revSnap.empty) {
-          completed = Math.max(completed, revSnap.size);
-          total = Math.max(total, revSnap.size);
-        }
-      } catch (revErr) {
-        console.warn("Reviews fallback error:", revErr);
-      }
-
-      // 4. Public product-reviews collection fallback (readable by all users)
-      try {
-        const prodRevRef = collection(db, "product-reviews");
-        const qProdRev = query(prodRevRef, where("reviewerId", "==", targetUid));
-        const prodRevSnap = await getDocs(qProdRev);
-        if (!prodRevSnap.empty) {
-          completed = Math.max(completed, prodRevSnap.size);
-          total = Math.max(total, prodRevSnap.size);
-        }
-      } catch (prodRevErr) {
-        console.warn("Product reviews fallback error:", prodRevErr);
-      }
 
       return {
         completedDeals: completed,

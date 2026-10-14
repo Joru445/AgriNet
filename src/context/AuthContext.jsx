@@ -31,6 +31,7 @@ import {
   ensureCurrentDeviceSession,
   isDeviceSessionRejection,
 } from "../services/deviceSession.service";
+import { setCachedUserProfile } from "../utils/userProfileCache";
 
 const AuthContext = createContext();
 
@@ -39,6 +40,9 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [farmer, setFarmer] = useState(null);
   const [emailVerified, setEmailVerified] = useState(false);
+  // Firebase identity and backend/session reachability are intentionally
+  // distinct. An offline PWA must not keep the whole shell in a loader.
+  const [backendStatus, setBackendStatus] = useState("pending");
 
   // true until Firebase Auth has restored the persisted session (or confirmed
   // there is none). During this window NOTHING may render as "signed out".
@@ -131,6 +135,7 @@ export function AuthProvider({ children }) {
           setEmailVerified(false);
           setLoading(false);
           statsSyncedRef.current = false;
+          setBackendStatus("idle");
           return;
         }
 
@@ -141,6 +146,7 @@ export function AuthProvider({ children }) {
         setEmailVerified(Boolean(firebaseUser.emailVerified));
         setProfile(null);
         setFarmer(null);
+        setBackendStatus("pending");
 
         const listenerUid = firebaseUser.uid;
         // Device registration is the private-data bootstrap. Profile reads now
@@ -152,6 +158,8 @@ export function AuthProvider({ children }) {
             const privateProfile = result.data;
             setProfile(privateProfile?.user || null);
             setFarmer(privateProfile?.farmer || null);
+            if (privateProfile?.user) setCachedUserProfile(listenerUid, privateProfile.user);
+            setBackendStatus("available");
             if (!statsSyncedRef.current && privateProfile?.user?.role === "consumer") {
               statsSyncedRef.current = true;
               apiSyncTransactionStats().catch(() => {});
@@ -160,7 +168,21 @@ export function AuthProvider({ children }) {
           })
           .catch((error) => {
             recordAuthDiagnostic("private-profile-unavailable", { code: error?.data?.code || error?.code || "unknown" });
-            setLoading(true);
+            // Do not turn a transport outage into an auth failure or an
+            // infinite loader. Only display a profile already cached for this
+            // exact Firebase UID; it never authorizes new mutations.
+            const cached = getCachedUserProfile(listenerUid, listenerUid);
+            const saved = getSavedAccounts().find((entry) => entry.uid === listenerUid);
+            setProfile(cached || (saved ? {
+              uid: saved.uid,
+              fullname: saved.displayName || saved.email || "",
+              username: saved.username || "",
+              profilePicture: saved.avatar || "",
+              role: saved.role || "",
+            } : null));
+            setFarmer(null);
+            setBackendStatus(typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "unavailable");
+            setLoading(false);
           });
         return;
 
@@ -300,6 +322,35 @@ export function AuthProvider({ children }) {
     return () => globalThis.removeEventListener?.("agrinet:device-session-revoked", handleDeviceSessionRevoked);
   }, []);
 
+  useEffect(() => {
+    async function retryPrivateBootstrap() {
+      const activeUser = auth.currentUser;
+      if (!activeUser || backendStatus === "available") return;
+      try {
+        await ensureCurrentDeviceSession(activeUser);
+        const { apiRequest } = await import("../services/api/api.client");
+        const result = await apiRequest("/v1/users/me/profile");
+        if (auth.currentUser?.uid !== activeUser.uid) return;
+        setProfile(result.data?.user || null);
+        setFarmer(result.data?.farmer || null);
+        if (result.data?.user) setCachedUserProfile(activeUser.uid, result.data.user);
+        setBackendStatus("available");
+      } catch {
+        // The online event is advisory; retain the usable offline shell and
+        // wait for the next connectivity restoration instead of signing out.
+      }
+    }
+    const handleBootstrapComplete = (event) => {
+      if (event.detail?.uid === auth.currentUser?.uid) retryPrivateBootstrap();
+    };
+    window.addEventListener("online", retryPrivateBootstrap);
+    globalThis.addEventListener?.("agrinet:profile-bootstrap-complete", handleBootstrapComplete);
+    return () => {
+      window.removeEventListener("online", retryPrivateBootstrap);
+      globalThis.removeEventListener?.("agrinet:profile-bootstrap-complete", handleBootstrapComplete);
+    };
+  }, [backendStatus]);
+
   // Persist just enough local metadata to offer a later sign-in choice. No
   // password, OAuth credential, or Firebase token is ever written here.
   useEffect(() => {
@@ -410,6 +461,7 @@ export function AuthProvider({ children }) {
         // (auth initialization and/or profile load). Route guards wait on this.
         loading,
         profileLoading: loading && !authInitializing,
+        backendStatus,
 
         suspended: profile?.status === "suspended",
         emailVerified: isEmailVerified,

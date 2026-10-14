@@ -37,7 +37,15 @@ export default function AppLayout() {
     scrollRef.current?.scrollTo(0, 0);
   }, [location.pathname]);
 
-  const isTabRoutes = tabRoutes.includes(location.pathname);
+  // Settings categories are nested routes, but remain part of the Settings
+  // tab so mobile users keep the bottom navigation while drilling in.
+  const isTabRoutes =
+    tabRoutes.includes(location.pathname) ||
+    tabRoutes.some(
+      (route) =>
+        route.endsWith("/settings") &&
+        location.pathname.startsWith(`${route}/`)
+    );
 
   const isMessagesRoute = location.pathname.includes("messages");
   const hasActiveChat =

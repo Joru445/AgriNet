@@ -1,11 +1,3 @@
-import {
-  collection,
-  getDocs,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
-import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
 import { getUserProfile } from "./user.service";
 import { getCachedUserProfile } from "../utils/userProfileCache";
@@ -85,47 +77,8 @@ export async function getFarmerReviews(farmerId) {
       },
     }));
   } catch (err) {
-    console.warn("[Reviews] Backend API failed, loading from Firestore fallback:", err?.message);
-    try {
-      const revRef = collection(db, "reviews");
-      const q = query(
-        revRef,
-        where("farmerId", "==", farmerId),
-        orderBy("createdAt", "desc"),
-      );
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-        reviewer: {
-          fullname: docSnap.data().reviewerName || "Anonymous",
-          profilePicture: docSnap.data().reviewerAvatar || "",
-        },
-      }));
-    } catch (firestoreErr) {
-      console.warn("[Reviews] Firestore ordered query failed, trying un-ordered query:", firestoreErr?.message);
-      try {
-        const revRef = collection(db, "reviews");
-        const q = query(revRef, where("farmerId", "==", farmerId));
-        const snapshot = await getDocs(q);
-        const docs = snapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-          reviewer: {
-            fullname: docSnap.data().reviewerName || "Anonymous",
-            profilePicture: docSnap.data().reviewerAvatar || "",
-          },
-        }));
-        return docs.sort((a, b) => {
-          const tA = a.createdAt?.seconds || (typeof a.createdAt === "number" ? a.createdAt / 1000 : 0);
-          const tB = b.createdAt?.seconds || (typeof b.createdAt === "number" ? b.createdAt / 1000 : 0);
-          return tB - tA;
-        });
-      } catch (fallbackErr) {
-        console.error("[Reviews] Both API and Firestore failed:", fallbackErr);
-        return [];
-      }
-    }
+    console.warn("[Reviews] Backend API unavailable:", err?.message);
+    return [];
   }
 }
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import ThemeToggle from "../../components/settings/ThemeToggle";
 import LanguageSelector from "../../components/settings/LanguageSelector";
@@ -12,18 +12,31 @@ import FarmerVerification from "../../components/farmer/verification/FarmerVerif
 import AccountSwitcher from "../../components/settings/AccountSwitcher";
 import PasskeyManager from "../../components/settings/PasskeyManager";
 import DeviceSessions from "../../components/settings/DeviceSessions";
+import Button from "../../components/ui/Button";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
+import { useOnboarding } from "../../context/OnboardingContext";
 import { usePWAUpdate } from "../../hooks/usePWAUpdate";
+import useMediaQuery from "../../hooks/useMediaQuery";
 import { getMePath } from "../../utils/routes";
 import { showToast } from "../../utils/toast";
 import LoginRequired from "../../components/ui/LoginRequired";
 import Loading from "../../components/ui/Loading";
 
+const CATEGORIES = [
+  { id: "accounts", icon: "ri-user-3-line" },
+  { id: "security", icon: "ri-shield-check-line" },
+  { id: "notifications", icon: "ri-notification-3-line" },
+  { id: "preferences", icon: "ri-settings-4-line" },
+  { id: "about", icon: "ri-information-line" },
+];
+
 function SectionHeading({ children, className = "" }) {
   return (
-    <h2 className={`text-xs font-semibold uppercase tracking-wider text-(--agri-text-muted) mb-2 ${className}`}>
+    <h2
+      className={`mb-2 text-xs font-semibold uppercase tracking-wider text-(--agri-text-muted) ${className}`}
+    >
       {children}
     </h2>
   );
@@ -31,8 +44,275 @@ function SectionHeading({ children, className = "" }) {
 
 function SectionCard({ children, className = "" }) {
   return (
-    <div className={`rounded-xl border border-(--agri-border) bg-(--agri-card) shadow-sm overflow-hidden ${className}`}>
+    <div
+      className={`overflow-hidden rounded-xl border border-(--agri-border) bg-(--agri-card) shadow-sm ${className}`}
+    >
       {children}
+    </div>
+  );
+}
+
+function getSettingsBase(pathname) {
+  if (pathname.startsWith("/admin/settings")) return "/admin/settings";
+  if (pathname.startsWith("/farmer/settings")) return "/farmer/settings";
+  return "/settings";
+}
+
+function getSettingsPath(pathname, basePath) {
+  return pathname.slice(basePath.length).replace(/^\/+|\/+$/g, "");
+}
+
+function CategoryLink({ category, basePath, active, compact = false, t }) {
+  const label = t(`settings.categories.${category.id}`);
+  const description = t(`settings.categoryDescriptions.${category.id}`);
+  const className = active
+    ? "border-(--agri-brand) bg-(--agri-brand-bg) text-(--agri-brand)"
+    : "border-transparent text-(--agri-text-secondary) hover:bg-(--agri-hover) hover:text-(--agri-text)";
+
+  return (
+    <Link
+      to={`${basePath}/${category.id}`}
+      className={`group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--agri-brand) ${className}`}
+      aria-current={active ? "page" : undefined}
+    >
+      <span
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${active ? "bg-(--agri-card)" : "bg-(--agri-hover) text-(--agri-text-muted) group-hover:text-(--agri-brand)"}`}
+      >
+        <i className={`${category.icon} text-lg`} aria-hidden="true" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold">{label}</span>
+        {compact && (
+          <span className="mt-0.5 block truncate text-xs text-(--agri-text-muted)">
+            {description}
+          </span>
+        )}
+      </span>
+      {compact && (
+        <i
+          className="ri-arrow-right-s-line text-lg text-(--agri-text-muted)"
+          aria-hidden="true"
+        />
+      )}
+    </Link>
+  );
+}
+
+function AccountsContent({ profile, mePath, onLogout, t }) {
+  return (
+    <div className="space-y-6">
+      <section>
+        <SectionHeading>{t("settings.account")}</SectionHeading>
+        <SectionCard>
+          <Link
+            to={mePath}
+            className="flex items-center gap-3 px-4 py-3 transition hover:bg-(--agri-hover)"
+          >
+            <UserIdentity
+              user={profile}
+              onlyPic
+              size="md"
+              className="shrink-0"
+            />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold text-(--agri-text)">
+                {t("settings.myProfile")}
+              </span>
+              <span className="block truncate text-xs text-(--agri-text-muted)">
+                {profile.fullname || `@${profile.username || ""}`}
+              </span>
+            </span>
+            <i
+              className="ri-arrow-right-s-line shrink-0 text-(--agri-text-muted)"
+              aria-hidden="true"
+            />
+          </Link>
+        </SectionCard>
+      </section>
+      <AccountSwitcher />
+      <section>
+        <SectionHeading>{t("settings.logout")}</SectionHeading>
+        <SectionCard>
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-red-500/10"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-500 dark:bg-red-950/40">
+              <i className="ri-logout-box-line text-lg" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-red-500">
+                {t("common.logout")}
+              </span>
+            </span>
+            <i
+              className="ri-arrow-right-s-line shrink-0 text-(--agri-text-muted)"
+              aria-hidden="true"
+            />
+          </button>
+        </SectionCard>
+      </section>
+    </div>
+  );
+}
+
+function SecurityContent({ profile, basePath, devicesOnly, t }) {
+  if (devicesOnly)
+    return (
+      <section>
+        <SectionHeading>{t("settings.sessions.heading")}</SectionHeading>
+        <DeviceSessions />
+      </section>
+    );
+  return (
+    <div className="space-y-6">
+      <section>
+        <SectionHeading>{t("settings.security")}</SectionHeading>
+        <SectionCard>
+          <PasskeyManager embedded />
+          <div className="border-t border-(--agri-border-subtle)">
+            <ConnectedAccounts />
+          </div>
+        </SectionCard>
+      </section>
+      <section>
+        <SectionHeading>{t("settings.sessions.heading")}</SectionHeading>
+        <SectionCard>
+          <Link
+            to={`${basePath}/security/devices`}
+            className="flex items-center gap-3 px-4 py-3 transition hover:bg-(--agri-hover)"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--agri-brand-bg) text-(--agri-brand)">
+              <i className="ri-device-line text-lg" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-(--agri-text)">
+                {t("settings.sessions.title")}
+              </span>
+              <span className="block text-xs text-(--agri-text-muted)">
+                {t("settings.sessions.description")}
+              </span>
+            </span>
+            <i
+              className="ri-arrow-right-s-line shrink-0 text-(--agri-text-muted)"
+              aria-hidden="true"
+            />
+          </Link>
+        </SectionCard>
+      </section>
+      {profile.role === "farmer" && <FarmerVerification />}
+    </div>
+  );
+}
+
+function NotificationsContent({ pushSubscribed, onSubscriptionChange, t }) {
+  return (
+    <section>
+      <SectionHeading>{t("settings.notifications")}</SectionHeading>
+      <SectionCard className="divide-y divide-(--agri-border-subtle)">
+        <div className="p-4">
+          <PushNotificationManager
+            onSubscriptionChange={onSubscriptionChange}
+          />
+        </div>
+        <div className="p-4">
+          <p
+            className={`mb-3 text-xs font-semibold ${pushSubscribed ? "text-(--agri-text-secondary)" : "text-gray-400"}`}
+          >
+            {t("notificationPreferences.title")}
+          </p>
+          <NotificationPreferences pushEnabled={pushSubscribed} />
+        </div>
+      </SectionCard>
+    </section>
+  );
+}
+
+function PreferencesContent({ t }) {
+  return (
+    <section data-onboarding="settings-preferences">
+      <SectionHeading>{t("settings.preferences")}</SectionHeading>
+      <SectionCard className="divide-y divide-(--agri-border-subtle)">
+        <LanguageSelector compact />
+        <ThemeToggle compact />
+      </SectionCard>
+    </section>
+  );
+}
+
+function AboutContent({
+  needRefresh,
+  isChecking,
+  checkForUpdate,
+  updateServiceWorker,
+  startTour,
+  t,
+}) {
+  return (
+    <div className="space-y-6">
+      <section>
+        <SectionHeading>{t("settings.appUpdate")}</SectionHeading>
+        <SectionCard>
+          <div className="flex items-center gap-3 px-4 py-3">
+            <span
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${needRefresh ? "bg-(--agri-brand-bg) text-(--agri-brand)" : "bg-(--agri-hover) text-(--agri-text-muted)"}`}
+            >
+              <i
+                className={`${needRefresh || isChecking ? "ri-loader-4-line animate-spin" : "ri-check-line"} text-lg`}
+                aria-hidden="true"
+              />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-(--agri-text)">
+                {needRefresh
+                  ? t("settings.updateAvailable")
+                  : t("settings.upToDate")}
+              </p>
+              <p className="text-xs text-(--agri-text-muted)">
+                {needRefresh
+                  ? t("settings.updateDescription")
+                  : t("settings.upToDateDescription")}
+              </p>
+            </div>
+            {needRefresh ? (
+              <Button size="sm" onClick={() => updateServiceWorker(true)}>
+                {t("settings.update")}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="secondary"
+                loading={isChecking}
+                onClick={checkForUpdate}
+              >
+                {t("settings.checkForUpdates")}
+              </Button>
+            )}
+          </div>
+        </SectionCard>
+      </section>
+      <section>
+        <SectionHeading>{t("settings.tutorial")}</SectionHeading>
+        <SectionCard>
+          <div className="flex items-center gap-3 px-4 py-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--agri-brand-bg) text-(--agri-brand)">
+              <i className="ri-question-line text-lg" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-(--agri-text)">
+                {t("settings.replayTutorial")}
+              </p>
+              <p className="text-xs text-(--agri-text-muted)">
+                {t("settings.replayTutorialDescription")}
+              </p>
+            </div>
+            <Button size="sm" variant="secondary" onClick={startTour}>
+              {t("settings.replay")}
+            </Button>
+          </div>
+        </SectionCard>
+      </section>
     </div>
   );
 }
@@ -40,20 +320,29 @@ function SectionCard({ children, className = "" }) {
 export default function Settings() {
   const { user, profile, logout, authInitializing } = useAuth();
   const { t } = useLanguage();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { needRefresh } = usePWAUpdate();
-
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const { needRefresh, isChecking, checkForUpdate, updateServiceWorker } =
+    usePWAUpdate();
+  const { startTour } = useOnboarding();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [pushSubscribed, setPushSubscribed] = useState(false);
 
-  if (authInitializing) {
-    return <Loading />;
-  }
+  if (authInitializing) return <Loading />;
+  if (!user) return <LoginRequired title={t("settings.title")} />;
+  if (!profile) return null;
 
-  if (!user) {
-    return <LoginRequired title={t("settings.title")} />;
-  }
+  const basePath = getSettingsBase(pathname);
+  const settingPath = getSettingsPath(pathname, basePath);
+  const [requestedCategory, childPath] = settingPath.split("/");
+  const category = CATEGORIES.some(({ id }) => id === requestedCategory)
+    ? requestedCategory
+    : "accounts";
+  const isMobileIndex = !isDesktop && !requestedCategory;
+  const isDevicesPage = category === "security" && childPath === "devices";
+  const mePath = getMePath(profile.role);
 
   async function handleLogout() {
     try {
@@ -70,150 +359,162 @@ export default function Settings() {
     }
   }
 
-
-  if (!profile) return null;
-
-  const mePath = getMePath(profile.role);
+  const content =
+    category === "accounts" ? (
+      <AccountsContent
+        profile={profile}
+        mePath={mePath}
+        onLogout={() => setShowLogoutModal(true)}
+        t={t}
+      />
+    ) : category === "security" ? (
+      <SecurityContent
+        profile={profile}
+        basePath={basePath}
+        devicesOnly={isDevicesPage}
+        t={t}
+      />
+    ) : category === "notifications" ? (
+      <NotificationsContent
+        pushSubscribed={pushSubscribed}
+        onSubscriptionChange={setPushSubscribed}
+        t={t}
+      />
+    ) : category === "preferences" ? (
+      <PreferencesContent t={t} />
+    ) : (
+      <AboutContent
+        needRefresh={needRefresh}
+        isChecking={isChecking}
+        checkForUpdate={checkForUpdate}
+        updateServiceWorker={updateServiceWorker}
+        startTour={startTour}
+        t={t}
+      />
+    );
 
   return (
-    <main className="mx-auto w-full max-w-2xl p-4 md:p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-(--agri-text)">
-          {t("settings.title")}
-        </h1>
-        <p className="mt-0.5 text-sm text-(--agri-text-muted)">
-          {t("settings.subtitle")}
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        {/* ── Account ─────────────────────────────────────── */}
-        <section>
-          <SectionHeading>{t("settings.account")}</SectionHeading>
-          <SectionCard>
+    <main className="mx-auto w-full max-w-6xl p-4 pb-8 md:p-6">
+      {isMobileIndex ? (
+        <>
+          <header className="mb-6">
+            <h1 className="text-xl font-bold text-(--agri-text)">
+              {t("settings.title")}
+            </h1>
+            <p className="mt-0.5 text-sm text-(--agri-text-muted)">
+              {t("settings.subtitle")}
+            </p>
+          </header>
+          <SectionCard className="mb-4">
             <Link
               to={mePath}
               className="flex items-center gap-3 px-4 py-3 transition hover:bg-(--agri-hover)"
             >
               <UserIdentity
                 user={profile}
-                onlyPic={true}
+                onlyPic
                 size="md"
                 className="shrink-0"
               />
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-(--agri-text) truncate">
-                  {t("settings.myProfile")}
+                <span className="block truncate text-sm font-semibold text-(--agri-text)">
+                  {profile.fullname || profile.username}
                 </span>
-                <span className="block text-xs text-(--agri-text-muted) truncate">
-                  {profile.fullname || `@${profile.username || ""}`}
+                <span className="block truncate text-xs text-(--agri-text-muted)">
+                  {t(`roles.${profile.role}`)}
                 </span>
               </span>
-              <i className="ri-arrow-right-s-line shrink-0 text-(--agri-text-muted)" />
+              <i
+                className="ri-arrow-right-s-line text-(--agri-text-muted)"
+                aria-hidden="true"
+              />
             </Link>
-
-            <div className="border-t border-(--agri-border-subtle)">
-              <button
-                type="button"
-                onClick={() => setShowLogoutModal(true)}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-red-500/10 cursor-pointer"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/40 text-red-500">
-                  <i className="ri-logout-box-line text-lg" />
-                </div>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-red-500">
-                    {t("common.logout")}
-                  </span>
-                </span>
-                <i className="ri-arrow-right-s-line shrink-0 text-(--agri-text-muted)" />
-              </button>
-            </div>
           </SectionCard>
-        </section>
-
-        {/* ── Saved Accounts ──────────────────────────────── */}
-        <AccountSwitcher />
-
-        {/* ── Security ────────────────────────────────────── */}
-        <section>
-          <SectionHeading>{t("settings.security") || "Security"}</SectionHeading>
-          <SectionCard>
-            <PasskeyManager embedded />
-            <div className="border-t border-(--agri-border-subtle)">
-              <ConnectedAccounts />
+          <nav className="space-y-2" aria-label={t("settings.title")}>
+            {CATEGORIES.map((item) => (
+              <CategoryLink
+                key={item.id}
+                category={item}
+                basePath={basePath}
+                compact
+                t={t}
+              />
+            ))}
+          </nav>
+        </>
+      ) : (
+        <div className="lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10">
+          <aside className="hidden lg:block">
+            <div className="sticky top-6">
+              <header className="mb-5">
+                <h1 className="text-xl font-bold text-(--agri-text)">
+                  {t("settings.title")}
+                </h1>
+                <p className="mt-0.5 text-sm text-(--agri-text-muted)">
+                  {t("settings.subtitle")}
+                </p>
+              </header>
+              <nav className="space-y-1" aria-label={t("settings.title")}>
+                {CATEGORIES.map((item) => (
+                  <CategoryLink
+                    key={item.id}
+                    category={item}
+                    basePath={basePath}
+                    active={category === item.id}
+                    t={t}
+                  />
+                ))}
+              </nav>
             </div>
-          </SectionCard>
-        </section>
-
-        <DeviceSessions />
-
-        {/* ── Farmer Verification (farmers only) ──────────── */}
-        {profile?.role === "farmer" && <FarmerVerification />}
-
-        {/* ── Preferences ─────────────────────────────────── */}
-        <section data-onboarding="settings-preferences">
-          <SectionHeading>{t("settings.preferences") || "Preferences"}</SectionHeading>
-          <SectionCard className="divide-y divide-(--agri-border-subtle)">
-            <LanguageSelector compact />
-            <ThemeToggle compact />
-          </SectionCard>
-        </section>
-
-        {/* ── Notifications ───────────────────────────────── */}
-        <section>
-          <SectionHeading>{t("settings.notifications")}</SectionHeading>
-          <SectionCard className="divide-y divide-(--agri-border-subtle)">
-            <div className="p-4">
-              <PushNotificationManager onSubscriptionChange={setPushSubscribed} />
-            </div>
-            <div className="p-4">
-              <p className={`text-xs font-semibold mb-3 ${pushSubscribed ? "text-(--agri-text-secondary)" : "text-gray-400"}`}>
-                {t("notificationPreferences.title")}
-              </p>
-              <NotificationPreferences pushEnabled={pushSubscribed} />
-            </div>
-          </SectionCard>
-        </section>
-
-        {/* ── About ───────────────────────────────────────── */}
-        <section>
-          <SectionHeading>{t("settings.appUpdate")}</SectionHeading>
-          <SectionCard>
-            {needRefresh ? (
-              <div className="flex items-center gap-3 px-4 py-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--agri-brand-bg) text-(--agri-brand)">
-                  <i className="ri-loader-4-line text-lg animate-spin" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-(--agri-text)">
-                    {t("settings.updateAvailable")}
+          </aside>
+          <section className="mx-auto w-full max-w-2xl">
+            {!isDesktop && (
+              <header className="mb-6 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(isDevicesPage ? `${basePath}/security` : basePath)
+                  }
+                  className="flex h-10 w-10 items-center justify-center rounded-xl text-(--agri-text-secondary) transition hover:bg-(--agri-hover) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--agri-brand)"
+                  aria-label={t("common.back")}
+                >
+                  <i
+                    className="ri-arrow-left-line text-lg"
+                    aria-hidden="true"
+                  />
+                </button>
+                <div>
+                  <p className="text-xl font-bold text-(--agri-text)">
+                    {isDevicesPage
+                      ? t("settings.sessions.title")
+                      : t(`settings.categories.${category}`)}
                   </p>
-                  <p className="text-xs text-(--agri-text-muted)">
-                    {t("settings.updateDescription")}
+                  <p className="text-sm text-(--agri-text-muted)">
+                    {isDevicesPage
+                      ? t("settings.sessions.description")
+                      : t(`settings.categoryDescriptions.${category}`)}
                   </p>
                 </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 px-4 py-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--agri-hover) text-(--agri-text-muted)">
-                  <i className="ri-check-line text-lg" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-(--agri-text)">
-                    AgriNet
-                  </p>
-                  <p className="text-xs text-(--agri-text-muted)">
-                    {t("settings.upToDate")}
-                  </p>
-                </div>
-              </div>
+              </header>
             )}
-          </SectionCard>
-        </section>
-      </div>
-
+            {isDesktop && (
+              <header className="mb-6">
+                <h2 className="text-xl font-bold text-(--agri-text)">
+                  {isDevicesPage
+                    ? t("settings.sessions.title")
+                    : t(`settings.categories.${category}`)}
+                </h2>
+                <p className="mt-0.5 text-sm text-(--agri-text-muted)">
+                  {isDevicesPage
+                    ? t("settings.sessions.description")
+                    : t(`settings.categoryDescriptions.${category}`)}
+                </p>
+              </header>
+            )}
+            {content}
+          </section>
+        </div>
+      )}
       <LogoutConfirmModal
         open={showLogoutModal}
         loggingOut={loggingOut}

@@ -138,7 +138,9 @@ service cloud.firestore {
 
       // These documents contain private email/phone/address and MUST NOT be public.
       // Public profiles are served by the redacting /api/v1/users/:uid API.
-      allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
+      // Private profiles are returned through the session-aware API, where
+      // field redaction and selected-device revocation are enforceable.
+      allow read: if false;
 
 
       /*
@@ -147,7 +149,7 @@ service cloud.firestore {
        * We cannot use isActive() here because the user's
        * Firestore document does not exist yet.
        */
-      allow create: if
+      allow create: if false &&
         isSignedIn()
         && request.auth.uid == userId
 
@@ -166,15 +168,13 @@ service cloud.firestore {
        *
        * Admin updates account status.
        */
-      allow update: if
-        isUserProfileUpdate(userId)
-        || isAdminUserUpdate();
+      allow update: if false;
 
 
-      allow delete: if isAdmin();
+      allow delete: if false;
 
       match /installations/{installationId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
+        allow read, write: if false;
       }
 
       /*
@@ -208,7 +208,7 @@ service cloud.firestore {
     match /farmers/{farmerId} {
 
       // Public farmer information is served by /api/v1/farmers/:uid.
-      allow read: if (isSignedIn() && request.auth.uid == farmerId) || isAdmin();
+      allow read: if false;
 
 
       /*
@@ -217,7 +217,7 @@ service cloud.firestore {
        * Clients may only create a "not_applied" profile; verification,
        * rating and reviewCount are backend-exclusive.
        */
-      allow create: if
+      allow create: if false &&
         isSignedIn()
         && request.auth.uid == farmerId
         && request.resource.data.uid == request.auth.uid
@@ -246,7 +246,7 @@ service cloud.firestore {
        * Owners may maintain their public profile but cannot touch
        * trust/moderation fields.
        */
-      allow update, delete: if
+      allow update, delete: if false &&
         (
           isOwner(farmerId)
           && !request.resource.data
@@ -303,7 +303,7 @@ service cloud.firestore {
       /*
        * Only active consumers can create reviews.
        */
-      allow create: if
+      allow create: if false &&
 
         isConsumer()
 
@@ -352,7 +352,7 @@ service cloud.firestore {
            is string;
 
 
-      allow update: if
+      allow update: if false &&
 
         isActive()
 
@@ -379,7 +379,7 @@ service cloud.firestore {
            is string;
 
 
-      allow delete: if
+      allow delete: if false &&
         (
           isActive()
 
@@ -405,7 +405,7 @@ service cloud.firestore {
       allow read: if true;
 
 
-      allow create: if
+      allow create: if false &&
 
         isConsumer()
 
@@ -454,7 +454,7 @@ service cloud.firestore {
            is string;
 
 
-      allow update: if
+      allow update: if false &&
 
         isActive()
 
@@ -481,7 +481,7 @@ service cloud.firestore {
            is string;
 
 
-      allow delete: if
+      allow delete: if false &&
         (
           isActive()
 
@@ -499,12 +499,12 @@ service cloud.firestore {
      */
 
     match /conversations/{conversationId} {
-      allow read: if isAdmin() || isConversationParticipant(resource.data);
+      allow read: if false;
       // The API verifies both participants and creates canonical conversations.
       allow create: if false;
       // Only one's own read receipt and live-location end flags are client-editable.
       // Unread counts and latest-message metadata are backend-managed.
-      allow update: if isActive()
+      allow update: if false && isActive()
         && isConversationParticipant(resource.data)
         && request.resource.data.participants == resource.data.participants
         && request.resource.data.diff(resource.data).affectedKeys()
@@ -526,7 +526,7 @@ service cloud.firestore {
 
       // Backend owns accepted inquiry transitions and all message metadata.
       // Location updates are the only allowed client-side edits.
-      allow update: if isActive()
+      allow update: if false && isActive()
         && resource.data.senderId == request.auth.uid
         && (resource.data.type in ["text", "location", "live_location"])
         && (resource.data.keys().hasAny(["location", "locationType"]))
@@ -537,11 +537,7 @@ service cloud.firestore {
 
       allow delete: if false;
 
-      allow read: if
-        isAdmin()
-        || isParticipant(
-          resource.data.conversationId
-        );
+      allow read: if false;
     }
 
 
@@ -577,7 +573,7 @@ service cloud.firestore {
 
     match /inquiries/{inquiryId} {
 
-      allow read: if
+      allow read: if false &&
 
         isAdmin()
 
@@ -604,7 +600,7 @@ service cloud.firestore {
        * Farmer creates inquiry after accepting
        * the product inquiry message.
        */
-      allow create: if
+      allow create: if false &&
 
         isFarmer()
 
@@ -704,7 +700,7 @@ service cloud.firestore {
        * ==========================================================
        */
 
-      allow update: if
+      allow update: if false &&
 
         isAdmin()
 
@@ -1105,27 +1101,23 @@ match /notifications/{notificationId} {
   // READ
   // ============================================================
 
-  allow read: if isSignedIn()
-    && resource.data.recipientId == request.auth.uid;
+  // Notification data follows the authenticated API/SSE boundary so a revoked
+  // device cannot reuse an otherwise valid Firebase ID token directly.
+  allow read: if false;
 
 
   // ============================================================
   // UPDATE
   // ============================================================
 
-  allow update: if isSignedIn()
-    && resource.data.recipientId == request.auth.uid
-    && request.resource.data.recipientId == resource.data.recipientId
-    && resource.data.read == false
-    && request.resource.data.read == true;
+  allow update: if false;
 
 
   // ============================================================
   // DELETE
   // ============================================================
 
-  allow delete: if isSignedIn()
-    && resource.data.recipientId == request.auth.uid;
+  allow delete: if false;
 }
 
 
@@ -1137,20 +1129,10 @@ match /notifications/{notificationId} {
 
     match /reports/{reportId} {
 
-      allow read: if
-
-        isAdmin()
-
-        ||
-        (
-          isActive()
-
-          && resource.data.reporterId
-             == request.auth.uid
-        );
+      allow read: if false;
 
 
-      allow create: if
+      allow create: if false &&
 
         isActive()
 
@@ -1170,9 +1152,9 @@ match /notifications/{notificationId} {
            != null;
 
 
-      allow update: if isAdmin();
+      allow update: if false;
 
-      allow delete: if isAdmin();
+      allow delete: if false;
     }
 
     /*
@@ -1195,7 +1177,7 @@ match /notifications/{notificationId} {
      */
 
     match /groups/{groupId} {
-      allow read: if isSignedIn();
+      allow read: if false;
       // Group writes must run through permission-checked backend handlers.
       allow create, update, delete: if false;
       match /memberships/{memberId} { allow read, write: if false; }
@@ -1205,9 +1187,7 @@ match /notifications/{notificationId} {
     // Membership and application states are backend-authoritative.
     // Other users can see approved affiliations, not private applications.
     match /group-memberships/{membershipId} {
-      allow get, list: if isAdmin()
-        || (isActive() && resource.data.userId == request.auth.uid)
-        || (isActive() && resource.data.status == "approved");
+      allow get, list: if false;
       allow create, update, delete: if false;
     }
 
@@ -1216,11 +1196,7 @@ match /notifications/{notificationId} {
     }
 
     match /group-managers/{managerId} {
-      allow read: if isSignedIn()
-        && (
-          isAdmin()
-          || request.auth.uid == resource.data.userId
-        );
+      allow read: if false;
 
       // Manager assignment must atomically create group membership + slot.
       allow create, update, delete: if false;

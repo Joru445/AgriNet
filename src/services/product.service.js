@@ -17,6 +17,7 @@ import {
 
 import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
+import { invalidatePublicMarketplaceCache } from "../utils/publicMarketplaceCache";
 import { getProductReviewSummaries } from "./product-review.service";
 import * as pageCache from "../utils/pageCache";
 
@@ -203,7 +204,7 @@ async function getFarmersByIds(ids) {
  * preserved for easy rollback.
  */
 
-export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, category, available, sellingMode, farmerId, groupId } = {}) {
+export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, category, available, sellingMode, farmerId, groupId, sort, signal } = {}) {
   try {
     const params = new URLSearchParams();
     params.set("limit", String(pageSize));
@@ -216,9 +217,11 @@ export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, 
     if (sellingMode) params.set("sellingMode", sellingMode);
     if (farmerId) params.set("farmerId", farmerId);
     if (groupId) params.set("groupId", groupId);
+    if (sort) params.set("sort", sort);
 
     const data = await apiRequest(`/v1/products/marketplace?${params}`, {
       requireAuth: false,
+      signal,
     });
 
     return {
@@ -227,12 +230,22 @@ export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, 
       hasMore: data.hasMore ?? false,
     };
   } catch (err) {
+    // A superseded Marketplace request must stay cancelled; falling back to
+    // Firestore here would turn cancellation into an unexpected catalog read.
+    if (err?.name === "AbortError") throw err;
     // API cursors and direct Firestore cursors are NOT compatible. Never
     // return unfiltered products when a backend filter or cursor was requested.
-    if (cursor || category || available !== undefined || sellingMode || farmerId || groupId) throw err;
+    if (cursor || category || available !== undefined || sellingMode || farmerId || groupId || sort) throw err;
     console.warn("[Products] Backend unavailable; using unfiltered first-page read:", err.message);
     return getMarketplaceProductsPage({ pageSize });
   }
+}
+
+function invalidateMarketplaceCatalog() {
+  pageCache.invalidatePrefix("marketplaceCatalog:");
+  // Persisted entries only contain public catalog display data. Clearing them
+  // after a mutation cannot initiate a fetch or affect transaction authority.
+  invalidatePublicMarketplaceCache();
 }
 
 export async function apiGetProductById(id) {
@@ -285,6 +298,7 @@ export async function apiCreateProduct(productData) {
     body: JSON.stringify(productPayload(productData)),
   });
   pageCache.invalidate("marketplaceProducts");
+  invalidateMarketplaceCatalog();
   pageCache.invalidate("homeProducts");
   return data.data ?? null;
 }
@@ -295,6 +309,7 @@ export async function apiUpdateProduct(id, productData) {
     body: JSON.stringify(productPayload(productData)),
   });
   pageCache.invalidate("marketplaceProducts");
+  invalidateMarketplaceCatalog();
   pageCache.invalidate("homeProducts");
   pageCache.invalidate(`product:${id}`);
   return data.data ?? null;
@@ -305,6 +320,7 @@ export async function apiDeleteProduct(id) {
     method: "DELETE",
   });
   pageCache.invalidate("marketplaceProducts");
+  invalidateMarketplaceCatalog();
   pageCache.invalidate("homeProducts");
   pageCache.invalidate(`product:${id}`);
   return data.data ?? null;
@@ -314,6 +330,7 @@ export async function apiToggleProductAvailability(id) {
   const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}/availability`, {
     method: "PATCH",
   });
+  invalidateMarketplaceCatalog();
   return data.data ?? null;
 }
 
@@ -322,6 +339,7 @@ export async function apiUpdateProductStock(id, stock) {
     method: "PATCH",
     body: JSON.stringify({ stock }),
   });
+  invalidateMarketplaceCatalog();
   return data.data ?? null;
 }
 
@@ -329,5 +347,6 @@ export async function apiMarkProductAsAvailable(id) {
   const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}/mark-available`, {
     method: "PATCH",
   });
+  invalidateMarketplaceCatalog();
   return data.data ?? null;
 }

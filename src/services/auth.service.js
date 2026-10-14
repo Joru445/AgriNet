@@ -15,20 +15,9 @@ import {
   signInWithPopup,
   linkWithPopup,
 } from "firebase/auth";
-import {
-  collection,
-  doc,
-  query,
-  where,
-  getDocs,
-  getDoc,
-  limit,
-  updateDoc,
-} from "firebase/firestore";
-
 import { auth } from "../firebase/auth";
-import { db } from "../firebase/firestore";
 import { t } from "../i18n";
+import { apiRequest } from "./api/api.client";
 
 /**
  * Checks whether an email is already associated with an account
@@ -47,21 +36,6 @@ export async function checkEmailAvailability(email) {
     }
   } catch (authError) {
     console.debug("fetchSignInMethodsForEmail fallback:", authError?.code);
-  }
-
-  // 2. Secondary check: Query Firestore 'users' collection for existing email
-  try {
-    const q = query(
-      collection(db, "users"),
-      where("email", "==", cleanEmail),
-      limit(1)
-    );
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-      return { available: false, error: "This email is already registered." };
-    }
-  } catch (dbError) {
-    console.debug("Firestore email check skipped/error:", dbError);
   }
 
   return { available: true };
@@ -275,10 +249,8 @@ export async function resolveSocialAccountStatus(user, method) {
 
   let existingProfile = null;
   try {
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (snap.exists()) {
-      existingProfile = { uid: snap.id, ...snap.data() };
-    }
+    const result = await apiRequest(`/v1/users/${encodeURIComponent(user.uid)}`, { requireAuth: false });
+    existingProfile = result.user || null;
   } catch (error) {
     console.warn(
       "Failed to read AgriNet profile while resolving social registration:",
@@ -599,14 +571,16 @@ export async function verifyAndLinkPhone(sessionOrId, verificationCode, normaliz
   // 3. Reload Firebase User so phoneNumber and providerData are updated in memory
   await reload(currentUser);
 
-  // 4. Update Firestore users/{uid}.phone with the verified phone number
+  // 4. Persist it through the session-aware backend. Firebase's linked
+  // credential remains the source of truth for phone verification.
   try {
-    const userDocRef = doc(db, "users", currentUser.uid);
-    await updateDoc(userDocRef, {
-      phone: normalizedPhone,
+    const { apiRequest } = await import("./api/api.client");
+    await apiRequest("/v1/users/me/verified-phone", {
+      method: "PATCH",
+      body: JSON.stringify({ phone: normalizedPhone }),
     });
   } catch (dbError) {
-    console.warn("Firestore user phone update after verification note:", dbError);
+    console.warn("Verified phone profile update failed:", dbError);
   }
 
   return currentUser;

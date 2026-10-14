@@ -70,10 +70,10 @@ export default function ProductCard({
       to={`${getProductPath(profile?.role || "consumer")}/${product.id}`}
       data-onboarding="product-card"
       data-expired={isExpired ? "true" : undefined}
-      className="group relative flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-md transition-all duration-200 hover:border-[#2D6A4F]/60 dark:hover:border-[#52b788]/60 hover:shadow-lg anim-fade-in"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-(--agri-border) bg-(--agri-card) shadow-md transition-all duration-200 hover:border-[#2D6A4F]/60 dark:hover:border-agri-green-light/60 hover:shadow-lg anim-fade-in"
     >
       {/* Top Image Container */}
-      <div className="relative aspect-square w-full overflow-hidden bg-[var(--agri-bg-surface,#F0F5F2)]">
+      <div className="relative aspect-square w-full overflow-hidden bg-(--agri-bg-surface,#F0F5F2)">
         <img
           src={image}
           alt={product.name}
@@ -157,7 +157,7 @@ export default function ProductCard({
       </div>
 
       {/* Card Content Body */}
-      <div className="flex flex-1 flex-col justify-between p-2.5 sm:p-4 pt-1 space-y-2 sm:space-y-3">
+      <div className="flex flex-1 flex-col justify-between p-2 sm:p-3 pt-0.5 space-y-2 sm:space-y-3">
         
         <div>
           {/* Produce Name */}
