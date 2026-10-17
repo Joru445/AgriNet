@@ -3,7 +3,8 @@ import { useLanguage } from "../../context/LanguageContext";
 import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
 import { getProductInquiryState } from "../../utils/productStatus";
-import { getMessagesPath, getPublicProfilePath } from "../../utils/routes";
+import { getMessagesPath, getProfilePath } from "../../utils/routes";
+import { getPublicProfile } from "../../services/user.service";
 import Avatar from "../ui/Avatar";
 
 /**
@@ -40,7 +41,19 @@ export default function MobileActionBar({ product, farmer, isOwner }) {
   }
 
   function handleFarmerClick() {
-    if (farmerId) navigate(getPublicProfilePath(farmer || { uid: farmerId }));
+    const profilePath = getProfilePath(farmer?.username);
+    if (profilePath) {
+      navigate(profilePath);
+      return;
+    }
+    if (farmerId) {
+      getPublicProfile(farmerId)
+        .then((payload) => {
+          const resolvedPath = getProfilePath(payload?.profile?.username);
+          if (resolvedPath) navigate(resolvedPath);
+        })
+        .catch(() => {});
+    }
   }
 
   function handleSave() {

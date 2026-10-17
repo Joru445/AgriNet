@@ -1,5 +1,6 @@
 const KEY = "agrinet_public_marketplace_v2";
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const EMPTY_RESULT_MAX_AGE_MS = 2 * 60 * 1000;
 
 // Catalog entries are keyed by the public query. This cache never stores
 // credentials, user profiles, or transaction-authoritative price/stock data.
@@ -7,7 +8,8 @@ export function loadPublicMarketplaceCache(queryKey = "default") {
   try {
     const cache = JSON.parse(localStorage.getItem(KEY) || "{}");
     const value = cache[queryKey];
-    return value && Array.isArray(value.products) && Date.now() - value.savedAt <= MAX_AGE_MS ? value : null;
+    const maxAge = value?.empty || !value?.products?.length ? EMPTY_RESULT_MAX_AGE_MS : MAX_AGE_MS;
+    return value && Array.isArray(value.products) && Date.now() - value.savedAt <= maxAge ? value : null;
   } catch { return null; }
 }
 
@@ -21,6 +23,7 @@ export function savePublicMarketplaceCache(products, queryKey = "default", pagin
       products,
       cursor: pagination.cursor || null,
       hasMore: Boolean(pagination.hasMore && pagination.cursor),
+      empty: Boolean(pagination.empty),
     };
     const keys = Object.keys(cache).sort((a, b) => cache[b].savedAt - cache[a].savedAt).slice(0, 8);
     localStorage.setItem(KEY, JSON.stringify(Object.fromEntries(keys.map((key) => [key, cache[key]]))));

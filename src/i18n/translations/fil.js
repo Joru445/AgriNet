@@ -555,6 +555,17 @@ export default {
       proofSubmitted: "Na-submit na ang Patunay",
       unknown: "Hindi Kilala",
     },
+    groups: {
+      requests: "Mga Kahilingan",
+      confirmed: "Kumpirmado",
+      preparation: "Paghahanda",
+      inProgress: "Isinasagawa",
+      completed: "Tapos na",
+      cancelled: "Kinansela",
+      countLabel: "transaction",
+    },
+    refresh: "I-refresh",
+    loadMore: "Mag-load pa",
     cancelModal: {
       title: "Kanselahin ang Transaction",
       body: "Sure ka bang gusto mong kanselahin ang transaction na ito?",
@@ -1846,6 +1857,17 @@ export default {
       public: "Pampubliko",
       private: "Ako lang",
     },
+    transactions: {
+      title: "Aking mga transaction",
+      open: "Buksan ang workspace",
+      requests: "Mga Kahilingan",
+      confirmed: "Kumpirmado",
+      preparation: "Paghahanda",
+      inProgress: "Isinasagawa",
+      completed: "Tapos na",
+      cancelled: "Kinansela",
+      countLabel: "transaction",
+    },
   },
 
   auth: {
@@ -2373,6 +2395,7 @@ export default {
     noFarmers: "Walang paboritong magsasaka",
     noFarmersDesc: "Ang mga magsasaka na i-save mo ay makikita dito.",
     loadError: "Nabigo ang pag-load ng mga paborito.",
+    loadMore: "Mag-load pa",
     loginRequired: "Kailangan ng Pag-login",
     loginToView: "Mag-login para makita ang iyong mga na-save na produkto at magsasaka.",
   },

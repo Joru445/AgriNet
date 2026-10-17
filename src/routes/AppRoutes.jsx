@@ -42,12 +42,11 @@ const AdminGroupDetails = lazy(() => import("../pages/admin/GroupDetails"));
 
 // Shared Pages
 const ProductDetails = lazy(() => import("../pages/shared/ProductDetails"));
-const PublicProfile = lazy(() => import("../pages/shared/PublicProfile"));
+const Profile = lazy(() => import("../pages/shared/Profile"));
 const Inquiries = lazy(() => import("../pages/shared/Inquiries"));
 const TransactionProof = lazy(() => import("../pages/shared/TransactionProof"));
 const TransactionReview = lazy(() => import("../pages/shared/TransactionReview"));
 const Messages = lazy(() => import("../pages/shared/Messages"));
-const Profile = lazy(() => import("../pages/shared/Profile"));
 const Settings = lazy(() => import("../pages/shared/Settings"));
 const Notifications = lazy(() => import("../pages/shared/Notifications"));
 const Favorites = lazy(() => import("../pages/shared/Favorites"));
@@ -108,7 +107,6 @@ export default function AppRoutes() {
           <Route path="/marketplace" element={<MarketPlace />} />
           <Route path="/nearby" element={<Nearby />} />
           <Route path="/product/:id" element={<ProductDetails />} />
-          <Route path="/profile/:uid" element={<PublicProfile />} />
 
           {/* Protected — pages check auth internally and show LoginRequired */}
           <Route path="/transactions" element={<Inquiries />} />
@@ -121,30 +119,32 @@ export default function AppRoutes() {
             element={<TransactionReview />}
           />
           <Route path="/messages" element={<Messages />} />
-          <Route path="/me" element={<Profile />} />
           <Route path="/settings/*" element={<Settings />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/favorites" element={<Favorites />} />
 
-          {/* Legacy shared URLs remain bookmark-safe while all new navigation
-              uses the canonical unprefixed location. */}
+          {/* Legacy role-prefixed routes remain only for genuinely
+              role-specific pages. Profile destinations are canonical below. */}
           <Route path="/farmer/product/:id" element={<LegacyRedirect to={({ id }) => `/product/${encodeURIComponent(id)}`} />} />
-          <Route path="/farmer/profile/:uid" element={<PublicProfile />} />
           <Route path="/farmer/transactions" element={<LegacyRedirect to="/transactions" />} />
           <Route path="/farmer/transactions/:inquiryId/proof" element={<LegacyRedirect to={({ inquiryId }) => `/transactions/${encodeURIComponent(inquiryId)}/proof`} />} />
           <Route path="/farmer/transactions/:inquiryId/review" element={<LegacyRedirect to={({ inquiryId }) => `/transactions/${encodeURIComponent(inquiryId)}/review`} />} />
           <Route path="/farmer/messages" element={<LegacyRedirect to="/messages" />} />
-          <Route path="/farmer/me" element={<LegacyRedirect to="/me" />} />
           <Route path="/farmer/settings/*" element={<LegacyRedirect to={({ "*": rest }) => `/settings${rest ? `/${rest}` : ""}`} />} />
           <Route path="/farmer/notifications" element={<LegacyRedirect to="/notifications" />} />
           <Route path="/admin/messages" element={<LegacyRedirect to="/messages" />} />
-          <Route path="/admin/me" element={<LegacyRedirect to="/me" />} />
           <Route path="/admin/settings/*" element={<LegacyRedirect to={({ "*": rest }) => `/settings${rest ? `/${rest}` : ""}`} />} />
           <Route path="/admin/notifications" element={<LegacyRedirect to="/notifications" />} />
 
+          {/* Reserved legacy/system root segments: keep them out of username lookup. */}
+          <Route path="/me" element={<NotFound />} />
+          <Route path="/profile" element={<NotFound />} />
+          <Route path="/product" element={<NotFound />} />
+          <Route path="/manage" element={<NotFound />} />
+
           {/* Kept last among application paths: a username may only consume
               one root segment and cannot shadow static routes. */}
-          <Route path="/:username" element={<PublicProfile />} />
+          <Route path="/:username" element={<Profile />} />
         </Route>
 
         {/* ── SHARED AUTHENTICATED (groups) ─────────────────── */}

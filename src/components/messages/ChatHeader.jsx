@@ -9,7 +9,8 @@ import ImageViewerModal from "../ui/ImageViewerModal";
 import ReportModal from "../reports/ReportModal";
 
 import useClickOutside from "../../hooks/useClickOutside";
-import { getPublicProfilePath } from "../../utils/routes";
+import { getProfilePath } from "../../utils/routes";
+import { getPublicProfile } from "../../services/user.service";
 import useProfileViewer from "../../hooks/useProfileViewer";
 
 export default function ChatHeader({ user }) {
@@ -30,8 +31,16 @@ export default function ChatHeader({ user }) {
 
   function handleAction() {
     setMenuOpen(false);
-    if (targetUid) {
-      navigate(getPublicProfilePath(user));
+    const profilePath = getProfilePath(user.username);
+    if (targetUid && profilePath) {
+      navigate(profilePath);
+    } else if (targetUid) {
+      getPublicProfile(targetUid)
+        .then((payload) => {
+          const resolvedPath = getProfilePath(payload?.profile?.username);
+          if (resolvedPath) navigate(resolvedPath);
+        })
+        .catch(() => {});
     }
   }
 

@@ -2,12 +2,10 @@ import {
   createContext,
   useContext,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import { useAuth } from "./AuthContext";
 import { subscribeUserInquiries } from "../services/inquiry.service";
-import { apiSyncTransactionStats } from "../services/user.service";
 
 const InquiriesContext = createContext({
   inquiries: [],
@@ -35,12 +33,6 @@ export function InquiriesProvider({ children }) {
    * every time those stats flow back from Firestore (the previous dependency
    * array caused a subscribe/unsubscribe churn loop).
    */
-  const profileRef = useRef(profile);
-
-  useEffect(() => {
-    profileRef.current = profile;
-  }, [profile]);
-
   useEffect(() => {
     // Always clear stale data when the effect re-runs (UID change or mount).
     setInquiries([]);
@@ -64,32 +56,12 @@ export function InquiriesProvider({ children }) {
         if (profile?.uid !== listenerUid) return;
 
         setInquiries(data);
+        window.dispatchEvent(new CustomEvent("agrinet:inquiry-counts-invalidated", { detail: { uid: listenerUid } }));
         setLoading(false);
 
-        // Keep the consumer's completedDeals and totalDeals synced in Firestore
-        // so farmers viewing their profile see real-time transaction stats.
-        // Uses profileRef to avoid re-subscribing when the stats updated below
-        // flow back into the profile object (which previously caused a
-        // listener subscribe/unsubscribe churn loop).
-        const current = profileRef.current;
-        if (current.role === "consumer" && Array.isArray(data)) {
-          const completed = data.filter(
-            (i) => i.status === "completed" || i.status === "resolved",
-          ).length;
-          const total = data.length;
-          const cancelled = data.filter(
-            (i) => i.status === "cancelled",
-          ).length;
-
-          if (
-            current.completedDeals !== completed ||
-            current.totalDeals !== total
-          ) {
-            // The server derives these values from authoritative inquiries;
-            // clients must not write profile statistics directly.
-            apiSyncTransactionStats().catch(() => {});
-          }
-        }
+        // This stream is intentionally limited to actionable statuses for
+        // badges. Profile statistics remain server-authoritative and are not
+        // derived from this partial realtime snapshot.
       },
       (err) => {
         console.error("Failed to subscribe to inquiries:", err);

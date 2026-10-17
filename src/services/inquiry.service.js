@@ -1,11 +1,9 @@
 import { apiRequest } from "./api/api.client";
 import { subscribeToRealtime } from "./api/realtime.client";
 
-const INQUIRY_PAGE_SIZE = 50;
-
 export function subscribeUserInquiries(uid, role, callback, onError) {
   if (!uid || !role || !callback) return () => {};
-  return subscribeToRealtime("/v1/inquiries/stream", callback, (error) => {
+  return subscribeToRealtime(`/v1/inquiries/stream?scope=actions&role=${encodeURIComponent(role)}`, callback, (error) => {
     console.error("Inquiry subscription failed", error); onError?.(error);
   });
 }
@@ -15,13 +13,24 @@ export async function getInquiry(inquiryId) {
   return apiGetInquiryById(inquiryId);
 }
 
-export async function apiGetInquiries({ cursor, limit: pageSize } = {}) {
+export async function apiGetInquiries({ cursor, limit: pageSize, group } = {}) {
   const params = new URLSearchParams();
   if (cursor) params.set("cursor", cursor);
   if (pageSize) params.set("limit", String(pageSize));
+  if (group && group !== "all") params.set("group", group);
   const url = `/v1/inquiries${params.size ? `?${params}` : ""}`;
   const data = await apiRequest(url);
-  return data.data ?? [];
+  return {
+    items: data.data ?? [],
+    cursor: data.pagination?.cursor ?? null,
+    hasMore: Boolean(data.pagination?.hasMore),
+    group: data.pagination?.group ?? group ?? "all",
+  };
+}
+
+export async function apiGetInquiryGroupCounts() {
+  const data = await apiRequest("/v1/inquiries/group-counts");
+  return data.data || {};
 }
 export async function apiGetInquiryById(inquiryId) {
   const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}`);

@@ -6,7 +6,7 @@ export default function ConsumerProfileDetails({ profile }) {
   if (!profile) return null;
 
   return (
-    <section className="border-t border-(--agri-border-subtle) pt-6">
+    <section className="border-t border-(--agri-border-subtle) pt-6 px-4">
       <h2 className="flex items-center gap-2 text-base font-bold text-(--agri-text)">
         <i className="ri-user-3-line text-[#2D6A4F] dark:text-(--agri-brand)" />
         {t("consumerProfile.about")}

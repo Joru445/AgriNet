@@ -2,12 +2,13 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import Avatar from "../../ui/Avatar";
 import ImageViewerModal from "../../ui/ImageViewerModal";
-import { getPublicProfilePath } from "../../../utils/routes";
+import { getProfilePath } from "../../../utils/routes";
 import useProfileViewer from "../../../hooks/useProfileViewer";
 
 export default function NearbyFarmerCard({ farmer }) {
   const { t } = useLanguage();
   const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
+  const profilePath = getProfilePath(farmer?.username);
   return (
     <>
     <div className="group flex flex-col justify-between h-full rounded-2xl border border-(--agri-border)/90 bg-(--agri-card) p-3.5 sm:p-4 shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5">
@@ -92,12 +93,12 @@ export default function NearbyFarmerCard({ farmer }) {
       </div>
 
       <div className="mt-3 pt-1">
-        <Link
-          to={getPublicProfilePath(farmer)}
+        {profilePath ? <Link
+          to={profilePath}
           className="block w-full rounded-xl border border-[#2D6A4F] bg-(--agri-card) py-1.5 sm:py-2 text-center text-xs font-semibold text-[#2D6A4F] dark:text-(--agri-brand) hover:bg-[#2D6A4F] hover:text-white active:scale-98 shadow-xs hover:shadow-md transition-all duration-150"
         >
           {t("nearby.viewProfile")}
-        </Link>
+        </Link> : <span className="block w-full rounded-xl border border-(--agri-border) py-1.5 sm:py-2 text-center text-xs text-(--agri-text-muted)">{t("nearby.viewProfile")}</span>}
       </div>
     </div>
     <ImageViewerModal

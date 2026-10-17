@@ -10,13 +10,13 @@
  *             under `onboarding.steps.<id>.title` / `.body`.
  */
 
-import { getPublicProfilePath } from "../utils/routes";
+import { getProfilePath } from "../utils/routes";
 
 const TARGET = {
   search: '[data-onboarding="home-search"]',
   productCard: '[data-onboarding="product-card"]',
   bell: '[data-onboarding="bell"]',
-  headerProfile: '[data-onboarding="header-profile"]',
+  headerProfile: '[data-onboarding="nav-profile"]',
   storeHeader: '[data-onboarding="store-header"]',
   adminStats: '[data-onboarding="admin-stats"]',
   preferences: '[data-onboarding="settings-preferences"]',
@@ -84,8 +84,7 @@ const farmerSteps = [
   {
     id: "farmer-store",
             target: TARGET.storeHeader,
-    path: (profile) =>
-      profile?.uid ? getPublicProfilePath(profile) : null,
+    path: (profile) => getProfilePath(profile?.username),
   },
   {
     id: "farmer-products",

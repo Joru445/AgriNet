@@ -2,11 +2,9 @@ import { Link, useLocation } from "react-router-dom";
 
 import logo from "../../assets/favicon.ico";
 import BackButton from "../ui/BackButton";
-import UserIdentity from "../ui/UserIdentity";
 import Badge from "../ui/Badge";
 
 import {
-  getMePath,
   getNotificationsPath,
   getFavoritesPath,
 } from "../../utils/routes";
@@ -28,8 +26,6 @@ function getNestedHeaderTitle(pathname, t) {
   if (pathname.includes("/users")) return t("nav.users") || "Users";
   if (pathname.includes("/notifications")) return t("header.notifications") || "Notifications";
   if (pathname.includes("/favorites")) return t("nav.favorites") || "Favorites";
-  if (pathname.includes("/profile/")) return t("nav.profile") || "Profile";
-  if (pathname.includes("/me")) return t("nav.profile") || "Profile";
   return "";
 }
 
@@ -44,7 +40,6 @@ export default function Header({ user, collapsed, hideBackButton, authInitializi
 
   const notificationPath =
     isAnonymous || !user ? "/login" : getNotificationsPath(user.role);
-  const mePath = isAnonymous || !user ? "/login" : getMePath(user.role);
   const favoritesPath =
     isAnonymous || !user ? "/login" : getFavoritesPath(user.role);
 
@@ -161,14 +156,6 @@ export default function Header({ user, collapsed, hideBackButton, authInitializi
               )}
             </div>
 
-            {/* User Profile Pill */}
-            <Link
-              to={mePath}
-              data-onboarding="header-profile"
-              className="flex items-center gap-1.5 sm:gap-2 pl-0.5 pr-1.5 sm:px-2.5 py-0.5 sm:py-1 max-w-[135px] sm:max-w-[200px] md:max-w-[260px] rounded-xl transition-colors hover:bg-(--agri-hover) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F]/30"
-            >
-              <UserIdentity user={user} showUsername={false} showRole={true} size="sm" />
-            </Link>
           </>
         )}
       </div>

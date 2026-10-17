@@ -19,7 +19,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { useOnboarding } from "../../context/OnboardingContext";
 import { usePWAUpdate } from "../../hooks/usePWAUpdate";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import { getMePath } from "../../utils/routes";
+import { getProfilePath } from "../../utils/routes";
 import { showToast } from "../../utils/toast";
 import LoginRequired from "../../components/ui/LoginRequired";
 import Loading from "../../components/ui/Loading";
@@ -98,13 +98,17 @@ function CategoryLink({ category, basePath, active, compact = false, t }) {
   );
 }
 
+function ProfileIdentityLink({ to, className, children }) {
+  return to ? <Link to={to} className={className}>{children}</Link> : <div className={className}>{children}</div>;
+}
+
 function AccountsContent({ profile, mePath, onLogout, t }) {
   return (
     <div className="space-y-6">
       <section>
         <SectionHeading>{t("settings.account")}</SectionHeading>
         <SectionCard>
-          <Link
+          <ProfileIdentityLink
             to={mePath}
             className="flex items-center gap-3 px-4 py-3 transition hover:bg-(--agri-hover)"
           >
@@ -126,7 +130,7 @@ function AccountsContent({ profile, mePath, onLogout, t }) {
               className="ri-arrow-right-s-line shrink-0 text-(--agri-text-muted)"
               aria-hidden="true"
             />
-          </Link>
+          </ProfileIdentityLink>
         </SectionCard>
       </section>
       <AccountSwitcher />
@@ -342,7 +346,7 @@ export default function Settings() {
     : "accounts";
   const isMobileIndex = !isDesktop && !requestedCategory;
   const isDevicesPage = category === "security" && childPath === "devices";
-  const mePath = getMePath(profile.role);
+  const mePath = getProfilePath(profile.username);
 
   async function handleLogout() {
     try {
@@ -406,7 +410,7 @@ export default function Settings() {
             </p>
           </header>
           <SectionCard className="mb-4">
-            <Link
+            <ProfileIdentityLink
               to={mePath}
               className="flex items-center gap-3 px-4 py-3 transition hover:bg-(--agri-hover)"
             >
@@ -428,7 +432,7 @@ export default function Settings() {
                 className="ri-arrow-right-s-line text-(--agri-text-muted)"
                 aria-hidden="true"
               />
-            </Link>
+            </ProfileIdentityLink>
           </SectionCard>
           <nav className="space-y-2" aria-label={t("settings.title")}>
             {CATEGORIES.map((item) => (

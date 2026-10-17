@@ -555,6 +555,17 @@ export default {
       proofSubmitted: "Proof Submitted",
       unknown: "Unknown",
     },
+    groups: {
+      requests: "Requests",
+      confirmed: "Confirmed",
+      preparation: "Preparation",
+      inProgress: "In progress",
+      completed: "Completed",
+      cancelled: "Cancelled",
+      countLabel: "transactions",
+    },
+    refresh: "Refresh",
+    loadMore: "Load more",
     cancelModal: {
       title: "Cancel Transaction",
       body: "Are you sure you want to cancel this transaction?",
@@ -1817,6 +1828,17 @@ export default {
       public: "Public",
       private: "Only me",
     },
+    transactions: {
+      title: "My transactions",
+      open: "Open workspace",
+      requests: "Requests",
+      confirmed: "Confirmed",
+      preparation: "Preparation",
+      inProgress: "In progress",
+      completed: "Completed",
+      cancelled: "Cancelled",
+      countLabel: "transactions",
+    },
   },
 
   auth: {
@@ -2331,6 +2353,7 @@ export default {
     noFarmers: "No favorite farmers",
     noFarmersDesc: "Farmers you save will appear here.",
     loadError: "Failed to load favorites.",
+    loadMore: "Load more",
     loginRequired: "Login Required",
     loginToView: "Log in to view your saved products and farmers.",
   },

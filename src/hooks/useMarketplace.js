@@ -1,12 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { apiGetMarketplaceProducts } from "../services/product.service";
 
 import useUserLocation from "./useUserLocation";
 
 import { getDistanceKm } from "../utils/distance";
-import { isProductExpired } from "../utils/productExpiration";
-import { getProductAvailability } from "../utils/productStatus";
+import { filterMarketplaceProducts } from "../utils/marketplaceCatalog";
 
 import * as pageCache from "../utils/pageCache";
 
@@ -20,6 +19,7 @@ const PAGE_SIZE = 24;
 // catalog entry is not revalidated merely because the former two-minute TTL
 // elapsed; normal eviction still bounds storage and a true cache miss loads.
 const CACHE_TTL = 24 * 60 * 60 * 1000;
+const EMPTY_CACHE_TTL = 2 * 60 * 1000;
 const DEFAULT_FILTERS = {
   search: "",
   category: "All",
@@ -47,43 +47,6 @@ function decorateDistance(items, location) {
   });
 }
 
-// API order is never changed on the client: this only applies runtime-only filters.
-function filterRuntime(items, filters, location) {
-  const search = filters.search.trim().toLowerCase();
-  return items.filter((product) => {
-    if (
-      search &&
-      ![
-        product.name,
-        product.category,
-        product.farmer?.fullname,
-        product.farmer?.username,
-        product.farmer?.storeName,
-      ].some((part) =>
-        String(part || "")
-          .toLowerCase()
-          .includes(search),
-      )
-    )
-      return false;
-    if (isProductExpired(product) && !filters.showUnavailable) return false;
-    if (!filters.showUnavailable && !getProductAvailability(product).allowed)
-      return false;
-    const price = Number(product.price || 0);
-    if (
-      (filters.minPrice && price < filters.minPrice) ||
-      (filters.maxPrice && price > filters.maxPrice)
-    )
-      return false;
-    if (Number(product.productRating || 0) < filters.rating) return false;
-    return !(
-      location &&
-      product.distance != null &&
-      product.distance > filters.distance
-    );
-  });
-}
-
 export default function useMarketplace() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { location: userLocation } = useUserLocation();
@@ -101,7 +64,9 @@ export default function useMarketplace() {
   const requestIdRef = useRef(0);
   const requestControllerRef = useRef(null);
   const columnsRef = useRef(columns);
-  columnsRef.current = columns;
+  useLayoutEffect(() => {
+    columnsRef.current = columns;
+  }, [columns]);
 
   const filters = useMemo(
     () => ({
@@ -125,7 +90,9 @@ export default function useMarketplace() {
   );
   const queryKey = useMemo(() => JSON.stringify(filters), [filters]);
   const filtersRef = useRef(filters);
-  filtersRef.current = filters;
+  useLayoutEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
 
   // A wider grid can reveal more already-buffered cards immediately. It does
   // not reset pagination or discard cards when the available width changes.
@@ -238,33 +205,35 @@ export default function useMarketplace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryKey]);
 
-  useEffect(() => {
-    // Cache empty result sets too: an already-loaded empty query is still a
-    // usable result and should not repeatedly fetch on remount.
-    if (loading || error) return;
-    pageCache.set(
-      catalogKey(filters),
-      { products: fetchedProducts, cursor: cursorRef.current, hasMore },
-      CACHE_TTL,
-    );
-    savePublicMarketplaceCache(fetchedProducts, catalogKey(filters), {
-      cursor: cursorRef.current,
-      hasMore,
-    });
-  }, [error, fetchedProducts, filters, hasMore, loading]);
-
   const products = useMemo(
     () => decorateDistance(fetchedProducts, userLocation),
     [fetchedProducts, userLocation],
   );
   const filteredProducts = useMemo(
-    () => filterRuntime(products, filters, userLocation),
+    () => filterMarketplaceProducts(products, filters, userLocation),
     [products, filters, userLocation],
   );
   const visibleProducts = useMemo(
     () => filteredProducts.slice(0, visibleCount),
     [filteredProducts, visibleCount],
   );
+
+  useEffect(() => {
+    // Cache empty result sets too: an already-loaded empty query is still a
+    // usable result and should not repeatedly fetch on remount.
+    if (loading || error) return;
+    const cacheTtl = filteredProducts.length ? CACHE_TTL : EMPTY_CACHE_TTL;
+    pageCache.set(
+      catalogKey(filters),
+      { products: fetchedProducts, cursor: cursorRef.current, hasMore },
+      cacheTtl,
+    );
+    savePublicMarketplaceCache(fetchedProducts, catalogKey(filters), {
+      cursor: cursorRef.current,
+      hasMore,
+      empty: filteredProducts.length === 0,
+    });
+  }, [error, fetchedProducts, filteredProducts.length, filters, hasMore, loading]);
 
   const revealNextRow = useCallback(async () => {
     const remaining = filteredProducts.length - visibleCount;
@@ -320,6 +289,10 @@ export default function useMarketplace() {
       setRefreshing(false);
     }
   }, [refreshing, requestPage]);
+  const setGridColumns = useCallback(
+    (count) => setColumns(Math.max(2, Number(count) || 2)),
+    [],
+  );
   return {
     loading,
     loadingMore,
@@ -335,7 +308,7 @@ export default function useMarketplace() {
     setShowFilters,
     updateFilter,
     hasActiveFilters,
-    setColumns: (count) => setColumns(Math.max(2, Number(count) || 2)),
+    setColumns: setGridColumns,
     revealNextRow,
     reloadProducts: () => requestPage({ reset: true }),
     refreshProducts,

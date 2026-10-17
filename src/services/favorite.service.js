@@ -1,13 +1,15 @@
 import { apiRequest } from "./api/api.client";
 
-export async function getFavorites({ limit = 20, cursor } = {}) {
+export async function getFavorites({ limit = 20, cursor, type, includeTotal = !cursor } = {}) {
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set("cursor", cursor);
+  if (type) params.set("type", type);
+  if (!includeTotal) params.set("includeTotal", "false");
 
   const data = await apiRequest(`/v1/favorites?${params.toString()}`);
   return {
     items: data.data || [],
-    total: data.pagination?.total ?? 0,
+    total: data.pagination?.total ?? null,
     cursor: data.pagination?.cursor ?? null,
     hasMore: data.pagination?.hasMore ?? false,
   };

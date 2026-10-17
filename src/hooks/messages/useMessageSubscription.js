@@ -6,6 +6,7 @@ import {
 } from "../../services/message.service";
 import { apiMarkConversationRead } from "../../services/conversation.service";
 import { sortByCreatedAt } from "../../utils/messaging/sortMessages";
+import { getMessageCache, setMessageCache } from "../../utils/messaging/messageCache";
 
 function toCreatedAtMs(value) {
   if (!value) return null;
@@ -28,6 +29,7 @@ export default function useMessageSubscription(uid, conversationId) {
   const [loadingOlder, setLoadingOlder] = useState(false);
 
   const messagesMapRef = useRef(new Map());
+  const readRequestRef = useRef(null);
 
   useEffect(() => {
     if (!uid || !conversationId) {
@@ -39,21 +41,48 @@ export default function useMessageSubscription(uid, conversationId) {
       return;
     }
 
-    setMessages([]);
-    setLoadingMessages(true);
-    setHasMoreOlder(false);
+    const cached = getMessageCache(uid, conversationId) || {
+      map: new Map(),
+      hasMore: false,
+      cursor: null,
+      hasLoadedOlder: false,
+      recentIds: new Set(),
+      markedNewest: null,
+      lastSyncedAt: 0,
+    };
+    setMessageCache(uid, conversationId, cached);
+    setMessages(Array.from(cached.map.values()).sort(sortByCreatedAt));
+    setLoadingMessages(cached.map.size === 0);
+    setHasMoreOlder(Boolean(cached.hasMore));
     setLoadingOlder(false);
-    messagesMapRef.current.clear();
+    messagesMapRef.current = cached.map;
 
     const unsubscribe = subscribeMessages(
       conversationId,
       (incomingMessages, meta) => {
         setLoadingMessages(false);
-        setHasMoreOlder(meta.hasMore);
+        cached.lastSyncedAt = Date.now();
+        if (meta?.fullSnapshot) {
+          const incomingIds = new Set(incomingMessages.map((message) => message.id));
+          cached.recentIds?.forEach((id) => {
+            if (!incomingIds.has(id)) cached.map.delete(id);
+          });
+          cached.recentIds = incomingIds;
+          if (!cached.cursor && !cached.hasLoadedOlder) {
+            cached.map = new Map(incomingMessages.map((message) => [message.id, message]));
+            messagesMapRef.current = cached.map;
+          }
+        }
+        if (!cached.cursor) {
+          cached.hasMore = Boolean(meta?.hasMore);
+          setHasMoreOlder(cached.hasMore);
+        }
 
         incomingMessages.forEach((msg) => {
-          messagesMapRef.current.set(msg.id, msg);
+          cached.map.set(msg.id, msg);
         });
+        setMessageCache(uid, conversationId, cached);
+        messagesMapRef.current = cached.map;
 
         const sorted = Array.from(
           messagesMapRef.current.values(),
@@ -66,37 +95,27 @@ export default function useMessageSubscription(uid, conversationId) {
           document.visibilityState === "visible" &&
           newestMsg &&
           newestMsg.senderId &&
-          newestMsg.senderId !== uid
+          newestMsg.senderId !== uid && cached.markedNewest !== newestMsg.id
         ) {
-          apiMarkConversationRead(conversationId).catch((error) => {
-            console.error(
-              "Failed to mark conversation as read:",
-              error,
-            );
-          });
+          cached.markedNewest = newestMsg.id;
+          if (!readRequestRef.current) {
+            readRequestRef.current = apiMarkConversationRead(conversationId)
+              .catch((error) => {
+                cached.markedNewest = null;
+                console.error("Failed to mark conversation as read:", error);
+              })
+              .finally(() => { readRequestRef.current = null; });
+          }
         }
       },
       DEFAULT_MESSAGE_LIMIT,
-      uid,
+      (error) => {
+        if (error?.code === "SESSION_REVOKED" || error?.code === "SESSION_BINDING_MISMATCH") return;
+        if (cached.map.size === 0) setLoadingMessages(false);
+      },
     );
 
-    function handleVisibilityOrFocus() {
-      if (document.visibilityState === "visible") {
-        apiMarkConversationRead(conversationId).catch((error) => {
-          console.error(
-            "Failed to mark conversation as read on focus:",
-            error,
-          );
-        });
-      }
-    }
-
-    window.addEventListener("focus", handleVisibilityOrFocus);
-    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
-
     return () => {
-      window.removeEventListener("focus", handleVisibilityOrFocus);
-      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
       unsubscribe();
     };
   }, [uid, conversationId]);
@@ -129,9 +148,19 @@ export default function useMessageSubscription(uid, conversationId) {
     }
 
     setLoadingOlder(true);
+    const cached = getMessageCache(uid, conversationId) || {
+      map: messagesMapRef.current,
+      hasMore: hasMoreOlder,
+      cursor: null,
+      hasLoadedOlder: false,
+      recentIds: new Set(),
+      markedNewest: null,
+      lastSyncedAt: 0,
+    };
+    setMessageCache(uid, conversationId, cached);
 
     try {
-      const cursor = encodeCursor(oldestMs, oldest.id);
+      const cursor = cached.cursor || encodeCursor(oldestMs, oldest.id);
 
       const result = await apiGetMessages(conversationId, {
         cursor,
@@ -144,10 +173,15 @@ export default function useMessageSubscription(uid, conversationId) {
           .slice()
           .reverse()
           .forEach((msg) => {
-            messagesMapRef.current.set(msg.id, msg);
+            cached.map.set(msg.id, msg);
           });
 
-        setHasMoreOlder(result.hasMore);
+        cached.hasMore = Boolean(result.hasMore);
+        cached.cursor = result.cursor || null;
+        cached.hasLoadedOlder = true;
+        setMessageCache(uid, conversationId, cached);
+        messagesMapRef.current = cached.map;
+        setHasMoreOlder(cached.hasMore);
 
         const sorted = Array.from(
           messagesMapRef.current.values(),
@@ -162,7 +196,7 @@ export default function useMessageSubscription(uid, conversationId) {
     } finally {
       setLoadingOlder(false);
     }
-  }, [loadingOlder, hasMoreOlder, conversationId]);
+  }, [loadingOlder, hasMoreOlder, conversationId, uid]);
 
   return {
     messages,

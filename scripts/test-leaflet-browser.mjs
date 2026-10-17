@@ -87,7 +87,7 @@ const browserTestSkip = !chromePath
     ? "Set AGRINET_RUN_BROWSER_TEST=1 in a browser-capable environment to run this test."
     : false;
 
-test("a fresh browser can directly load the map-enabled /me route", { skip: browserTestSkip }, async (t) => {
+test("a fresh browser can directly load the canonical username profile route", { skip: browserTestSkip }, async (t) => {
   const vite = spawn(process.execPath, [vitePath, "--host", "127.0.0.1", "--port", String(appPort), "--strictPort", "--force"], {
     cwd: process.cwd(),
     stdio: "ignore",
@@ -98,8 +98,9 @@ test("a fresh browser can directly load the map-enabled /me route", { skip: brow
     rmSync(profileDir, { recursive: true, force: true, maxRetries: 3 });
   });
 
+  const profilePath = process.env.AGRINET_PROFILE_SMOKE_PATH || "/__profile_smoke__";
   await waitFor(
-    () => getStatus(`http://127.0.0.1:${appPort}/me`).then((status) => status === 200),
+    () => getStatus(`http://127.0.0.1:${appPort}${profilePath}`).then((status) => status === 200),
     "Vite dev server",
   );
   const screenshotPath = join(profileDir, "me-route.png");
@@ -116,15 +117,15 @@ test("a fresh browser can directly load the map-enabled /me route", { skip: brow
     `--user-data-dir=${profileDir}`,
     "--virtual-time-budget=3000",
     `--screenshot=${screenshotPath}`,
-    `http://127.0.0.1:${appPort}/me`,
+    `http://127.0.0.1:${appPort}${profilePath}`,
   ], screenshotPath);
 
-  assert.equal(result.timedOut, undefined, `Chrome did not render /me within 15 seconds.\n${result.stderr}`);
+  assert.equal(result.timedOut, undefined, `Chrome did not render ${profilePath} within 15 seconds.\n${result.stderr}`);
   assert.equal(result.code, 0, result.stderr);
-  assert.equal(existsSync(screenshotPath), true, "Chrome must render the direct /me route.");
+  assert.equal(existsSync(screenshotPath), true, "Chrome must render the direct username profile route.");
   assert.doesNotMatch(
     `${result.stdout}\n${result.stderr}`,
     /does not provide an export named ['"]t['"]|requested module.*leaflet\.js/i,
-    "The direct /me route must not load a mismatched Leaflet optimizer artifact.",
+    "The direct username profile route must not load a mismatched Leaflet optimizer artifact.",
   );
 });

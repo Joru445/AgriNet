@@ -3,34 +3,12 @@ import { useLanguage } from "../../context/LanguageContext";
 export default function InquiryTabs({ activeTab, onChange }) {
   const { t } = useLanguage();
   const tabs = [
-    {
-      id: "all",
-      label: t("transactions.status.all"),
-    },
-    { id: "awaiting_agreement", label: "Negotiating" },
-    { id: "confirmed", label: "Confirmed" },
-    { id: "preparing", label: "Preparing" },
-    { id: "ready", label: "Ready" },
-    {
-      id: "reserved",
-      label: t("transactions.status.reserved"),
-    },
-    {
-      id: "accepted",
-      label: t("transactions.status.accepted"),
-    },
-    {
-      id: "ongoing",
-      label: t("transactions.status.ongoing"),
-    },
-    {
-      id: "completed",
-      label: t("transactions.status.completed"),
-    },
-    {
-      id: "cancelled",
-      label: t("transactions.status.cancelled"),
-    },
+    { id: "requests", label: t("transactions.groups.requests") },
+    { id: "confirmed", label: t("transactions.groups.confirmed") },
+    { id: "preparation", label: t("transactions.groups.preparation") },
+    { id: "in-progress", label: t("transactions.groups.inProgress") },
+    { id: "completed", label: t("transactions.groups.completed") },
+    { id: "cancelled", label: t("transactions.groups.cancelled") },
   ];
 
   return (

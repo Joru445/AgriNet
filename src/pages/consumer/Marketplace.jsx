@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import useMarketplace from "../../hooks/useMarketplace";
 import usePullToRefresh from "../../hooks/usePullToRefresh";
@@ -26,7 +26,7 @@ export default function Marketplace() {
   const [masonryColumns, setMasonryColumns] = useState(2);
   const [enteringIds, setEnteringIds] = useState(new Set());
   const previousIdsRef = useRef(new Set());
-  const gridRef = useRef(null);
+  const catalogRef = useRef(null);
   const sentinelRef = useRef(null);
   const {
     loading,
@@ -58,19 +58,23 @@ export default function Marketplace() {
     !refreshing && !loading,
   );
 
-  useEffect(() => {
-    const grid = gridRef.current;
-    if (!grid || typeof ResizeObserver === "undefined") return undefined;
+  useLayoutEffect(() => {
+    const catalog = catalogRef.current;
+    if (!catalog) return undefined;
     const updateColumns = () => {
       const nextColumns = Math.max(
         2,
-        Math.min(6, Math.floor((grid.clientWidth + 12) / 172)),
+        Math.min(6, Math.floor((catalog.clientWidth + 12) / 172)),
       );
       setMasonryColumns(nextColumns);
       setColumns(nextColumns);
     };
+    if (typeof ResizeObserver === "undefined") {
+      updateColumns();
+      return undefined;
+    }
     const observer = new ResizeObserver(updateColumns);
-    observer.observe(grid);
+    observer.observe(catalog);
     updateColumns();
     return () => observer.disconnect();
   }, [setColumns]);
@@ -182,7 +186,7 @@ export default function Marketplace() {
           onReset={resetFilters}
           visible={desktopFiltersVisible}
         />
-        <section className="min-w-0 flex-1 space-y-4">
+        <section ref={catalogRef} className="min-w-0 flex-1 space-y-4">
           <ProductsToolbar
             total={totalProducts}
             loading={loading}
@@ -210,7 +214,6 @@ export default function Marketplace() {
           {visibleProducts.length > 0 && (
             <ProductGrid
               products={visibleProducts}
-              gridRef={gridRef}
               columns={masonryColumns}
               enteringIds={enteringIds}
             />

@@ -3,11 +3,9 @@ const encode = (value) => encodeURIComponent(String(value));
 /** Canonical frontend destinations. Role-specific destinations are explicit. */
 export const ROUTES = {
   marketplace: "/marketplace", nearby: "/nearby", messages: "/messages",
-  transactions: "/transactions", profile: "/me", settings: "/settings",
+  transactions: "/transactions", settings: "/settings",
   notifications: "/notifications", favorites: "/favorites", groups: "/groups",
   product: (id) => `/product/${encode(id)}`,
-  publicProfile: (username) => `/${encode(String(username).toLowerCase())}`,
-  legacyPublicProfile: (uid) => `/profile/${encode(uid)}`,
   transactionProof: (id) => `/transactions/${encode(id)}/proof`,
   transactionReview: (id) => `/transactions/${encode(id)}/review`,
   farmerProducts: "/farmer/products", farmerReviews: "/farmer/reviews",
@@ -19,21 +17,14 @@ export const getTransactionsPath = () => ROUTES.transactions;
 export const getInquiriesPath = () => ROUTES.transactions;
 export const getMessagesPath = () => ROUTES.messages;
 export const getNotificationsPath = () => ROUTES.notifications;
-export const getMePath = () => ROUTES.profile;
 export const getFavoritesPath = () => ROUTES.favorites;
 export const getSettingsPath = () => ROUTES.settings;
 export const getProductPath = () => "/product";
-export const getProfilePath = () => "/profile";
 
-/** Uses the canonical username only when it is actually available. */
-export function getPublicProfilePath(userOrUid) {
-  if (!userOrUid) return ROUTES.marketplace;
-  if (typeof userOrUid === "object") {
-    return userOrUid.username
-      ? ROUTES.publicProfile(userOrUid.username)
-      : (userOrUid.uid ? ROUTES.legacyPublicProfile(userOrUid.uid) : ROUTES.marketplace);
-  }
-  return ROUTES.legacyPublicProfile(userOrUid);
+/** Build the only supported public profile URL. */
+export function getProfilePath(username) {
+  if (typeof username !== "string" || !username.trim()) return null;
+  return `/${encodeURIComponent(username.trim().toLowerCase())}`;
 }
 
 export function getRoleHome(role) {
@@ -57,7 +48,7 @@ export function getLogicalParent(pathname) {
   if (pathname.startsWith("/admin/")) return "/admin";
   if (pathname.startsWith("/groups/")) return ROUTES.groups;
   if (pathname.startsWith("/transactions/")) return ROUTES.transactions;
-  if (pathname.startsWith("/product/") || pathname.startsWith("/profile/")) return ROUTES.marketplace;
+  if (pathname.startsWith("/product/")) return ROUTES.marketplace;
   if (["/favorites", "/notifications", "/nearby"].some((path) => pathname.startsWith(path))) return ROUTES.marketplace;
   return ROUTES.marketplace;
 }

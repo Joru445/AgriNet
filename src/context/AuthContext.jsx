@@ -32,6 +32,7 @@ import {
   isDeviceSessionRejection,
 } from "../services/deviceSession.service";
 import { setCachedUserProfile } from "../utils/userProfileCache";
+import { clearMessageCache } from "../utils/messaging/messageCache";
 
 const AuthContext = createContext();
 
@@ -119,6 +120,10 @@ export function AuthProvider({ children }) {
           pageCache.clearAll();
           statsSyncedRef.current = false;
           missingSessionRecoveryRef.current.clear();
+          // Do not allow a conversation cache to survive a signed-out
+          // account. Other account-scoped query caches remain namespaced for
+          // quick switching, but the active message history is discarded.
+          if (!firebaseUser && previousUid) clearMessageCache(previousUid);
         }
         activeUidRef.current = firebaseUser?.uid || null;
 

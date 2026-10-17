@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { consumerNavigation, navigationByRole } from "../../constants/navigation";
 import { getOnboardingNavKey } from "../../constants/onboardingSteps";
+import { getProfilePath } from "../../utils/routes";
 import useManagedGroups from "../../hooks/useManagedGroups";
 
 import logo from "../../assets/favicon.ico";
@@ -33,6 +34,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const { pendingReportsCount, showReportPopup, reportPopupMessage } =
     useUnreadReports();
   const navigate = useNavigate();
+  const profilePath = getProfilePath(identity?.username);
 
   // Only after auth initialization completes is a null user a genuine guest.
   const isAnonymous = !authInitializing && !user;
@@ -86,7 +88,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   const navGroups = NAV_GROUPS.map((group) => ({
     ...group,
-    items: items.filter((item) => item.group === group.key),
+    items: items.filter((item) => item.sidebar !== false && item.group === group.key),
   })).filter((group) => group.items.length > 0);
 
   return (
@@ -117,9 +119,14 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       {/* ── Profile (authenticated only) ──────────────────── */}
       {!isAnonymous && (
         <div
+          data-onboarding="nav-profile"
+          role={profilePath ? "link" : undefined}
+          tabIndex={profilePath ? 0 : undefined}
+          onClick={() => { if (profilePath) navigate(profilePath); }}
+          onKeyDown={(event) => { if (profilePath && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); navigate(profilePath); } }}
           className={`border-b border-white/10 dark:border-(--agri-border) ${
             collapsed ? "flex justify-center items-center h-14" : "px-3 py-3"
-          }`}
+          } ${profilePath ? "cursor-pointer" : ""}`}
         >
           {collapsed ? (
             <div className="relative group/user">

@@ -11,7 +11,7 @@ import { useTheme } from "../context/ThemeContext";
 import useMediaQuery from "../hooks/useMediaQuery";
 import useKeyboardVisible from "../hooks/useKeyboardVisible";
 
-import { tabRoutes } from "../constants/tabsRoutes";
+import { getLayoutRouteMembership } from "../constants/navigation";
 
 export default function AppLayout() {
   const { identity, authInitializing } = useAuth();
@@ -37,15 +37,7 @@ export default function AppLayout() {
     scrollRef.current?.scrollTo(0, 0);
   }, [location.pathname]);
 
-  // Settings categories are nested routes, but remain part of the Settings
-  // tab so mobile users keep the bottom navigation while drilling in.
-  const isTabRoutes =
-    tabRoutes.includes(location.pathname) ||
-    tabRoutes.some(
-      (route) =>
-        route.endsWith("/settings") &&
-        location.pathname.startsWith(`${route}/`)
-    );
+  const routeMembership = getLayoutRouteMembership(location.pathname, identity, isDesktop);
 
   const isMessagesRoute = location.pathname.includes("messages");
   const hasActiveChat =
@@ -53,7 +45,7 @@ export default function AppLayout() {
     Boolean(searchParams.get("conversation") || searchParams.get("user"));
 
   const showBottomNav =
-    isTabRoutes && !isDesktop && !isKeyboardVisible && !hasActiveChat;
+    routeMembership.isDirect && !isDesktop && !isKeyboardVisible && !hasActiveChat;
 
   return (
     <div data-theme={resolved} className="fixed inset-0 flex overflow-hidden h-full">
@@ -69,7 +61,7 @@ export default function AppLayout() {
         <Header
           user={identity}
           collapsed={collapsed}
-          hideBackButton={isTabRoutes}
+          hideBackButton={routeMembership.isDirect}
           authInitializing={authInitializing}
         />
         <OfflineIndicator />

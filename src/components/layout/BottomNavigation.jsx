@@ -5,12 +5,15 @@ import { useUnreadReports } from "../../context/UnreadReportsContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { getOnboardingNavKey } from "../../constants/onboardingSteps";
 import Badge, { PulsingDot } from "../ui/Badge";
+import Avatar from "../ui/Avatar";
+import { useAuth } from "../../context/AuthContext";
 
 export default function BottomNavigation({ items }) {
   const { t } = useLanguage();
   const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
   const { pendingReportsCount, showReportPopup, reportPopupMessage } = useUnreadReports();
+  const { identity } = useAuth();
 
   return (
     <nav
@@ -19,18 +22,21 @@ export default function BottomNavigation({ items }) {
     >
       <div className="flex h-16 items-center px-0.5 sm:px-1">
         {items.map((item) => {
-          const isMessages = item.to.includes("messages");
-          const isInquiries = item.to.includes("transactions");
-          const isReports = item.to.includes("reports");
+          const isMessages = item.to?.includes("messages");
+          const isInquiries = item.to?.includes("transactions");
+          const isReports = item.to?.includes("reports");
 
           return (
             <div key={item.to} className="relative flex-auto min-w-0 flex items-center justify-center h-full">
               <NavLink
-                to={item.to}
+                to={item.to || "."}
+                aria-disabled={!item.to}
+                tabIndex={item.to ? 0 : -1}
+                onClick={(event) => { if (!item.to) event.preventDefault(); }}
                 end
-                data-onboarding={getOnboardingNavKey(item.to)}
+                data-onboarding={item.kind === "profile" ? "nav-profile" : getOnboardingNavKey(item.to)}
                 className={({ isActive }) =>
-                  `relative flex w-full h-full flex-col items-center justify-center gap-0.5 px-0.5 rounded-xl transition-all duration-150 select-none active:scale-95 min-h-[44px] ${
+                    `relative flex w-full h-full flex-col items-center justify-center gap-0.5 px-0.5 rounded-xl transition-all duration-150 select-none active:scale-95 min-h-[44px] ${!item.to ? "opacity-60 pointer-events-none" : ""} ${
                     isActive
                       ? "text-[#2D6A4F] dark:text-(--agri-brand) font-bold"
                       : "text-(--agri-text-muted) hover:text-(--agri-text-secondary) font-medium"
@@ -44,8 +50,15 @@ export default function BottomNavigation({ items }) {
                       <span className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[2.5px] rounded-b-full bg-[#2D6A4F] dark:bg-(--agri-brand)" />
                     )}
 
-                    <div className="relative flex items-center justify-center size-6 shrink-0 mt-0.5">
-                      <i className={`${item.icon} text-xl leading-none`} />
+                    <div className="relative w-8 flex items-center justify-center size-6 shrink-0 mt-0.5">
+                      {item.kind === "profile" ? (
+                        <Avatar
+                          src={identity?.profilePicture}
+                          name={identity?.fullname || identity?.username}
+                          size="xs"
+                          className={isActive ? "ring-2 ring-[#2D6A4F] dark:ring-(--agri-brand)" : ""}
+                        />
+                      ) : <i className={`${item.icon} text-xl leading-none`} />}
                       {isMessages && unreadCount > 0 && (
                         <Badge count={unreadCount} className="!-top-1.5 !-right-2.5 min-w-[0.875rem] h-3.5 px-0.5 text-[9px] ring-2 ring-(--agri-surface)" />
                       )}

@@ -24,6 +24,9 @@ export default function Inquiries() {
     setActiveTab,
 
     changeStatus,
+    hasMore,
+    loadMore,
+    refresh,
   } = useInquiries();
 
   if (authInitializing) {
@@ -80,6 +83,12 @@ export default function Inquiries() {
 
       <InquiryTabs activeTab={activeTab} onChange={setActiveTab} />
 
+      <div className="mb-4 flex justify-end gap-2">
+        <button type="button" onClick={refresh} className="rounded-lg border border-(--agri-border) px-3 py-2 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover)">
+          <i className="ri-refresh-line mr-1" />{t("transactions.refresh")}
+        </button>
+      </div>
+
       {loading ? (
         <InquirySkeleton />
       ) : (
@@ -91,6 +100,13 @@ export default function Inquiries() {
           onStatusChange={changeStatus}
           view={view}
         />
+      )}
+      {!loading && hasMore && (
+        <div className="mt-6 flex justify-center">
+          <button type="button" onClick={loadMore} className="rounded-xl border border-[#2D6A4F] px-5 py-2.5 text-sm font-semibold text-[#2D6A4F] hover:bg-[#2D6A4F]/10 dark:text-(--agri-brand)">
+            {t("transactions.loadMore")}
+          </button>
+        </div>
       )}
     </main>
   );

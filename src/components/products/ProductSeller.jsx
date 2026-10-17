@@ -8,7 +8,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import useProfileViewer from "../../hooks/useProfileViewer";
 import { getUserApprovedGroups } from "../../services/group.service";
 import * as pageCache from "../../utils/pageCache";
-import { getPublicProfilePath } from "../../utils/routes";
+import { getProfilePath } from "../../utils/routes";
 
 export default function ProductSeller({ farmer, product, isOwner }) {
   const { t } = useLanguage();
@@ -17,7 +17,7 @@ export default function ProductSeller({ farmer, product, isOwner }) {
   const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
 
   const farmerId = farmer?.uid || farmer?.id;
-  const profilePath = getPublicProfilePath(farmer);
+  const profilePath = getProfilePath(farmer?.username);
   const [groups, setGroups] = useState(() => {
     if (!farmerId) return [];
     if (Array.isArray(farmer?.groups) && farmer.groups.length > 0) return farmer.groups;
@@ -59,23 +59,23 @@ export default function ProductSeller({ farmer, product, isOwner }) {
         {/* Top row: Avatar + Farmer Info on left, Visit Store button on right */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <Link to={profilePath} className="shrink-0">
+            {profilePath ? <Link to={profilePath} className="shrink-0">
               <Avatar
                 src={farmerAvatar}
                 name={farmerName}
                 className="w-11 h-11"
                 onClick={handleAvatarClick(farmer)}
               />
-            </Link>
+            </Link> : <div className="shrink-0"><Avatar src={farmerAvatar} name={farmerName} className="w-11 h-11" /></div>}
 
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                <Link
+                {profilePath ? <Link
                   to={profilePath}
                   className="font-semibold text-sm sm:text-base text-(--agri-text) hover:underline truncate"
                 >
                   {farmerName}
-                </Link>
+                </Link> : <span className="font-semibold text-sm sm:text-base text-(--agri-text) truncate">{farmerName}</span>}
                 {(farmer.verificationStatus === "approved" || farmer.verified) && (
                   <span
                     title={t("productSeller.verifiedFarmer")}
@@ -99,12 +99,12 @@ export default function ProductSeller({ farmer, product, isOwner }) {
             </div>
           </div>
 
-          <Link
+          {profilePath ? <Link
             to={profilePath}
             className="shrink-0 rounded-lg border border-(--agri-border) bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover) hover:text-(--agri-text) transition-colors whitespace-nowrap"
           >
             {t("productSeller.visitStore")}
-          </Link>
+          </Link> : null}
         </div>
 
         {/* Address row: spans full width below top row to prevent vertical squishing */}

@@ -64,9 +64,12 @@ export default function usePublicProfile() {
     setLoadingReviews(false);
 
     try {
-      const payload = username
+      const baseCached = username
+        ? pageCache.get(`${routeKey}:base`)
+        : null;
+      const payload = baseCached || (username
         ? await getPublicProfileByUsername(username)
-        : await getPublicProfile(uid);
+        : await getPublicProfile(uid));
       if (!payload?.profile) throw Object.assign(new Error("Profile not found."), { status: 404 });
 
       const projection = { profile: payload.profile, stats: payload.stats ?? null, products: [], reviews: [] };

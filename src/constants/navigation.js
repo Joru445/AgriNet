@@ -1,3 +1,5 @@
+import { getProfilePath } from "../utils/routes";
+
 export const farmerNavigation = [
   {
     to: "/farmer",
@@ -24,7 +26,7 @@ export const farmerNavigation = [
     to: "/transactions",
     icon: "ri-file-list-3-line",
     labelKey: "nav.transactions",
-    bottom: true,
+    bottom: false,
     group: "marketplace",
   },
   {
@@ -45,9 +47,10 @@ export const farmerNavigation = [
     to: "/settings",
     icon: "ri-settings-3-line",
     labelKey: "nav.settings",
-    bottom: true,
+    bottom: false,
     group: "system",
   },
+  { to: "__profile__", icon: "ri-user-3-line", labelKey: "nav.profile", bottom: true, sidebar: false, kind: "profile", group: "system" },
 ];
 
 export const consumerNavigation = [
@@ -69,7 +72,7 @@ export const consumerNavigation = [
     to: "/transactions",
     icon: "ri-file-list-3-line",
     labelKey: "nav.transactions",
-    bottom: true,
+    bottom: false,
     group: "marketplace",
   },
   {
@@ -83,9 +86,10 @@ export const consumerNavigation = [
     to: "/settings",
     icon: "ri-settings-3-line",
     labelKey: "nav.settings",
-    bottom: true,
+    bottom: false,
     group: "system",
   },
+  { to: "__profile__", icon: "ri-user-3-line", labelKey: "nav.profile", bottom: true, sidebar: false, kind: "profile", group: "system" },
 ];
 
 export const adminNavigation = [
@@ -135,9 +139,10 @@ export const adminNavigation = [
     to: "/settings",
     icon: "ri-settings-3-line",
     labelKey: "nav.settings",
-    bottom: true,
+    bottom: false,
     group: "system",
   },
+  { to: "__profile__", icon: "ri-user-3-line", labelKey: "nav.profile", bottom: true, sidebar: false, kind: "profile", group: "system" },
 ];
 
 export const navigationByRole = {
@@ -145,3 +150,20 @@ export const navigationByRole = {
   farmer: farmerNavigation,
   admin: adminNavigation,
 };
+
+export function resolveNavigationPath(item, identity) {
+  if (item.kind === "profile") return getProfilePath(identity?.username);
+  return item.to;
+}
+
+export function getLayoutRouteMembership(pathname, identity, isDesktop) {
+  const role = identity?.role || "consumer";
+  const items = navigationByRole[role] || consumerNavigation;
+  const ownProfile = Boolean(identity?.username && pathname === resolveNavigationPath({ kind: "profile" }, identity));
+  const eligible = items.filter((item) => isDesktop ? item.sidebar !== false : item.bottom);
+  const direct = eligible.some((item) => {
+    const destination = resolveNavigationPath(item, identity);
+    return destination && destination === pathname;
+  });
+  return { isDirect: Boolean(direct || (!isDesktop && ownProfile)), ownProfile: Boolean(ownProfile) };
+}

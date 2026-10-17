@@ -11,6 +11,21 @@ import { getUserProfile } from "../services/user.service";
 import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
 import { getTimestampMs } from "../utils/chat";
 
+const conversationCache = new Map();
+const profileRequests = new Map();
+const MAX_ACCOUNT_CACHES = 4;
+
+function touchConversationCache(uid, conversations) {
+  conversationCache.delete(uid);
+  conversationCache.set(uid, conversations);
+  while (conversationCache.size > MAX_ACCOUNT_CACHES) conversationCache.delete(conversationCache.keys().next().value);
+}
+
+function sameConversationList(previous, next) {
+  if (previous.length !== next.length) return false;
+  return previous.every((item, index) => item.id === next[index].id && item.unreadCount === next[index].unreadCount && item.lastMessageAt === next[index].lastMessageAt);
+}
+
 const ConversationsContext = createContext({
   conversations: [],
   loading: true,
@@ -37,8 +52,9 @@ export function ConversationsProvider({ children }) {
     // Always clear stale data when the effect re-runs (UID change or mount).
     // Prevents previous account's conversations from flashing while the new
     // subscription is loading.
-    setConversations([]);
-    setLoading(true);
+    const cached = profile?.uid ? conversationCache.get(profile.uid) : null;
+    setConversations(cached || []);
+    setLoading(!cached);
 
     if (!profile?.uid || !deviceSessionReady) {
       setLoading(false);
@@ -141,13 +157,29 @@ export function ConversationsProvider({ children }) {
           };
         });
 
-        setConversations(mapped);
+        // Realtime payloads can be snapshots or individual updates. Merge by
+        // stable conversation ID so an incremental event never discards the
+        // already loaded account-scoped history.
+        const byId = new Map((conversationCache.get(listenerUid) || []).map((item) => [item.id, item]));
+        mapped.forEach((conversation) => byId.set(conversation.id, conversation));
+        const merged = Array.from(byId.values()).sort((a, b) => getTimestampMs(b.lastMessageAt) - getTimestampMs(a.lastMessageAt));
+        touchConversationCache(listenerUid, merged);
+        setConversations((current) => sameConversationList(current, merged) ? current : merged);
 
         if (missingProfileUids.length > 0) {
           const uniqueMissing = [...new Set(missingProfileUids)];
           uniqueMissing.forEach(async (missingUid) => {
             try {
-              const user = await getUserProfile(missingUid);
+              let request = profileRequests.get(missingUid);
+              if (!request) {
+                request = getUserProfile(missingUid);
+                profileRequests.set(missingUid, request);
+                request.then(
+                  () => profileRequests.delete(missingUid),
+                  () => profileRequests.delete(missingUid),
+                );
+              }
+              const user = await request;
               if (user && profile?.uid === listenerUid) {
                 userProfileCacheRef.current.set(missingUid, user);
                 setCachedUserProfile(missingUid, user);

@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
-import { useInquiriesContext } from "../context/InquiriesContext";
-
 import {
+  apiGetInquiries,
   apiStartTransaction,
   apiRequestCompletion,
   apiSubmitProof,
@@ -13,6 +13,7 @@ import {
   apiAdvancePreorder,
   apiAcceptPreorderAgreement,
 } from "../services/inquiry.service";
+import { accountCacheKey, getAccountCache, setAccountCache, accountCacheRequest, invalidateAccountCache } from "../utils/accountQueryCache";
 
 import { getProductById } from "../services/product.service";
 import { getUserProfile } from "../services/user.service";
@@ -20,17 +21,63 @@ import { getFarmerById } from "../services/farmer.service";
 
 import { showToast } from "../utils/toast";
 
+const INQUIRY_GROUP_IDS = new Set(["requests", "confirmed", "preparation", "in-progress", "completed", "cancelled"]);
+
 export default function useInquiries() {
   const { profile } = useAuth();
-  const { inquiries, loading, error } = useInquiriesContext();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedGroup = searchParams.get("group");
+  const activeTab = INQUIRY_GROUP_IDS.has(requestedGroup) ? requestedGroup : "requests";
+  const [inquiries, setInquiries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [cursor, setCursor] = useState(null);
 
   const [inquiryData, setInquiryData] = useState({});
 
-  const [activeTab, setActiveTab] = useState("all");
   const [updatingId, setUpdatingId] = useState(null);
   const farmerCacheRef = useRef(new Map());
 
   const profileRef = useRef(profile);
+
+  const loadGroup = useCallback(async ({ append = false, force = false } = {}) => {
+    if (!profile?.uid || !profile?.role) return;
+    const key = accountCacheKey(profile.uid, "inquiries", activeTab);
+    const cached = !force && getAccountCache(key, 2 * 60 * 1000);
+    if (!append && cached) {
+      setInquiries(cached.items || []); setCursor(cached.cursor || null); setHasMore(Boolean(cached.hasMore)); setLoading(false); return;
+    }
+    setLoading(!append); setError(null);
+    try {
+      const result = await accountCacheRequest(`${key}:${append ? (cursor || "first") : "first"}`, () => apiGetInquiries({ group: activeTab, cursor: append ? cursor : null, limit: 12 }));
+      const nextItems = append ? [...inquiries, ...(result.items || [])] : (result.items || []);
+      const value = { items: nextItems, cursor: result.cursor, hasMore: result.hasMore };
+      setAccountCache(key, value); setInquiries(nextItems); setCursor(result.cursor); setHasMore(result.hasMore);
+    } catch (loadError) { setError(loadError); }
+    finally { setLoading(false); }
+  }, [profile?.uid, profile?.role, activeTab, cursor, inquiries]);
+
+  useEffect(() => {
+    setInquiries([]); setCursor(null); setHasMore(false);
+    loadGroup({ force: false });
+  // loadGroup intentionally tracks the selected group and UID.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.uid, profile?.role, activeTab]);
+
+  const setActiveTab = useCallback((group) => {
+    setSearchParams(group === "requests" ? {} : { group }, { replace: false });
+  }, [setSearchParams]);
+
+  const refresh = useCallback(() => {
+    if (!profile?.uid) return Promise.resolve();
+    invalidateAccountCache(accountCacheKey(profile.uid, "inquiries", activeTab));
+    invalidateAccountCache(accountCacheKey(profile.uid, "inquiry-group-counts"));
+    window.dispatchEvent(new CustomEvent("agrinet:inquiry-counts-invalidated", { detail: { uid: profile.uid } }));
+    return loadGroup({ force: true });
+  }, [profile?.uid, activeTab, loadGroup]);
+
+  const loadMore = useCallback(() => loadGroup({ append: true }), [loadGroup]);
 
   useEffect(() => {
     profileRef.current = profile;
@@ -160,14 +207,8 @@ export default function useInquiries() {
    */
 
   const filteredInquiries = useMemo(() => {
-    if (activeTab === "all") {
-      return inquiries;
-    }
-
-    return inquiries.filter(
-      (inquiry) => normalizeStatus(inquiry.status) === activeTab,
-    );
-  }, [inquiries, activeTab]);
+    return inquiries;
+  }, [inquiries]);
 
   /*
    * --------------------------------------------------
@@ -196,6 +237,7 @@ export default function useInquiries() {
         await apiCancelInquiry(inquiryId);
         showToast.success("Inquiry cancelled.");
       }
+      await refresh();
     } catch (error) {
       console.error(error);
       showToast.error(error.message || "Failed to update inquiry.");
@@ -221,6 +263,7 @@ export default function useInquiries() {
       await apiRequestCompletion(inquiryId);
 
       showToast.success("Transaction completion requested.");
+      await refresh();
 
       return true;
     } catch (error) {
@@ -253,6 +296,7 @@ export default function useInquiries() {
       await apiSubmitProof(inquiryId, proof);
 
       showToast.success("Proof submitted. Waiting for farmer confirmation.");
+      await refresh();
 
       return true;
     } catch (error) {
@@ -283,6 +327,7 @@ export default function useInquiries() {
       await apiConfirmProof(inquiryId);
 
       showToast.success("Transaction completed successfully.");
+      await refresh();
 
       return true;
     } catch (error) {
@@ -315,6 +360,7 @@ export default function useInquiries() {
       showToast.success(
         "Proof rejected. The consumer can upload another photo.",
       );
+      await refresh();
 
       return true;
     } catch (error) {
@@ -345,6 +391,7 @@ export default function useInquiries() {
       await apiCancelInquiry(inquiryId);
 
       showToast.success("Inquiry cancelled.");
+      await refresh();
 
       return true;
     } catch (error) {
@@ -369,6 +416,9 @@ export default function useInquiries() {
 
     activeTab,
     setActiveTab,
+    hasMore,
+    loadMore,
+    refresh,
 
     changeStatus,
 

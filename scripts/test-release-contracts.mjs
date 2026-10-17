@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -15,6 +15,17 @@ test("marketplace forwards group IDs", () => {
   assert.match(src("src/services/product.service.js"), /groupId/);
 });
 
+test("eligible available products survive the default/filter/reset catalog flow", () => {
+  const hook = src("src/hooks/useMarketplace.js");
+  const catalog = src("src/utils/marketplaceCatalog.js");
+  assert.match(hook, /filterMarketplaceProducts\(products, filters, userLocation\)/);
+  assert.match(catalog, /getProductAvailability\(product\)\.allowed/);
+  assert.match(catalog, /isProductExpired\(product\) && !filters\.showUnavailable/);
+  assert.match(catalog, /filters\.minPrice/);
+  assert.match(catalog, /filters\.maxPrice/);
+  assert.match(hook, /resetFilters: \(\) =>/);
+});
+
 test("marketplace uses cache-or-fetch, never focus or reconnect revalidation", () => {
   const marketplace = src("src/pages/consumer/Marketplace.jsx");
   const hook = src("src/hooks/useMarketplace.js");
@@ -23,6 +34,25 @@ test("marketplace uses cache-or-fetch, never focus or reconnect revalidation", (
   assert.match(hook, /if \(restored\)[\s\S]*?else \{[\s\S]*?requestPage\(\{ reset: true \}\)/);
   assert.match(hook, /requestControllerRef\.current\?\.abort\(\)/);
   assert.match(hook, /signal: controller\.signal/);
+});
+
+test("marketplace measures columns from the always-mounted catalog and matches skeleton widths", () => {
+  const marketplace = src("src/pages/consumer/Marketplace.jsx");
+  const grid = src("src/components/consumer/marketplace/ProductGrid.jsx");
+  const skeleton = src("src/components/products/ProductGridSkeleton.jsx");
+  assert.match(marketplace, /useLayoutEffect/);
+  assert.match(marketplace, /ref=\{catalogRef\}/);
+  assert.doesNotMatch(marketplace, /gridRef/);
+  assert.doesNotMatch(grid, /gridRef/);
+  assert.match(skeleton, /columns/);
+});
+
+test("empty marketplace cache entries expire sooner than populated entries", () => {
+  const hook = src("src/hooks/useMarketplace.js");
+  const cache = src("src/utils/publicMarketplaceCache.js");
+  assert.match(hook, /EMPTY_CACHE_TTL/);
+  assert.match(hook, /filteredProducts\.length \? CACHE_TTL : EMPTY_CACHE_TTL/);
+  assert.match(cache, /EMPTY_RESULT_MAX_AGE_MS/);
 });
 
 test("marketplace group options are lazy, cached, and deduplicated", () => {
@@ -35,6 +65,44 @@ test("marketplace group options are lazy, cached, and deduplicated", () => {
   assert.match(groups, /invalidatePublicGroupsCache\(\)/);
 });
 
+test("P1 navigation and profile transaction shortcuts stay canonical and owner-only", () => {
+  const bottom = src("src/components/layout/BottomTab.jsx");
+  const profile = src("src/pages/shared/Profile.jsx");
+  const shortcuts = src("src/components/profile/ProfileTransactions.jsx");
+  assert.match(src("src/constants/navigation.js"), /kind: "profile"/);
+  assert.match(bottom, /getProfilePath/);
+  assert.match(profile, /isOwner && <ProfileTransactions/);
+  for (const group of ["requests", "confirmed", "preparation", "in-progress", "completed", "cancelled"]) {
+    assert.match(shortcuts, new RegExp(group));
+  }
+});
+
+test("P1 favorites and transaction groups are bounded, cursor-based queries", () => {
+  const favorites = src("src/pages/shared/Favorites.jsx");
+  const inquiryClient = src("src/services/inquiry.service.js");
+  const favoriteClient = src("src/services/favorite.service.js");
+  assert.doesNotMatch(favorites, /getProducts\(|getFarmers\(/);
+  assert.match(favoriteClient, /params\.set\("type"/);
+  assert.match(inquiryClient, /params\.set\("group"/);
+  assert.match(src("src/utils/accountQueryCache.js"), /accountCacheRequest/);
+});
+
+test("revised P1 navigation removes mobile transactions/settings and uses profile avatars", () => {
+  const navigation = src("src/constants/navigation.js");
+  const bottom = src("src/components/layout/BottomNavigation.jsx");
+  const header = src("src/components/layout/Header.jsx");
+  const layout = src("src/layouts/AppLayout.jsx");
+  assert.match(navigation, /kind: "profile"/);
+  assert.match(bottom, /<Avatar/);
+  assert.doesNotMatch(header, /UserIdentity/);
+  assert.match(layout, /getLayoutRouteMembership/);
+});
+
+test("transaction group counts are lightweight and account-scoped", () => {
+  assert.match(src("src/services/inquiry.service.js"), /apiGetInquiryGroupCounts/);
+  assert.match(src("src/components/profile/ProfileTransactions.jsx"), /inquiry-group-counts/);
+});
+
 class MemoryStorage {
   #values = new Map();
   getItem(key) { return this.#values.get(key) ?? null; }
@@ -44,6 +112,7 @@ class MemoryStorage {
 
 const savedAccountService = await import("../src/services/savedAccounts.service.js");
 const publicMarketplaceCache = await import("../src/utils/publicMarketplaceCache.js");
+const accountQueryCache = await import("../src/utils/accountQueryCache.js");
 
 test("public marketplace cache preserves cursor pagination and is explicitly invalidated", () => {
   globalThis.localStorage = new MemoryStorage();
@@ -83,6 +152,45 @@ test("saved-account updates are UID-idempotent and retain safe display metadata"
   assert.equal(accounts[0].displayName, "A");
   assert.equal(accounts[0].username, "grower");
   assert.deepEqual(accounts[0].providers, ["password", "google.com"]);
+});
+
+test("private query cache deduplicates requests and isolates account keys", async () => {
+  accountQueryCache.clearAccountQueryCache();
+  let calls = 0;
+  const fetcher = () => new Promise((resolve) => {
+    calls += 1;
+    setTimeout(() => resolve({ owner: "account-a" }), 5);
+  });
+  const first = accountQueryCache.accountCacheRequest("account-a:favorites:product", fetcher);
+  const second = accountQueryCache.accountCacheRequest("account-a:favorites:product", fetcher);
+  assert.strictEqual(await first, await second);
+  assert.equal(calls, 1);
+  assert.equal(accountQueryCache.getAccountCache("account-b:favorites:product"), undefined);
+  assert.equal(accountQueryCache.getAccountCacheMetrics().deduped, 1);
+});
+
+test("invalidating a private query prevents a late response from repopulating it", async () => {
+  accountQueryCache.clearAccountQueryCache();
+  let resolve;
+  const request = accountQueryCache.accountCacheRequest(
+    "account-a:messages:conversation-1",
+    () => new Promise((complete) => { resolve = complete; }),
+  );
+  await Promise.resolve();
+  accountQueryCache.invalidateAccountCache("account-a:messages:");
+  resolve({ private: true });
+  await request;
+  assert.equal(accountQueryCache.getAccountCache("account-a:messages:conversation-1"), undefined);
+});
+
+test("favorites pages avoid repeating total-count aggregation on cursor requests", () => {
+  assert.match(src("src/services/favorite.service.js"), /includeTotal = !cursor/);
+  assert.match(src("src/pages/shared/Favorites.jsx"), /includeTotal: !append/);
+  assert.match(src("src/pages/shared/Favorites.jsx"), /page\.total \?\? current\.total/);
+  assert.match(src("src/utils/messaging/messageCache.js"), /MAX_CACHED_CONVERSATIONS/);
+  assert.match(src("src/hooks/messages/useMessageSubscription.js"), /cached\.cursor/);
+  assert.match(src("src/hooks/messages/useMessageSubscription.js"), /readRequestRef/);
+  assert.doesNotMatch(src("src/services/message.service.js"), /falling back to Firestore/);
 });
 
 test("public profiles use the dedicated public-safe profile projection", () => {
@@ -165,7 +273,7 @@ test("private realtime subscriptions use the authenticated backend stream", () =
 
 test("profile maps keep Leaflet and translation imports separate", () => {
   const map = src("src/components/map/Map.jsx");
-  const profile = src("src/pages/shared/UnifiedProfilePage.jsx");
+  const profile = src("src/pages/shared/Profile.jsx");
   assert.match(map, /import L from "leaflet"/);
   assert.match(map, /useLanguage/);
   assert.doesNotMatch(map, /import\s*\{[^}]*\bt\b[^}]*\}\s*from\s*["']leaflet["']/);
@@ -175,30 +283,57 @@ test("profile maps keep Leaflet and translation imports separate", () => {
 
 test("the lazy profile map has one explicit Vite optimization group", () => {
   const viteConfig = src("vite.config.js");
-  const profile = src("src/pages/shared/UnifiedProfilePage.jsx");
+  const profile = src("src/pages/shared/Profile.jsx");
+  const editor = src("src/components/profile/ProfileEditor.jsx");
   const map = src("src/components/map/Map.jsx");
 
-  // React Leaflet is first reached through Profile -> LocationPicker -> Map.
+  // React Leaflet is first reached through the lazy owner editor ->
+  // LocationPicker -> Map.
   // Keeping its ESM package and Leaflet's CommonJS package in one optimizer
   // group prevents Vite from mixing generated interop exports after a lazy
   // route is discovered.
-  assert.match(profile, /FarmerSection/);
+  assert.match(editor, /FarmerSection/);
   assert.match(map, /from "react-leaflet"/);
   assert.match(viteConfig, /optimizeDeps:\s*\{[\s\S]*?include:\s*\[[\s\S]*?["']leaflet["'][\s\S]*?["']react-leaflet["'][\s\S]*?["']@react-leaflet\/core["']/);
 });
 
 test("unified profiles use the public projection and UID-based owner access", () => {
-  const page = src("src/pages/shared/UnifiedProfilePage.jsx");
+  const page = src("src/pages/shared/Profile.jsx");
   const hook = src("src/hooks/usePublicProfile.js");
   const routes = src("src/routes/AppRoutes.jsx");
 
   assert.match(page, /authUser\.uid === profile\.uid/);
   assert.match(page, /isOwner=\{isOwner\}/);
-  assert.match(page, /getPublicProfilePath\(updated\)/);
+  assert.match(page, /getProfilePath\(updated\.username\)/);
   assert.match(hook, /getPublicProfileByUsername/);
   assert.match(hook, /payload\.profile\.role !== "farmer"/);
   assert.match(hook, /getPublicFarmerProductsPage/);
   assert.match(hook, /Promise\.allSettled/);
-  assert.match(routes, /path="\/me" element={<Profile \/>}/);
-  assert.match(routes, /path="\/:username" element={<PublicProfile \/>}/);
+  assert.match(routes, /const Profile = lazy\(\(\) => import\("\.\.\/pages\/shared\/Profile"\)\)/);
+  assert.match(routes, /path="\/:username" element={<Profile \/>}/);
+  for (const legacyPath of ["/profile/:uid", "/farmer/profile/:uid", "/farmer/me", "/admin/me"]) {
+    assert.doesNotMatch(routes, new RegExp(`path="${legacyPath.replace(/[/:]/g, "\\$&")}"`));
+  }
+  assert.match(routes, /path="\/me" element={<NotFound \/>}/);
+});
+
+test("profile routes use one canonical page and lazy owner editing", () => {
+  const routes = src("src/routes/AppRoutes.jsx");
+  const page = src("src/pages/shared/Profile.jsx");
+  const editor = src("src/components/profile/ProfileEditor.jsx");
+  assert.doesNotMatch(routes, /UnifiedProfilePage|PublicProfile|OwnProfileRedirect|LegacyProfileRedirect/);
+  assert.doesNotMatch(page, /useProfile/);
+  assert.match(page, /editOpen && isOwner/);
+  assert.match(page, /<ProfileEditor/);
+  assert.match(editor, /useProfile/);
+  assert.match(src("src/utils/routes.js"), /export function getProfilePath\(username\)/);
+  assert.doesNotMatch(src("src/utils/routes.js"), /legacyPublicProfile|getPublicProfilePath|getMePath/);
+  for (const obsolete of [
+    "src/pages/shared/UnifiedProfilePage.jsx",
+    "src/pages/shared/PublicProfile.jsx",
+    "src/pages/shared/OwnProfileRedirect.jsx",
+    "src/components/profile/LegacyProfileRedirect.jsx",
+  ]) {
+    assert.equal(existsSync(resolve(root, obsolete)), false, `${obsolete} should be removed`);
+  }
 });

@@ -32,6 +32,7 @@ export function subscribeMessages(
   conversationId,
   callback,
   limitCount = DEFAULT_MESSAGE_LIMIT,
+  onError,
 ) {
   return subscribeToRealtime(`/v1/messages/${encodeURIComponent(conversationId)}/stream`,
     (streamedMessages) => {
@@ -63,11 +64,15 @@ export function subscribeMessages(
 
       callback(docs, {
         oldestDocSnapshot: null,
-        hasMore: false,
+        hasMore: streamedMessages.length > limitCount,
         totalLoadedInSnapshot: docs.length,
+        fullSnapshot: true,
       });
     },
-    (error) => console.error("Message listener error:", error),
+    (error) => {
+      if (onError) onError(error);
+      else console.error("Message listener error:", error);
+    },
   );
 }
 
@@ -127,36 +132,31 @@ export async function stopLiveLocation(messageId, conversationId = null) {
 }
 
 export async function apiGetMessages(conversationId, { cursor = null, limit: pageSize = 40 } = {}) {
-  try {
-    const params = new URLSearchParams();
-    if (cursor) params.set("cursor", cursor);
-    if (pageSize !== 40) params.set("limit", String(pageSize));
+  const params = new URLSearchParams();
+  if (cursor) params.set("cursor", cursor);
+  if (pageSize !== 40) params.set("limit", String(pageSize));
 
-    const qs = params.toString();
-    const endpoint = `/v1/messages/${conversationId}${qs ? `?${qs}` : ""}`;
+  const qs = params.toString();
+  const endpoint = `/v1/messages/${conversationId}${qs ? `?${qs}` : ""}`;
 
-    const result = await apiRequest(endpoint);
-    const permanentlyEnded = getPermanentlyEndedLocations();
-    const rawList = result.data || [];
-    const messages = rawList.map((m) => {
-      if (permanentlyEnded.has(m.id)) {
-        return {
-          ...m,
-          isLive: false,
-          isEnded: true,
-          endedAt: m.endedAt || Date.now(),
-        };
-      }
-      return m;
-    });
+  const result = await apiRequest(endpoint);
+  const permanentlyEnded = getPermanentlyEndedLocations();
+  const rawList = result.data || [];
+  const messages = rawList.map((m) => {
+    if (permanentlyEnded.has(m.id)) {
+      return {
+        ...m,
+        isLive: false,
+        isEnded: true,
+        endedAt: m.endedAt || Date.now(),
+      };
+    }
+    return m;
+  });
 
-    return {
-      messages,
-      cursor: result.cursor,
-      hasMore: result.hasMore,
-    };
-  } catch (err) {
-    console.warn("[Messages] Backend API apiGetMessages failed, falling back to Firestore:", err.message);
-    return { messages: [], oldestDocSnapshot: null, hasMore: false };
-  }
+  return {
+    messages,
+    cursor: result.cursor,
+    hasMore: result.hasMore,
+  };
 }

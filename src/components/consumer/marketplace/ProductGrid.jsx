@@ -12,7 +12,6 @@ const estimateCardHeight = (width) => Math.max(260, Math.round(width * 1.72));
 export default function ProductGrid({
   products,
   columns = 2,
-  gridRef,
   enteringIds = new Set(),
 }) {
   const rootRef = useRef(null);
@@ -82,11 +81,6 @@ export default function ProductGrid({
   }, [columns, metrics.gap, metrics.heights, metrics.width, products]);
 
   let entranceIndex = 0;
-  const setRoot = (node) => {
-    rootRef.current = node;
-    if (typeof gridRef === "function") gridRef(node);
-    else if (gridRef) gridRef.current = node;
-  };
   const setItemRef = (id) => (node) => {
     if (node) itemRefs.current.set(id, node);
     else itemRefs.current.delete(id);
@@ -95,7 +89,7 @@ export default function ProductGrid({
   if (!products.length) return null;
   return (
     <div
-      ref={setRoot}
+      ref={rootRef}
       role="list"
       aria-label="Marketplace products"
       className="relative w-full"
