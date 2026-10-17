@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Outlet, useLocation, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import Header from "../components/layout/Header";
 import Sidebar from "../components/layout/Sidebar";
@@ -11,12 +11,14 @@ import { useTheme } from "../context/ThemeContext";
 import useMediaQuery from "../hooks/useMediaQuery";
 import useKeyboardVisible from "../hooks/useKeyboardVisible";
 
-import { getLayoutRouteMembership } from "../constants/navigation";
+import { getLayoutRouteMembership, navigationByRole, consumerNavigation, resolveNavigationPath } from "../constants/navigation";
+import useMobileTabSwipe from "../hooks/useMobileTabSwipe";
 
 export default function AppLayout() {
   const { identity, authInitializing } = useAuth();
   const { resolved } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [collapsed, setCollapsed] = useState(true);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
@@ -47,6 +49,17 @@ export default function AppLayout() {
   const showBottomNav =
     routeMembership.isDirect && !isDesktop && !isKeyboardVisible && !hasActiveChat;
 
+  const mobileTabs = useMemo(() => (navigationByRole[identity?.role] || consumerNavigation)
+    .filter((item) => item.bottom)
+    .map((item) => resolveNavigationPath(item, identity))
+    .filter(Boolean), [identity]);
+  useMobileTabSwipe({
+    enabled: showBottomNav,
+    tabs: mobileTabs,
+    pathname: location.pathname,
+    navigate,
+  });
+
   return (
     <div data-theme={resolved} className="fixed inset-0 flex overflow-hidden h-full">
       {isDesktop && (
@@ -75,9 +88,14 @@ export default function AppLayout() {
               : "overflow-y-auto overflow-x-hidden overscroll-none scrollbar-none"
           }`}
         >
-          <PageTransition>
-            <Outlet />
-          </PageTransition>
+          <div
+            data-tab-swipe-region={showBottomNav ? "true" : undefined}
+            className="contents"
+          >
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
+          </div>
         </div>
 
         {showBottomNav && <BottomTab showBottomTab />}

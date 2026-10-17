@@ -5,10 +5,15 @@ import ConversationList from "../../components/messages/ConversationList";
 import ChatWindow from "../../components/messages/ChatWindow";
 import EmptyConversation from "../../components/messages/EmptyConversation";
 import LoginRequired from "../../components/ui/LoginRequired";
+import { useRef } from "react";
+import useSectionPullToRefresh from "../../hooks/useSectionPullToRefresh";
+import { useConversationsContext } from "../../context/ConversationsContext";
 
 
 export default function Messages() {
   const { user, authInitializing } = useAuth();
+  const conversationListRef = useRef(null);
+  const { refresh: refreshConversations } = useConversationsContext();
   const {
     loading,
 
@@ -61,6 +66,13 @@ export default function Messages() {
     deleteFailedMessage,
   } = useMessages();
 
+  const hasChat = Boolean(activeConversation || activeUser);
+  const { pullDistance, refreshing } = useSectionPullToRefresh({
+    sectionRef: conversationListRef,
+    onRefresh: refreshConversations,
+    enabled: Boolean(user?.uid) && !hasChat,
+  });
+
   if (authInitializing) {
     return <Loading />;
   }
@@ -68,8 +80,6 @@ export default function Messages() {
   if (!user) {
     return <LoginRequired title="Messages" />;
   }
-
-  const hasChat = Boolean(activeConversation || activeUser);
 
   return (
     <main className="flex-1 h-full min-h-0 min-w-0 flex flex-col overflow-hidden">
@@ -85,6 +95,9 @@ export default function Messages() {
           onConversation={selectConversation}
           onUser={selectUser}
           hasChat={hasChat}
+          listRef={conversationListRef}
+          pullDistance={pullDistance}
+          refreshing={refreshing}
         />
 
         {hasChat ? (

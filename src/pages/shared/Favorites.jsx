@@ -11,6 +11,8 @@ import Loading from "../../components/ui/Loading";
 import { getProfilePath } from "../../utils/routes";
 import { accountCacheKey, accountCacheRequest, getAccountCache, setAccountCache, invalidateAccountCache } from "../../utils/accountQueryCache";
 import { applyTransform, PRODUCT_THUMB_TF, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
+import useSectionPullToRefresh from "../../hooks/useSectionPullToRefresh";
+import SectionPullIndicator from "../../components/ui/SectionPullIndicator";
 
 const PAGE_SIZE = 12;
 
@@ -21,6 +23,7 @@ export default function Favorites() {
   const [state, setState] = useState({ product: null, farmer: null });
   const stateRef = useRef(state);
   const requestVersionRef = useRef(0);
+  const listRef = useRef(null);
   stateRef.current = state;
 
   const load = useCallback(async (type, append = false, force = false) => {
@@ -73,6 +76,11 @@ export default function Favorites() {
     window.addEventListener("agrinet:favorite-mutated", onMutation);
     return () => window.removeEventListener("agrinet:favorite-mutated", onMutation);
   }, [user?.uid, tab, load]);
+  const { pullDistance, refreshing } = useSectionPullToRefresh({
+    sectionRef: listRef,
+    onRefresh: () => load(tab, false, true),
+    enabled: Boolean(user?.uid) && !authInitializing && !state[tab]?.loading,
+  });
   if (authInitializing) return <Loading />;
   if (!user) return <LoginRequired title={t("favorites.title")} />;
 
@@ -92,6 +100,8 @@ export default function Favorites() {
           </button>
         ))}
       </div>
+      <div ref={listRef} data-pull-section="favorites-list">
+      <SectionPullIndicator distance={pullDistance} refreshing={refreshing} />
       {current.loading && !current.items ? <ProductGridSkeleton count={4} gridClassName="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4" /> : current.error ? (
         <EmptyState icon="ri-error-warning-line" title={t("common.error")} description={t("favorites.loadError")} action={t("common.retry")} onAction={retry} />
       ) : items.length === 0 ? (
@@ -102,6 +112,7 @@ export default function Favorites() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{items.map((item) => <FarmerCard key={item.id} farmer={item.entity} />)}</div>
       )}
       {!current.loading && current.hasMore && <div className="mt-6 flex justify-center"><button type="button" onClick={() => load(tab, true)} className="rounded-xl border border-[#2D6A4F] px-5 py-2.5 text-sm font-semibold text-[#2D6A4F] dark:text-(--agri-brand)">{t("favorites.loadMore")}</button></div>}
+      </div>
     </main>
   );
 }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import useMarketplace from "../../hooks/useMarketplace";
-import usePullToRefresh from "../../hooks/usePullToRefresh";
+import useSectionPullToRefresh from "../../hooks/useSectionPullToRefresh";
 
 import { showToast } from "../../utils/toast";
 import { useLanguage } from "../../context/LanguageContext";
@@ -18,6 +18,8 @@ import ProductGridSkeleton from "../../components/products/ProductGridSkeleton";
 import ProductLoadError from "../../components/products/ProductLoadError";
 import EmptyState from "../../components/ui/EmptyState";
 import Button from "../../components/ui/Button";
+import SectionPullIndicator from "../../components/ui/SectionPullIndicator";
+// The section-scoped implementation replaces the legacy usePullToRefresh hook.
 
 export default function Marketplace() {
   const { t } = useLanguage();
@@ -27,6 +29,7 @@ export default function Marketplace() {
   const [enteringIds, setEnteringIds] = useState(new Set());
   const previousIdsRef = useRef(new Set());
   const catalogRef = useRef(null);
+  const productListRef = useRef(null);
   const sentinelRef = useRef(null);
   const {
     loading,
@@ -53,10 +56,11 @@ export default function Marketplace() {
     const refreshed = await refreshProducts();
     if (!refreshed) showToast.error(t("marketplace.refreshFailed"));
   }, [refreshProducts, t]);
-  const { pullDistance } = usePullToRefresh(
-    handleRefresh,
-    !refreshing && !loading,
-  );
+  const { pullDistance } = useSectionPullToRefresh({
+    sectionRef: productListRef,
+    onRefresh: handleRefresh,
+    enabled: !refreshing && !loading,
+  });
 
   useLayoutEffect(() => {
     const catalog = catalogRef.current;
@@ -149,26 +153,6 @@ export default function Marketplace() {
       data-marketplace-root
       className="mx-auto w-full min-w-0 max-w-7xl space-y-4 pb-8"
     >
-      {(pullDistance > 0 || refreshing) && (
-        <div
-          className="pointer-events-none sticky top-0 z-50 flex justify-center"
-          role="status"
-        >
-          <span
-            className="grid h-9 w-9 place-items-center rounded-full border border-(--agri-border) bg-(--agri-card) shadow-md"
-            style={{ transform: `translateY(${Math.min(pullDistance, 36)}px)` }}
-          >
-            <i
-              className={`ri-refresh-line text-[#2D6A4F] dark:text-(--agri-brand) ${refreshing ? "animate-spin" : ""}`}
-            />
-            <span className="sr-only">
-              {refreshing
-                ? t("marketplace.refreshingProducts")
-                : t("marketplace.releaseToRefresh")}
-            </span>
-          </span>
-        </div>
-      )}
       <MarketplaceSubHeader
         searchValue={filters.search}
         onSearchChange={(value) => updateFilter("search", value)}
@@ -196,6 +180,8 @@ export default function Marketplace() {
             onRemoveFilter={removeFilter}
             onClearFilters={resetFilters}
           />
+          <div ref={productListRef} data-pull-section="marketplace-products">
+          <SectionPullIndicator distance={pullDistance} refreshing={refreshing} />
           {loading && !visibleProducts.length ? (
             <ProductGridSkeleton count={masonryColumns} columns={masonryColumns} />
           ) : null}
@@ -244,6 +230,7 @@ export default function Marketplace() {
               {t("marketplace.endOfResults")}
             </p>
           ) : null}
+          </div>
         </section>
       </div>
       <MobileFiltersDrawer

@@ -56,11 +56,11 @@ export function subscribeToRealtime(endpoint, onSnapshot, onError = () => {}) {
         }
         throw error;
       }
-      attempts = 0;
-
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      let receivedSnapshot = false;
+      let streamFailed = false;
       while (!closed) {
         const { value, done } = await reader.read();
         if (done) break;
@@ -71,16 +71,37 @@ export function subscribeToRealtime(endpoint, onSnapshot, onError = () => {}) {
           const event = frame.match(/^event: (.+)$/m)?.[1];
           const raw = frame.match(/^data: (.+)$/m)?.[1];
           if (!event || !raw) continue;
-          const data = JSON.parse(raw);
-          if (event === "snapshot") onSnapshot(data);
+          let data;
+          try { data = JSON.parse(raw); } catch (parseError) {
+            onError(Object.assign(new Error("Malformed realtime event."), { code: "STREAM_INVALID_EVENT", cause: parseError }));
+            streamFailed = true;
+            break;
+          }
+          if (event === "snapshot") {
+            receivedSnapshot = true;
+            attempts = 0;
+            onSnapshot(data);
+          }
           if (event === "session-revoked") {
             notifySessionRevoked(data.code);
             return;
           }
-          if (event === "error") onError(Object.assign(new Error("Realtime stream failed."), { code: data.code }));
+          if (event === "error") {
+            const error = Object.assign(new Error(data.message || "Realtime stream failed."), {
+              code: data.code || "STREAM_ERROR",
+              retryable: data.retryable !== false,
+              status: data.status,
+            });
+            onError(error);
+            streamFailed = true;
+            break;
+          }
         }
+        if (streamFailed) break;
       }
-      retry();
+      if (!closed && streamFailed) retry();
+      else if (!closed && !receivedSnapshot) retry();
+      else if (!closed) retry();
     } catch (error) {
       if (!closed && error.name !== "AbortError") {
         onError(error);

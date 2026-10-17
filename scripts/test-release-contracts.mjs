@@ -113,6 +113,7 @@ class MemoryStorage {
 const savedAccountService = await import("../src/services/savedAccounts.service.js");
 const publicMarketplaceCache = await import("../src/utils/publicMarketplaceCache.js");
 const accountQueryCache = await import("../src/utils/accountQueryCache.js");
+const swipeGesture = await import("../src/hooks/useMobileTabSwipe.js");
 
 test("public marketplace cache preserves cursor pagination and is explicitly invalidated", () => {
   globalThis.localStorage = new MemoryStorage();
@@ -308,7 +309,8 @@ test("unified profiles use the public projection and UID-based owner access", ()
   assert.match(hook, /getPublicProfileByUsername/);
   assert.match(hook, /payload\.profile\.role !== "farmer"/);
   assert.match(hook, /getPublicFarmerProductsPage/);
-  assert.match(hook, /Promise\.allSettled/);
+  assert.match(hook, /productsRequest[\s\S]*reviewsRequest/);
+  assert.match(hook, /Promise\.all\(\[/);
   assert.match(routes, /const Profile = lazy\(\(\) => import\("\.\.\/pages\/shared\/Profile"\)\)/);
   assert.match(routes, /path="\/:username" element={<Profile \/>}/);
   for (const legacyPath of ["/profile/:uid", "/farmer/profile/:uid", "/farmer/me", "/admin/me"]) {
@@ -336,4 +338,79 @@ test("profile routes use one canonical page and lazy owner editing", () => {
   ]) {
     assert.equal(existsSync(resolve(root, obsolete)), false, `${obsolete} should be removed`);
   }
+});
+
+test("P2 mobile refresh and tab swipe remain section-scoped", () => {
+  const refresh = src("src/hooks/useSectionPullToRefresh.js");
+  const swipe = src("src/hooks/useMobileTabSwipe.js");
+  const layout = src("src/layouts/AppLayout.jsx");
+  const indicator = src("src/components/ui/SectionPullIndicator.jsx");
+  const marketplace = src("src/pages/consumer/Marketplace.jsx");
+  assert.match(refresh, /data-app-scroll/);
+  assert.match(refresh, /section\.contains/);
+  assert.match(refresh, /section\.addEventListener\("touchstart"/);
+  assert.match(refresh, /touchcancel.*resetGesture|resetGesture.*touchcancel/s);
+  assert.match(refresh, /touchmove/);
+  assert.doesNotMatch(refresh, /style\.transform|translateY/);
+  assert.match(indicator, /ri-loader-4-line/);
+  assert.doesNotMatch(indicator, /Pull to refresh|Release to refresh|Refreshing/);
+  assert.match(marketplace, /data-pull-section="marketplace-products"/);
+  assert.match(marketplace, /productListRef/);
+  assert.match(swipe, /data-swipe-ignore/);
+  assert.match(swipe, /MIN_SWIPE_DISTANCE = 160/);
+  assert.match(swipe, /MIN_SWIPE_VIEWPORT_RATIO = 0\.45/);
+  assert.match(swipe, /HORIZONTAL_INTENT_RATIO = 2/);
+  assert.match(swipe, /MAX_VERTICAL_DRIFT = 60/);
+  assert.match(swipe, /EDGE_EXCLUSION_PX = 24/);
+  assert.match(swipe, /touchmove/);
+  assert.match(swipe, /touchcancel.*reset|reset.*touchcancel/s);
+  assert.match(swipe, /requiredDistance/);
+  assert.match(swipe, /data-tab-swipe-region='true'/);
+  assert.match(layout, /data-tab-swipe-region=\{showBottomNav/);
+  assert.match(swipe, /hasNestedScrollOwner/);
+  assert.doesNotMatch(swipe, /navigate\(destination\)[\s\S]{0,80}touchmove/);
+  assert.match(layout, /useMobileTabSwipe/);
+});
+
+test("mobile tab swipe requires a deliberate completed horizontal gesture", () => {
+  const required = swipeGesture.requiredSwipeDistance(390);
+  assert.equal(required, 175.5);
+  for (const distance of [20, 50, 100, 150]) {
+    assert.equal(swipeGesture.classifySwipeGesture(distance, 0, required), false);
+  }
+  assert.equal(swipeGesture.classifySwipeGesture(180, 0, required), true);
+  assert.equal(swipeGesture.classifySwipeGesture(220, 61, required), false);
+  assert.equal(swipeGesture.classifySwipeGesture(220, 110, required), false);
+  assert.equal(swipeGesture.classifySwipeGesture(220, 0, required), true);
+});
+
+test("profile and group loading keep their page shells mounted", () => {
+  const profile = src("src/pages/shared/Profile.jsx");
+  const profileHook = src("src/hooks/usePublicProfile.js");
+  const groups = src("src/pages/shared/Groups.jsx");
+  assert.doesNotMatch(profile, /if \(loading\) return <PublicProfileSkeleton/);
+  assert.match(profile, /ProfileHeaderSkeleton/);
+  assert.match(profile, /ProfileStatsSkeleton/);
+  assert.match(profile, /ProfileContentSkeleton/);
+  assert.match(profileHook, /setLoadingProducts\(false\)/);
+  assert.match(profileHook, /setLoadingReviews\(false\)/);
+  assert.doesNotMatch(groups, /if \(loading\) \{\s*return \(/);
+  assert.match(groups, /loading \? \([\s\S]*?SkeletonBox/);
+});
+
+test("username availability checks are debounced and stale-safe", () => {
+  const hook = src("src/hooks/useUsernameAvailability.js");
+  const service = src("src/services/user.service.js");
+  assert.match(hook, /setTimeout/);
+  assert.match(hook, /requestId/);
+  assert.match(service, /username-availability/);
+});
+
+test("inquiry realtime errors preserve safe fields and back off", () => {
+  const realtime = src("src/services/api/realtime.client.js");
+  const context = src("src/context/InquiriesContext.jsx");
+  assert.match(realtime, /retryable/);
+  assert.match(realtime, /data\.message/);
+  assert.match(realtime, /attempts = 0/);
+  assert.doesNotMatch(context, /setInquiries\(\[\]\);\s*setError\(err\)/);
 });

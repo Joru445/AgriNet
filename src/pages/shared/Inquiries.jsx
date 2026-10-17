@@ -8,11 +8,15 @@ import InquirySkeleton from "../../components/inquiries/InquirySkeleton";
 import InquiryTabs from "../../components/inquiries/InquiryTabs";
 import InquiryTable from "../../components/inquiries/InquiryTable";
 import LoginRequired from "../../components/ui/LoginRequired";
+import useSectionPullToRefresh from "../../hooks/useSectionPullToRefresh";
+import SectionPullIndicator from "../../components/ui/SectionPullIndicator";
+import { useRef } from "react";
 
 export default function Inquiries() {
   const { user, profile, authInitializing } = useAuth();
   const { t } = useLanguage();
   const [view, setView] = useState("grid");
+  const listRef = useRef(null);
 
   const {
     filteredInquiries,
@@ -28,6 +32,11 @@ export default function Inquiries() {
     loadMore,
     refresh,
   } = useInquiries();
+  const { pullDistance, refreshing } = useSectionPullToRefresh({
+    sectionRef: listRef,
+    onRefresh: refresh,
+    enabled: Boolean(user?.uid) && !authInitializing && !loading,
+  });
 
   if (authInitializing) {
     return <InquirySkeleton />;
@@ -89,6 +98,8 @@ export default function Inquiries() {
         </button>
       </div>
 
+      <div ref={listRef} data-pull-section="inquiries-list">
+      <SectionPullIndicator distance={pullDistance} refreshing={refreshing} />
       {loading ? (
         <InquirySkeleton />
       ) : (
@@ -108,6 +119,7 @@ export default function Inquiries() {
           </button>
         </div>
       )}
+      </div>
     </main>
   );
 }

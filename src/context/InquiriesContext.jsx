@@ -65,7 +65,6 @@ export function InquiriesProvider({ children }) {
       },
       (err) => {
         console.error("Failed to subscribe to inquiries:", err);
-        setInquiries([]);
         setError(err);
         setLoading(false);
       },

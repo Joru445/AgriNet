@@ -61,6 +61,12 @@ export async function getPublicProfileByUsername(username) {
   return result.data ?? null;
 }
 
+export async function checkUsernameAvailability(username) {
+  if (!username || typeof username !== "string") return { available: false, reason: "invalid" };
+  const result = await apiRequest(`/v1/users/username-availability/${encodeURIComponent(username.toLowerCase())}`, { requireAuth: false });
+  return { available: Boolean(result.available), username: result.username, reason: result.reason || null };
+}
+
 /*
  * ============================================================
  * UPDATE MY PROFILE (BACKEND)
@@ -121,6 +127,13 @@ export function subscribeUsers(callback, onError) {
   load();
   const timer = setInterval(load, 30_000);
   return () => { closed = true; clearInterval(timer); };
+}
+
+export async function getUsersPage({ cursor, limit = USER_PAGE_SIZE } = {}) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (cursor) params.set("cursor", cursor);
+  const result = await apiRequest(`/v1/users?${params.toString()}`);
+  return { users: result.users || [], cursor: result.cursor || null, hasMore: Boolean(result.hasMore) };
 }
 
 /*

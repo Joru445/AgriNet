@@ -1,4 +1,7 @@
+import { useRef } from "react";
 import useReviews from "../../hooks/useReviews";
+import useSectionPullToRefresh from "../../hooks/useSectionPullToRefresh";
+import SectionPullIndicator from "../../components/ui/SectionPullIndicator";
 import { useLanguage } from "../../context/LanguageContext";
 
 import ReviewSummary from "../../components/farmer/reviews/ReviewSummary";
@@ -9,6 +12,7 @@ import ReviewSkeleton from "../../components/farmer/reviews/ReviewSkeleton";
 import SkeletonBox from "../../components/ui/SkeletonBox";
 
 export default function Reviews() {
+  const listRef = useRef(null);
   const { t } = useLanguage();
   const {
     loading,
@@ -20,7 +24,13 @@ export default function Reviews() {
 
     distribution,
     getPercentage,
+    reloadReviews,
   } = useReviews();
+  const { pullDistance, refreshing } = useSectionPullToRefresh({
+    sectionRef: listRef,
+    onRefresh: reloadReviews,
+    enabled: !loading,
+  });
 
   return (
     <main className="p-4 md:p-6">
@@ -66,11 +76,14 @@ export default function Reviews() {
           )}
         </div>
 
+        <div ref={listRef} data-pull-section="farmer-reviews-list">
+        <SectionPullIndicator distance={pullDistance} refreshing={refreshing} />
         {loading ? (
           <ReviewSkeleton />
         ) : (
           <ReviewList reviews={reviews} />
         )}
+        </div>
       </div>
     </main>
   );

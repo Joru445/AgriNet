@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
 
 import { getFarmerReviews, enrichFarmerReviews } from "../services/farmer-review.service";
+import { accountCacheKey, getAccountCache, setAccountCache } from "../utils/accountQueryCache";
 
 export default function useReviews() {
   const { profile } = useAuth();
@@ -10,15 +11,23 @@ export default function useReviews() {
   const [loading, setLoading] = useState(true);
 
   const [reviews, setReviews] = useState([]);
+  const reviewsRef = useRef(reviews);
+  useEffect(() => {
+    reviewsRef.current = reviews;
+  }, [reviews]);
 
   const loadReviews = useCallback(async () => {
     if (!profile?.uid) return;
 
     try {
-      setLoading(true);
+      // Keep existing review rows and summary visible while revalidating.
+      setLoading(reviewsRef.current.length === 0);
 
-      const data = await getFarmerReviews(profile.uid);
+      const key = accountCacheKey(profile.uid, "farmer-reviews");
+      const cached = getAccountCache(key, 5 * 60 * 1000);
+      const data = cached || await getFarmerReviews(profile.uid);
       const safeData = Array.isArray(data) ? data : [];
+      if (!cached) setAccountCache(key, safeData);
 
       // Paint base reviews immediately; profiles fill in in the background.
       setReviews(safeData);

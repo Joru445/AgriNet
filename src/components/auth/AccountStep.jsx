@@ -9,6 +9,7 @@ import {
   authLabelClass,
 } from "./authStyles";
 import { useLanguage } from "../../context/LanguageContext";
+import useUsernameAvailability, { usernameSuggestions } from "../../hooks/useUsernameAvailability";
 
 export default function AccountStep({
   form,
@@ -22,6 +23,8 @@ export default function AccountStep({
   onContinue,
 }) {
   const { t } = useLanguage();
+  const usernameStatus = useUsernameAvailability(form.username);
+  const suggestions = usernameSuggestions(form.fullname);
 
   const fullnameError = touched.fullname ? errors.fullname : null;
   const usernameError = touched.username ? errors.username : null;
@@ -92,6 +95,9 @@ export default function AccountStep({
             <span>{usernameError}</span>
           </p>
         )}
+        {usernameStatus.checking && <p className="mt-1 text-xs text-(--agri-text-muted)" role="status">{t("auth.register.checkingUsername")}</p>}
+        {!usernameStatus.checking && usernameStatus.available === false && !usernameError && <p className={authFieldErrorClass}>{t("auth.register.usernameUnavailable")}</p>}
+        {!form.username && suggestions.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Username suggestions">{suggestions.map((suggestion) => <button key={suggestion} type="button" onClick={() => updateField("username", suggestion)} className="rounded-full border border-(--agri-border) px-2.5 py-1 text-xs text-(--agri-text-secondary) hover:border-[#2D6A4F]">@{suggestion}</button>)}</div>}
       </div>
 
       {/* Email */}

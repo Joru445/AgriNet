@@ -41,14 +41,16 @@ export default function useInquiries() {
 
   const profileRef = useRef(profile);
 
-  const loadGroup = useCallback(async ({ append = false, force = false } = {}) => {
+  const loadGroup = useCallback(async ({ append = false, force = false, initial = false } = {}) => {
     if (!profile?.uid || !profile?.role) return;
     const key = accountCacheKey(profile.uid, "inquiries", activeTab);
     const cached = !force && getAccountCache(key, 2 * 60 * 1000);
     if (!append && cached) {
       setInquiries(cached.items || []); setCursor(cached.cursor || null); setHasMore(Boolean(cached.hasMore)); setLoading(false); return;
     }
-    setLoading(!append); setError(null);
+    // Revalidation keeps the current group visible; only an empty initial
+    // group needs row skeletons.
+    setLoading(!append && (initial || inquiries.length === 0)); setError(null);
     try {
       const result = await accountCacheRequest(`${key}:${append ? (cursor || "first") : "first"}`, () => apiGetInquiries({ group: activeTab, cursor: append ? cursor : null, limit: 12 }));
       const nextItems = append ? [...inquiries, ...(result.items || [])] : (result.items || []);
@@ -60,7 +62,7 @@ export default function useInquiries() {
 
   useEffect(() => {
     setInquiries([]); setCursor(null); setHasMore(false);
-    loadGroup({ force: false });
+    loadGroup({ force: false, initial: true });
   // loadGroup intentionally tracks the selected group and UID.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.uid, profile?.role, activeTab]);

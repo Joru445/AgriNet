@@ -83,29 +83,55 @@ export default function usePublicProfile() {
       setLoadingProducts(true);
       setLoadingReviews(true);
 
-      const [productResult, reviewResult] = await Promise.allSettled([
-        getPublicFarmerProductsPage(payload.profile.uid),
-        getFarmerReviews(payload.profile.uid),
+      const productsRequest = getPublicFarmerProductsPage(payload.profile.uid)
+        .then(async (result) => {
+          const loadedProducts = result.products || [];
+          const summaries = await getProductReviewSummaries(loadedProducts.map((item) => item.id))
+            .catch(() => new Map());
+          const productsWithRatings = loadedProducts.map((item) => ({
+            ...item,
+            productRating: summaries.get(item.id)?.average ?? item.ratingSummary?.average ?? 0,
+            reviewCount: summaries.get(item.id)?.count ?? item.ratingSummary?.count ?? 0,
+          }));
+          if (requestRef.current === requestId) {
+            setProducts(productsWithRatings);
+            setLoadingProducts(false);
+          }
+          return productsWithRatings;
+        })
+        .catch(() => {
+          if (requestRef.current === requestId) {
+            setProducts([]);
+            setLoadingProducts(false);
+          }
+          return [];
+        });
+
+      const reviewsRequest = getFarmerReviews(payload.profile.uid)
+        .then((loadedReviews) => {
+          if (requestRef.current === requestId) {
+            setReviews(loadedReviews);
+            setLoadingReviews(false);
+          }
+          return loadedReviews;
+        })
+        .catch(() => {
+          if (requestRef.current === requestId) {
+            setReviews([]);
+            setLoadingReviews(false);
+          }
+          return [];
+        });
+
+      const [productsWithRatings, loadedReviews] = await Promise.all([
+        productsRequest,
+        reviewsRequest,
       ]);
       if (requestRef.current !== requestId) return;
 
-      const loadedProducts = productResult.status === "fulfilled" ? productResult.value.products : [];
-      const loadedReviews = reviewResult.status === "fulfilled" ? reviewResult.value : [];
-      const summaries = await getProductReviewSummaries(loadedProducts.map((item) => item.id)).catch(() => new Map());
-      if (requestRef.current !== requestId) return;
-
-      const productsWithRatings = loadedProducts.map((item) => ({
-        ...item,
-        productRating: summaries.get(item.id)?.average ?? item.ratingSummary?.average ?? 0,
-        reviewCount: summaries.get(item.id)?.count ?? item.ratingSummary?.count ?? 0,
-      }));
       const cached = { profile: payload.profile, stats: payload.stats ?? null, products: productsWithRatings, reviews: loadedReviews };
       pageCache.set(`publicProfile:uid:${payload.profile.uid}`, cached, CACHE_TTL);
       pageCache.set(routeKey, cached, CACHE_TTL);
-      setProducts(productsWithRatings);
-      setReviews(loadedReviews);
-      setLoadingProducts(false);
-      setLoadingReviews(false);
       enrichFarmerReviews(loadedReviews)
         .then((enriched) => {
           if (requestRef.current === requestId) setReviews(enriched);

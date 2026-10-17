@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -45,6 +46,7 @@ export function ConversationsProvider({ children }) {
   const { profile, deviceSessionReady } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const userProfileCacheRef = useRef(new Map());
 
@@ -228,10 +230,12 @@ export function ConversationsProvider({ children }) {
     return () => {
       unsubscribe();
     };
-  }, [profile?.uid, deviceSessionReady]);
+  }, [profile?.uid, deviceSessionReady, refreshKey]);
+
+  const refresh = useCallback(() => setRefreshKey((value) => value + 1), []);
 
   return (
-    <ConversationsContext.Provider value={{ conversations, loading }}>
+    <ConversationsContext.Provider value={{ conversations, loading, refresh }}>
       {children}
     </ConversationsContext.Provider>
   );

@@ -19,6 +19,7 @@ const PUBLIC_GROUPS_CACHE_KEY = "all_groups";
 const PUBLIC_GROUPS_CACHE_TTL = 24 * 60 * 60 * 1000;
 let publicGroupsRequest = null;
 let publicGroupsCacheVersion = 0;
+const groupCountRequests = new Map();
 
 function invalidatePublicGroupsCache() {
   publicGroupsCacheVersion += 1;
@@ -453,9 +454,11 @@ export async function getGroupMemberCount(groupId, options = {}) {
   if (!groupId) return 0;
   const cacheKey = `group_count_${groupId}`;
   const cached = pageCache.get(cacheKey);
-  if (typeof cached === "number" && cached > 0) return cached;
+  if (typeof cached === "number") return cached;
+  if (groupCountRequests.has(cacheKey)) return groupCountRequests.get(cacheKey);
 
-  try {
+  const request = (async () => {
+    try {
     const members = await getGroupMembers(groupId, options);
     let count = members.length;
     if (count === 0) {
@@ -469,14 +472,15 @@ export async function getGroupMemberCount(groupId, options = {}) {
     if (count === 0 && (options?.farmerId || options?.userId)) {
       count = 1;
     }
-    if (count > 0) {
-      pageCache.set(cacheKey, count, 2 * 60 * 1000);
-    }
+    pageCache.set(cacheKey, count, 2 * 60 * 1000);
     return count;
-  } catch {
+    } catch {
     const fallback = (options?.farmerId || options?.userId) ? 1 : 0;
-    return (typeof cached === "number" && cached > 0) ? cached : fallback;
-  }
+    return (typeof cached === "number") ? cached : fallback;
+    }
+  })().finally(() => groupCountRequests.delete(cacheKey));
+  groupCountRequests.set(cacheKey, request);
+  return request;
 }
 
 // ============================================================

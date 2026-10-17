@@ -14,6 +14,7 @@ import {
   resolveSocialAccountStatus,
   SOCIAL_ACCOUNT_STATUS,
 } from "../services/auth.service";
+import { checkUsernameAvailability } from "../services/user.service";
 import {
   validateStep1,
   validateStep2,
@@ -334,6 +335,20 @@ export default function useRegisterForm() {
     }
 
     const cleanEmail = form.email.trim().toLowerCase();
+    let usernameCheck;
+    try {
+      usernameCheck = await checkUsernameAvailability(form.username.trim().toLowerCase());
+    } catch (error) {
+      console.error("Username availability check error:", error);
+      showToast.error("Unable to check username availability. Please try again.");
+      return;
+    }
+    if (!usernameCheck.available) {
+      const message = usernameCheck.reason === "reserved" ? t("validation.usernameReserved") : "Username is unavailable.";
+      setErrors((prev) => ({ ...prev, username: message }));
+      showToast.error(message);
+      return;
+    }
     const nextStepNumber = requiresPasswordStep(registrationMethod) ? 2 : 3;
 
     // Social users whose provider supplied an email already authenticated with

@@ -4,7 +4,6 @@ import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import {
   getGroups,
-  getGroupMemberCount,
   getMyMemberships,
   subscribeToMyMemberships,
 } from "../../services/group.service";
@@ -15,6 +14,9 @@ import EmptyState from "../../components/ui/EmptyState";
 import ErrorState from "../../components/ui/ErrorState";
 import InlineSearchInput from "../../components/ui/InlineSearchInput";
 import TabButton from "../../components/ui/TabButton";
+import { useRef } from "react";
+import useSectionPullToRefresh from "../../hooks/useSectionPullToRefresh";
+import SectionPullIndicator from "../../components/ui/SectionPullIndicator";
 
 const GRID = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5";
 
@@ -47,7 +49,7 @@ export default function Groups() {
           }
         }
       }
-    } catch {}
+    } catch { /* local storage may be unavailable */ }
     return localList;
   });
 
@@ -75,6 +77,13 @@ export default function Groups() {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [reloadKey, setReloadKey] = useState(0);
+  const listRef = useRef(null);
+  const { pullDistance, refreshing } = useSectionPullToRefresh({
+    sectionRef: listRef,
+    onRefresh: () => setReloadKey((value) => value + 1),
+    enabled: !loading,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -96,27 +105,9 @@ export default function Groups() {
           setMemberships(membershipsData);
           setMembershipsLoaded(true);
 
-          // Asynchronously load real member counts for all groups
-          Promise.all(
-            groupsData.map(async (g) => {
-              try {
-                const count = await getGroupMemberCount(g.id);
-                return { id: g.id, count };
-              } catch {
-                return { id: g.id, count: 0 };
-              }
-            })
-          ).then((counts) => {
-            if (!cancelled) {
-              const countMap = Object.fromEntries(counts.map((c) => [c.id, c.count]));
-              setGroups((prev) =>
-                prev.map((g) => ({
-                  ...g,
-                  memberCount: countMap[g.id] ?? g.memberCount ?? 0,
-                }))
-              );
-            }
-          });
+          // The public groups response is the single source for aggregate
+          // memberCount. Avoid one member-list request per card (N+1).
+          pageCache.set("all_groups", groupsData);
         }
       } catch (err) {
         if (!cancelled && groups.length === 0) {
@@ -147,7 +138,7 @@ export default function Groups() {
       cancelled = true;
       unsubMemberships();
     };
-  }, [isFarmer, user?.uid, t]);
+  }, [isFarmer, user?.uid, t, reloadKey]);
 
   const membershipByGroupId = useMemo(() => {
     const map = {};
@@ -187,56 +178,6 @@ export default function Groups() {
 
     return list;
   }, [groups, activeTab, search, membershipByGroupId]);
-
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-        <div className="rounded-2xl border border-(--agri-border)/80 bg-(--agri-card) p-5 sm:p-6 shadow-sm shadow-black/5">
-          <SkeletonBox className="h-8 w-44 rounded-xl" />
-          <SkeletonBox className="mt-2 h-4 w-72" />
-        </div>
-        <div className={GRID}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="overflow-hidden rounded-2xl border border-(--agri-border)/80 bg-(--agri-card) shadow-md shadow-black/5"
-            >
-              <SkeletonBox className="aspect-[16/10] w-full" />
-              <div className="p-4 sm:p-5 space-y-3">
-                <SkeletonBox className="h-5 w-3/4" />
-                <SkeletonBox className="h-3.5 w-full" />
-                <SkeletonBox className="h-3.5 w-2/3" />
-                <div className="flex gap-2 pt-2">
-                  <SkeletonBox className="h-5 w-20 rounded-lg" />
-                  <SkeletonBox className="h-5 w-24 rounded-lg" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <ErrorState message={error} onRetry={() => window.location.reload()} />
-      </div>
-    );
-  }
-
-  if (groups.length === 0) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <EmptyState
-          icon="ri-team-line"
-          title={t("groups.noGroups")}
-          description={t("groups.noGroupsDesc")}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-5 sm:px-6 space-y-5">
@@ -296,13 +237,34 @@ export default function Groups() {
         )}
       </div>
 
+      <div ref={listRef} data-pull-section="groups-list">
+      <SectionPullIndicator distance={pullDistance} refreshing={refreshing} />
       {/* Grid or Empty Search */}
-      {filteredGroups.length === 0 ? (
+      {loading ? (
+        <div className={GRID} aria-label={t("common.loading")}>
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="overflow-hidden rounded-2xl border border-(--agri-border)/80 bg-(--agri-card) shadow-md shadow-black/5">
+              <SkeletonBox className="aspect-[16/10] w-full" />
+              <div className="space-y-3 p-4 sm:p-5">
+                <SkeletonBox className="h-5 w-3/4" />
+                <SkeletonBox className="h-3.5 w-full" />
+                <SkeletonBox className="h-3.5 w-2/3" />
+                <div className="flex gap-2 pt-2">
+                  <SkeletonBox className="h-5 w-20 rounded-lg" />
+                  <SkeletonBox className="h-5 w-24 rounded-lg" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <ErrorState message={error} onRetry={() => setReloadKey((value) => value + 1)} />
+      ) : filteredGroups.length === 0 ? (
         <div className="py-8">
           <EmptyState
-            icon="ri-search-line"
-            title="No matching groups found"
-            description={search ? `No groups matched "${search}". Try adjusting your search query.` : "No groups in this filter category."}
+            icon={groups.length === 0 ? "ri-team-line" : "ri-search-line"}
+            title={groups.length === 0 ? t("groups.noGroups") : "No matching groups found"}
+            description={groups.length === 0 ? t("groups.noGroupsDesc") : search ? `No groups matched "${search}". Try adjusting your search query.` : "No groups in this filter category."}
             action={
               search || activeTab !== "all" ? (
                 <button
@@ -333,6 +295,7 @@ export default function Groups() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

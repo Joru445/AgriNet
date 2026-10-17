@@ -12,9 +12,11 @@ import UserEditModal from "../../components/admin/users/UserEditModal";
 import { InlineError } from "../../components/ui/ErrorState";
 
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function Users() {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const {
     users,
@@ -32,6 +34,8 @@ export default function Users() {
     getFarmer,
     verifyUserFarmer,
     unverifyUserFarmer,
+    hasMore,
+    loadMore,
   } = useUsers();
 
   const [search, setSearch] = useState("");
@@ -190,6 +194,13 @@ export default function Users() {
             onView={setSelectedUser}
             onEdit={handleEditUser}
           />
+        )}
+        {!loading && hasMore && (
+          <div className="mt-4 flex justify-center">
+            <button type="button" onClick={loadMore} className="rounded-xl border border-(--agri-border) px-4 py-2 text-sm font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover)">
+              {t("adminUser.loadMore")}
+            </button>
+          </div>
         )}
       </div>
 

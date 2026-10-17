@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getUserProfile,
   searchUsers,
-  subscribeUsers,
+  getUsersPage,
 } from "../services/user.service";
 
 import { apiSetUserSuspension } from "../services/admin.service";
@@ -21,6 +21,8 @@ export default function useUsers() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cursor, setCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
 
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState(null);
@@ -31,26 +33,21 @@ export default function useUsers() {
    * ============================================================
    */
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
+  const loadUsers = useCallback(async (append = false) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const page = await getUsersPage({ cursor: append ? cursor : null });
+      setUsers((current) => append ? [...current, ...page.users] : page.users);
+      setCursor(page.cursor);
+      setHasMore(page.hasMore);
+    } catch (err) {
+      console.error("Failed to load users:", err);
+      setError(err?.message || "Failed to load users.");
+    } finally { setLoading(false); }
+  }, [cursor]);
 
-    const unsubscribe = subscribeUsers(
-      (data) => {
-        setUsers(data);
-        setLoading(false);
-      },
-      (err) => {
-        console.error("Failed to load users:", err);
-
-        setError(err?.message || "Failed to load users.");
-
-        setLoading(false);
-      },
-    );
-
-    return unsubscribe;
-  }, []);
+  useEffect(() => { loadUsers(false); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   /*
    * ============================================================
@@ -360,5 +357,8 @@ export default function useUsers() {
     unverifyUserFarmer,
 
     clearActionError,
+    hasMore,
+    loadMore: () => loadUsers(true),
+    reload: () => loadUsers(false),
   };
 }

@@ -11,6 +11,7 @@ import {
 import { uploadProductImage } from "../services/cloudinary.service";
 
 import { showToast } from "../utils/toast";
+import { accountCacheKey, getAccountCache, setAccountCache, invalidateAccountCache } from "../utils/accountQueryCache";
 
 export default function useProducts() {
   const { profile } = useAuth();
@@ -37,9 +38,16 @@ export default function useProducts() {
         setLoading(true);
       }
 
+      const cacheKey = accountCacheKey(profile.uid, "farmer-products");
+      const cached = !isInitial ? null : getAccountCache(cacheKey, 5 * 60 * 1000);
+      if (cached) {
+        setProducts(cached);
+        return;
+      }
       const data = await apiGetFarmerProducts(profile.uid);
 
       setProducts(data);
+      setAccountCache(cacheKey, data);
     } catch (error) {
       console.error(error);
       showToast.error("Failed to load products.");
@@ -126,6 +134,7 @@ export default function useProducts() {
       });
 
       showToast.success("Product created.");
+      invalidateAccountCache(accountCacheKey(profile.uid, "farmer-products"));
 
       closeModal();
       await loadProducts(false);
@@ -151,6 +160,7 @@ export default function useProducts() {
       });
 
       showToast.success("Product updated.");
+      invalidateAccountCache(accountCacheKey(profile.uid, "farmer-products"));
 
       closeModal();
       await loadProducts(false);

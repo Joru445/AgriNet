@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { uploadProfilePicture } from "../services/cloudinary.service";
-import { updateMyProfile, getUserProfile, getPublicProfile } from "../services/user.service";
+import { updateMyProfile, getUserProfile, getPublicProfile, checkUsernameAvailability } from "../services/user.service";
 import { getFarmerById } from "../services/farmer.service";
 
 import { showToast } from "../utils/toast";
@@ -82,7 +82,7 @@ export default function useProfile(profile) {
 
     setForm((prev) => ({
       ...prev,
-      [fieldName]: value,
+      [fieldName]: fieldName === "username" ? value.toLowerCase() : value,
     }));
   };
 
@@ -105,7 +105,7 @@ export default function useProfile(profile) {
 
     // Basic validation
     const trimmedFullname = form.fullname?.trim();
-    const trimmedUsername = form.username?.trim();
+    const trimmedUsername = form.username?.trim().toLowerCase();
 
     if (!trimmedFullname) {
       showToast.error("Full name is required.");
@@ -160,6 +160,19 @@ export default function useProfile(profile) {
       showToast.error(error.message);
     } finally {
       setSaving(false);
+    }
+
+    if (trimmedUsername !== String(profile?.username || "").toLowerCase()) {
+      try {
+        const availability = await checkUsernameAvailability(trimmedUsername);
+        if (!availability.available) {
+          showToast.error(availability.reason === "reserved" ? "This username is reserved." : "Username is already in use.");
+          return;
+        }
+      } catch {
+        showToast.error("Unable to check username availability. Please try again.");
+        return;
+      }
     }
   }
 

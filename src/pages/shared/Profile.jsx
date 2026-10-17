@@ -10,7 +10,11 @@ import { getProfilePath, getSettingsPath } from "../../utils/routes";
 import * as pageCache from "../../utils/pageCache";
 
 import PublicProfileHeader from "../../components/profile/PublicProfileHeader";
-import PublicProfileSkeleton from "../../components/profile/PublicProfileSkeleton";
+import {
+  ProfileContentSkeleton,
+  ProfileHeaderSkeleton,
+  ProfileStatsSkeleton,
+} from "../../components/profile/PublicProfileSkeleton";
 import ProfileStats from "../../components/profile/ProfileStats";
 import ConsumerProfileDetails from "../../components/profile/ConsumerProfileDetails";
 import StoreProducts from "../../components/store/StoreProducts";
@@ -97,9 +101,7 @@ export default function Profile() {
     reload();
   }
 
-  if (loading) return <PublicProfileSkeleton />;
-
-  if (!profile) {
+  if (!profile && !loading) {
     const isMissing = error?.kind === "not-found";
     return (
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
@@ -123,21 +125,23 @@ export default function Profile() {
   const isFarmer = role === "farmer";
   return (
     <main className="mx-auto min-h-full w-full max-w-6xl bg-(--agri-surface) pb-12">
-      <PublicProfileHeader
-        profile={profile}
-        role={role}
-        groups={groups}
-        isOwner={isOwner}
-        onMessage={!isOwner ? () => startConversation(profile) : undefined}
-        onEdit={() => setEditOpen(true)}
-        onSettings={() => navigate(getSettingsPath())}
-        onGroupClick={setSelectedGroup}
-      />
+      {profile ? (
+        <PublicProfileHeader
+          profile={profile}
+          role={role}
+          groups={groups}
+          isOwner={isOwner}
+          onMessage={!isOwner ? () => startConversation(profile) : undefined}
+          onEdit={() => setEditOpen(true)}
+          onSettings={() => navigate(getSettingsPath())}
+          onGroupClick={setSelectedGroup}
+        />
+      ) : <ProfileHeaderSkeleton />}
 
       <div className="space-y-7 px-4 py-6 sm:px-6">
-        {isOwner && <ProfileTransactions />}
+        {profile && isOwner && <ProfileTransactions />}
 
-        {isFarmer && groups.length > 0 && (
+        {profile && isFarmer && groups.length > 0 && (
           <section className="border-b border-(--agri-border-subtle) pb-5">
             <h2 className="mb-3 text-sm font-bold text-(--agri-text)">
               {t("profile.organizations")}
@@ -156,9 +160,9 @@ export default function Profile() {
           </section>
         )}
       </div>
-      <ProfileStats stats={stats} role={role} />
+      {profile ? <ProfileStats stats={stats} role={role} /> : <ProfileStatsSkeleton />}
 
-      {isFarmer ? (
+      {profile && isFarmer ? (
         <>
           {loadingProducts ? (
             <ProductGridSkeleton
@@ -175,11 +179,11 @@ export default function Profile() {
             type="farmer"
           />
         </>
-      ) : (
+      ) : profile ? (
         <ConsumerProfileDetails profile={profile} />
-      )}
+      ) : <ProfileContentSkeleton />}
 
-      {selectedGroup && (
+      {profile && selectedGroup && (
         <GroupPreviewModal
           open
           onClose={() => setSelectedGroup(null)}
@@ -189,7 +193,7 @@ export default function Profile() {
         />
       )}
 
-      {editOpen && isOwner && (
+      {profile && editOpen && isOwner && (
         <ProfileEditor
           open
           profile={privateProfile || { uid: authUser.uid, role }}

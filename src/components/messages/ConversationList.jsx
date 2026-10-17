@@ -1,5 +1,6 @@
 import { useLanguage } from "../../context/LanguageContext";
 import ConversationItem from "./ConversationItem";
+import SectionPullIndicator from "../ui/SectionPullIndicator";
 
 export default function ConversationList({
   conversations = [],
@@ -15,12 +16,15 @@ export default function ConversationList({
     onConversation,
   onUser,
   hasChat,
+  listRef,
+  pullDistance,
+  refreshing,
 }) {
   const { t } = useLanguage();
   const searching = search.trim().length > 0;
 
   return (
-    <aside
+    <aside ref={listRef}
       className={`w-full lg:w-80 md:w-64 flex flex-col border-r border-(--agri-border) ${hasChat ? "hidden md:flex" : "flex"}`}
     >
       <div className="p-4">
@@ -49,7 +53,8 @@ export default function ConversationList({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-none">
+      <div data-pull-scroll className="flex-1 overflow-y-auto scrollbar-none">
+        <SectionPullIndicator distance={pullDistance} refreshing={refreshing} />
         {!searching ? (
           <>
             <div className="px-4 pt-4 pb-2">
