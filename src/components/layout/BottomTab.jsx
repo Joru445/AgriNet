@@ -11,9 +11,8 @@ export default function BottomTab({ showBottomTab }) {
     ? (navigationByRole[identity.role] ?? consumerNavigation)
     : consumerNavigation;
 
-  const profilePath = getProfilePath(identity?.username) || "/profile";
   const items = baseNav.filter((item) => item.bottom).map((item) => item.kind === "profile"
-    ? { ...item, to: profilePath }
+    ? { ...item, to: getProfilePath(identity?.username) }
     : item);
 
   return showBottomTab && <BottomNavigation items={items} />;
