@@ -24,7 +24,7 @@ export default function LocationPicker({
   const { t } = useLanguage();
   const [loadingLocation, setLoadingLocation] = useState(false);
 
-  // Manual search state
+  // Manual search stat e
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
