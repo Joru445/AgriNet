@@ -50,13 +50,19 @@ export default function Profile() {
     reload,
   } = usePublicProfile();
 
-  // UID equality is the ownership boundary. A matching username is not.
+  // If public profile request fails (e.g. mobile connectivity, backend cold start),
+  // fall back to authenticated profile for the owner so their profile is never unavailable to themselves.
   const isOwner = Boolean(
-    authUser?.uid && profile?.uid && authUser.uid === profile.uid,
+    (authUser?.uid && profile?.uid && authUser.uid === profile.uid) ||
+    (authUser?.uid && privateProfile?.username && username && privateProfile.username.toLowerCase() === username.toLowerCase()) ||
+    (authUser?.uid && (!username || username === "profile" || username === "me") && privateProfile?.uid)
   );
 
+  const activeProfile = profile || (isOwner ? privateProfile : null);
+  const activeRole = activeProfile?.role ?? role ?? privateProfile?.role ?? null;
+
   useEffect(() => {
-    const canonicalPath = getProfilePath(profile?.username);
+    const canonicalPath = getProfilePath(activeProfile?.username);
     const needsCanonicalRedirect = Boolean(
       canonicalPath && username && username !== username.toLowerCase(),
     );
@@ -65,15 +71,15 @@ export default function Profile() {
         replace: true,
       });
     }
-  }, [location.hash, location.search, navigate, profile?.username, username]);
+  }, [location.hash, location.search, navigate, activeProfile?.username, username]);
 
   useEffect(() => {
-    if (role !== "farmer" || !profile?.uid) {
+    if (activeRole !== "farmer" || !activeProfile?.uid) {
       setGroups([]);
       return undefined;
     }
     let cancelled = false;
-    getUserApprovedGroups(profile.uid)
+    getUserApprovedGroups(activeProfile.uid)
       .then((approved) => {
         if (!cancelled) setGroups(approved);
       })
@@ -83,7 +89,7 @@ export default function Profile() {
     return () => {
       cancelled = true;
     };
-  }, [profile?.uid, role]);
+  }, [activeProfile?.uid, activeRole]);
 
   function saveProfile(updated) {
     if (!updated?.uid) return;
@@ -101,7 +107,7 @@ export default function Profile() {
     reload();
   }
 
-  if (!profile && !loading) {
+  if (!activeProfile && !loading) {
     const isMissing = error?.kind === "not-found";
     return (
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
@@ -117,21 +123,23 @@ export default function Profile() {
               ? t("profile.profileNotFoundDesc")
               : t("profile.profileUnavailableDesc")
           }
+          action={t("common.retry")}
+          onAction={reload}
         />
       </main>
     );
   }
 
-  const isFarmer = role === "farmer";
+  const isFarmer = activeRole === "farmer";
   return (
     <main className="mx-auto min-h-full w-full max-w-6xl bg-(--agri-surface) pb-12">
-      {profile ? (
+      {activeProfile ? (
         <PublicProfileHeader
-          profile={profile}
-          role={role}
+          profile={activeProfile}
+          role={activeRole}
           groups={groups}
           isOwner={isOwner}
-          onMessage={!isOwner ? () => startConversation(profile) : undefined}
+          onMessage={!isOwner ? () => startConversation(activeProfile) : undefined}
           onEdit={() => setEditOpen(true)}
           onSettings={() => navigate(getSettingsPath())}
           onGroupClick={setSelectedGroup}
@@ -139,9 +147,9 @@ export default function Profile() {
       ) : <ProfileHeaderSkeleton />}
 
       <div className="space-y-7 px-4 py-6 sm:px-6">
-        {profile && isOwner && <ProfileTransactions />}
+        {activeProfile && isOwner && <ProfileTransactions />}
 
-        {profile && isFarmer && groups.length > 0 && (
+        {activeProfile && isFarmer && groups.length > 0 && (
           <section className="border-b border-(--agri-border-subtle) pb-5">
             <h2 className="mb-3 text-sm font-bold text-(--agri-text)">
               {t("profile.organizations")}
@@ -160,9 +168,9 @@ export default function Profile() {
           </section>
         )}
       </div>
-      {profile ? <ProfileStats stats={stats} role={role} /> : <ProfileStatsSkeleton />}
+      {activeProfile ? <ProfileStats stats={stats} role={activeRole} /> : <ProfileStatsSkeleton />}
 
-      {profile && isFarmer ? (
+      {activeProfile && isFarmer ? (
         <>
           {loadingProducts ? (
             <ProductGridSkeleton
@@ -170,7 +178,7 @@ export default function Profile() {
               gridClassName="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 sm:gap-4"
             />
           ) : (
-            <StoreProducts farmer={profile} products={products} />
+            <StoreProducts farmer={activeProfile} products={products} />
           )}
           <ReviewSection
             title={t("reviews.farmerTitle")}
@@ -179,25 +187,25 @@ export default function Profile() {
             type="farmer"
           />
         </>
-      ) : profile ? (
-        <ConsumerProfileDetails profile={profile} />
+      ) : activeProfile ? (
+        <ConsumerProfileDetails profile={activeProfile} />
       ) : <ProfileContentSkeleton />}
 
-      {profile && selectedGroup && (
+      {activeProfile && selectedGroup && (
         <GroupPreviewModal
           open
           onClose={() => setSelectedGroup(null)}
           groupId={selectedGroup.groupId}
           initialGroup={selectedGroup}
-          farmerId={profile.uid}
+          farmerId={activeProfile.uid}
         />
       )}
 
-      {profile && editOpen && isOwner && (
+      {activeProfile && editOpen && isOwner && (
         <ProfileEditor
           open
-          profile={privateProfile || { uid: authUser.uid, role }}
-          role={role}
+          profile={privateProfile || { uid: authUser.uid, role: activeRole }}
+          role={activeRole}
           onClose={() => setEditOpen(false)}
           onSaved={saveProfile}
         />

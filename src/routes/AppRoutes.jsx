@@ -136,9 +136,9 @@ export default function AppRoutes() {
           <Route path="/admin/settings/*" element={<LegacyRedirect to={({ "*": rest }) => `/settings${rest ? `/${rest}` : ""}`} />} />
           <Route path="/admin/notifications" element={<LegacyRedirect to="/notifications" />} />
 
-          {/* Reserved legacy/system root segments: keep them out of username lookup. */}
-          <Route path="/me" element={<NotFound />} />
-          <Route path="/profile" element={<NotFound />} />
+          {/* Profile routes */}
+          <Route path="/me" element={<Profile />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/product" element={<NotFound />} />
           <Route path="/manage" element={<NotFound />} />
 

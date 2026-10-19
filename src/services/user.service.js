@@ -1,3 +1,5 @@
+import { collection, doc, getDoc, getDocs, limit, query, where } from "firebase/firestore";
+import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
 import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
 import { invalidatePrefix } from "../utils/pageCache";
@@ -51,14 +53,59 @@ export async function getUserProfile(uid, requesterUid) {
 // public pages and "View as others" without reading owner-only cache fields.
 export async function getPublicProfile(uid) {
   if (!uid || typeof uid !== "string") throw new Error("Invalid user UID.");
-  const result = await apiRequest(`/v1/users/public/${encodeURIComponent(uid)}`, { requireAuth: false });
-  return result.data ?? null;
+  try {
+    const result = await apiRequest(`/v1/users/public/${encodeURIComponent(uid)}`, { requireAuth: false });
+    if (result?.data) return result.data;
+  } catch (apiError) {
+    console.warn(`[userService] Backend getPublicProfile for ${uid} failed:`, apiError?.message || apiError);
+  }
+
+  try {
+    const snap = await getDoc(doc(db, "users", uid));
+    if (snap.exists()) {
+      return { profile: { uid: snap.id, ...snap.data() }, stats: null };
+    }
+  } catch (firestoreError) {
+    console.warn(`[userService] Firestore fallback for ${uid} failed:`, firestoreError?.message || firestoreError);
+  }
+
+  const cached = getCachedUserProfile(uid, uid);
+  if (cached) {
+    return { profile: cached, stats: null };
+  }
+
+  return null;
 }
 
 export async function getPublicProfileByUsername(username) {
   if (!username || typeof username !== "string") throw new Error("Invalid username.");
-  const result = await apiRequest(`/v1/users/by-username/${encodeURIComponent(username)}`, { requireAuth: false });
-  return result.data ?? null;
+  const normalized = username.trim().toLowerCase();
+
+  try {
+    const result = await apiRequest(`/v1/users/by-username/${encodeURIComponent(normalized)}`, { requireAuth: false });
+    if (result?.data) return result.data;
+  } catch (apiError) {
+    console.warn(`[userService] Backend getPublicProfileByUsername for ${username} failed:`, apiError?.message || apiError);
+  }
+
+  try {
+    const usersRef = collection(db, "users");
+    let q = query(usersRef, where("username", "==", normalized), limit(1));
+    let snapshot = await getDocs(q);
+    if (snapshot.empty && username.trim() !== normalized) {
+      q = query(usersRef, where("username", "==", username.trim()), limit(1));
+      snapshot = await getDocs(q);
+    }
+
+    if (!snapshot.empty) {
+      const docSnap = snapshot.docs[0];
+      return { profile: { uid: docSnap.id, ...docSnap.data() }, stats: null };
+    }
+  } catch (firestoreError) {
+    console.warn(`[userService] Firestore fallback for username ${username} failed:`, firestoreError?.message || firestoreError);
+  }
+
+  return null;
 }
 
 export async function checkUsernameAvailability(username) {

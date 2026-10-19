@@ -15,7 +15,7 @@ const GROUPS = [
   ["requests", "ri-inbox-line"],
   ["confirmed", "ri-checkbox-circle-line"],
   ["preparation", "ri-loader-2-line"],
-  ["in-progress", "ri-truck-line"],
+  ["in-progress", "ri-exchange-line"],
   ["completed", "ri-check-double-line"],
   ["cancelled", "ri-close-circle-line"],
 ];
