@@ -17,7 +17,7 @@ import {
   mapInquiryToGroup,
 } from "../services/inquiry.service";
 import { accountCacheKey, getAccountCache, setAccountCache, accountCacheRequest, invalidateAccountCache } from "../utils/accountQueryCache";
-import { getAcceptedInquiries } from "../utils/optimisticInquiries";
+import { getAcceptedInquiries, removeAcceptedInquiry } from "../utils/optimisticInquiries";
 
 import { getProductById } from "../services/product.service";
 import { getUserProfile } from "../services/user.service";
@@ -39,14 +39,34 @@ export default function useInquiries() {
     const localAccepted = getAcceptedInquiries(profile?.uid);
     if (!base && !realtimeInquiries?.length && !localAccepted.length) return null;
     const res = { requests: 0, confirmed: 0, preparation: 0, "in-progress": 0, completed: 0, cancelled: 0, ...(base || {}) };
+    const realtimeIds = new Set();
     const tally = (item) => {
       const group = mapInquiryToGroup(item);
       if (group && res[group] != null) {
         res[group] = Math.max(Number(res[group] || 0), 1);
       }
     };
-    if (Array.isArray(realtimeInquiries)) realtimeInquiries.forEach(tally);
-    if (Array.isArray(localAccepted)) localAccepted.forEach(tally);
+    if (Array.isArray(realtimeInquiries)) {
+      realtimeInquiries.forEach((item) => {
+        if (item?.id) realtimeIds.add(String(item.id));
+        if (item?.inquiryMessageId) realtimeIds.add(String(item.inquiryMessageId));
+        if (typeof item?.id === "string" && item.id.startsWith("inq_")) {
+          realtimeIds.add(item.id.replace(/^inq_/, ""));
+        }
+        tally(item);
+      });
+    }
+    if (Array.isArray(localAccepted)) {
+      localAccepted.forEach((item) => {
+        const idStr = String(item?.id || "");
+        const rawId = idStr.replace(/^inq_/, "");
+        const msgId = String(item?.inquiryMessageId || "");
+        if (realtimeIds.has(idStr) || (rawId && realtimeIds.has(rawId)) || (msgId && realtimeIds.has(msgId))) {
+          return;
+        }
+        tally(item);
+      });
+    }
     return res;
   }, [counts, realtimeInquiries, profile?.uid]);
 
@@ -169,18 +189,93 @@ export default function useInquiries() {
    */
 
   const filteredInquiries = useMemo(() => {
-    const list = [];
-    const seen = new Set();
-    const add = (item) => {
-      if (item?.id && !seen.has(item.id) && mapInquiryToGroup(item) === activeTab) {
-        seen.add(item.id);
-        list.push(item);
+    const authoritativeMap = new Map();
+    const registerAuthoritative = (item) => {
+      if (!item) return;
+      if (item.id) authoritativeMap.set(String(item.id), item);
+      if (item.inquiryMessageId) authoritativeMap.set(String(item.inquiryMessageId), item);
+      if (typeof item.id === "string" && item.id.startsWith("inq_")) {
+        authoritativeMap.set(item.id.replace(/^inq_/, ""), item);
       }
     };
-    if (Array.isArray(inquiries)) inquiries.forEach(add);
-    if (Array.isArray(realtimeInquiries)) realtimeInquiries.forEach(add);
+
+    if (Array.isArray(realtimeInquiries)) realtimeInquiries.forEach(registerAuthoritative);
+
+    const list = [];
+    const seen = new Set();
+
+    const markSeen = (item) => {
+      if (item?.id) seen.add(String(item.id));
+      if (item?.inquiryMessageId) seen.add(String(item.inquiryMessageId));
+      if (typeof item?.id === "string" && item.id.startsWith("inq_")) {
+        seen.add(item.id.replace(/^inq_/, ""));
+      }
+    };
+
+    const isSeen = (item) => {
+      if (!item) return true;
+      if (item.id && seen.has(String(item.id))) return true;
+      if (item.inquiryMessageId && seen.has(String(item.inquiryMessageId))) return true;
+      if (typeof item.id === "string" && item.id.startsWith("inq_") && seen.has(item.id.replace(/^inq_/, ""))) return true;
+      return false;
+    };
+
+    // 1. Group-specific items fetched from API
+    if (Array.isArray(inquiries)) {
+      for (const item of inquiries) {
+        if (!isSeen(item) && mapInquiryToGroup(item) === activeTab) {
+          markSeen(item);
+          list.push(item);
+        }
+      }
+    }
+
+    // 2. Realtime inquiries that belong to this group
+    if (Array.isArray(realtimeInquiries)) {
+      for (const item of realtimeInquiries) {
+        if (!isSeen(item) && mapInquiryToGroup(item) === activeTab) {
+          markSeen(item);
+          list.push(item);
+        }
+      }
+    }
+
+    // 3. Local accepted optimistic inquiries (only when confirmed tab is active)
     const localAccepted = getAcceptedInquiries(profile?.uid);
-    if (Array.isArray(localAccepted)) localAccepted.forEach(add);
+    if (Array.isArray(localAccepted)) {
+      for (const item of localAccepted) {
+        const idStr = String(item.id || "");
+        const rawId = idStr.replace(/^inq_/, "");
+        const msgId = String(item.inquiryMessageId || "");
+
+        const serverItem =
+          authoritativeMap.get(idStr) ||
+          (rawId ? authoritativeMap.get(rawId) : null) ||
+          (msgId ? authoritativeMap.get(msgId) : null);
+
+        if (serverItem) {
+          // If the server stream already knows this inquiry, its status is authoritative.
+          // If it is no longer confirmed, purge it immediately so it doesn't linger.
+          if (mapInquiryToGroup(serverItem) !== "confirmed") {
+            removeAcceptedInquiry(item.id);
+            continue;
+          }
+        }
+
+        if (isSeen(item)) continue;
+
+        if (mapInquiryToGroup(item) !== "confirmed") {
+          removeAcceptedInquiry(item.id);
+          continue;
+        }
+
+        if (activeTab === "confirmed") {
+          markSeen(item);
+          list.push(item);
+        }
+      }
+    }
+
     return list;
   }, [inquiries, realtimeInquiries, activeTab, profile?.uid]);
 
@@ -309,9 +404,42 @@ export default function useInquiries() {
     try {
       setUpdatingId(inquiryId);
 
+      // Optimistically remove from accepted inquiries cache
+      removeAcceptedInquiry(inquiryId);
+      // Optimistically remove from current inquiry list
+      setInquiries((prev) =>
+        prev.filter((item) => {
+          const target = String(inquiryId);
+          const targetRaw = target.replace(/^inq_/, "");
+          const itemId = String(item?.id || "");
+          const itemRaw = itemId.replace(/^inq_/, "");
+          const msgId = String(item?.inquiryMessageId || "");
+          return (
+            itemId !== target &&
+            itemRaw !== target &&
+            (!targetRaw || itemRaw !== targetRaw) &&
+            msgId !== target &&
+            (!targetRaw || msgId !== targetRaw)
+          );
+        }),
+      );
+
       if (status === "ongoing") {
-        await apiStartTransaction(inquiryId);
-        showToast.success("Inquiry marked as ongoing.");
+        try {
+          await apiStartTransaction(inquiryId);
+          showToast.success("Inquiry marked as ongoing.");
+        } catch (apiError) {
+          // If the inquiry was already started / transitioned on backend, handle gracefully
+          if (
+            apiError.message?.includes("cannot make that status change") ||
+            apiError.message?.includes("already") ||
+            apiError.status === 400
+          ) {
+            showToast.info("Transaction is already in progress.");
+          } else {
+            throw apiError;
+          }
+        }
       } else if (status === "preparing" || status === "ready") {
         await apiAdvancePreorder(inquiryId, status);
         showToast.success(status === "ready" ? "Your customer's order is ready." : "Order marked as preparing.");
@@ -326,6 +454,7 @@ export default function useInquiries() {
     } catch (error) {
       console.error(error);
       showToast.error(error.message || "Failed to update inquiry.");
+      await refresh();
     } finally {
       setUpdatingId(null);
     }

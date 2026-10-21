@@ -8,7 +8,7 @@ import Textarea from "../ui/Textarea";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import MessageImage from "./MessageImage";
-import { saveAcceptedInquiry } from "../../utils/optimisticInquiries";
+import { saveAcceptedInquiry, isHandledInquiry } from "../../utils/optimisticInquiries";
 
 import defaultAvatar from "../../assets/img/defaultAvatar.png";
 import productPlaceholder from "../../assets/img/productPlaceholder.png";
@@ -42,9 +42,13 @@ export default function ProductInquiryMessage({
   const isFarmer = profile.role === "farmer";
 
   useEffect(() => {
+    const inquiryId = message?.inquiryId || (message?.id ? `inq_${message.id}` : null);
+    if (!inquiryId || isHandledInquiry(inquiryId) || isHandledInquiry(message?.id)) {
+      return;
+    }
     if (["accepted", "reserved", "confirmed", "awaiting_agreement"].includes(message?.inquiryStatus)) {
       saveAcceptedInquiry({
-        id: message.inquiryId || `inq_${message.id}`,
+        id: inquiryId,
         inquiryMessageId: message.id,
         conversationId: message.conversationId,
         productId: message.productId,
