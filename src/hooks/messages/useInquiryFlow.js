@@ -10,6 +10,8 @@ import { buildOptimisticConversation } from "../../utils/messaging/buildOptimist
 import { getProductInquiryState } from "../../utils/productStatus";
 import { useLanguage } from "../../context/LanguageContext";
 import { showToast } from "../../utils/toast";
+import { accountCacheKey, invalidateAccountCache } from "../../utils/accountQueryCache";
+import { saveAcceptedInquiry } from "../../utils/optimisticInquiries";
 
 // i18n keys for each blocked inquiry state — mirrors the backend's
 // authoritative error wording ("The pre-order deadline has passed." etc.)
@@ -238,7 +240,7 @@ export default function useInquiryFlow({
       }
 
       try {
-        await apiAcceptInquiry({
+        const createdId = await apiAcceptInquiry({
           messageId: inquiryMessage.id,
           conversationId: inquiryMessage.conversationId,
           productId: inquiryMessage.productId,
@@ -246,6 +248,33 @@ export default function useInquiryFlow({
           quantity: inquiryMessage.quantity,
           ...(counterProposal ? { counterOffer: true, proposal: counterProposal } : {}),
         });
+        saveAcceptedInquiry({
+          id: createdId || inquiryMessage.inquiryId || `inq_${inquiryMessage.id}`,
+          inquiryMessageId: inquiryMessage.id,
+          conversationId: inquiryMessage.conversationId,
+          productId: inquiryMessage.productId,
+          consumerId: inquiryMessage.senderId,
+          farmerId: profile?.uid,
+          status: "accepted",
+          quantity: inquiryMessage.quantity,
+          createdAt: new Date().toISOString(),
+          productSnapshot: product ? {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            unit: product.unit,
+            imageUrl: product.images?.[0]?.url || product.images?.[0] || "",
+          } : null,
+        });
+        if (profile?.uid) {
+          invalidateAccountCache(accountCacheKey(profile.uid, "inquiries"));
+          invalidateAccountCache(accountCacheKey(profile.uid, "inquiry-group-counts"));
+          window.dispatchEvent(
+            new CustomEvent("agrinet:inquiry-counts-invalidated", {
+              detail: { uid: profile.uid, inquiryId: createdId },
+            }),
+          );
+        }
         showToast.success(counterProposal ? "Counteroffer sent. The buyer must approve it before production." : t("inquiryFlow.accepted"));
       } catch (error) {
         console.error("Failed to accept inquiry:", error);

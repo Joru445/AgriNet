@@ -2,8 +2,10 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import { useInquiriesContext } from "../context/InquiriesContext";
 import {
   apiGetInquiries,
+  apiGetInquiryGroupCounts,
   apiStartTransaction,
   apiRequestCompletion,
   apiSubmitProof,
@@ -12,8 +14,10 @@ import {
   apiCancelInquiry,
   apiAdvancePreorder,
   apiAcceptPreorderAgreement,
+  mapInquiryToGroup,
 } from "../services/inquiry.service";
 import { accountCacheKey, getAccountCache, setAccountCache, accountCacheRequest, invalidateAccountCache } from "../utils/accountQueryCache";
+import { getAcceptedInquiries } from "../utils/optimisticInquiries";
 
 import { getProductById } from "../services/product.service";
 import { getUserProfile } from "../services/user.service";
@@ -25,9 +29,33 @@ const INQUIRY_GROUP_IDS = new Set(["requests", "confirmed", "preparation", "in-p
 
 export default function useInquiries() {
   const { profile } = useAuth();
+  const { inquiries: realtimeInquiries } = useInquiriesContext();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [counts, setCounts] = useState(null);
+  const lastCountsReloadRef = useRef(0);
+
+  const effectiveCounts = useMemo(() => {
+    const base = counts ? { ...counts } : null;
+    const localAccepted = getAcceptedInquiries(profile?.uid);
+    if (!base && !realtimeInquiries?.length && !localAccepted.length) return null;
+    const res = { requests: 0, confirmed: 0, preparation: 0, "in-progress": 0, completed: 0, cancelled: 0, ...(base || {}) };
+    const tally = (item) => {
+      const group = mapInquiryToGroup(item);
+      if (group && res[group] != null) {
+        res[group] = Math.max(Number(res[group] || 0), 1);
+      }
+    };
+    if (Array.isArray(realtimeInquiries)) realtimeInquiries.forEach(tally);
+    if (Array.isArray(localAccepted)) localAccepted.forEach(tally);
+    return res;
+  }, [counts, realtimeInquiries, profile?.uid]);
+
   const requestedGroup = searchParams.get("group");
-  const activeTab = INQUIRY_GROUP_IDS.has(requestedGroup) ? requestedGroup : "requests";
+  const activeTab = INQUIRY_GROUP_IDS.has(requestedGroup)
+    ? requestedGroup
+    : (effectiveCounts && Number(effectiveCounts.requests || 0) === 0 && Number(effectiveCounts.confirmed || 0) > 0)
+      ? "confirmed"
+      : "requests";
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,20 +73,33 @@ export default function useInquiries() {
     if (!profile?.uid || !profile?.role) return;
     const key = accountCacheKey(profile.uid, "inquiries", activeTab);
     const cached = !force && getAccountCache(key, 2 * 60 * 1000);
-    if (!append && cached) {
+    const expectedCount = Number(effectiveCounts?.[activeTab] || counts?.[activeTab] || 0);
+    const cacheIsStale = cached && Array.isArray(cached.items) && cached.items.length === 0 && expectedCount > 0;
+    if (!append && cached && !cacheIsStale) {
       setInquiries(cached.items || []); setCursor(cached.cursor || null); setHasMore(Boolean(cached.hasMore)); setLoading(false); return;
     }
     // Revalidation keeps the current group visible; only an empty initial
     // group needs row skeletons.
     setLoading(!append && (initial || inquiries.length === 0)); setError(null);
     try {
-      const result = await accountCacheRequest(`${key}:${append ? (cursor || "first") : "first"}`, () => apiGetInquiries({ group: activeTab, cursor: append ? cursor : null, limit: 12 }));
-      const nextItems = append ? [...inquiries, ...(result.items || [])] : (result.items || []);
-      const value = { items: nextItems, cursor: result.cursor, hasMore: result.hasMore };
-      setAccountCache(key, value); setInquiries(nextItems); setCursor(result.cursor); setHasMore(result.hasMore);
+      const result = await accountCacheRequest(`${key}:${append ? (cursor || "first") : "first"}`, () =>
+        apiGetInquiries({
+          group: activeTab,
+          role: profile.role,
+          cursor: append ? cursor : null,
+          limit: 12,
+        }),
+      );
+      const fetchedItems = Array.isArray(result?.items) ? result.items : [];
+      const nextItems = append ? [...inquiries, ...fetchedItems] : fetchedItems;
+      const value = { items: nextItems, cursor: result?.cursor ?? null, hasMore: Boolean(result?.hasMore) };
+      setAccountCache(key, value);
+      setInquiries(nextItems);
+      setCursor(result?.cursor ?? null);
+      setHasMore(Boolean(result?.hasMore));
     } catch (loadError) { setError(loadError); }
     finally { setLoading(false); }
-  }, [profile?.uid, profile?.role, activeTab, cursor, inquiries]);
+  }, [profile?.uid, profile?.role, activeTab, cursor, inquiries, effectiveCounts, counts]);
 
   useEffect(() => {
     setInquiries([]); setCursor(null); setHasMore(false);
@@ -73,13 +114,49 @@ export default function useInquiries() {
 
   const refresh = useCallback(() => {
     if (!profile?.uid) return Promise.resolve();
-    invalidateAccountCache(accountCacheKey(profile.uid, "inquiries", activeTab));
+    invalidateAccountCache(accountCacheKey(profile.uid, "inquiries"));
     invalidateAccountCache(accountCacheKey(profile.uid, "inquiry-group-counts"));
     window.dispatchEvent(new CustomEvent("agrinet:inquiry-counts-invalidated", { detail: { uid: profile.uid } }));
     return loadGroup({ force: true });
-  }, [profile?.uid, activeTab, loadGroup]);
+  }, [profile?.uid, loadGroup]);
 
   const loadMore = useCallback(() => loadGroup({ append: true }), [loadGroup]);
+
+  useEffect(() => {
+    if (!profile?.uid) return undefined;
+    let cancelled = false;
+    const key = accountCacheKey(profile.uid, "inquiry-group-counts");
+    const loadCounts = (force = false) => {
+      if (force) lastCountsReloadRef.current = Date.now();
+      const cached = !force && getAccountCache(key, 60 * 1000);
+      if (cached) {
+        setCounts(cached);
+        return;
+      }
+      accountCacheRequest(key, () => apiGetInquiryGroupCounts({ role: profile?.role }))
+        .then((val) => {
+          if (!cancelled && val) {
+            setAccountCache(key, val);
+            setCounts(val);
+          }
+        })
+        .catch(() => {});
+    };
+    loadCounts();
+    const handleInvalidation = (e) => {
+      if (e.detail?.uid !== profile.uid) return;
+      if (Date.now() - lastCountsReloadRef.current < 1500) return;
+      lastCountsReloadRef.current = Date.now();
+      invalidateAccountCache(key);
+      loadCounts(true);
+      loadGroup({ force: true });
+    };
+    window.addEventListener("agrinet:inquiry-counts-invalidated", handleInvalidation);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("agrinet:inquiry-counts-invalidated", handleInvalidation);
+    };
+  }, [profile?.uid, profile?.role, loadGroup]);
 
   useEffect(() => {
     profileRef.current = profile;
@@ -91,8 +168,24 @@ export default function useInquiries() {
    * --------------------------------------------------
    */
 
+  const filteredInquiries = useMemo(() => {
+    const list = [];
+    const seen = new Set();
+    const add = (item) => {
+      if (item?.id && !seen.has(item.id) && mapInquiryToGroup(item) === activeTab) {
+        seen.add(item.id);
+        list.push(item);
+      }
+    };
+    if (Array.isArray(inquiries)) inquiries.forEach(add);
+    if (Array.isArray(realtimeInquiries)) realtimeInquiries.forEach(add);
+    const localAccepted = getAcceptedInquiries(profile?.uid);
+    if (Array.isArray(localAccepted)) localAccepted.forEach(add);
+    return list;
+  }, [inquiries, realtimeInquiries, activeTab, profile?.uid]);
+
   useEffect(() => {
-    if (!inquiries.length) {
+    if (!filteredInquiries.length) {
       setInquiryData({});
       return;
     }
@@ -102,14 +195,14 @@ export default function useInquiries() {
     async function loadRelatedData() {
       const isConsumer = profile?.role === "consumer";
       const farmerIds = isConsumer
-        ? [...new Set(inquiries.map((i) => i.farmerId).filter(Boolean))]
+        ? [...new Set(filteredInquiries.map((i) => i.farmerId).filter(Boolean))]
         : [];
 
-      const legacyInquiries = inquiries.filter(
+      const legacyInquiries = filteredInquiries.filter(
         (inquiry) => !inquiry.productSnapshot || !inquiry.consumerSnapshot,
       );
 
-      const reservedPreorders = inquiries.filter(
+      const reservedPreorders = filteredInquiries.filter(
         (inquiry) =>
           inquiry.type === "preorder" &&
           normalizeStatus(inquiry.status) === "reserved" &&
@@ -168,14 +261,14 @@ export default function useInquiries() {
         const liveProductMap = new Map(liveProducts.map((r) => [r.id, r]));
 
         const mapped = {};
-        inquiries.forEach((inquiry) => {
+        filteredInquiries.forEach((inquiry) => {
           const legacy = legacyMap.get(inquiry.id);
           const live = liveProductMap.get(inquiry.id);
           const farmer = farmerMap.get(inquiry.farmerId);
 
           mapped[inquiry.id] = {
-            product: live?.product ?? legacy?.product ?? null,
-            consumer: legacy?.consumer ?? null,
+            product: live?.product ?? legacy?.product ?? inquiry.productSnapshot ?? null,
+            consumer: legacy?.consumer ?? inquiry.consumerSnapshot ?? null,
             farmer: farmer
               ? {
                   uid: farmer.uid,
@@ -185,7 +278,7 @@ export default function useInquiries() {
                   verificationStatus: farmer.verificationStatus || (farmer.verified === true ? "approved" : "not_applied"),
                   verified: farmer.verified === true,
                 }
-              : null,
+              : inquiry.farmerSnapshot || null,
           };
         });
 
@@ -200,17 +293,7 @@ export default function useInquiries() {
     return () => {
       cancelled = true;
     };
-  }, [inquiries, profile?.role]);
-
-  /*
-   * --------------------------------------------------
-   * Filter inquiries
-   * --------------------------------------------------
-   */
-
-  const filteredInquiries = useMemo(() => {
-    return inquiries;
-  }, [inquiries]);
+  }, [filteredInquiries, profile?.role]);
 
   /*
    * --------------------------------------------------
@@ -408,9 +491,10 @@ export default function useInquiries() {
   }
 
   return {
-    inquiries,
+    inquiries: filteredInquiries,
     filteredInquiries,
     inquiryData,
+    counts: effectiveCounts,
 
     loading,
     error,

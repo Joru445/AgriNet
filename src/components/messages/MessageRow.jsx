@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { auth } from "../../firebase/auth";
 import Avatar from "../ui/Avatar";
 import ImageViewerModal from "../ui/ImageViewerModal";
@@ -9,23 +8,6 @@ import { buildReplySnapshot } from "../../utils/messageReply";
 import useProfileViewer from "../../hooks/useProfileViewer";
 
 const REVEAL_WIDTH = 72;
-
-function useIsTouch() {
-  const [isTouch, setIsTouch] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(pointer: coarse)").matches,
-  );
-
-  useEffect(() => {
-    const mql = window.matchMedia("(pointer: coarse)");
-    const update = () => setIsTouch(mql.matches);
-    mql.addEventListener?.("change", update);
-    return () => mql.removeEventListener?.("change", update);
-  }, []);
-
-  return isTouch;
-}
 
 export default function MessageRow({
   message,
@@ -46,23 +28,22 @@ export default function MessageRow({
     currentUid &&
     (message.senderId === currentUid || message.sender?.uid === currentUid)
   );
-  const isTouch = useIsTouch();
   const reducedMotion = prefersReducedMotion();
   const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
 
-  // Allow replying only to the other user ("the user who chat me")
-  const canReply = !mine;
-  const swipeDirection = "right";
+  // Messenger gesture: Received messages swipe right, sent messages swipe left towards center
+  const swipeDirection = mine ? "left" : "right";
   const swipe = useSwipeToReply({
-    enabled: isTouch && canReply,
+    enabled: Boolean(onReply),
     direction: swipeDirection,
     onReply: () => triggerReply(),
   });
 
+  const isSwiping = swipe.dragging || swipe.offset !== 0;
   const revealProgress = Math.min(Math.abs(swipe.offset) / REVEAL_WIDTH, 1);
 
   const triggerReply = () => {
-    if (onReply && canReply) onReply(buildReplySnapshot({ message, user, currentUserId: profile?.uid }));
+    if (onReply) onReply(buildReplySnapshot({ message, user, currentUserId: currentUid }));
   };
 
   const showAvatar = !mine && (groupPosition === "single" || groupPosition === "last");
@@ -78,12 +59,15 @@ export default function MessageRow({
   const swipeStyle = {
     transform:
       swipe.offset !== 0
-        ? `translateX(${swipe.offset}px)`
+        ? `translate3d(${swipe.offset}px, 0, 0)`
         : undefined,
+    touchAction: "pan-y",
+    userSelect: swipe.dragging ? "none" : undefined,
+    WebkitUserSelect: swipe.dragging ? "none" : undefined,
     transition:
       swipe.dragging || reducedMotion
         ? "none"
-        : "transform 200ms cubic-bezier(0.2, 0, 0, 1)",
+        : "transform 220ms cubic-bezier(0.2, 0, 0, 1)",
   };
 
   // --- E2E: Resolve reply content from loaded messages ---
@@ -133,18 +117,18 @@ export default function MessageRow({
             : "max-w-[85%] sm:max-w-[75%] md:max-w-[68%] lg:max-w-[62%]"
         } ${mine ? "flex-row-reverse" : "flex-row"}`}
       >
-        {/* Reply Action Affordance - only for messages from the other user */}
-        {canReply && (
+        {/* Reply Action Affordance */}
+        {Boolean(onReply) && (
           <ReplyAffordance
             mine={mine}
-            isTouch={isTouch}
             revealProgress={revealProgress}
+            isSwiping={isSwiping}
             onReply={triggerReply}
           />
         )}
 
         {/* Message Content Container */}
-        <div className="relative min-w-0 flex-1">
+        <div className="relative z-10 min-w-0 flex-1">
           {/* Swipe-translated portion: avatar + bubble. */}
           <div
             className={`flex min-w-0 items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
@@ -196,29 +180,36 @@ export default function MessageRow({
   );
 }
 
-function ReplyAffordance({ mine, isTouch, revealProgress, onReply }) {
-  if (isTouch) {
-    return (
-      <div
-        className={[
-          "pointer-events-none absolute inset-y-0 z-0 flex items-center",
-          mine ? "left-0" : "right-0",
-        ].join(" ")}
-        style={{ opacity: revealProgress }}
-      >
-        <MessageReplyButton onClick={onReply} className="cursor-default" />
-      </div>
-    );
-  }
-
+function ReplyAffordance({ mine, revealProgress, isSwiping, onReply }) {
   return (
-    <div
-      className={[
-        "absolute inset-y-0 z-0 flex items-center opacity-0 transition-opacity group-hover/swipe:opacity-100 focus-within:opacity-100",
-        mine ? "-left-11" : "-right-11",
-      ].join(" ")}
-    >
-      <MessageReplyButton onClick={onReply} />
-    </div>
+    <>
+      {/* Swipe reveal indicator: shown during active swipe/drag gesture */}
+      {isSwiping && revealProgress > 0 && (
+        <div
+          className={[
+            "pointer-events-none absolute inset-y-0 z-0 flex items-center transition-all duration-75",
+            mine ? "right-1 sm:right-2" : "left-1 sm:left-2",
+          ].join(" ")}
+          style={{
+            opacity: revealProgress,
+            transform: `scale(${0.4 + revealProgress * 0.6})`,
+          }}
+        >
+          <MessageReplyButton onClick={onReply} className="cursor-default" />
+        </div>
+      )}
+
+      {/* Desktop / PC hover reply button: visible on mouse hover */}
+      {!isSwiping && (
+        <div
+          className={[
+            "absolute inset-y-0 z-20 flex items-center opacity-0 transition-opacity duration-150 pointer-events-none group-hover/swipe:opacity-100 group-hover/swipe:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto",
+            mine ? "-left-10 sm:-left-11" : "-right-10 sm:-right-11",
+          ].join(" ")}
+        >
+          <MessageReplyButton onClick={onReply} />
+        </div>
+      )}
+    </>
   );
 }

@@ -21,6 +21,7 @@ export default function Inquiries() {
   const {
     filteredInquiries,
     inquiryData,
+    counts,
     loading,
     updatingId,
 
@@ -90,7 +91,7 @@ export default function Inquiries() {
         </div>
       </div>
 
-      <InquiryTabs activeTab={activeTab} onChange={setActiveTab} />
+      <InquiryTabs activeTab={activeTab} onChange={setActiveTab} counts={counts} />
 
       <div className="mb-4 flex justify-end gap-2">
         <button type="button" onClick={refresh} className="rounded-lg border border-(--agri-border) px-3 py-2 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover)">
@@ -100,7 +101,7 @@ export default function Inquiries() {
 
       <div ref={listRef} data-pull-section="inquiries-list">
       <SectionPullIndicator distance={pullDistance} refreshing={refreshing} />
-      {loading ? (
+      {loading && filteredInquiries.length === 0 ? (
         <InquirySkeleton />
       ) : (
         <InquiryTable
@@ -110,6 +111,9 @@ export default function Inquiries() {
           updatingId={updatingId}
           onStatusChange={changeStatus}
           view={view}
+          activeTab={activeTab}
+          counts={counts}
+          onSelectTab={setActiveTab}
         />
       )}
       {!loading && hasMore && (

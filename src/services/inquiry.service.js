@@ -3,7 +3,7 @@ import { subscribeToRealtime } from "./api/realtime.client";
 
 export function subscribeUserInquiries(uid, role, callback, onError) {
   if (!uid || !role || !callback) return () => {};
-  return subscribeToRealtime(`/v1/inquiries/stream?scope=actions&role=${encodeURIComponent(role)}`, callback, (error) => {
+  return subscribeToRealtime(`/v1/inquiries/stream?role=${encodeURIComponent(role)}`, callback, (error) => {
     console.error("Inquiry subscription failed", error); onError?.(error);
   });
 }
@@ -13,23 +13,72 @@ export async function getInquiry(inquiryId) {
   return apiGetInquiryById(inquiryId);
 }
 
-export async function apiGetInquiries({ cursor, limit: pageSize, group } = {}) {
+export function mapInquiryToGroup(inquiry) {
+  if (!inquiry) return "requests";
+  if (inquiry.group && ["requests", "confirmed", "preparation", "in-progress", "completed", "cancelled"].includes(inquiry.group)) {
+    return inquiry.group;
+  }
+  const rawStatus = inquiry.status || inquiry.inquiryStatus || "";
+  const status = String(rawStatus).toLowerCase().trim();
+  if (status === "pending") return "requests";
+  if (["accepted", "reserved", "awaiting_agreement", "confirmed"].includes(status)) return "confirmed";
+  if (["preparing", "ready"].includes(status)) return "preparation";
+  if (["ongoing", "awaiting_proof", "proof_submitted"].includes(status)) return "in-progress";
+  if (["completed", "resolved"].includes(status)) return "completed";
+  if (["cancelled", "rejected"].includes(status)) return "cancelled";
+  return "requests";
+}
+
+function extractInquiryItems(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.data?.items)) return data.data.items;
+  if (Array.isArray(data?.data?.inquiries)) return data.data.inquiries;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.inquiries)) return data.inquiries;
+  return [];
+}
+
+export async function apiGetInquiries({ cursor, limit: pageSize, group, role } = {}) {
   const params = new URLSearchParams();
   if (cursor) params.set("cursor", cursor);
   if (pageSize) params.set("limit", String(pageSize));
   if (group && group !== "all") params.set("group", group);
+  if (role) params.set("role", role);
   const url = `/v1/inquiries${params.size ? `?${params}` : ""}`;
   const data = await apiRequest(url);
+  let items = extractInquiryItems(data);
+
+  // If the group query returned 0 items but a specific group was requested,
+  // fallback to querying without the group parameter and filtering client-side.
+  if (items.length === 0 && group && group !== "all" && !cursor) {
+    try {
+      const fallbackParams = new URLSearchParams();
+      fallbackParams.set("limit", String(Math.max(pageSize || 12, 50)));
+      if (role) fallbackParams.set("role", role);
+      const fallbackData = await apiRequest(`/v1/inquiries?${fallbackParams}`);
+      const rawAll = extractInquiryItems(fallbackData);
+      if (rawAll.length > 0) {
+        items = rawAll.filter((inq) => mapInquiryToGroup(inq) === group);
+      }
+    } catch (fallbackError) {
+      console.warn("Fallback general inquiry fetch failed:", fallbackError);
+    }
+  }
+
   return {
-    items: data.data ?? [],
-    cursor: data.pagination?.cursor ?? null,
-    hasMore: Boolean(data.pagination?.hasMore),
-    group: data.pagination?.group ?? group ?? "all",
+    items,
+    cursor: data?.pagination?.cursor ?? null,
+    hasMore: Boolean(data?.pagination?.hasMore),
+    group: data?.pagination?.group ?? group ?? "all",
   };
 }
 
-export async function apiGetInquiryGroupCounts() {
-  const data = await apiRequest("/v1/inquiries/group-counts");
+export async function apiGetInquiryGroupCounts({ role } = {}) {
+  const params = new URLSearchParams();
+  if (role) params.set("role", role);
+  const url = `/v1/inquiries/group-counts${params.size ? `?${params}` : ""}`;
+  const data = await apiRequest(url);
   return data.data || {};
 }
 export async function apiGetInquiryById(inquiryId) {

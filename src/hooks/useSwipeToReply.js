@@ -70,12 +70,6 @@ export default function useSwipeToReply({ enabled = false, direction = "right", 
     startRef.current = { x: e.clientX, y: e.clientY };
     axisRef.current = null;
     armedRef.current = false;
-
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      /* ignore */
-    }
     setDragging(true);
   };
 
@@ -88,7 +82,7 @@ export default function useSwipeToReply({ enabled = false, direction = "right", 
     if (!axisRef.current) {
       if (Math.abs(dx) < SLOP && Math.abs(dy) < SLOP) return;
       if (Math.abs(dy) > Math.abs(dx)) {
-        // Vertical scroll — stop engaging.
+        // Vertical scroll — allow native scroll and stop engaging.
         axisRef.current = "y";
         setOffset(0);
         setDragging(false);
@@ -97,6 +91,11 @@ export default function useSwipeToReply({ enabled = false, direction = "right", 
       }
       if (Math.abs(dx) >= SLOP) {
         axisRef.current = "x";
+        try {
+          e.currentTarget.setPointerCapture?.(e.pointerId);
+        } catch {
+          /* ignore */
+        }
       } else {
         return;
       }
@@ -109,7 +108,16 @@ export default function useSwipeToReply({ enabled = false, direction = "right", 
     const base = directionRef.current === "left" ? -dx : dx;
     const next = resolveReveal(dx);
     setOffset(next);
-    armedRef.current = base >= THRESHOLD;
+
+    const isArmed = base >= THRESHOLD;
+    if (!armedRef.current && isArmed && typeof window !== "undefined" && window.navigator?.vibrate) {
+      try {
+        window.navigator.vibrate(15);
+      } catch {
+        /* ignore */
+      }
+    }
+    armedRef.current = isArmed;
   };
 
   const finish = (e) => {
@@ -120,9 +128,11 @@ export default function useSwipeToReply({ enabled = false, direction = "right", 
   };
 
   const resetAndRelease = (e) => {
-    if (e && e.currentTarget) {
+    if (e && e.currentTarget && e.pointerId != null) {
       try {
-        e.currentTarget.releasePointerCapture?.(e.pointerId);
+        if (e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        }
       } catch {
         /* ignore */
       }
