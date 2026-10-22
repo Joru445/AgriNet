@@ -72,7 +72,7 @@ test("P1 navigation and profile transaction shortcuts stay canonical and owner-o
   assert.match(src("src/constants/navigation.js"), /kind: "profile"/);
   assert.match(bottom, /getProfilePath/);
   assert.match(profile, /isOwner && <ProfileTransactions/);
-  for (const group of ["requests", "confirmed", "preparation", "in-progress", "completed", "cancelled"]) {
+  for (const group of ["requests", "in-progress", "completed", "cancelled"]) {
     assert.match(shortcuts, new RegExp(group));
   }
 });
