@@ -229,15 +229,7 @@ export default function ProductInquiryMessage({
                   </span>
                 </div>
                 <Link
-                  to={`/transactions?group=${
-                    ["accepted", "reserved", "confirmed", "awaiting_agreement"].includes(message.inquiryStatus)
-                      ? "confirmed"
-                      : ["preparing", "ready"].includes(message.inquiryStatus)
-                        ? "preparation"
-                        : message.inquiryStatus === "ongoing"
-                          ? "in-progress"
-                          : "requests"
-                  }`}
+                  to="/transactions?group=in-progress"
                   className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#2D6A4F] hover:bg-[#1B4332] px-3 py-2 text-xs sm:text-sm font-semibold text-white transition-colors cursor-pointer no-underline shadow-xs"
                 >
                   <i className="ri-file-list-3-line" />

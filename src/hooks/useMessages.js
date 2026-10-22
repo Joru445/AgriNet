@@ -42,16 +42,18 @@ export default function useMessages() {
   const [activeConversation, setActiveConversation] = useState(null);
   const [activeUser, setActiveUser] = useState(null);
 
-  const currentTargetKey = useMemo(() => {
-    if (activeConversation?.id) return activeConversation.id;
-    if (activeUser?.uid) return `user_${activeUser.uid}`;
-    return null;
-  }, [activeConversation?.id, activeUser?.uid]);
+  const currentTargetKeys = useMemo(() => {
+    const keys = [];
+    if (activeConversation?.id) keys.push(activeConversation.id);
+    const otherUid = activeConversation?.otherUser?.uid || activeUser?.uid;
+    if (otherUid) keys.push(`user_${otherUid}`);
+    return keys;
+  }, [activeConversation?.id, activeConversation?.otherUser?.uid, activeUser?.uid]);
 
   const isOnline = useOnlineStatus();
   const { message, setMessage, drafts, clearCurrentDraft } =
-    useDrafts(currentTargetKey);
-  const { conversations, loading } = useConversationList();
+    useDrafts(currentTargetKeys);
+  const { conversations, loading, markConversationReadLocally } = useConversationList();
   const {
     search,
     setSearch,
@@ -136,6 +138,7 @@ export default function useMessages() {
     setActiveConversation,
     setActiveUser,
     setSearchParams,
+    clearCurrentDraft,
   });
 
   const [selectedImage, setSelectedImage] = useState(null);
@@ -154,7 +157,7 @@ export default function useMessages() {
   // Clear pending reply when switching conversations
   useEffect(() => {
     clearReply();
-  }, [currentTargetKey, clearReply]);
+  }, [activeConversation?.id, activeUser?.uid, clearReply]);
 
   const sendMessage = useCallback(
     (customImage) => {
@@ -577,8 +580,35 @@ export default function useMessages() {
    * ==================================================
    */
 
+  const activeConvId = activeConversationLive?.id || activeConversation?.id;
+
+  useEffect(() => {
+    if (!activeConvId || !profile?.uid) return;
+
+    if (document.visibilityState === "visible") {
+      markConversationReadLocally?.(activeConvId);
+    }
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        markConversationReadLocally?.(activeConvId);
+      }
+    };
+
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    return () => {
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+    };
+  }, [activeConvId, profile?.uid, markConversationReadLocally]);
+
   function selectConversation(conversation) {
     setSearch("");
+    if (conversation?.id) {
+      markConversationReadLocally?.(conversation.id);
+    }
     setSearchParams({ conversation: conversation.id });
   }
 

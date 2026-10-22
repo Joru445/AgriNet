@@ -94,8 +94,8 @@ export default function useMessageSubscription(uid, conversationId) {
         if (
           document.visibilityState === "visible" &&
           newestMsg &&
-          newestMsg.senderId &&
-          newestMsg.senderId !== uid && cached.markedNewest !== newestMsg.id
+          newestMsg.id &&
+          cached.markedNewest !== newestMsg.id
         ) {
           cached.markedNewest = newestMsg.id;
           if (!readRequestRef.current) {
@@ -119,6 +119,24 @@ export default function useMessageSubscription(uid, conversationId) {
       unsubscribe();
     };
   }, [uid, conversationId]);
+
+  useEffect(() => {
+    if (!conversationId || !uid) return;
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && conversationId) {
+        apiMarkConversationRead(conversationId).catch(() => {});
+      }
+    };
+
+    window.addEventListener("focus", onVisible);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.removeEventListener("focus", onVisible);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [conversationId, uid]);
 
   const loadOlderMessages = useCallback(async () => {
     if (loadingOlder || !hasMoreOlder || !conversationId) {

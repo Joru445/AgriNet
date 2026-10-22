@@ -25,7 +25,7 @@ import { getFarmerById } from "../services/farmer.service";
 
 import { showToast } from "../utils/toast";
 
-const INQUIRY_GROUP_IDS = new Set(["requests", "confirmed", "preparation", "in-progress", "completed", "cancelled"]);
+const INQUIRY_GROUP_IDS = new Set(["requests", "in-progress", "completed", "cancelled"]);
 
 export default function useInquiries() {
   const { profile } = useAuth();
@@ -33,12 +33,22 @@ export default function useInquiries() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [counts, setCounts] = useState(null);
   const lastCountsReloadRef = useRef(0);
+  const isConsumer = profile?.role === "consumer";
 
   const effectiveCounts = useMemo(() => {
     const base = counts ? { ...counts } : null;
     const localAccepted = getAcceptedInquiries(profile?.uid);
     if (!base && !realtimeInquiries?.length && !localAccepted.length) return null;
-    const res = { requests: 0, confirmed: 0, preparation: 0, "in-progress": 0, completed: 0, cancelled: 0, ...(base || {}) };
+    const res = { requests: 0, "in-progress": 0, completed: 0, cancelled: 0 };
+    if (base) {
+      res.requests = Number(base.requests || 0);
+      res["in-progress"] =
+        Number(base["in-progress"] || 0) +
+        Number(base.confirmed || 0) +
+        Number(base.preparation || 0);
+      res.completed = Number(base.completed || 0);
+      res.cancelled = Number(base.cancelled || 0);
+    }
     const realtimeIds = new Set();
     const tally = (item) => {
       const group = mapInquiryToGroup(item);
@@ -71,10 +81,18 @@ export default function useInquiries() {
   }, [counts, realtimeInquiries, profile?.uid]);
 
   const requestedGroup = searchParams.get("group");
-  const activeTab = INQUIRY_GROUP_IDS.has(requestedGroup)
-    ? requestedGroup
-    : (effectiveCounts && Number(effectiveCounts.requests || 0) === 0 && Number(effectiveCounts.confirmed || 0) > 0)
-      ? "confirmed"
+  let normalizedRequested = requestedGroup;
+  if (normalizedRequested === "preparation" || normalizedRequested === "confirmed") {
+    normalizedRequested = "in-progress";
+  }
+  if (isConsumer && normalizedRequested === "requests") {
+    normalizedRequested = "in-progress";
+  }
+
+  const activeTab = INQUIRY_GROUP_IDS.has(normalizedRequested) && (!isConsumer || normalizedRequested !== "requests")
+    ? normalizedRequested
+    : isConsumer
+      ? "in-progress"
       : "requests";
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -129,8 +147,12 @@ export default function useInquiries() {
   }, [profile?.uid, profile?.role, activeTab]);
 
   const setActiveTab = useCallback((group) => {
-    setSearchParams(group === "requests" ? {} : { group }, { replace: false });
-  }, [setSearchParams]);
+    let target = group;
+    if (target === "preparation" || target === "confirmed") target = "in-progress";
+    if (isConsumer && target === "requests") target = "in-progress";
+    const isDefault = isConsumer ? target === "in-progress" : target === "requests";
+    setSearchParams(isDefault ? {} : { group: target }, { replace: false });
+  }, [setSearchParams, isConsumer]);
 
   const refresh = useCallback(() => {
     if (!profile?.uid) return Promise.resolve();
@@ -145,36 +167,75 @@ export default function useInquiries() {
   useEffect(() => {
     if (!profile?.uid) return undefined;
     let cancelled = false;
-    const key = accountCacheKey(profile.uid, "inquiry-group-counts");
+    const countsKey = accountCacheKey(profile.uid, "inquiry-group-counts");
+    const inquiriesKey = accountCacheKey(profile.uid, "inquiries");
+
     const loadCounts = (force = false) => {
       if (force) lastCountsReloadRef.current = Date.now();
-      const cached = !force && getAccountCache(key, 60 * 1000);
+      const cached = !force && getAccountCache(countsKey, 60 * 1000);
       if (cached) {
         setCounts(cached);
         return;
       }
-      accountCacheRequest(key, () => apiGetInquiryGroupCounts({ role: profile?.role }))
+      accountCacheRequest(countsKey, () => apiGetInquiryGroupCounts({ role: profile?.role }))
         .then((val) => {
           if (!cancelled && val) {
-            setAccountCache(key, val);
+            setAccountCache(countsKey, val);
             setCounts(val);
           }
         })
         .catch(() => {});
     };
+
     loadCounts();
-    const handleInvalidation = (e) => {
-      if (e.detail?.uid !== profile.uid) return;
+
+    const handleCountsInvalidation = (e) => {
+      if (e.detail?.uid && e.detail.uid !== profile.uid) return;
       if (Date.now() - lastCountsReloadRef.current < 1500) return;
       lastCountsReloadRef.current = Date.now();
-      invalidateAccountCache(key);
+      invalidateAccountCache(countsKey);
       loadCounts(true);
       loadGroup({ force: true });
     };
-    window.addEventListener("agrinet:inquiry-counts-invalidated", handleInvalidation);
+
+    const handleInquiryUpdated = (e) => {
+      if (e.detail?.uid && e.detail.uid !== profile.uid) return;
+      invalidateAccountCache(inquiriesKey);
+      invalidateAccountCache(countsKey);
+      loadCounts(true);
+      loadGroup({ force: true });
+    };
+
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === "visible") {
+        invalidateAccountCache(inquiriesKey);
+        invalidateAccountCache(countsKey);
+        loadCounts(true);
+        loadGroup({ force: true });
+      }
+    };
+
+    // Auto revalidate every 6 seconds when page is active so ratings and proof updates appear in real-time
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        invalidateAccountCache(inquiriesKey);
+        loadCounts(true);
+        loadGroup({ force: true });
+      }
+    }, 6000);
+
+    window.addEventListener("agrinet:inquiry-counts-invalidated", handleCountsInvalidation);
+    window.addEventListener("agrinet:inquiry-updated", handleInquiryUpdated);
+    window.addEventListener("focus", handleVisibilityOrFocus);
+    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+
     return () => {
       cancelled = true;
-      window.removeEventListener("agrinet:inquiry-counts-invalidated", handleInvalidation);
+      clearInterval(intervalId);
+      window.removeEventListener("agrinet:inquiry-counts-invalidated", handleCountsInvalidation);
+      window.removeEventListener("agrinet:inquiry-updated", handleInquiryUpdated);
+      window.removeEventListener("focus", handleVisibilityOrFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
     };
   }, [profile?.uid, profile?.role, loadGroup]);
 
@@ -201,6 +262,18 @@ export default function useInquiries() {
 
     if (Array.isArray(realtimeInquiries)) realtimeInquiries.forEach(registerAuthoritative);
 
+    const resolveItem = (item) => {
+      if (!item) return null;
+      const idStr = String(item.id || "");
+      const rawId = idStr.replace(/^inq_/, "");
+      const msgId = String(item.inquiryMessageId || "");
+      const authoritative =
+        authoritativeMap.get(idStr) ||
+        (rawId ? authoritativeMap.get(rawId) : null) ||
+        (msgId ? authoritativeMap.get(msgId) : null);
+      return authoritative ? { ...item, ...authoritative } : item;
+    };
+
     const list = [];
     const seen = new Set();
 
@@ -220,9 +293,10 @@ export default function useInquiries() {
       return false;
     };
 
-    // 1. Group-specific items fetched from API
+    // 1. Group-specific items fetched from API, resolved with latest authoritative realtime state
     if (Array.isArray(inquiries)) {
-      for (const item of inquiries) {
+      for (const rawItem of inquiries) {
+        const item = resolveItem(rawItem);
         if (!isSeen(item) && mapInquiryToGroup(item) === activeTab) {
           markSeen(item);
           list.push(item);
@@ -240,7 +314,7 @@ export default function useInquiries() {
       }
     }
 
-    // 3. Local accepted optimistic inquiries (only when confirmed tab is active)
+    // 3. Local accepted optimistic inquiries (belong to in-progress)
     const localAccepted = getAcceptedInquiries(profile?.uid);
     if (Array.isArray(localAccepted)) {
       for (const item of localAccepted) {
@@ -255,8 +329,8 @@ export default function useInquiries() {
 
         if (serverItem) {
           // If the server stream already knows this inquiry, its status is authoritative.
-          // If it is no longer confirmed, purge it immediately so it doesn't linger.
-          if (mapInquiryToGroup(serverItem) !== "confirmed") {
+          // If it is no longer in-progress, purge it immediately so it doesn't linger.
+          if (mapInquiryToGroup(serverItem) !== "in-progress") {
             removeAcceptedInquiry(item.id);
             continue;
           }
@@ -264,12 +338,12 @@ export default function useInquiries() {
 
         if (isSeen(item)) continue;
 
-        if (mapInquiryToGroup(item) !== "confirmed") {
+        if (mapInquiryToGroup(item) !== "in-progress") {
           removeAcceptedInquiry(item.id);
           continue;
         }
 
-        if (activeTab === "confirmed") {
+        if (activeTab === "in-progress") {
           markSeen(item);
           list.push(item);
         }

@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { useAuth } from "./AuthContext";
-import { subscribeUserConversations } from "../services/conversation.service";
+import { subscribeUserConversations, apiMarkConversationRead } from "../services/conversation.service";
 import { getUserProfile } from "../services/user.service";
 import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
 import { getTimestampMs } from "../utils/chat";
@@ -30,6 +30,8 @@ function sameConversationList(previous, next) {
 const ConversationsContext = createContext({
   conversations: [],
   loading: true,
+  refresh: () => {},
+  markConversationReadLocally: () => {},
 });
 
 /**
@@ -49,6 +51,42 @@ export function ConversationsProvider({ children }) {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const userProfileCacheRef = useRef(new Map());
+  const locallyReadTimestampsRef = useRef(new Map());
+
+  const markConversationReadLocally = useCallback((conversationId) => {
+    if (!conversationId || !profile?.uid) return;
+    const now = Date.now();
+    locallyReadTimestampsRef.current.set(conversationId, now);
+
+    setConversations((prev) => {
+      let changed = false;
+      const next = prev.map((c) => {
+        if (c.id !== conversationId) return c;
+        if (c.unreadCount === 0 && (c.lastRead?.[profile.uid] || 0) >= now) return c;
+        changed = true;
+        return {
+          ...c,
+          unreadCount: 0,
+          rawUnreadCount: {
+            ...(typeof c.rawUnreadCount === "object" ? c.rawUnreadCount : {}),
+            [profile.uid]: 0,
+          },
+          lastRead: {
+            ...(typeof c.lastRead === "object" ? c.lastRead : {}),
+            [profile.uid]: now,
+          },
+        };
+      });
+      if (changed) {
+        touchConversationCache(profile.uid, next);
+      }
+      return changed ? next : prev;
+    });
+
+    apiMarkConversationRead(conversationId).catch((error) => {
+      console.warn("apiMarkConversationRead failed:", error);
+    });
+  }, [profile?.uid]);
 
   useEffect(() => {
     // Always clear stale data when the effect re-runs (UID change or mount).
@@ -123,10 +161,14 @@ export function ConversationsProvider({ children }) {
             (typeof conversation.lastMessage === "string" &&
               conversation.lastMessage.startsWith("You:"))
           );
-          if (!isFromMe && (conversation.lastMessageAt || conversation.lastMessage)) {
-            const myLastRead = conversation.lastRead?.[listenerUid];
-            const readMs = getTimestampMs(myLastRead);
-            const msgMs = getTimestampMs(conversation.lastMessageAt);
+          const localReadMs = locallyReadTimestampsRef.current.get(conversation.id) || 0;
+          const myLastRead = conversation.lastRead?.[listenerUid];
+          const readMs = Math.max(getTimestampMs(myLastRead) || 0, localReadMs);
+          const msgMs = getTimestampMs(conversation.lastMessageAt);
+
+          if (localReadMs > 0 && localReadMs >= (msgMs || 0)) {
+            unread = 0;
+          } else if (!isFromMe && (conversation.lastMessageAt || conversation.lastMessage)) {
             if (!readMs || (msgMs && msgMs > readMs)) {
               if (unread <= 0) {
                 unread = 1;
@@ -235,7 +277,14 @@ export function ConversationsProvider({ children }) {
   const refresh = useCallback(() => setRefreshKey((value) => value + 1), []);
 
   return (
-    <ConversationsContext.Provider value={{ conversations, loading, refresh }}>
+    <ConversationsContext.Provider
+      value={{
+        conversations,
+        loading,
+        refresh,
+        markConversationReadLocally,
+      }}
+    >
       {children}
     </ConversationsContext.Provider>
   );

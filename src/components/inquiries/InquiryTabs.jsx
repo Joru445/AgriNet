@@ -1,15 +1,18 @@
+import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 
-export default function InquiryTabs({ activeTab, onChange, counts = null }) {
+export default function InquiryTabs({ activeTab, onChange, counts = null, userRole }) {
   const { t } = useLanguage();
+  const { profile } = useAuth();
+  const role = userRole || profile?.role;
+  const isConsumer = role === "consumer";
+
   const tabs = [
-    { id: "requests", label: t("transactions.groups.requests") },
-    { id: "confirmed", label: t("transactions.groups.confirmed") },
-    { id: "preparation", label: t("transactions.groups.preparation") },
+    !isConsumer && { id: "requests", label: t("transactions.groups.requests") },
     { id: "in-progress", label: t("transactions.groups.inProgress") },
     { id: "completed", label: t("transactions.groups.completed") },
     { id: "cancelled", label: t("transactions.groups.cancelled") },
-  ];
+  ].filter(Boolean);
 
   return (
     <div className="mb-6 flex gap-1 overflow-x-auto border-b border-(--agri-border-subtle) scrollbar-none">

@@ -91,7 +91,7 @@ export default function Inquiries() {
         </div>
       </div>
 
-      <InquiryTabs activeTab={activeTab} onChange={setActiveTab} counts={counts} />
+      <InquiryTabs activeTab={activeTab} onChange={setActiveTab} counts={counts} userRole={profile?.role} />
 
       <div className="mb-4 flex justify-end gap-2">
         <button type="button" onClick={refresh} className="rounded-lg border border-(--agri-border) px-3 py-2 text-xs font-semibold text-(--agri-text-secondary) hover:bg-(--agri-hover)">

@@ -31,6 +31,7 @@ export default function useInquiryFlow({
   setActiveConversation,
   setActiveUser,
   setSearchParams,
+  clearCurrentDraft,
 }) {
   const location = useLocation();
   const { t } = useLanguage();
@@ -182,6 +183,7 @@ export default function useInquiryFlow({
         };
 
         await apiSendMessage(inquiryPayload);
+        clearCurrentDraft?.();
 
         if (!activeConversation?.id) {
           setActiveConversation(
@@ -213,6 +215,7 @@ export default function useInquiryFlow({
       setActiveConversation,
       setActiveUser,
       setSearchParams,
+      clearCurrentDraft,
       t,
     ],
   );

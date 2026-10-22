@@ -12,6 +12,7 @@ export default function ConversationItem({
   searching,
   drafts = {},
   activeConversation,
+  activeMessage = "",
   onConversation,
   onUser,
 }) {
@@ -20,11 +21,17 @@ export default function ConversationItem({
   const { handleAvatarClick, lightbox, closeLightbox } = useProfileViewer();
   const user = searching ? item : item.otherUser;
 
+  const isSelected =
+    !searching &&
+    activeConversation &&
+    (activeConversation.id === item.id ||
+      activeConversation.otherUser?.uid === user?.uid);
+
   const targetKey = searching ? `user_${user?.uid}` : item.id;
-  const draft =
-    drafts[targetKey] ||
-    (!searching && user?.uid ? drafts[`user_${user.uid}`] : null);
-  const hasDraft = Boolean(draft && draft.trim());
+  const rawDraft = drafts[targetKey] || (!searching && user?.uid && !activeConversation ? drafts[`user_${user.uid}`] : null);
+  const activeText = typeof activeMessage === "string" ? activeMessage : "";
+  const currentDraft = isSelected ? activeText : rawDraft;
+  const hasDraft = Boolean(currentDraft && currentDraft.trim());
 
   function handleClick() {
     if (searching) {
@@ -33,12 +40,6 @@ export default function ConversationItem({
       onConversation(item);
     }
   }
-
-  const isSelected =
-    !searching &&
-    activeConversation &&
-    (activeConversation.id === item.id ||
-      activeConversation.otherUser?.uid === user?.uid);
 
   const isMine = !searching && (
     item?.lastMessageSender === profile?.uid ||
@@ -66,8 +67,8 @@ export default function ConversationItem({
       onClick={handleClick}
       className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-all duration-150 cursor-pointer ${
         isSelected
-          ? "bg-(--agri-card)/45 border-r-4 border-agri-primary shadow-xs"
-          : "hover:bg-black/3 border-r-4 border-transparent"
+          ? "bg-black/5 dark:bg-white/5 shadow-xs"
+          : "hover:bg-black/3"
       }`}
     >
       <div className="relative shrink-0">
@@ -129,7 +130,7 @@ export default function ConversationItem({
           {hasDraft ? (
             <p className="text-sm truncate flex-1 min-w-0">
               <span className="text-red-900/75 font-bold">{t("messages.draft")}</span>
-              <span className="text-(--agri-text-secondary)">{draft}</span>
+              <span className="text-(--agri-text-secondary)">{currentDraft}</span>
             </p>
           ) : searching ? (
             <p className="text-sm text-(--agri-text-muted) truncate flex-1 min-w-0">@{user?.username}</p>

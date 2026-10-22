@@ -15,10 +15,9 @@ export default function InquiryTable({
   const { t } = useLanguage();
 
   if (!inquiries.length) {
+    const isConsumer = userRole === "consumer";
     const tabLabels = {
-      requests: t("transactions.groups.requests"),
-      confirmed: t("transactions.groups.confirmed"),
-      preparation: t("transactions.groups.preparation"),
+      ...(!isConsumer ? { requests: t("transactions.groups.requests") } : {}),
       "in-progress": t("transactions.groups.inProgress"),
       completed: t("transactions.groups.completed"),
       cancelled: t("transactions.groups.cancelled"),
@@ -26,7 +25,7 @@ export default function InquiryTable({
 
     const otherTabsWithItems = counts
       ? Object.entries(counts).filter(
-          ([id, count]) => id !== activeTab && Number(count) > 0,
+          ([id, count]) => id !== activeTab && Number(count) > 0 && tabLabels[id] != null,
         )
       : [];
 

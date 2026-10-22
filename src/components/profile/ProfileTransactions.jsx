@@ -11,28 +11,25 @@ import {
   invalidateAccountCache,
 } from "../../utils/accountQueryCache";
 
-const GROUPS = [
-  ["requests", "ri-inbox-line"],
-  ["confirmed", "ri-checkbox-circle-line"],
-  ["preparation", "ri-loader-2-line"],
-  ["in-progress", "ri-exchange-line"],
-  ["completed", "ri-check-double-line"],
-  ["cancelled", "ri-close-circle-line"],
-];
-
 export default function ProfileTransactions() {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isConsumer = profile?.role === "consumer";
   const [counts, setCounts] = useState(null);
   const lastReloadRef = useRef(0);
   const labels = {
     requests: t("profile.transactions.requests"),
-    confirmed: t("profile.transactions.confirmed"),
-    preparation: t("profile.transactions.preparation"),
     "in-progress": t("profile.transactions.inProgress"),
     completed: t("profile.transactions.completed"),
     cancelled: t("profile.transactions.cancelled"),
   };
+
+  const groups = [
+    !isConsumer && ["requests", "ri-inbox-line"],
+    ["in-progress", "ri-exchange-line"],
+    ["completed", "ri-check-double-line"],
+    ["cancelled", "ri-close-circle-line"],
+  ].filter(Boolean);
   useEffect(() => {
     if (!user?.uid) return undefined;
     const key = accountCacheKey(user.uid, "inquiry-group-counts");
@@ -99,7 +96,7 @@ export default function ProfileTransactions() {
         aria-label={t("profile.transactions.title")}
         className="grid grid-cols-2 gap-2 sm:grid-cols-3"
       >
-        {GROUPS.map(([group, icon]) => (
+        {groups.map(([group, icon]) => (
           <Link
             key={group}
             to={`/transactions?group=${encodeURIComponent(group)}`}

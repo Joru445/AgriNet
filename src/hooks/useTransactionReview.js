@@ -9,6 +9,7 @@ import { getInquiryProductReview } from "../services/product-review.service";
 import { apiSubmitTransactionReview } from "../services/transaction-review.service";
 
 import { useAuth } from "../context/AuthContext";
+import { invalidateAccountCache, accountCacheKey } from "../utils/accountQueryCache";
 
 export default function useTransactionReview(inquiryId) {
   const { profile } = useAuth();
@@ -95,6 +96,21 @@ export default function useTransactionReview(inquiryId) {
           productRating,
           productComment,
         });
+
+        if (profile?.uid) {
+          invalidateAccountCache(accountCacheKey(profile.uid, "inquiries"));
+          invalidateAccountCache(accountCacheKey(profile.uid, "inquiry-group-counts"));
+          window.dispatchEvent(
+            new CustomEvent("agrinet:inquiry-updated", {
+              detail: { uid: profile.uid, inquiryId, action: "review" },
+            }),
+          );
+          window.dispatchEvent(
+            new CustomEvent("agrinet:inquiry-counts-invalidated", {
+              detail: { uid: profile.uid },
+            }),
+          );
+        }
 
         await loadReview();
       } catch (err) {

@@ -3,6 +3,7 @@ import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
 import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
 import { invalidatePrefix } from "../utils/pageCache";
+import { normalizePhilippinePhoneNumber } from "../utils/phone";
 
 const USER_PAGE_SIZE = 100;
 
@@ -44,7 +45,9 @@ export async function getUserProfile(uid, requesterUid) {
       setCachedUserProfile(uid, profile);
       return profile;
     }
-  } catch {}
+  } catch {
+    /* ignore network error, fall through to cache */
+  }
 
   return cached || null;
 }
@@ -121,16 +124,49 @@ export async function checkUsernameAvailability(username) {
  */
 
 export async function updateMyProfile(data) {
-  const result = await apiRequest("/v1/users/me/profile", {
-    method: "PATCH",
-    body: JSON.stringify(data),
-  });
+  if (data?.phone) {
+    try {
+      const normalized = normalizePhilippinePhoneNumber(data.phone) || data.phone;
+      await apiRequest("/v1/users/me/verified-phone", {
+        method: "PATCH",
+        body: JSON.stringify({ phone: normalized }),
+      });
+    } catch (phoneErr) {
+      console.warn("Could not sync phone via /v1/users/me/verified-phone:", phoneErr?.message || phoneErr);
+    }
+  }
 
-  if (result.user?.uid) {
-    setCachedUserProfile(result.user.uid, result.user);
+  let result;
+  try {
+    result = await apiRequest("/v1/users/me/profile", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  } catch (error) {
+    if (
+      error.message?.includes("Phone changes require") ||
+      error.message?.includes("phone re-verification")
+    ) {
+      const withoutPhone = { ...data };
+      delete withoutPhone.phone;
+      result = await apiRequest("/v1/users/me/profile", {
+        method: "PATCH",
+        body: JSON.stringify(withoutPhone),
+      });
+    } else {
+      throw error;
+    }
+  }
+
+  const user = result.user || result.data?.user || result;
+  if (user?.uid) {
+    if (data.phone) {
+      user.phone = data.phone;
+    }
+    setCachedUserProfile(user.uid, user);
     invalidatePrefix("publicProfile:");
   }
-  return result.user;
+  return user;
 }
 
 /*

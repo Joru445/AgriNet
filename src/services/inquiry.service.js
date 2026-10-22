@@ -15,15 +15,30 @@ export async function getInquiry(inquiryId) {
 
 export function mapInquiryToGroup(inquiry) {
   if (!inquiry) return "requests";
-  if (inquiry.group && ["requests", "confirmed", "preparation", "in-progress", "completed", "cancelled"].includes(inquiry.group)) {
+  if (inquiry.group === "preparation" || inquiry.group === "confirmed") {
+    return "in-progress";
+  }
+  if (inquiry.group && ["requests", "in-progress", "completed", "cancelled"].includes(inquiry.group)) {
     return inquiry.group;
   }
   const rawStatus = inquiry.status || inquiry.inquiryStatus || "";
   const status = String(rawStatus).toLowerCase().trim();
   if (status === "pending") return "requests";
-  if (["accepted", "reserved", "awaiting_agreement", "confirmed"].includes(status)) return "confirmed";
-  if (["preparing", "ready"].includes(status)) return "preparation";
-  if (["ongoing", "awaiting_proof", "proof_submitted"].includes(status)) return "in-progress";
+  if ([
+    "accepted",
+    "reserved",
+    "awaiting_agreement",
+    "confirmed",
+    "preparing",
+    "ready",
+    "ongoing",
+    "awaiting_proof",
+    "proof_submitted",
+    "in_progress",
+    "in-progress",
+  ].includes(status)) {
+    return "in-progress";
+  }
   if (["completed", "resolved"].includes(status)) return "completed";
   if (["cancelled", "rejected"].includes(status)) return "cancelled";
   return "requests";
@@ -48,6 +63,31 @@ export async function apiGetInquiries({ cursor, limit: pageSize, group, role } =
   const url = `/v1/inquiries${params.size ? `?${params}` : ""}`;
   const data = await apiRequest(url);
   let items = extractInquiryItems(data);
+
+  // If in-progress group requested, also pull items from confirmed/preparation so accepted pre-orders & legacy groups are included
+  if (group === "in-progress" && !cursor) {
+    try {
+      const [confData, prepData] = await Promise.all([
+        apiRequest(`/v1/inquiries?group=confirmed${role ? `&role=${encodeURIComponent(role)}` : ""}`).catch(() => null),
+        apiRequest(`/v1/inquiries?group=preparation${role ? `&role=${encodeURIComponent(role)}` : ""}`).catch(() => null),
+      ]);
+      const extraItems = [
+        ...extractInquiryItems(confData),
+        ...extractInquiryItems(prepData),
+      ];
+      if (extraItems.length > 0) {
+        const existingIds = new Set(items.map((i) => i.id));
+        extraItems.forEach((extra) => {
+          if (!existingIds.has(extra.id)) {
+            items.push(extra);
+            existingIds.add(extra.id);
+          }
+        });
+      }
+    } catch (auxError) {
+      console.warn("Could not fetch auxiliary in-progress inquiries:", auxError);
+    }
+  }
 
   // If the group query returned 0 items but a specific group was requested,
   // fallback to querying without the group parameter and filtering client-side.
@@ -79,7 +119,17 @@ export async function apiGetInquiryGroupCounts({ role } = {}) {
   if (role) params.set("role", role);
   const url = `/v1/inquiries/group-counts${params.size ? `?${params}` : ""}`;
   const data = await apiRequest(url);
-  return data.data || {};
+  const raw = data.data || {};
+  return {
+    ...raw,
+    "in-progress": (
+      Number(raw["in-progress"] || 0) +
+      Number(raw.confirmed || 0) +
+      Number(raw.preparation || 0)
+    ),
+    preparation: 0,
+    confirmed: 0,
+  };
 }
 export async function apiGetInquiryById(inquiryId) {
   const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}`);

@@ -13,6 +13,7 @@ import {
 } from "../services/inquiry.service";
 
 import { uploadTransactionProof } from "../services/cloudinary.service";
+import { invalidateAccountCache, accountCacheKey } from "../utils/accountQueryCache";
 
 export default function useTransactionProof() {
   const { inquiryId } = useParams();
@@ -142,6 +143,23 @@ export default function useTransactionProof() {
     setPreviewUrl("");
   }
 
+  const notifyInquiryChange = (action) => {
+    if (profile?.uid) {
+      invalidateAccountCache(accountCacheKey(profile.uid, "inquiries"));
+      invalidateAccountCache(accountCacheKey(profile.uid, "inquiry-group-counts"));
+      window.dispatchEvent(
+        new CustomEvent("agrinet:inquiry-updated", {
+          detail: { uid: profile.uid, inquiryId, action },
+        }),
+      );
+      window.dispatchEvent(
+        new CustomEvent("agrinet:inquiry-counts-invalidated", {
+          detail: { uid: profile.uid },
+        }),
+      );
+    }
+  };
+
   async function requestCompletion() {
     if (!isConsumer) {
       throw new Error("Only the consumer can request transaction completion.");
@@ -152,6 +170,7 @@ export default function useTransactionProof() {
       setError("");
 
       await apiRequestCompletion(inquiryId);
+      notifyInquiryChange("request-completion");
       // Context listener will update inquiry state via the useEffect above
     } catch (error) {
       console.error("Failed to request transaction completion:", error);
@@ -185,6 +204,7 @@ export default function useTransactionProof() {
       await apiSubmitProof(inquiryId, proof);
 
       removeFile();
+      notifyInquiryChange("upload-proof");
       // Context listener will update inquiry state via the useEffect above
     } catch (error) {
       console.error("Failed to submit transaction proof:", error);
@@ -207,6 +227,7 @@ export default function useTransactionProof() {
       setError("");
 
       await apiConfirmProof(inquiryId);
+      notifyInquiryChange("confirm-proof");
       // Context listener will update inquiry state via the useEffect above
     } catch (error) {
       console.error("Failed to confirm transaction proof:", error);
@@ -229,6 +250,7 @@ export default function useTransactionProof() {
       setError("");
 
       await apiRejectProof(inquiryId);
+      notifyInquiryChange("reject-proof");
       // Context listener will update inquiry state via the useEffect above
     } catch (error) {
       console.error("Failed to reject transaction proof:", error);
