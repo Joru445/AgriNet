@@ -6,6 +6,7 @@ import {
 } from "react";
 import { useAuth } from "./AuthContext";
 import { subscribeUserInquiries } from "../services/inquiry.service";
+import { registerVerifiedReviewProof } from "../utils/reviewProofRegistry";
 
 const InquiriesContext = createContext({
   inquiries: [],
@@ -56,6 +57,13 @@ export function InquiriesProvider({ children }) {
         if (profile?.uid !== listenerUid) return;
 
         setInquiries(data);
+        if (Array.isArray(data)) {
+          data.forEach((inq) => {
+            if (inq?.id && inq?.proof?.url) {
+              registerVerifiedReviewProof(inq.id, inq.proof.url);
+            }
+          });
+        }
         window.dispatchEvent(new CustomEvent("agrinet:inquiry-counts-invalidated", { detail: { uid: listenerUid } }));
         setLoading(false);
 

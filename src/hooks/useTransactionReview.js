@@ -10,6 +10,7 @@ import { apiSubmitTransactionReview } from "../services/transaction-review.servi
 
 import { useAuth } from "../context/AuthContext";
 import { invalidateAccountCache, accountCacheKey } from "../utils/accountQueryCache";
+import { registerVerifiedReviewProof } from "../utils/reviewProofRegistry";
 
 export default function useTransactionReview(inquiryId) {
   const { profile } = useAuth();
@@ -44,6 +45,9 @@ export default function useTransactionReview(inquiryId) {
       }
 
       setInquiry(inquiryData);
+      if (inquiryData?.proof?.url) {
+        registerVerifiedReviewProof(inquiryId, inquiryData.proof.url);
+      }
 
       const [farmerReviewData, productReviewData] = await Promise.all([
         getInquiryFarmerReview(inquiryId),
@@ -86,6 +90,10 @@ export default function useTransactionReview(inquiryId) {
       try {
         setSubmitting(true);
         setError(null);
+
+        if (inquiry.proof?.url) {
+          registerVerifiedReviewProof(inquiryId, inquiry.proof.url);
+        }
 
         await apiSubmitTransactionReview({
           inquiryId,

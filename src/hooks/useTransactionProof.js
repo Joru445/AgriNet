@@ -14,6 +14,7 @@ import {
 
 import { uploadTransactionProof } from "../services/cloudinary.service";
 import { invalidateAccountCache, accountCacheKey } from "../utils/accountQueryCache";
+import { registerVerifiedReviewProof } from "../utils/reviewProofRegistry";
 
 export default function useTransactionProof() {
   const { inquiryId } = useParams();
@@ -64,6 +65,11 @@ export default function useTransactionProof() {
       }
 
       setInquiry(data);
+      if (data?.proof?.url) {
+        try {
+          localStorage.setItem(`agrinet_proof_inquiry_${inquiryId}`, data.proof.url);
+        } catch {}
+      }
     } catch (error) {
       console.error("Failed to load transaction:", error);
 
@@ -86,6 +92,11 @@ export default function useTransactionProof() {
     const latest = inquiries.find((inq) => inq.id === inquiryId);
     if (latest) {
       setInquiry(latest);
+      if (latest?.proof?.url) {
+        try {
+          localStorage.setItem(`agrinet_proof_inquiry_${inquiryId}`, latest.proof.url);
+        } catch {}
+      }
     }
   }, [inquiries, inquiryId]);
 
@@ -202,6 +213,9 @@ export default function useTransactionProof() {
       const proof = await uploadTransactionProof(selectedFile);
 
       await apiSubmitProof(inquiryId, proof);
+      if (proof?.url) {
+        registerVerifiedReviewProof(inquiryId, proof.url);
+      }
 
       removeFile();
       notifyInquiryChange("upload-proof");

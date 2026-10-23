@@ -32,14 +32,14 @@ export default function TransactionProduct({ inquiry }) {
 
             <Info
               label={t("transactionProduct.pricePer", { unit: product.unit })}
-              value={`?${Number(product.price ?? 0).toLocaleString()}`}
+              value={`₱${Number(product.price ?? 0).toLocaleString()}`}
             />
           </div>
 
           <div className="mt-4 border-t border-(--agri-border-subtle) pt-4">
             <Info
               label={t("transactionProduct.estimatedTotal")}
-              value={`?${(
+              value={`₱${(
                 Number(product.price ?? 0) * Number(quantity)
               ).toLocaleString()}`}
             />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -34,6 +34,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const { pendingReportsCount, showReportPopup, reportPopupMessage } =
     useUnreadReports();
   const navigate = useNavigate();
+  const location = useLocation();
   const profilePath = getProfilePath(identity?.username);
 
   // Only after auth initialization completes is a null user a genuine guest.
@@ -43,6 +44,16 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const [loggingOut, setLoggingOut] = useState(false);
 
   const role = identity?.role || profile?.role;
+  const isItemActive = (item, navLinkActive) => {
+    if (navLinkActive) return true;
+    if (
+      (item.to === "/marketplace" || item.labelKey === "nav.home") &&
+      location.pathname.startsWith("/product/")
+    ) {
+      return true;
+    }
+    return false;
+  };
   const baseItems = role ? (navigationByRole[role] ?? []) : consumerNavigation;
   const { hasManagedGroups } = useManagedGroups();
 
@@ -185,8 +196,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                       to={item.to}
                       end={item.to.split("/").length <= 2 + (role === "farmer" ? 1 : 0)}
                       data-onboarding={getOnboardingNavKey(item.to)}
-                      className={({ isActive }) =>
-                        `relative flex items-center rounded-xl transition-all duration-150 select-none ${
+                      className={({ isActive: navActive }) => {
+                        const isActive = isItemActive(item, navActive);
+                        return `relative flex items-center rounded-xl transition-all duration-150 select-none ${
                           collapsed
                             ? "justify-center size-11 mx-auto"
                             : "gap-3 px-3 py-2.5"
@@ -194,19 +206,21 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                           isActive
                             ? "bg-white/15 dark:bg-(--agri-brand-bg) text-white dark:text-(--agri-brand) font-semibold shadow-xs"
                             : "text-white/70 dark:text-(--agri-text-secondary) hover:bg-white/8 dark:hover:bg-(--agri-hover) hover:text-white dark:hover:text-(--agri-text) font-medium"
-                        }`
-                      }
+                        }`;
+                      }}
                     >
-                      {({ isActive }) => (
-                        <>
-                          {/* Icon */}
-                          <span className="flex items-center justify-center size-5 shrink-0">
-                            <i
-                              className={`${item.icon} ${
-                                isActive ? "text-[18px]" : "text-[17px]"
-                              }`}
-                            />
-                          </span>
+                      {({ isActive: navActive }) => {
+                        const isActive = isItemActive(item, navActive);
+                        return (
+                          <>
+                            {/* Icon */}
+                            <span className="flex items-center justify-center size-5 shrink-0">
+                              <i
+                                className={`${item.icon} ${
+                                  isActive ? "text-[18px]" : "text-[17px]"
+                                }`}
+                              />
+                            </span>
 
                           {/* Label */}
                           {!collapsed && (
@@ -230,8 +244,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                             </>
                           )}
                         </>
-                      )}
-                    </NavLink>
+                      );
+                    }}
+                  </NavLink>
 
                     {/* Collapsed tooltip */}
                     {collapsed && (

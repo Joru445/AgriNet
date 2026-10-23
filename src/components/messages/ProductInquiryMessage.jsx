@@ -169,7 +169,7 @@ export default function ProductInquiryMessage({
 
             {product.price != null && (
               <p className="mt-1 text-sm font-medium text-(--agri-text-secondary)">
-                ?{product.price}
+                ₱{product.price}
                 {product.unit ? ` / ${product.unit}` : ""}
               </p>
             )}

@@ -131,8 +131,8 @@ export async function apiGetInquiryGroupCounts({ role } = {}) {
     confirmed: 0,
   };
 }
-export async function apiGetInquiryById(inquiryId) {
-  const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}`);
+export async function apiGetInquiryById(inquiryId, options = {}) {
+  const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}`, options);
   return data.data ?? null;
 }
 export async function apiAcceptInquiry(inquiryData) {

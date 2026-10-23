@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useUnreadMessages } from "../../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../../context/UnreadInquiriesContext";
 import { useUnreadReports } from "../../context/UnreadReportsContext";
@@ -10,10 +10,22 @@ import { useAuth } from "../../context/AuthContext";
 
 export default function BottomNavigation({ items }) {
   const { t } = useLanguage();
+  const location = useLocation();
   const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
   const { pendingReportsCount, showReportPopup, reportPopupMessage } = useUnreadReports();
   const { identity } = useAuth();
+
+  const isItemActive = (item, navLinkActive) => {
+    if (navLinkActive) return true;
+    if (
+      (item.to === "/marketplace" || item.labelKey === "nav.home") &&
+      location.pathname.startsWith("/product/")
+    ) {
+      return true;
+    }
+    return false;
+  };
 
   return (
     <nav
@@ -35,20 +47,23 @@ export default function BottomNavigation({ items }) {
                 onClick={(event) => { if (!item.to) event.preventDefault(); }}
                 end
                 data-onboarding={item.kind === "profile" ? "nav-profile" : getOnboardingNavKey(item.to)}
-                className={({ isActive }) =>
-                    `relative flex w-full h-full flex-col items-center justify-center gap-0.5 px-0.5 rounded-xl transition-all duration-150 select-none active:scale-95 min-h-[44px] ${!item.to ? "opacity-60 pointer-events-none" : ""} ${
+                className={({ isActive: navActive }) => {
+                  const isActive = isItemActive(item, navActive);
+                  return `relative flex w-full h-full flex-col items-center justify-center gap-0.5 px-0.5 rounded-xl transition-all duration-150 select-none active:scale-95 min-h-[44px] ${!item.to ? "opacity-60 pointer-events-none" : ""} ${
                     isActive
                       ? "text-[#2D6A4F] dark:text-(--agri-brand) font-bold"
                       : "text-(--agri-text-muted) hover:text-(--agri-text-secondary) font-medium"
-                  }`
-                }
+                  }`;
+                }}
               >
-                {({ isActive }) => (
-                  <>
-                    {/* Active top indicator pill */}
-                    {isActive && (
-                      <span className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[2.5px] rounded-b-full bg-[#2D6A4F] dark:bg-(--agri-brand)" />
-                    )}
+                {({ isActive: navActive }) => {
+                  const isActive = isItemActive(item, navActive);
+                  return (
+                    <>
+                      {/* Active top indicator pill */}
+                      {isActive && (
+                        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[2.5px] rounded-b-full bg-[#2D6A4F] dark:bg-(--agri-brand)" />
+                      )}
 
                     <div className="relative w-8 flex items-center justify-center size-6 shrink-0 mt-0.5">
                       {item.kind === "profile" ? (
@@ -77,8 +92,9 @@ export default function BottomNavigation({ items }) {
                       {t(item.labelKey)}
                     </span>
                   </>
-                )}
-              </NavLink>
+                );
+              }}
+            </NavLink>
 
               {/* Mobile speech bubble — messages */}
               {isMessages && showPopup && (
