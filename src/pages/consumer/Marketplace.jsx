@@ -39,7 +39,6 @@ export default function Marketplace() {
     filters,
     visibleProducts,
     filteredProducts,
-    totalProducts,
     hasMore,
     showFilters,
     setShowFilters,
@@ -172,8 +171,6 @@ export default function Marketplace() {
         />
         <section ref={catalogRef} className="min-w-0 flex-1 space-y-4">
           <ProductsToolbar
-            total={totalProducts}
-            loading={loading}
             sort={filters.sort}
             onSort={(value) => updateFilter("sort", value)}
             filters={filters}

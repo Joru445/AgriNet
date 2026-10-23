@@ -55,7 +55,7 @@ export default function BottomNavigation({ items }) {
                         <Avatar
                           src={identity?.profilePicture}
                           name={identity?.fullname || identity?.username}
-                          size="xs"
+                          size="xxs"
                           className={isActive ? "ring-2 ring-[#2D6A4F] dark:ring-(--agri-brand)" : ""}
                         />
                       ) : <i className={`${item.icon} text-xl leading-none`} />}
@@ -67,6 +67,9 @@ export default function BottomNavigation({ items }) {
                       )}
                       {isReports && pendingReportsCount > 0 && (
                         <Badge count={pendingReportsCount} className="!-top-1.5 !-right-2.5 min-w-[0.875rem] h-3.5 px-0.5 text-[9px] ring-2 ring-(--agri-surface)" />
+                      )}
+                      {item.kind === "profile" && inquiryActionCount > 0 && (
+                        <Badge count={inquiryActionCount} className="!-top-1.5 !-right-2.5 min-w-[0.875rem] h-3.5 px-0.5 text-[9px] ring-2 ring-(--agri-surface)" />
                       )}
                     </div>
 
@@ -89,7 +92,7 @@ export default function BottomNavigation({ items }) {
               )}
 
               {/* Mobile speech bubble — transactions */}
-              {isInquiries && showInquiryPopup && (
+              {(isInquiries || item.kind === "profile") && showInquiryPopup && (
                 <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-bottom-2">
                   <div className="relative flex items-center gap-2 rounded-xl bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text) shadow-xl border border-(--agri-border) max-w-[200px]">
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-(--agri-card) rotate-45 border-r border-b border-(--agri-border)" />

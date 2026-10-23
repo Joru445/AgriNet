@@ -108,12 +108,21 @@ export default function ProfileTransactions() {
             />
             <span>{labels[group]}</span>
             {counts && Number(counts[group] || 0) > 0 && (
-              <span
-                className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold tabular-nums text-white"
-                aria-label={`${counts[group]} ${t("profile.transactions.countLabel")}`}
-              >
-                {counts[group] > 99 ? "99+" : counts[group]}
-              </span>
+              ["requests", "in-progress"].includes(group) ? (
+                <span
+                  className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold tabular-nums text-white"
+                  aria-label={`${counts[group]} ${t("profile.transactions.countLabel")}`}
+                >
+                  {counts[group] > 99 ? "99+" : counts[group]}
+                </span>
+              ) : (
+                <span
+                  className="ml-auto text-xs font-semibold tabular-nums text-(--agri-text-muted)"
+                  aria-label={`${counts[group]} ${t("profile.transactions.countLabel")}`}
+                >
+                  {counts[group] > 99 ? "99+" : counts[group]}
+                </span>
+              )
             )}
           </Link>
         ))}

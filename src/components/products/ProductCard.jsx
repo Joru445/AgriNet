@@ -20,7 +20,7 @@ import {
 } from "../../utils/productStatus";
 
 import productPlaceholder from "../../assets/img/productPlaceholder.png";
-import { formatTimestamp, formatDate } from "../../utils/date";
+import { formatDate } from "../../utils/date";
 
 import { CATEGORY_ICONS } from "../../utils/categoryIcons";
 import { applyTransform, PRODUCT_THUMB_TF, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
@@ -59,8 +59,6 @@ export default function ProductCard({
 
   const priceFormatted = getFormatPrice(priceNum);
   const originalPriceFormatted = getFormatPrice(originalPriceNum);
-
-  const createdAtFormatted = formatTimestamp(product.createdAt);
 
   const categoryIcon =
     CATEGORY_ICONS[product.category] || "ri-shopping-basket-2-line";
@@ -161,16 +159,13 @@ export default function ProductCard({
         
         <div>
           {/* Produce Name */}
-          <div className="flex justify-between">
+          <div>
             <h3
               className="text-sm sm:text-base md:text-lg font-bold text-(--agri-text) line-clamp-2 leading-snug transition-colors group-hover:text-(--agri-text)"
               title={product.name}
             >
               {product.name}
             </h3>
-            <span className="text-[10px] sm:text-xs font-semibold text-(--agri-text-muted) shrink-0">
-              {createdAtFormatted}
-            </span>
           </div>
 
           {/* Price with Slashed Price + Percent beside it on the right side */}
@@ -243,19 +238,24 @@ export default function ProductCard({
           <div className="pt-2 sm:pt-3 border-t border-(--agri-border-subtle) flex items-center justify-between gap-1 text-[10px] sm:text-xs">
             {/* Rating */}
             <div className="flex items-center gap-0.5 sm:gap-1">
-              {product.reviewCount > 0 ? (
-                <>
-                  <i className="ri-star-fill text-amber-500 text-xs sm:text-sm" />
-                  <span className="font-bold text-(--agri-text)">
-                    {product.productRating}
-                  </span>
-                  <span className="text-(--agri-text-muted) font-medium">
-                    ({product.reviewCount})
-                  </span>
-                </>
-              ) : (
-                <span className="text-(--agri-text-muted) font-medium">{t("product.noReviews")}</span>
-              )}
+              {(() => {
+                const reviewCount = Number(product.reviewCount ?? product.ratingSummary?.count ?? 0);
+                const rawRating = Number(product.productRating ?? product.ratingSummary?.average ?? 0);
+                const ratingFormatted = rawRating > 0 ? rawRating.toFixed(1) : "0.0";
+                return reviewCount > 0 ? (
+                  <>
+                    <i className="ri-star-fill text-amber-500 text-xs sm:text-sm" />
+                    <span className="font-bold text-(--agri-text)">
+                      {ratingFormatted}
+                    </span>
+                    <span className="text-(--agri-text-muted) font-medium">
+                      ({reviewCount})
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-(--agri-text-muted) font-medium">{t("product.noReviews")}</span>
+                );
+              })()}
             </div>
 
             {/* Distance */}

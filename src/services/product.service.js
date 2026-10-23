@@ -240,8 +240,48 @@ export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, 
       signal,
     });
 
+    const rawProducts = Array.isArray(data?.data) ? data.data : [];
+    let products = rawProducts;
+
+    if (rawProducts.length > 0) {
+      try {
+        const summaries = await getProductReviewSummaries(
+          rawProducts.map((p) => p.id),
+        );
+        products = rawProducts.map((p) => {
+          const live = summaries.get(p.id);
+          const reviewCount = Number(
+            live?.count ?? p.ratingSummary?.count ?? p.reviewCount ?? 0,
+          );
+          const productRating = Number(
+            live?.average ?? p.ratingSummary?.average ?? p.productRating ?? 0,
+          );
+          return {
+            ...p,
+            reviewCount,
+            productRating: productRating > 0 ? Number(productRating.toFixed(1)) : 0,
+            ratingSummary: {
+              count: reviewCount,
+              average: productRating,
+            },
+          };
+        });
+      } catch (sumErr) {
+        console.warn("Could not load review summaries for marketplace products:", sumErr);
+        products = rawProducts.map((p) => {
+          const reviewCount = Number(p.ratingSummary?.count ?? p.reviewCount ?? 0);
+          const productRating = Number(p.ratingSummary?.average ?? p.productRating ?? 0);
+          return {
+            ...p,
+            reviewCount,
+            productRating: productRating > 0 ? Number(productRating.toFixed(1)) : 0,
+          };
+        });
+      }
+    }
+
     return {
-      products: data.data ?? [],
+      products,
       cursor: data.cursor ?? null,
       hasMore: data.hasMore ?? false,
     };

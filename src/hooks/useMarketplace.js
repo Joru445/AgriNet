@@ -243,8 +243,10 @@ export default function useMarketplace() {
       );
       return true;
     }
+    if (remaining > 0) {
+      setVisibleCount((count) => count + remaining);
+    }
     if (!hasMore) {
-      if (remaining > 0) setVisibleCount((count) => count + remaining);
       return false;
     }
     return requestPage();

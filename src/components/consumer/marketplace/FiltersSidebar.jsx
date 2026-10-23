@@ -206,9 +206,10 @@ export default function FiltersSidebar({
   return (
     <aside
       aria-hidden={!visible}
-      className={`hidden shrink-0 overflow-hidden transition-[width,opacity,transform] duration-200 ease-out lg:block ${visible ? "w-72 translate-x-0 opacity-100" : "pointer-events-none w-0 -translate-x-2 opacity-0"}`}
+      className={`hidden shrink-0 self-start sticky z-20 transition-[width,opacity,transform] duration-200 ease-out lg:block ${visible ? "w-72 translate-x-0 opacity-100" : "pointer-events-none w-0 -translate-x-2 opacity-0 overflow-hidden"}`}
+      style={{ top: "calc(var(--marketplace-search-h, 4rem) + 0.75rem)" }}
     >
-      <div className="sticky z-20 max-h-[calc(100vh-var(--marketplace-search-h)-0.75rem)] overflow-y-auto rounded-2xl border border-(--agri-border) bg-(--agri-card) p-5 shadow-md scrollbar-none" style={{ top: "calc(var(--marketplace-search-h) + 0.75rem)" }}>
+      <div className="max-h-[calc(100vh-var(--marketplace-search-h,4rem)-1.5rem)] overflow-y-auto rounded-2xl border border-(--agri-border) bg-(--agri-card) p-5 shadow-md scrollbar-none">
         {content}
       </div>
     </aside>

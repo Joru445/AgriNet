@@ -1,4 +1,4 @@
-const KEY = "agrinet_public_marketplace_v2";
+const KEY = "agrinet_public_marketplace_v3";
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const EMPTY_RESULT_MAX_AGE_MS = 2 * 60 * 1000;
 

@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import landscape from "../../assets/img/landscapeCover.jpg";
 
 import ImageViewerModal from "../ui/ImageViewerModal";
 import RoleBadge from "../ui/RoleBadge";
 import ReportModal from "../reports/ReportModal";
+import LogoutConfirmModal from "../settings/LogoutConfirmModal";
 import GroupBadge from "../groups/GroupBadge";
 import { getInitials } from "../../utils/getInitials";
 import { applyTransform, COVER_TF, PROFILE_TF, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
@@ -23,10 +25,26 @@ export default function PublicProfileHeader({
   onSettings,
 }) {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [lightbox, setLightbox] = useState(null);
+
+  async function handleLogout() {
+    try {
+      setLoggingOut(true);
+      await logout();
+      navigate("/login");
+      setShowLogoutModal(false);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoggingOut(false);
+    }
+  }
 
   const isFarmer = role === "farmer";
 
@@ -217,6 +235,17 @@ export default function PublicProfileHeader({
               <span>{t("storeProfile.share")}</span>
             </button>
 
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(true)}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-(--agri-border) bg-(--agri-card) px-4 py-2.5 text-sm font-semibold text-red-600 dark:text-red-400 transition hover:bg-red-50 hover:border-red-200 dark:hover:bg-red-950/20 dark:hover:border-red-900/40 cursor-pointer"
+              >
+                <i className="ri-logout-box-r-line" />
+                <span>{t("common.logOut")}</span>
+              </button>
+            )}
+
             {!isOwner && <button
               type="button"
               onClick={() => setShowReportModal(true)}
@@ -264,6 +293,15 @@ export default function PublicProfileHeader({
         title={lightbox?.title}
         onClose={() => setLightbox(null)}
       />
+
+      {isOwner && (
+        <LogoutConfirmModal
+          open={showLogoutModal}
+          loggingOut={loggingOut}
+          onCancel={() => setShowLogoutModal(false)}
+          onConfirm={handleLogout}
+        />
+      )}
     </section>
   );
 }

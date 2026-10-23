@@ -37,6 +37,7 @@ function getActionMessage(inq, role) {
   }
 
   if (role === "farmer") {
+    if (status === "pending") return "New transaction request received!";
     if (status === "accepted") return "New inquiry accepted — start the transaction!";
     if (status === "proof_submitted") return "Consumer submitted proof — review it!";
   }
@@ -65,6 +66,7 @@ function hasActionBadge(inq, role) {
   }
 
   if (role === "farmer") {
+    if (status === "pending") return true;
     if (status === "accepted") return true;
     if (status === "proof_submitted") return true;
   }
