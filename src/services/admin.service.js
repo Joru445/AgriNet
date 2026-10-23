@@ -109,7 +109,8 @@ export async function getRecentInquiries() {
  */
 
 function withRange(path, { from, to }) {
-  const params = new URLSearchParams({ from, to });
+  const toParam = to && !to.includes("T") ? `${to}T23:59:59.999Z` : to;
+  const params = new URLSearchParams({ from, to: toParam });
   return `${path}?${params.toString()}`;
 }
 
