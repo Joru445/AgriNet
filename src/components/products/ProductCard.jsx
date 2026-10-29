@@ -24,6 +24,7 @@ import { formatDate } from "../../utils/date";
 
 import { CATEGORY_ICONS } from "../../utils/categoryIcons";
 import { applyTransform, PRODUCT_THUMB_TF, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
+import { useLiveProductReview } from "../../utils/productReviewSync";
 
 export default function ProductCard({
   product,
@@ -62,6 +63,9 @@ export default function ProductCard({
 
   const categoryIcon =
     CATEGORY_ICONS[product.category] || "ri-shopping-basket-2-line";
+
+  const { reviewCount, productRating } = useLiveProductReview(product);
+  const ratingFormatted = productRating > 0 ? productRating.toFixed(1) : "0.0";
 
   return (
     <Link
@@ -238,24 +242,19 @@ export default function ProductCard({
           <div className="pt-2 sm:pt-3 border-t border-(--agri-border-subtle) flex items-center justify-between gap-1 text-[10px] sm:text-xs">
             {/* Rating */}
             <div className="flex items-center gap-0.5 sm:gap-1">
-              {(() => {
-                const reviewCount = Number(product.reviewCount ?? product.ratingSummary?.count ?? 0);
-                const rawRating = Number(product.productRating ?? product.ratingSummary?.average ?? 0);
-                const ratingFormatted = rawRating > 0 ? rawRating.toFixed(1) : "0.0";
-                return reviewCount > 0 ? (
-                  <>
-                    <i className="ri-star-fill text-amber-500 text-xs sm:text-sm" />
-                    <span className="font-bold text-(--agri-text)">
-                      {ratingFormatted}
-                    </span>
-                    <span className="text-(--agri-text-muted) font-medium">
-                      ({reviewCount})
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-(--agri-text-muted) font-medium">{t("product.noReviews")}</span>
-                );
-              })()}
+              {reviewCount > 0 ? (
+                <>
+                  <i className="ri-star-fill text-amber-500 text-xs sm:text-sm" />
+                  <span className="font-bold text-(--agri-text)">
+                    {ratingFormatted}
+                  </span>
+                  <span className="text-(--agri-text-muted) font-medium">
+                    ({reviewCount})
+                  </span>
+                </>
+              ) : (
+                <span className="text-(--agri-text-muted) font-medium">{t("product.noReviews")}</span>
+              )}
             </div>
 
             {/* Distance */}

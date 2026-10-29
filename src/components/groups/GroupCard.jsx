@@ -41,8 +41,10 @@ export default function GroupCard({
   const { t } = useLanguage();
   const [imgError, setImgError] = useState(false);
   const [fetchedCount, setFetchedCount] = useState(() => {
-    if (typeof group.memberCount === "number") return group.memberCount;
-    if (Array.isArray(group.members)) return group.members.length;
+    const cached = pageCache.get(`group_count_${group.id}`);
+    if (typeof cached === "number" && cached > 0) return cached;
+    if (typeof group.memberCount === "number" && group.memberCount > 0) return group.memberCount;
+    if (Array.isArray(group.members) && group.members.length > 0) return group.members.length;
     return null;
   });
 
@@ -57,7 +59,8 @@ export default function GroupCard({
   useEffect(() => {
     let cancelled = false;
 
-    if (group.id && fetchedCount == null) {
+    const fetchCount = () => {
+      if (!group.id) return;
       getGroupMemberCount(group.id)
         .then((count) => {
           if (!cancelled && typeof count === "number") {
@@ -65,12 +68,32 @@ export default function GroupCard({
           }
         })
         .catch(() => {});
-    }
+    };
+
+    fetchCount();
+
+    const handleUpdate = (e) => {
+      if (!e.detail?.groupId || String(e.detail.groupId).trim() === String(group.id).trim()) {
+        pageCache.invalidate(`group_count_${group.id}`);
+        fetchCount();
+      }
+    };
+
+    window.addEventListener("agrinet:group-members-updated", handleUpdate);
+    const handleStorage = (e) => {
+      if (e.key === "agrinet_group_sync") {
+        pageCache.invalidate(`group_count_${group.id}`);
+        fetchCount();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
 
     return () => {
       cancelled = true;
+      window.removeEventListener("agrinet:group-members-updated", handleUpdate);
+      window.removeEventListener("storage", handleStorage);
     };
-  }, [group.id, fetchedCount]);
+  }, [group.id]);
 
   const resolvedStatus = (() => {
     if (membershipStatus && membershipStatus !== "none") return membershipStatus;

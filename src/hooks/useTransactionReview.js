@@ -11,6 +11,9 @@ import { apiSubmitTransactionReview } from "../services/transaction-review.servi
 import { useAuth } from "../context/AuthContext";
 import { invalidateAccountCache, accountCacheKey } from "../utils/accountQueryCache";
 import { registerVerifiedReviewProof } from "../utils/reviewProofRegistry";
+import { recordLiveProductReview } from "../utils/productReviewSync";
+import { invalidateMarketplaceCatalog } from "../services/product.service";
+import * as pageCache from "../utils/pageCache";
 
 export default function useTransactionReview(inquiryId) {
   const { profile } = useAuth();
@@ -104,6 +107,13 @@ export default function useTransactionReview(inquiryId) {
           productRating,
           productComment,
         });
+
+        const targetProductId = inquiry?.productId || inquiry?.product?.id;
+        if (targetProductId) {
+          recordLiveProductReview(targetProductId, productRating);
+          pageCache.invalidate(`product:${targetProductId}`);
+        }
+        invalidateMarketplaceCatalog();
 
         if (profile?.uid) {
           invalidateAccountCache(accountCacheKey(profile.uid, "inquiries"));

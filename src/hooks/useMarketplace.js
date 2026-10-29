@@ -13,6 +13,8 @@ import {
   loadPublicMarketplaceCache,
   savePublicMarketplaceCache,
 } from "../utils/publicMarketplaceCache";
+import { getProductReviewSummaries } from "../services/product-review.service";
+import { registerProductReviewSummaries } from "../utils/productReviewSync";
 
 const PAGE_SIZE = 24;
 // The memory cache matches the persisted public-listing retention window. A
@@ -194,6 +196,40 @@ export default function useMarketplace() {
       setVisibleCount(Math.min(columnsRef.current, restored.products.length));
       setError(null);
       setLoading(false);
+
+      if (restored.products?.length > 0) {
+        getProductReviewSummaries(restored.products.map((p) => p.id))
+          .then((summaries) => {
+            if (summaries && summaries.size > 0) {
+              registerProductReviewSummaries(summaries);
+              setFetchedProducts((current) =>
+                current.map((p) => {
+                  const live = summaries.get(p.id);
+                  if (!live || live.count === undefined) return p;
+                  const reviewCount = Math.max(
+                    Number(live.count),
+                    Number(p.reviewCount || 0),
+                    Number(p.ratingSummary?.count || 0),
+                  );
+                  const productRating =
+                    live.average > 0
+                      ? Number(live.average.toFixed(1))
+                      : Number(p.productRating || 0);
+                  return {
+                    ...p,
+                    reviewCount,
+                    productRating,
+                    ratingSummary: {
+                      count: reviewCount,
+                      average: productRating,
+                    },
+                  };
+                }),
+              );
+            }
+          })
+          .catch(() => {});
+      }
     } else {
       setFetchedProducts([]);
       setVisibleCount(0);
@@ -204,6 +240,41 @@ export default function useMarketplace() {
     // revalidated; pull-to-refresh is the explicit freshness control.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryKey]);
+
+  useEffect(() => {
+    const handleReviewUpdated = (event) => {
+      const { productId, summary } = event.detail || {};
+      if (!productId) return;
+      setFetchedProducts((current) =>
+        current.map((p) => {
+          if (p.id === productId) {
+            const nextCount = Math.max(
+              Number(summary?.count ?? (p.reviewCount + 1)),
+              Number(p.reviewCount || 0),
+              Number(p.ratingSummary?.count || 0),
+            );
+            const nextRating =
+              summary?.average != null && summary.average > 0
+                ? Number(summary.average.toFixed(1))
+                : Number(p.productRating || 0);
+            return {
+              ...p,
+              reviewCount: nextCount,
+              productRating: nextRating,
+              ratingSummary: {
+                count: nextCount,
+                average: nextRating,
+              },
+            };
+          }
+          return p;
+        }),
+      );
+    };
+
+    window.addEventListener("agrinet:review-updated", handleReviewUpdated);
+    return () => window.removeEventListener("agrinet:review-updated", handleReviewUpdated);
+  }, []);
 
   const products = useMemo(
     () => decorateDistance(fetchedProducts, userLocation),

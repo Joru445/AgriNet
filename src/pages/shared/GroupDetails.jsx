@@ -178,10 +178,25 @@ export default function GroupDetails() {
       });
     }
 
+    const handleGroupMembersUpdated = (e) => {
+      if (!e.detail?.groupId || String(e.detail.groupId).trim() === String(groupId).trim()) {
+        pageCache.invalidate(`group_count_${groupId}`);
+        getGroupMemberCount(groupId)
+          .then((count) => {
+            if (!cancelled && typeof count === "number") {
+              setMemberCount(count);
+            }
+          })
+          .catch(() => {});
+      }
+    };
+    window.addEventListener("agrinet:group-members-updated", handleGroupMembersUpdated);
+
     return () => {
       cancelled = true;
       unsubMembership();
       unsubMembers();
+      window.removeEventListener("agrinet:group-members-updated", handleGroupMembersUpdated);
     };
   }, [groupId, user?.uid, isFarmer, t]);
 
