@@ -9,7 +9,9 @@ import UserTable from "../../components/admin/users/UserTable";
 import UserTableSkeleton from "../../components/admin/users/UserTableSkeleton";
 import UserDetailsModal from "../../components/admin/users/UserDetailsModal";
 import UserEditModal from "../../components/admin/users/UserEditModal";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { InlineError } from "../../components/ui/ErrorState";
+import { showToast } from "../../utils/toast";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -31,6 +33,7 @@ export default function Users() {
     stats,
 
     changeStatus,
+    deleteUser,
     getFarmer,
     verifyUserFarmer,
     unverifyUserFarmer,
@@ -46,6 +49,28 @@ export default function Users() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [editingFarmer, setEditingFarmer] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  /*
+   * ============================================================
+   * DELETE USER CONFIRMATION
+   * ============================================================
+   */
+
+  async function handleConfirmDelete() {
+    if (!userToDelete) return;
+    try {
+      setDeleteLoading(true);
+      await deleteUser(userToDelete.uid);
+      showToast.success(t("adminUser.userDeletedSuccess"));
+      setUserToDelete(null);
+    } catch (err) {
+      showToast.error(err?.message || t("adminUser.userDeletedError"));
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
 
   /*
    * ============================================================
@@ -193,6 +218,7 @@ export default function Users() {
             currentUserId={user?.uid}
             onView={setSelectedUser}
             onEdit={handleEditUser}
+            onDelete={setUserToDelete}
           />
         )}
         {!loading && hasMore && (
@@ -219,6 +245,27 @@ export default function Users() {
           setEditingFarmer(null);
         }}
         onSave={handleSaveUser}
+      />
+
+      <ConfirmDialog
+        open={Boolean(userToDelete)}
+        onClose={() => {
+          if (!deleteLoading) setUserToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title={t("adminUser.deleteUserTitle")}
+        description={t("adminUser.deleteUserDescription", {
+          name:
+            userToDelete?.fullname ||
+            userToDelete?.username ||
+            userToDelete?.email ||
+            t("adminUser.unnamedUser"),
+        })}
+        confirmLabel={t("adminUser.deleteConfirm")}
+        cancelLabel={t("common.cancel")}
+        danger
+        loading={deleteLoading}
+        icon="ri-delete-bin-line"
       />
     </div>
   );

@@ -604,6 +604,16 @@ export default function useMessages() {
     };
   }, [activeConvId, profile?.uid, markConversationReadLocally]);
 
+  useEffect(() => {
+    if (!activeConvId || !profile?.uid || !messages?.length) return;
+    if (document.visibilityState !== "visible") return;
+
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg && lastMsg.senderId !== profile.uid) {
+      markConversationReadLocally?.(activeConvId);
+    }
+  }, [activeConvId, profile?.uid, messages, markConversationReadLocally]);
+
   function selectConversation(conversation) {
     setSearch("");
     if (conversation?.id) {

@@ -6,7 +6,7 @@ import {
   getUsersPage,
 } from "../services/user.service";
 
-import { apiSetUserSuspension } from "../services/admin.service";
+import { apiDeleteUser, apiSetUserSuspension } from "../services/admin.service";
 
 import {
   getFarmerById,
@@ -321,6 +321,34 @@ export default function useUsers() {
 
   /*
    * ============================================================
+   * DELETE USER (PERMANENT)
+   * ============================================================
+   */
+
+  const deleteUser = useCallback(async (uid) => {
+    if (!uid) {
+      throw new Error("User UID is required.");
+    }
+
+    try {
+      setActionLoading(true);
+      setActionError(null);
+
+      await apiDeleteUser(uid);
+
+      setUsers((current) => current.filter((u) => u.uid !== uid));
+      setFarmers((current) => current.filter((f) => f.uid !== uid));
+    } catch (err) {
+      console.error("Failed to delete user:", err);
+      setActionError(err?.message || "Failed to delete user.");
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  }, []);
+
+  /*
+   * ============================================================
    * CLEAR ACTION ERROR
    * ============================================================
    */
@@ -352,6 +380,7 @@ export default function useUsers() {
     getFarmer,
 
     changeStatus,
+    deleteUser,
 
     verifyUserFarmer,
     unverifyUserFarmer,

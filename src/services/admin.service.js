@@ -26,6 +26,20 @@ export async function apiSetUserSuspension(uid, status, options = {}) {
   return result.user;
 }
 
+export async function apiDeleteUser(uid) {
+  if (!uid) {
+    throw new Error("User UID is required.");
+  }
+
+  const result = await apiRequest(`/v1/users/${encodeURIComponent(uid)}`, {
+    method: "DELETE",
+  });
+
+  pageCache.invalidate("adminDashboard");
+
+  return result?.data || result;
+}
+
 export async function apiSetProductAvailability(productId, available) {
   const result = await apiRequest(`/v1/admin/products/${productId}/availability`, {
     method: "PATCH",

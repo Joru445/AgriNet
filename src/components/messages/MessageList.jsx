@@ -193,21 +193,36 @@ export default function MessageList({
     );
   }
 
-  const otherUid = user?.uid || user?.id || conversation?.otherUser?.uid;
+  const otherUid =
+    user?.uid ||
+    user?.id ||
+    conversation?.otherUser?.uid ||
+    (conversation?.participants && profile?.uid
+      ? conversation.participants.find((p) => p !== profile.uid)
+      : null);
+
   const otherUserLastRead = conversation?.lastRead?.[otherUid];
+  const otherUnread =
+    typeof conversation?.unreadCount === "object"
+      ? conversation.unreadCount?.[otherUid]
+      : typeof conversation?.rawUnreadCount === "object"
+        ? conversation.rawUnreadCount?.[otherUid]
+        : null;
 
   const hasReplyFromOther = Boolean(
-    otherUid && messages.some((m) => m.senderId === otherUid),
+    messages.some((m) => m.senderId && m.senderId !== profile?.uid),
   );
 
   function checkIfSeen(message, messageIndex) {
     if (message.read === true) return true;
+    if (otherUid && Array.isArray(message.readBy) && message.readBy.includes(otherUid)) return true;
     if (message.status === "failed" || message.status === "sending") return false;
 
+    // If other participant replied after this message was sent, they have definitely seen it
     if (hasReplyFromOther && typeof messageIndex === "number") {
       const hasLaterReply = messages
         .slice(messageIndex + 1)
-        .some((m) => m.senderId === otherUid);
+        .some((m) => m.senderId && m.senderId !== profile?.uid);
       if (hasLaterReply) return true;
     }
 
@@ -215,9 +230,15 @@ export default function MessageList({
       const readMs = getTimestampMs(otherUserLastRead);
       const msgMs = getTimestampMs(message.createdAt);
 
-      if (readMs && msgMs && readMs >= msgMs) {
+      // Allow 1000ms clock skew tolerance between client and server timestamps
+      if (readMs && msgMs && readMs + 1000 >= msgMs) {
         return true;
       }
+    }
+
+    // If the other user has read the conversation (unread count is 0) and has a lastRead recorded
+    if (otherUserLastRead && otherUnread === 0) {
+      return true;
     }
 
     return false;

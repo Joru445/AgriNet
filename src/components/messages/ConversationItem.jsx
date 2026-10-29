@@ -45,8 +45,19 @@ export default function ConversationItem({
     item?.lastMessageSender === profile?.uid ||
     (typeof item?.lastMessage === "string" && item.lastMessage.startsWith("You:"))
   );
-  const otherUid = user?.uid;
+  const otherUid =
+    user?.uid ||
+    user?.id ||
+    item?.otherUser?.uid ||
+    (item?.participants && profile?.uid ? item.participants.find((p) => p !== profile.uid) : null);
+
   const otherLastRead = item?.lastRead?.[otherUid];
+  const otherUnread =
+    typeof item?.unreadCount === "object"
+      ? item.unreadCount?.[otherUid]
+      : typeof item?.rawUnreadCount === "object"
+        ? item.rawUnreadCount?.[otherUid]
+        : null;
 
   const hasUnread = !searching && !isSelected && !isMine && Boolean(item.unreadCount > 0);
   const unreadDisplayCount = item.unreadCount > 99 ? "99+" : item.unreadCount;
@@ -56,7 +67,10 @@ export default function ConversationItem({
     if (otherLastRead && item?.lastMessageAt) {
       const readMs = getTimestampMs(otherLastRead);
       const msgMs = getTimestampMs(item.lastMessageAt);
-      return Boolean(readMs && msgMs && readMs >= msgMs);
+      if (readMs && msgMs && readMs + 1000 >= msgMs) return true;
+    }
+    if (otherLastRead && otherUnread === 0) {
+      return true;
     }
     return false;
   })();

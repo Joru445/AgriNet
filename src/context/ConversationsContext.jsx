@@ -176,8 +176,16 @@ export function ConversationsProvider({ children }) {
             }
           }
 
+          const mergedLastRead = localReadMs > (getTimestampMs(myLastRead) || 0)
+            ? {
+                ...(typeof conversation.lastRead === "object" ? conversation.lastRead : {}),
+                [listenerUid]: localReadMs,
+              }
+            : conversation.lastRead;
+
           return {
             ...conversation,
+            lastRead: mergedLastRead,
             otherUser: {
               uid: otherUid,
               ...otherInfo,

@@ -1473,9 +1473,15 @@ export default {
     closeDetails: "Close Details",
     unnamedUser: "Unnamed User",
     naLabel: "N/A",
-    close: "Close",
     viewDetailsAria: "View user details",
     editUserAria: "Edit user",
+    deleteUser: "Delete user",
+    adminDeleteDisabled: "Admin accounts cannot be deleted",
+    deleteUserTitle: "Delete User Permanently",
+    deleteUserDescription: "Are you sure you want to permanently delete {name}? This action cannot be undone and will permanently remove all associated user data.",
+    deleteConfirm: "Delete Permanently",
+    userDeletedSuccess: "User has been permanently deleted.",
+    userDeletedError: "Failed to delete user.",
   },
 
   adminReport: {

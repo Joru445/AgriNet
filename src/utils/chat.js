@@ -6,7 +6,13 @@ export function parseTimestamp(timestamp) {
   }
 
   if (timestamp.seconds != null) {
-    return new Date(timestamp.seconds * 1000);
+    const nanos = timestamp.nanoseconds ?? timestamp.nanos ?? 0;
+    return new Date(timestamp.seconds * 1000 + Math.floor(nanos / 1000000));
+  }
+
+  if (timestamp._seconds != null) {
+    const nanos = timestamp._nanoseconds ?? timestamp._nanos ?? 0;
+    return new Date(timestamp._seconds * 1000 + Math.floor(nanos / 1000000));
   }
 
   if (timestamp instanceof Date) {
@@ -151,10 +157,12 @@ export function getTimestampMs(val) {
     return val.toDate().getTime();
   }
   if (val.seconds != null) {
-    return val.seconds * 1000;
+    const nanos = val.nanoseconds ?? val.nanos ?? 0;
+    return val.seconds * 1000 + Math.floor(nanos / 1000000);
   }
   if (val._seconds != null) {
-    return val._seconds * 1000;
+    const nanos = val._nanoseconds ?? val._nanos ?? 0;
+    return val._seconds * 1000 + Math.floor(nanos / 1000000);
   }
   if (val instanceof Date) {
     const t = val.getTime();
