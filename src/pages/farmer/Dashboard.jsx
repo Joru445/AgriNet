@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 
 import DashboardHeader from "../../components/farmer/dashboard/DashboardHeader";
@@ -31,6 +31,12 @@ export default function Dashboard() {
 
   const analytics = useFarmerAnalytics(range);
 
+  const handleRefresh = useCallback(() => {
+    reloadDashboard();
+    analytics.inquiryAnalytics?.refresh?.();
+    analytics.productAnalytics?.refresh?.();
+  }, [reloadDashboard, analytics.inquiryAnalytics, analytics.productAnalytics]);
+
   const pendingCount = stats.pendingInquiries ?? 0;
 
   return (
@@ -39,7 +45,7 @@ export default function Dashboard() {
       <DashboardHeader
         profile={profile}
         loading={loading}
-        onRefresh={reloadDashboard}
+        onRefresh={handleRefresh}
       />
 
       {error && (
@@ -83,6 +89,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
           <InquiryTrendCard
             analytics={analytics.inquiryAnalytics}
+            stats={stats}
             range={range}
             onRangeChange={setRange}
             className="lg:col-span-2"

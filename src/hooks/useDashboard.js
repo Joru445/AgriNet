@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useConversationsContext } from "../context/ConversationsContext";
 
 import { getFarmerDashboard } from "../services/farmer.service";
+import { apiGetFarmerProducts } from "../services/product.service";
 
 import { showToast } from "../utils/toast";
 import * as pageCache from "../utils/pageCache";
@@ -50,22 +51,91 @@ export default function useDashboard() {
       setRecentProducts(cached.recentProducts);
       setRecentReviews(cached.recentReviews);
       setLoading(false);
+
+      // Re-verify in background to ensure fresh consistency with active products
+      apiGetFarmerProducts(profile.uid)
+        .then((activeProducts) => {
+          if (Array.isArray(activeProducts)) {
+            const total = activeProducts.length;
+            const available = activeProducts.filter(
+              (p) => p.available !== false && p.sellingMode !== "preorder",
+            ).length;
+            const preorder = activeProducts.filter(
+              (p) => p.sellingMode === "preorder",
+            ).length;
+            const unavailable = activeProducts.filter(
+              (p) => p.available === false,
+            ).length;
+
+            setStats((prev) => {
+              if (
+                prev.totalProducts === total &&
+                prev.availableProducts === available &&
+                prev.preorderCount === preorder &&
+                prev.unavailableProducts === unavailable
+              ) {
+                return prev;
+              }
+              const updated = {
+                ...prev,
+                totalProducts: total,
+                availableProducts: available,
+                preorderCount: preorder,
+                unavailableProducts: unavailable,
+              };
+              pageCache.set(
+                cacheKey,
+                {
+                  stats: updated,
+                  recentProducts: activeProducts.slice(0, 5),
+                  recentReviews: cached.recentReviews,
+                },
+                CACHE_TTL,
+              );
+              return updated;
+            });
+            setRecentProducts(activeProducts.slice(0, 5));
+          }
+        })
+        .catch(() => {});
       return;
     }
 
     try {
       setLoading(true);
 
-      // Dashboard statistics are aggregated server-side (GET /v1/farmers/dashboard)
-      // with full real-time Firestore fallback if API is unavailable.
-      const data = await getFarmerDashboard(profile.uid);
+      // Fetch dashboard summary and authoritative active products in parallel
+      const [data, activeProducts] = await Promise.all([
+        getFarmerDashboard(profile.uid),
+        apiGetFarmerProducts(profile.uid).catch(() => null),
+      ]);
       const summary = data?.summary ?? {};
 
+      let totalProducts = summary.products?.total ?? 0;
+      let availableProducts = summary.products?.available ?? 0;
+      let unavailableProducts = summary.products?.unavailable ?? 0;
+      let preorderCount = summary.products?.preorder ?? 0;
+      let apiRecentProducts = data?.recentProducts ?? [];
+
+      if (Array.isArray(activeProducts)) {
+        totalProducts = activeProducts.length;
+        availableProducts = activeProducts.filter(
+          (p) => p.available !== false && p.sellingMode !== "preorder",
+        ).length;
+        preorderCount = activeProducts.filter(
+          (p) => p.sellingMode === "preorder",
+        ).length;
+        unavailableProducts = activeProducts.filter(
+          (p) => p.available === false,
+        ).length;
+        apiRecentProducts = activeProducts.slice(0, 5);
+      }
+
       const apiStats = {
-        totalProducts: summary.products?.total ?? 0,
-        availableProducts: summary.products?.available ?? 0,
-        unavailableProducts: summary.products?.unavailable ?? 0,
-        preorderCount: summary.products?.preorder ?? 0,
+        totalProducts,
+        availableProducts,
+        unavailableProducts,
+        preorderCount,
         averageRating: summary.reviews?.average ?? 0,
         reviewCount: summary.reviews?.count ?? 0,
         unreadMessages: summary.unreadMessages ?? 0,
@@ -78,7 +148,6 @@ export default function useDashboard() {
         cancelledInquiries: summary.inquiries?.cancelled ?? 0,
       };
 
-      const apiRecentProducts = data?.recentProducts ?? [];
       const apiRecentReviews = data?.recentReviews ?? [];
 
       setStats((prev) => ({ ...prev, ...apiStats }));
@@ -102,6 +171,29 @@ export default function useDashboard() {
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
+
+  // Real-time synchronization when products are created, updated, or deleted
+  useEffect(() => {
+    const handleProductsUpdated = () => {
+      if (profile?.uid) {
+        pageCache.invalidate(`farmerDashboard:${profile.uid}`);
+        loadDashboard();
+      }
+    };
+
+    window.addEventListener("agrinet:farmer-products-updated", handleProductsUpdated);
+    const handleStorage = (e) => {
+      if (e.key === "agrinet_farmer_products_sync") {
+        handleProductsUpdated();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("agrinet:farmer-products-updated", handleProductsUpdated);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [profile?.uid, loadDashboard]);
 
   // Unread message count and recent conversations come live from the existing
   // ConversationsContext subscription (no additional dashboard listener).

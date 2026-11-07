@@ -9,6 +9,11 @@ import { getInquiryProductReview } from "../services/product-review.service";
 import { apiSubmitTransactionReview } from "../services/transaction-review.service";
 
 import { useAuth } from "../context/AuthContext";
+import { invalidateAccountCache, accountCacheKey } from "../utils/accountQueryCache";
+import { registerVerifiedReviewProof } from "../utils/reviewProofRegistry";
+import { recordLiveProductReview } from "../utils/productReviewSync";
+import { invalidateMarketplaceCatalog } from "../services/product.service";
+import * as pageCache from "../utils/pageCache";
 
 export default function useTransactionReview(inquiryId) {
   const { profile } = useAuth();
@@ -43,6 +48,9 @@ export default function useTransactionReview(inquiryId) {
       }
 
       setInquiry(inquiryData);
+      if (inquiryData?.proof?.url) {
+        registerVerifiedReviewProof(inquiryId, inquiryData.proof.url);
+      }
 
       const [farmerReviewData, productReviewData] = await Promise.all([
         getInquiryFarmerReview(inquiryId),
@@ -86,6 +94,10 @@ export default function useTransactionReview(inquiryId) {
         setSubmitting(true);
         setError(null);
 
+        if (inquiry.proof?.url) {
+          registerVerifiedReviewProof(inquiryId, inquiry.proof.url);
+        }
+
         await apiSubmitTransactionReview({
           inquiryId,
 
@@ -95,6 +107,28 @@ export default function useTransactionReview(inquiryId) {
           productRating,
           productComment,
         });
+
+        const targetProductId = inquiry?.productId || inquiry?.product?.id;
+        if (targetProductId) {
+          recordLiveProductReview(targetProductId, productRating);
+          pageCache.invalidate(`product:${targetProductId}`);
+        }
+        invalidateMarketplaceCatalog();
+
+        if (profile?.uid) {
+          invalidateAccountCache(accountCacheKey(profile.uid, "inquiries"));
+          invalidateAccountCache(accountCacheKey(profile.uid, "inquiry-group-counts"));
+          window.dispatchEvent(
+            new CustomEvent("agrinet:inquiry-updated", {
+              detail: { uid: profile.uid, inquiryId, action: "review" },
+            }),
+          );
+          window.dispatchEvent(
+            new CustomEvent("agrinet:inquiry-counts-invalidated", {
+              detail: { uid: profile.uid },
+            }),
+          );
+        }
 
         await loadReview();
       } catch (err) {

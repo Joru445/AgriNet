@@ -6,6 +6,7 @@ export default function ConversationList({
   conversations = [],
   users = [],
   drafts = {},
+  activeMessage = "",
   loading = false,
 
   search,
@@ -13,7 +14,7 @@ export default function ConversationList({
 
   activeConversation,
 
-    onConversation,
+  onConversation,
   onUser,
   hasChat,
   listRef,
@@ -88,6 +89,7 @@ export default function ConversationList({
                   key={conversation.id}
                   item={conversation}
                   drafts={drafts}
+                  activeMessage={activeMessage}
                   searching={false}
                   activeConversation={activeConversation}
                   onConversation={onConversation}
@@ -112,6 +114,7 @@ export default function ConversationList({
                     item={conversation}
                     index={index}
                     drafts={drafts}
+                    activeMessage={activeMessage}
                     searching={false}
                     activeConversation={activeConversation}
                     onConversation={onConversation}
@@ -135,6 +138,7 @@ export default function ConversationList({
                     item={user}
                     index={index}
                     drafts={drafts}
+                    activeMessage={activeMessage}
                     searching
                     activeConversation={activeConversation}
                     onConversation={onConversation}

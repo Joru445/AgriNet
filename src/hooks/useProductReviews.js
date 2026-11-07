@@ -5,6 +5,14 @@ import { getReviewsByProduct } from "../services/product-review.service";
 import { getUserProfile } from "../services/user.service";
 import { apiGetInquiryById } from "../services/inquiry.service";
 import { getCachedUserProfile } from "../utils/userProfileCache";
+import {
+  getRetainedAccountUids,
+  getRetainedUserAuth,
+} from "../services/multiAccountSession.service";
+import {
+  getVerifiedReviewProofUrl,
+  registerVerifiedReviewProof,
+} from "../utils/reviewProofRegistry";
 
 const MAX_CONCURRENCY = 4;
 
@@ -28,14 +36,23 @@ async function mapWithConcurrency(items, limit, worker) {
 }
 
 function attachFallbacks(reviews) {
-  return reviews.map((review) => ({
-    ...review,
-    reviewer: review.reviewer || {
-      fullname: review.reviewerName || "Verified Buyer",
-      profilePicture: review.reviewerAvatar || "",
-    },
-    inquiry: review.inquiry || (review.proof ? { proof: review.proof } : null),
-  }));
+  return reviews.map((review) => {
+    const inqId = review.inquiryId || review.id || review.inquiry?.id;
+    const verifiedProof = getVerifiedReviewProofUrl(inqId);
+    const proofUrl = review.proof?.url || review.inquiry?.proof?.url || verifiedProof || null;
+
+    return {
+      ...review,
+      reviewer: review.reviewer || {
+        fullname: review.reviewerName || "Verified Buyer",
+        profilePicture: review.reviewerAvatar || "",
+      },
+      inquiry:
+        review.inquiry ||
+        (proofUrl ? { proof: { url: proofUrl } } : null),
+      proof: review.proof || (proofUrl ? { url: proofUrl } : null),
+    };
+  });
 }
 
 export default function useProductReviews() {
@@ -133,7 +150,63 @@ export default function useProductReviews() {
               if (inflightMap.has(inqId)) {
                 return [inqId, await inflightMap.get(inqId)];
               }
-              const promise = apiGetInquiryById(inqId);
+
+              const fetchInquiry = async () => {
+                // 1. Check verified proof registry first
+                const verifiedUrl = getVerifiedReviewProofUrl(inqId);
+                if (verifiedUrl) {
+                  return { id: inqId, proof: { url: verifiedUrl } };
+                }
+
+                // 2. Try current authenticated user
+                try {
+                  const inq = await apiGetInquiryById(inqId);
+                  if (inq?.proof?.url) {
+                    registerVerifiedReviewProof(inqId, inq.proof.url);
+                  }
+                  if (inq) return inq;
+                } catch {
+                  // Fall through to retained accounts
+                }
+
+                // 3. If unauthorized, check retained reviewer account on this device
+                const matchingReview = baseReviews.find((r) => r.inquiryId === inqId);
+                const reviewerUid = matchingReview?.reviewerId;
+                if (reviewerUid) {
+                  try {
+                    const retainedUser = await getRetainedUserAuth(reviewerUid);
+                    if (retainedUser) {
+                      const inq = await apiGetInquiryById(inqId, { authUser: retainedUser });
+                      if (inq?.proof?.url) {
+                        registerVerifiedReviewProof(inqId, inq.proof.url);
+                      }
+                      if (inq) return inq;
+                    }
+                  } catch {}
+                }
+
+                // 4. Try any other retained account on this device (e.g. seller)
+                try {
+                  const allUids = getRetainedAccountUids();
+                  for (const uid of allUids) {
+                    if (uid === reviewerUid) continue;
+                    const retainedUser = await getRetainedUserAuth(uid);
+                    if (retainedUser) {
+                      try {
+                        const inq = await apiGetInquiryById(inqId, { authUser: retainedUser });
+                        if (inq?.proof?.url) {
+                          registerVerifiedReviewProof(inqId, inq.proof.url);
+                          return inq;
+                        }
+                      } catch {}
+                    }
+                  }
+                } catch {}
+
+                return null;
+              };
+
+              const promise = fetchInquiry();
               inflightMap.set(inqId, promise);
               return [inqId, await promise];
             } catch {
@@ -148,17 +221,30 @@ export default function useProductReviews() {
 
         if (cancelled) return;
 
-        const enrichedReviews = baseReviews.map((review) => ({
-          ...review,
-          reviewer:
-            reviewerMap.get(review.reviewerId) || {
-              fullname: review.reviewerName || "Verified Buyer",
-              profilePicture: review.reviewerAvatar || "",
-            },
-          inquiry:
-            inquiryMap.get(review.inquiryId) ||
-            (review.proof ? { proof: review.proof } : null),
-        }));
+        const enrichedReviews = baseReviews.map((review) => {
+          const inqId = review.inquiryId || review.id || review.inquiry?.id;
+          const verifiedProof = getVerifiedReviewProofUrl(inqId);
+          const resolvedInquiry = inquiryMap.get(review.inquiryId);
+          const proofUrl =
+            resolvedInquiry?.proof?.url ||
+            review.proof?.url ||
+            review.inquiry?.proof?.url ||
+            verifiedProof ||
+            null;
+
+          return {
+            ...review,
+            reviewer:
+              reviewerMap.get(review.reviewerId) || {
+                fullname: review.reviewerName || "Verified Buyer",
+                profilePicture: review.reviewerAvatar || "",
+              },
+            inquiry:
+              resolvedInquiry ||
+              (proofUrl ? { proof: { url: proofUrl } } : null),
+            proof: review.proof || (proofUrl ? { url: proofUrl } : null),
+          };
+        });
 
         if (cancelled) return;
 

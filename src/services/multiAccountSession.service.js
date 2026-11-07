@@ -103,6 +103,23 @@ export async function retainCurrentSession(user = auth.currentUser) {
   return true;
 }
 
+export function getRetainedAccountUids() {
+  return getRegistry();
+}
+
+export async function getRetainedUserAuth(uid) {
+  if (!uid || !getRegistry().includes(uid)) return null;
+  try {
+    const { secondaryAuth } = await getRetainedAuth(uid);
+    if (secondaryAuth.currentUser?.uid === uid) {
+      return secondaryAuth.currentUser;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export async function getRetainedSessionStatus(uid) {
   if (!uid || !getRegistry().includes(uid)) return "reauthentication-required";
   try {

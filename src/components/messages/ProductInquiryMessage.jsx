@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ResponsiveModal from "../ui/ResponsiveModal";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
@@ -8,6 +8,7 @@ import Textarea from "../ui/Textarea";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import MessageImage from "./MessageImage";
+import { saveAcceptedInquiry, isHandledInquiry } from "../../utils/optimisticInquiries";
 
 import defaultAvatar from "../../assets/img/defaultAvatar.png";
 import productPlaceholder from "../../assets/img/productPlaceholder.png";
@@ -39,6 +40,42 @@ export default function ProductInquiryMessage({
 
   const isOwn = message.senderId === profile.uid;
   const isFarmer = profile.role === "farmer";
+
+  useEffect(() => {
+    const inquiryId = message?.inquiryId || (message?.id ? `inq_${message.id}` : null);
+    if (!inquiryId || isHandledInquiry(inquiryId) || isHandledInquiry(message?.id)) {
+      return;
+    }
+    if (["accepted", "reserved", "confirmed", "awaiting_agreement"].includes(message?.inquiryStatus)) {
+      saveAcceptedInquiry({
+        id: inquiryId,
+        inquiryMessageId: message.id,
+        conversationId: message.conversationId,
+        productId: message.productId,
+        consumerId: isFarmer ? (message.senderId || user?.uid) : profile?.uid,
+        farmerId: isFarmer ? profile?.uid : (message.senderId || user?.uid),
+        status: message.inquiryStatus,
+        quantity: message.quantity,
+        createdAt: message.createdAt,
+        productSnapshot: product ? {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          unit: product.unit,
+          imageUrl: product.images?.[0]?.url || product.images?.[0] || "",
+        } : null,
+        consumerSnapshot: isFarmer ? (user ? {
+          uid: user.uid,
+          fullname: user.fullname,
+          profilePicture: user.profilePicture,
+        } : null) : (profile ? {
+          uid: profile.uid,
+          fullname: profile.fullname,
+          profilePicture: profile.profilePicture,
+        } : null),
+      });
+    }
+  }, [message, product, user, profile, isFarmer]);
 
   const showAccept = isFarmer && !isOwn && message.inquiryStatus === "pending";
 
@@ -132,7 +169,7 @@ export default function ProductInquiryMessage({
 
             {product.price != null && (
               <p className="mt-1 text-sm font-medium text-(--agri-text-secondary)">
-                ?{product.price}
+                ₱{product.price}
                 {product.unit ? ` / ${product.unit}` : ""}
               </p>
             )}
@@ -192,7 +229,7 @@ export default function ProductInquiryMessage({
                   </span>
                 </div>
                 <Link
-                  to="/transactions"
+                  to="/transactions?group=in-progress"
                   className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#2D6A4F] hover:bg-[#1B4332] px-3 py-2 text-xs sm:text-sm font-semibold text-white transition-colors cursor-pointer no-underline shadow-xs"
                 >
                   <i className="ri-file-list-3-line" />

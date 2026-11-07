@@ -88,6 +88,7 @@ export default function Messages() {
           conversations={filteredConversations}
           users={userResults}
           drafts={drafts}
+          activeMessage={message}
           loading={loading}
           search={search}
           onSearch={setSearch}

@@ -3,7 +3,7 @@ import { subscribeToRealtime } from "./api/realtime.client";
 
 export function subscribeUserInquiries(uid, role, callback, onError) {
   if (!uid || !role || !callback) return () => {};
-  return subscribeToRealtime(`/v1/inquiries/stream?scope=actions&role=${encodeURIComponent(role)}`, callback, (error) => {
+  return subscribeToRealtime(`/v1/inquiries/stream?role=${encodeURIComponent(role)}`, callback, (error) => {
     console.error("Inquiry subscription failed", error); onError?.(error);
   });
 }
@@ -13,27 +13,126 @@ export async function getInquiry(inquiryId) {
   return apiGetInquiryById(inquiryId);
 }
 
-export async function apiGetInquiries({ cursor, limit: pageSize, group } = {}) {
+export function mapInquiryToGroup(inquiry) {
+  if (!inquiry) return "requests";
+  if (inquiry.group === "preparation" || inquiry.group === "confirmed") {
+    return "in-progress";
+  }
+  if (inquiry.group && ["requests", "in-progress", "completed", "cancelled"].includes(inquiry.group)) {
+    return inquiry.group;
+  }
+  const rawStatus = inquiry.status || inquiry.inquiryStatus || "";
+  const status = String(rawStatus).toLowerCase().trim();
+  if (status === "pending") return "requests";
+  if ([
+    "accepted",
+    "reserved",
+    "awaiting_agreement",
+    "confirmed",
+    "preparing",
+    "ready",
+    "ongoing",
+    "awaiting_proof",
+    "proof_submitted",
+    "in_progress",
+    "in-progress",
+  ].includes(status)) {
+    return "in-progress";
+  }
+  if (["completed", "resolved"].includes(status)) return "completed";
+  if (["cancelled", "rejected"].includes(status)) return "cancelled";
+  return "requests";
+}
+
+function extractInquiryItems(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.data?.items)) return data.data.items;
+  if (Array.isArray(data?.data?.inquiries)) return data.data.inquiries;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.inquiries)) return data.inquiries;
+  return [];
+}
+
+export async function apiGetInquiries({ cursor, limit: pageSize, group, role } = {}) {
   const params = new URLSearchParams();
   if (cursor) params.set("cursor", cursor);
   if (pageSize) params.set("limit", String(pageSize));
   if (group && group !== "all") params.set("group", group);
+  if (role) params.set("role", role);
   const url = `/v1/inquiries${params.size ? `?${params}` : ""}`;
   const data = await apiRequest(url);
+  let items = extractInquiryItems(data);
+
+  // If in-progress group requested, also pull items from confirmed/preparation so accepted pre-orders & legacy groups are included
+  if (group === "in-progress" && !cursor) {
+    try {
+      const [confData, prepData] = await Promise.all([
+        apiRequest(`/v1/inquiries?group=confirmed${role ? `&role=${encodeURIComponent(role)}` : ""}`).catch(() => null),
+        apiRequest(`/v1/inquiries?group=preparation${role ? `&role=${encodeURIComponent(role)}` : ""}`).catch(() => null),
+      ]);
+      const extraItems = [
+        ...extractInquiryItems(confData),
+        ...extractInquiryItems(prepData),
+      ];
+      if (extraItems.length > 0) {
+        const existingIds = new Set(items.map((i) => i.id));
+        extraItems.forEach((extra) => {
+          if (!existingIds.has(extra.id)) {
+            items.push(extra);
+            existingIds.add(extra.id);
+          }
+        });
+      }
+    } catch (auxError) {
+      console.warn("Could not fetch auxiliary in-progress inquiries:", auxError);
+    }
+  }
+
+  // If the group query returned 0 items but a specific group was requested,
+  // fallback to querying without the group parameter and filtering client-side.
+  if (items.length === 0 && group && group !== "all" && !cursor) {
+    try {
+      const fallbackParams = new URLSearchParams();
+      fallbackParams.set("limit", String(Math.max(pageSize || 12, 50)));
+      if (role) fallbackParams.set("role", role);
+      const fallbackData = await apiRequest(`/v1/inquiries?${fallbackParams}`);
+      const rawAll = extractInquiryItems(fallbackData);
+      if (rawAll.length > 0) {
+        items = rawAll.filter((inq) => mapInquiryToGroup(inq) === group);
+      }
+    } catch (fallbackError) {
+      console.warn("Fallback general inquiry fetch failed:", fallbackError);
+    }
+  }
+
   return {
-    items: data.data ?? [],
-    cursor: data.pagination?.cursor ?? null,
-    hasMore: Boolean(data.pagination?.hasMore),
-    group: data.pagination?.group ?? group ?? "all",
+    items,
+    cursor: data?.pagination?.cursor ?? null,
+    hasMore: Boolean(data?.pagination?.hasMore),
+    group: data?.pagination?.group ?? group ?? "all",
   };
 }
 
-export async function apiGetInquiryGroupCounts() {
-  const data = await apiRequest("/v1/inquiries/group-counts");
-  return data.data || {};
+export async function apiGetInquiryGroupCounts({ role } = {}) {
+  const params = new URLSearchParams();
+  if (role) params.set("role", role);
+  const url = `/v1/inquiries/group-counts${params.size ? `?${params}` : ""}`;
+  const data = await apiRequest(url);
+  const raw = data.data || {};
+  return {
+    ...raw,
+    "in-progress": (
+      Number(raw["in-progress"] || 0) +
+      Number(raw.confirmed || 0) +
+      Number(raw.preparation || 0)
+    ),
+    preparation: 0,
+    confirmed: 0,
+  };
 }
-export async function apiGetInquiryById(inquiryId) {
-  const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}`);
+export async function apiGetInquiryById(inquiryId, options = {}) {
+  const data = await apiRequest(`/v1/inquiries/${encodeURIComponent(inquiryId)}`, options);
   return data.data ?? null;
 }
 export async function apiAcceptInquiry(inquiryData) {

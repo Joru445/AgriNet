@@ -1,8 +1,9 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import ReviewRating from "../farmer/reviews/ReviewRating";
 import { formatTimestamp } from "../../utils/date";
 import ImageViewerModal from "../ui/ImageViewerModal";
 import { useLanguage } from "../../context/LanguageContext";
+import { getVerifiedReviewProofUrl } from "../../utils/reviewProofRegistry";
 
 export default function ReviewCard({ review, type = "product" }) {
   const { t } = useLanguage();
@@ -15,17 +16,18 @@ export default function ReviewCard({ review, type = "product" }) {
 
   const reviewerAvatar = reviewer.profilePicture || "";
 
-  /*
-   * Product reviews can contain the transaction proof.
-   *
-   * Depending on how the review service returns the
-   * inquiry, support both:
-   *
-   * review.inquiry.proof.url
-   * review.proof.url
-   */
+  const registeredProof = isProduct
+    ? getVerifiedReviewProofUrl(review.inquiryId) ||
+      getVerifiedReviewProofUrl(review.id) ||
+      getVerifiedReviewProofUrl(review.inquiry?.id) ||
+      ""
+    : "";
+
   const proofImage = isProduct
-    ? review.inquiry?.proof?.url || review.proof?.url || ""
+    ? review.inquiry?.proof?.url ||
+      review.proof?.url ||
+      registeredProof ||
+      ""
     : "";
 
   return (

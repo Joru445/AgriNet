@@ -57,7 +57,7 @@ export default function TransactionSummary({ inquiry }) {
 
           {product.price != null && (
             <p className="mt-0.5 text-sm font-bold text-[#2D6A4F] dark:text-(--agri-brand)">
-              ?{product.price}
+              ₱{product.price}
               {product.unit ? ` / ${product.unit}` : ""}
             </p>
           )}

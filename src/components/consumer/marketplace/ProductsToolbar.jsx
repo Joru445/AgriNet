@@ -1,7 +1,7 @@
 import { useLanguage } from "../../../context/LanguageContext";
 import Select from "../../ui/Select";
 
-export default function ProductsToolbar({ total = 0, loading = false, sort, onSort, filters, onRemoveFilter, onClearFilters }) {
+export default function ProductsToolbar({ sort, onSort, filters, onRemoveFilter, onClearFilters }) {
   const { t } = useLanguage();
   const chips = [
     filters?.category !== "All" && ["category", filters.category],
@@ -22,10 +22,7 @@ export default function ProductsToolbar({ total = 0, loading = false, sort, onSo
   ];
   return (
     <div className="space-y-3">
-      <div className="flex min-w-0 items-center gap-2">
-        <p className="min-w-0 flex-1 text-sm font-semibold text-(--agri-text-secondary)" aria-live="polite">
-          {loading ? t("marketplace.loadingProducts") : t("marketplace.productCount", { count: total })}
-        </p>
+      <div className="flex min-w-0 items-center justify-end gap-2">
         <Select label="" aria-label={t("marketplace.sortProducts")} value={sort} onChange={(event) => onSort(event.target.value)} options={sortOptions} className="w-[10.5rem] shrink-0" selectClassName="h-10 rounded-xl py-0 text-xs" />
       </div>
       {chips.length > 0 && (

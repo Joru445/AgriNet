@@ -14,10 +14,12 @@ export function parseDate(timestamp) {
     } catch { /* Firebase timestamp .toMillis() may throw */ }
   }
   if (typeof timestamp?.seconds === "number") {
-    return new Date(timestamp.seconds * 1000);
+    const nanos = timestamp.nanoseconds ?? timestamp.nanos ?? 0;
+    return new Date(timestamp.seconds * 1000 + Math.floor(nanos / 1000000));
   }
   if (typeof timestamp?._seconds === "number") {
-    return new Date(timestamp._seconds * 1000);
+    const nanos = timestamp._nanoseconds ?? timestamp._nanos ?? 0;
+    return new Date(timestamp._seconds * 1000 + Math.floor(nanos / 1000000));
   }
   if (typeof timestamp === "number") {
     const d = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);

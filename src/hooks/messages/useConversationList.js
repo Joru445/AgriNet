@@ -7,7 +7,7 @@ import { useConversationsContext } from "../../context/ConversationsContext";
  * Profile enrichment is also handled there.
  */
 export default function useConversationList() {
-  const { conversations, loading } = useConversationsContext();
+  const { conversations, loading, markConversationReadLocally } = useConversationsContext();
 
-  return { conversations, loading };
+  return { conversations, loading, markConversationReadLocally };
 }

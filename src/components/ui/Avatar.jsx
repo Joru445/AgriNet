@@ -3,6 +3,7 @@ import { getInitials } from "../../utils/getInitials";
 import { applyTransform, AVATAR_MD_TF, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
 
 const SIZE_MAP = {
+  xxs: { container: "h-6 w-6 text-[10px]", px: 24 },
   xs: { container: "h-8 w-8 text-xs", px: 32 },
   sm: { container: "h-10 w-10 text-xs", px: 40 },
   md: { container: "h-14 w-14 text-lg", px: 56 },

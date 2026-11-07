@@ -1,6 +1,9 @@
+import { collection, doc, getDoc, getDocs, limit, query, where } from "firebase/firestore";
+import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
 import { getCachedUserProfile, setCachedUserProfile } from "../utils/userProfileCache";
 import { invalidatePrefix } from "../utils/pageCache";
+import { normalizePhilippinePhoneNumber } from "../utils/phone";
 
 const USER_PAGE_SIZE = 100;
 
@@ -42,7 +45,9 @@ export async function getUserProfile(uid, requesterUid) {
       setCachedUserProfile(uid, profile);
       return profile;
     }
-  } catch {}
+  } catch {
+    /* ignore network error, fall through to cache */
+  }
 
   return cached || null;
 }
@@ -51,14 +56,59 @@ export async function getUserProfile(uid, requesterUid) {
 // public pages and "View as others" without reading owner-only cache fields.
 export async function getPublicProfile(uid) {
   if (!uid || typeof uid !== "string") throw new Error("Invalid user UID.");
-  const result = await apiRequest(`/v1/users/public/${encodeURIComponent(uid)}`, { requireAuth: false });
-  return result.data ?? null;
+  try {
+    const result = await apiRequest(`/v1/users/public/${encodeURIComponent(uid)}`, { requireAuth: false });
+    if (result?.data) return result.data;
+  } catch (apiError) {
+    console.warn(`[userService] Backend getPublicProfile for ${uid} failed:`, apiError?.message || apiError);
+  }
+
+  try {
+    const snap = await getDoc(doc(db, "users", uid));
+    if (snap.exists()) {
+      return { profile: { uid: snap.id, ...snap.data() }, stats: null };
+    }
+  } catch (firestoreError) {
+    console.warn(`[userService] Firestore fallback for ${uid} failed:`, firestoreError?.message || firestoreError);
+  }
+
+  const cached = getCachedUserProfile(uid, uid);
+  if (cached) {
+    return { profile: cached, stats: null };
+  }
+
+  return null;
 }
 
 export async function getPublicProfileByUsername(username) {
   if (!username || typeof username !== "string") throw new Error("Invalid username.");
-  const result = await apiRequest(`/v1/users/by-username/${encodeURIComponent(username)}`, { requireAuth: false });
-  return result.data ?? null;
+  const normalized = username.trim().toLowerCase();
+
+  try {
+    const result = await apiRequest(`/v1/users/by-username/${encodeURIComponent(normalized)}`, { requireAuth: false });
+    if (result?.data) return result.data;
+  } catch (apiError) {
+    console.warn(`[userService] Backend getPublicProfileByUsername for ${username} failed:`, apiError?.message || apiError);
+  }
+
+  try {
+    const usersRef = collection(db, "users");
+    let q = query(usersRef, where("username", "==", normalized), limit(1));
+    let snapshot = await getDocs(q);
+    if (snapshot.empty && username.trim() !== normalized) {
+      q = query(usersRef, where("username", "==", username.trim()), limit(1));
+      snapshot = await getDocs(q);
+    }
+
+    if (!snapshot.empty) {
+      const docSnap = snapshot.docs[0];
+      return { profile: { uid: docSnap.id, ...docSnap.data() }, stats: null };
+    }
+  } catch (firestoreError) {
+    console.warn(`[userService] Firestore fallback for username ${username} failed:`, firestoreError?.message || firestoreError);
+  }
+
+  return null;
 }
 
 export async function checkUsernameAvailability(username) {
@@ -74,16 +124,49 @@ export async function checkUsernameAvailability(username) {
  */
 
 export async function updateMyProfile(data) {
-  const result = await apiRequest("/v1/users/me/profile", {
-    method: "PATCH",
-    body: JSON.stringify(data),
-  });
+  if (data?.phone) {
+    try {
+      const normalized = normalizePhilippinePhoneNumber(data.phone) || data.phone;
+      await apiRequest("/v1/users/me/verified-phone", {
+        method: "PATCH",
+        body: JSON.stringify({ phone: normalized }),
+      });
+    } catch (phoneErr) {
+      console.warn("Could not sync phone via /v1/users/me/verified-phone:", phoneErr?.message || phoneErr);
+    }
+  }
 
-  if (result.user?.uid) {
-    setCachedUserProfile(result.user.uid, result.user);
+  let result;
+  try {
+    result = await apiRequest("/v1/users/me/profile", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  } catch (error) {
+    if (
+      error.message?.includes("Phone changes require") ||
+      error.message?.includes("phone re-verification")
+    ) {
+      const withoutPhone = { ...data };
+      delete withoutPhone.phone;
+      result = await apiRequest("/v1/users/me/profile", {
+        method: "PATCH",
+        body: JSON.stringify(withoutPhone),
+      });
+    } else {
+      throw error;
+    }
+  }
+
+  const user = result.user || result.data?.user || result;
+  if (user?.uid) {
+    if (data.phone) {
+      user.phone = data.phone;
+    }
+    setCachedUserProfile(user.uid, user);
     invalidatePrefix("publicProfile:");
   }
-  return result.user;
+  return user;
 }
 
 /*

@@ -26,6 +26,20 @@ export async function apiSetUserSuspension(uid, status, options = {}) {
   return result.user;
 }
 
+export async function apiDeleteUser(uid) {
+  if (!uid) {
+    throw new Error("User UID is required.");
+  }
+
+  const result = await apiRequest(`/v1/users/${encodeURIComponent(uid)}`, {
+    method: "DELETE",
+  });
+
+  pageCache.invalidate("adminDashboard");
+
+  return result?.data || result;
+}
+
 export async function apiSetProductAvailability(productId, available) {
   const result = await apiRequest(`/v1/admin/products/${productId}/availability`, {
     method: "PATCH",
@@ -109,7 +123,8 @@ export async function getRecentInquiries() {
  */
 
 function withRange(path, { from, to }) {
-  const params = new URLSearchParams({ from, to });
+  const toParam = to && !to.includes("T") ? `${to}T23:59:59.999Z` : to;
+  const params = new URLSearchParams({ from, to: toParam });
   return `${path}?${params.toString()}`;
 }
 

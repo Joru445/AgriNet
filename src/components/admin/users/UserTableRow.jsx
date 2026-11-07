@@ -8,10 +8,13 @@ export default function UserTableRow({
   farmer,
   onView,
   onEdit,
+  onDelete,
 }) {
   const { t } = useLanguage();
   const isSuspended = user.status === "suspended";
   const isAdmin = user.role === "admin";
+  const isSelf = user.uid === currentUserId;
+  const isDeleteDisabled = isAdmin || isSelf;
 
   const identityUser =
     user.role === "farmer"
@@ -93,6 +96,20 @@ export default function UserTableRow({
             title={isAdmin ? t("adminUser.adminEditDisabled") : t("adminUser.editUser")}
           >
             <i className="ri-edit-line text-sm font-semibold" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => !isDeleteDisabled && onDelete?.(user)}
+            disabled={isDeleteDisabled}
+            className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border shadow-2xs transition-all ${
+              isDeleteDisabled
+                ? "border-(--agri-border-subtle) bg-(--agri-hover)/50 text-(--agri-text-muted) cursor-not-allowed opacity-50"
+                : "border-(--agri-border-subtle) bg-(--agri-card) text-(--agri-text-secondary) hover:bg-red-500/15 hover:text-red-600 dark:hover:text-red-400 hover:border-red-500/30 cursor-pointer"
+            }`}
+            title={isDeleteDisabled ? t("adminUser.adminDeleteDisabled") : t("adminUser.deleteUser")}
+          >
+            <i className="ri-delete-bin-line text-sm font-semibold" />
           </button>
         </div>
       </td>

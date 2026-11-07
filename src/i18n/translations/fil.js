@@ -1493,9 +1493,15 @@ export default {
     closeDetails: "Isara ang Detalye",
     unnamedUser: "Hindi Pinangalanang User",
     naLabel: "N/A",
-    close: "Isara",
     viewDetailsAria: "Tingnan ang detalye ng user",
     editUserAria: "I-edit ang user",
+    deleteUser: "I-delete ang user",
+    adminDeleteDisabled: "Hindi maaaring i-delete ang admin account",
+    deleteUserTitle: "Permanenteng I-delete ang User",
+    deleteUserDescription: "Sigurado ka bang nais mong permanenteng i-delete si {name}? Hindi na ito maibabalik at permanenteng mabubura ang lahat ng datos ng user.",
+    deleteConfirm: "Permanenteng I-delete",
+    userDeletedSuccess: "Matagumpay na permanenteng na-delete ang user.",
+    userDeletedError: "Bigo sa pag-delete ng user.",
   },
 
   adminReport: {

@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useUnreadMessages } from "../../context/UnreadMessagesContext";
 import { useUnreadInquiries } from "../../context/UnreadInquiriesContext";
 import { useUnreadReports } from "../../context/UnreadReportsContext";
@@ -10,10 +10,22 @@ import { useAuth } from "../../context/AuthContext";
 
 export default function BottomNavigation({ items }) {
   const { t } = useLanguage();
+  const location = useLocation();
   const { unreadCount, showPopup } = useUnreadMessages();
   const { inquiryActionCount, showInquiryPopup, inquiryPopupMessage } = useUnreadInquiries();
   const { pendingReportsCount, showReportPopup, reportPopupMessage } = useUnreadReports();
   const { identity } = useAuth();
+
+  const isItemActive = (item, navLinkActive) => {
+    if (navLinkActive) return true;
+    if (
+      (item.to === "/marketplace" || item.labelKey === "nav.home") &&
+      location.pathname.startsWith("/product/")
+    ) {
+      return true;
+    }
+    return false;
+  };
 
   return (
     <nav
@@ -35,27 +47,30 @@ export default function BottomNavigation({ items }) {
                 onClick={(event) => { if (!item.to) event.preventDefault(); }}
                 end
                 data-onboarding={item.kind === "profile" ? "nav-profile" : getOnboardingNavKey(item.to)}
-                className={({ isActive }) =>
-                    `relative flex w-full h-full flex-col items-center justify-center gap-0.5 px-0.5 rounded-xl transition-all duration-150 select-none active:scale-95 min-h-[44px] ${!item.to ? "opacity-60 pointer-events-none" : ""} ${
+                className={({ isActive: navActive }) => {
+                  const isActive = isItemActive(item, navActive);
+                  return `relative flex w-full h-full flex-col items-center justify-center gap-0.5 px-0.5 rounded-xl transition-all duration-150 select-none active:scale-95 min-h-[44px] ${!item.to ? "opacity-60 pointer-events-none" : ""} ${
                     isActive
                       ? "text-[#2D6A4F] dark:text-(--agri-brand) font-bold"
                       : "text-(--agri-text-muted) hover:text-(--agri-text-secondary) font-medium"
-                  }`
-                }
+                  }`;
+                }}
               >
-                {({ isActive }) => (
-                  <>
-                    {/* Active top indicator pill */}
-                    {isActive && (
-                      <span className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[2.5px] rounded-b-full bg-[#2D6A4F] dark:bg-(--agri-brand)" />
-                    )}
+                {({ isActive: navActive }) => {
+                  const isActive = isItemActive(item, navActive);
+                  return (
+                    <>
+                      {/* Active top indicator pill */}
+                      {isActive && (
+                        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[2.5px] rounded-b-full bg-[#2D6A4F] dark:bg-(--agri-brand)" />
+                      )}
 
                     <div className="relative w-8 flex items-center justify-center size-6 shrink-0 mt-0.5">
                       {item.kind === "profile" ? (
                         <Avatar
                           src={identity?.profilePicture}
                           name={identity?.fullname || identity?.username}
-                          size="xs"
+                          size="xxs"
                           className={isActive ? "ring-2 ring-[#2D6A4F] dark:ring-(--agri-brand)" : ""}
                         />
                       ) : <i className={`${item.icon} text-xl leading-none`} />}
@@ -68,14 +83,18 @@ export default function BottomNavigation({ items }) {
                       {isReports && pendingReportsCount > 0 && (
                         <Badge count={pendingReportsCount} className="!-top-1.5 !-right-2.5 min-w-[0.875rem] h-3.5 px-0.5 text-[9px] ring-2 ring-(--agri-surface)" />
                       )}
+                      {item.kind === "profile" && inquiryActionCount > 0 && (
+                        <Badge count={inquiryActionCount} className="!-top-1.5 !-right-2.5 min-w-[0.875rem] h-3.5 px-0.5 text-[9px] ring-2 ring-(--agri-surface)" />
+                      )}
                     </div>
 
                     <span className="text-[10px] leading-none whitespace-nowrap text-center tracking-tight select-none">
                       {t(item.labelKey)}
                     </span>
                   </>
-                )}
-              </NavLink>
+                );
+              }}
+            </NavLink>
 
               {/* Mobile speech bubble — messages */}
               {isMessages && showPopup && (
@@ -89,7 +108,7 @@ export default function BottomNavigation({ items }) {
               )}
 
               {/* Mobile speech bubble — transactions */}
-              {isInquiries && showInquiryPopup && (
+              {(isInquiries || item.kind === "profile") && showInquiryPopup && (
                 <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-bottom-2">
                   <div className="relative flex items-center gap-2 rounded-xl bg-(--agri-card) px-3 py-1.5 text-xs font-semibold text-(--agri-text) shadow-xl border border-(--agri-border) max-w-[200px]">
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-(--agri-card) rotate-45 border-r border-b border-(--agri-border)" />

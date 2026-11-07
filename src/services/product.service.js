@@ -15,6 +15,7 @@ import { db } from "../firebase/firestore";
 import { apiRequest } from "./api/api.client";
 import { invalidatePublicMarketplaceCache } from "../utils/publicMarketplaceCache";
 import { getProductReviewSummaries } from "./product-review.service";
+import { registerProductReviewSummaries } from "../utils/productReviewSync";
 import * as pageCache from "../utils/pageCache";
 
 const productsRef = collection(db, "products");
@@ -99,21 +100,25 @@ export async function getMarketplaceProductsPage({ pageSize = 24, cursor } = {})
     [...new Set(products.map((product) => product.farmerId).filter(Boolean))],
   );
 
-  // Fetch live review summaries for products with no ratingSummary or with count === 0 (stale)
-  const staleProductIds = products
-    .filter((product) => !product.ratingSummary || product.ratingSummary.count === 0)
-    .map((product) => product.id);
-  const liveRatingMap = await getProductReviewSummaries(staleProductIds);
+  // Fetch live review summaries for all products to keep counts accurate
+  const liveRatingMap = await getProductReviewSummaries(
+    products.map((product) => product.id),
+  );
+  registerProductReviewSummaries(liveRatingMap);
 
   return {
     products: products.map((product) => {
       const farmer = farmerMap.get(product.farmerId);
 
-      // Use live rating if available (for stale or missing ratingSummary)
       const liveRating = liveRatingMap.get(product.id);
-      const rating = (liveRating && liveRating.count > 0)
-        ? liveRating
-        : (product.ratingSummary?.count > 0 ? product.ratingSummary : {});
+      const reviewCount = Math.max(
+        Number(liveRating?.count ?? 0),
+        Number(product.ratingSummary?.count ?? 0),
+        Number(product.reviewCount ?? 0),
+      );
+      const productRating = Number(
+        liveRating?.average ?? product.ratingSummary?.average ?? product.productRating ?? 0,
+      );
 
       return {
         ...product,
@@ -133,8 +138,12 @@ export async function getMarketplaceProductsPage({ pageSize = 24, cursor } = {})
           }
         : null,
 
-        productRating: Number(rating.average ?? product.productRating ?? 0),
-        reviewCount: Number(rating.count ?? product.reviewCount ?? 0),
+        productRating: productRating > 0 ? Number(productRating.toFixed(1)) : 0,
+        reviewCount,
+        ratingSummary: {
+          count: reviewCount,
+          average: productRating,
+        },
       };
     }),
     cursor: productSnapshot.docs.at(-1) ?? null,
@@ -240,8 +249,54 @@ export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, 
       signal,
     });
 
+    const rawProducts = Array.isArray(data?.data) ? data.data : [];
+    let products = rawProducts;
+
+    if (rawProducts.length > 0) {
+      try {
+        const summaries = await getProductReviewSummaries(
+          rawProducts.map((p) => p.id),
+        );
+        registerProductReviewSummaries(summaries);
+        products = rawProducts.map((p) => {
+          const live = summaries.get(p.id);
+          const reviewCount = Math.max(
+            Number(live?.count ?? 0),
+            Number(p.ratingSummary?.count ?? 0),
+            Number(p.reviewCount ?? 0),
+          );
+          const productRating = Number(
+            live?.average ?? p.ratingSummary?.average ?? p.productRating ?? 0,
+          );
+          return {
+            ...p,
+            reviewCount,
+            productRating: productRating > 0 ? Number(productRating.toFixed(1)) : 0,
+            ratingSummary: {
+              count: reviewCount,
+              average: productRating,
+            },
+          };
+        });
+      } catch (sumErr) {
+        console.warn("Could not load review summaries for marketplace products:", sumErr);
+        products = rawProducts.map((p) => {
+          const reviewCount = Math.max(
+            Number(p.ratingSummary?.count ?? 0),
+            Number(p.reviewCount ?? 0),
+          );
+          const productRating = Number(p.ratingSummary?.average ?? p.productRating ?? 0);
+          return {
+            ...p,
+            reviewCount,
+            productRating: productRating > 0 ? Number(productRating.toFixed(1)) : 0,
+          };
+        });
+      }
+    }
+
     return {
-      products: data.data ?? [],
+      products,
       cursor: data.cursor ?? null,
       hasMore: data.hasMore ?? false,
     };
@@ -257,7 +312,7 @@ export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, 
   }
 }
 
-function invalidateMarketplaceCatalog() {
+export function invalidateMarketplaceCatalog() {
   pageCache.invalidatePrefix("marketplaceCatalog:");
   // Persisted entries only contain public catalog display data. Clearing them
   // after a mutation cannot initiate a fetch or affect transaction authority.
@@ -316,6 +371,8 @@ export async function apiCreateProduct(productData) {
   pageCache.invalidate("marketplaceProducts");
   invalidateMarketplaceCatalog();
   pageCache.invalidate("homeProducts");
+  pageCache.invalidatePrefix("farmerDashboard");
+  pageCache.invalidatePrefix("farmerProductAnalytics");
   return data.data ?? null;
 }
 
@@ -328,6 +385,8 @@ export async function apiUpdateProduct(id, productData) {
   invalidateMarketplaceCatalog();
   pageCache.invalidate("homeProducts");
   pageCache.invalidate(`product:${id}`);
+  pageCache.invalidatePrefix("farmerDashboard");
+  pageCache.invalidatePrefix("farmerProductAnalytics");
   return data.data ?? null;
 }
 
@@ -339,6 +398,8 @@ export async function apiDeleteProduct(id) {
   invalidateMarketplaceCatalog();
   pageCache.invalidate("homeProducts");
   pageCache.invalidate(`product:${id}`);
+  pageCache.invalidatePrefix("farmerDashboard");
+  pageCache.invalidatePrefix("farmerProductAnalytics");
   return data.data ?? null;
 }
 
@@ -347,6 +408,9 @@ export async function apiToggleProductAvailability(id) {
     method: "PATCH",
   });
   invalidateMarketplaceCatalog();
+  pageCache.invalidatePrefix("farmerDashboard");
+  pageCache.invalidatePrefix("farmerProductAnalytics");
+  pageCache.invalidate(`product:${id}`);
   return data.data ?? null;
 }
 
@@ -356,6 +420,9 @@ export async function apiUpdateProductStock(id, stock) {
     body: JSON.stringify({ stock }),
   });
   invalidateMarketplaceCatalog();
+  pageCache.invalidatePrefix("farmerDashboard");
+  pageCache.invalidatePrefix("farmerProductAnalytics");
+  pageCache.invalidate(`product:${id}`);
   return data.data ?? null;
 }
 
@@ -364,5 +431,8 @@ export async function apiMarkProductAsAvailable(id) {
     method: "PATCH",
   });
   invalidateMarketplaceCatalog();
+  pageCache.invalidatePrefix("farmerDashboard");
+  pageCache.invalidatePrefix("farmerProductAnalytics");
+  pageCache.invalidate(`product:${id}`);
   return data.data ?? null;
 }

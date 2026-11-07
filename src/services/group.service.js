@@ -385,6 +385,20 @@ export function subscribeToGroupMembers(groupId, callback) {
   return () => { cancelled = true; clearInterval(interval); };
 }
 
+export function notifyGroupMembersUpdated(groupId) {
+  if (!groupId) return;
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent("agrinet:group-members-updated", {
+        detail: { groupId },
+      }),
+    );
+    try {
+      localStorage.setItem("agrinet_group_sync", `${groupId}:${Date.now()}`);
+    } catch {}
+  }
+}
+
 /**
  * Approve a membership application.
  * Requires applications.approve permission.
@@ -402,6 +416,7 @@ export async function approveApplication(groupId, userId) {
   pageCache.invalidate(`group_count_${groupId}`);
   pageCache.invalidate(`group_members_${groupId}`);
   invalidateApprovedGroupsCache(userId);
+  notifyGroupMembersUpdated(groupId);
   return result.data ?? { id: `${groupId}_${userId}`, groupId, userId, status: "approved" };
 }
 
@@ -422,6 +437,7 @@ export async function rejectApplication(groupId, userId) {
   pageCache.invalidate(`group_count_${groupId}`);
   pageCache.invalidate(`group_members_${groupId}`);
   invalidateApprovedGroupsCache(userId);
+  notifyGroupMembersUpdated(groupId);
   return result.data ?? { id: `${groupId}_${userId}`, groupId, userId, status: "rejected" };
 }
 
@@ -442,6 +458,7 @@ export async function removeGroupMember(groupId, userId) {
   pageCache.invalidate(`group_count_${groupId}`);
   pageCache.invalidate(`group_members_${groupId}`);
   invalidateApprovedGroupsCache(userId);
+  notifyGroupMembersUpdated(groupId);
   return result.data ?? { id: `${groupId}_${userId}`, groupId, userId, status: "removed" };
 }
 
@@ -454,29 +471,57 @@ export async function getGroupMemberCount(groupId, options = {}) {
   if (!groupId) return 0;
   const cacheKey = `group_count_${groupId}`;
   const cached = pageCache.get(cacheKey);
-  if (typeof cached === "number") return cached;
+  if (typeof cached === "number" && cached > 0) return cached;
   if (groupCountRequests.has(cacheKey)) return groupCountRequests.get(cacheKey);
 
   const request = (async () => {
     try {
-    const members = await getGroupMembers(groupId, options);
-    let count = members.length;
-    if (count === 0) {
-      const groupData = await getGroup(groupId);
-      if (typeof groupData?.memberCount === "number" && groupData.memberCount > 0) {
-        count = groupData.memberCount;
-      } else if (Array.isArray(groupData?.members) && groupData.members.length > 0) {
-        count = groupData.members.length;
+      // 1. Try public member-count endpoint from backend API
+      try {
+        const countRes = await apiRequest(
+          `${GROUPS_BASE}/${encodeURIComponent(groupId)}/member-count`,
+          { requireAuth: false },
+        );
+        const count = countRes?.data?.count ?? countRes?.count;
+        if (typeof count === "number" && count > 0) {
+          pageCache.set(cacheKey, count, 60 * 1000);
+          return count;
+        }
+      } catch (countErr) {
+        console.warn("[getGroupMemberCount] member-count endpoint unavailable:", countErr?.message);
       }
-    }
-    if (count === 0 && (options?.farmerId || options?.userId)) {
-      count = 1;
-    }
-    pageCache.set(cacheKey, count, 2 * 60 * 1000);
-    return count;
+
+      // 2. Fallback to cached or authorized group members roster
+      const cachedMembers = pageCache.get(`group_members_${groupId}`);
+      if (Array.isArray(cachedMembers) && cachedMembers.length > 0) {
+        pageCache.set(cacheKey, cachedMembers.length, 60 * 1000);
+        return cachedMembers.length;
+      }
+
+      try {
+        const members = await getGroupMembers(groupId, options);
+        if (Array.isArray(members) && members.length > 0) {
+          pageCache.set(cacheKey, members.length, 60 * 1000);
+          return members.length;
+        }
+      } catch {}
+
+      // 3. Fallback to group document metadata
+      const groupData = await getGroup(groupId).catch(() => null);
+      if (typeof groupData?.memberCount === "number" && groupData.memberCount > 0) {
+        pageCache.set(cacheKey, groupData.memberCount, 60 * 1000);
+        return groupData.memberCount;
+      }
+      if (Array.isArray(groupData?.members) && groupData.members.length > 0) {
+        pageCache.set(cacheKey, groupData.members.length, 60 * 1000);
+        return groupData.members.length;
+      }
+
+      const fallback = (options?.farmerId || options?.userId) ? 1 : 0;
+      return typeof cached === "number" ? cached : fallback;
     } catch {
-    const fallback = (options?.farmerId || options?.userId) ? 1 : 0;
-    return (typeof cached === "number") ? cached : fallback;
+      const fallback = (options?.farmerId || options?.userId) ? 1 : 0;
+      return typeof cached === "number" ? cached : fallback;
     }
   })().finally(() => groupCountRequests.delete(cacheKey));
   groupCountRequests.set(cacheKey, request);
@@ -625,5 +670,8 @@ export async function addGroupMember(groupId, userId) {
   });
   invalidateApprovedGroupsCache(userId);
   pageCache.invalidate(`my_memberships_${userId}`);
+  pageCache.invalidate(`group_count_${groupId}`);
+  pageCache.invalidate(`group_members_${groupId}`);
+  notifyGroupMembersUpdated(groupId);
   return response.data;
 }

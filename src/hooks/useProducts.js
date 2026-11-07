@@ -12,6 +12,7 @@ import { uploadProductImage } from "../services/cloudinary.service";
 
 import { showToast } from "../utils/toast";
 import { accountCacheKey, getAccountCache, setAccountCache, invalidateAccountCache } from "../utils/accountQueryCache";
+import * as pageCache from "../utils/pageCache";
 
 export default function useProducts() {
   const { profile } = useAuth();
@@ -135,6 +136,20 @@ export default function useProducts() {
 
       showToast.success("Product created.");
       invalidateAccountCache(accountCacheKey(profile.uid, "farmer-products"));
+      if (profile?.uid) {
+        pageCache.invalidate(`farmerDashboard:${profile.uid}`);
+        pageCache.invalidatePrefix(`farmerProductAnalytics:${profile.uid}`);
+      }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("agrinet:farmer-products-updated", {
+            detail: { uid: profile.uid, action: "create" },
+          })
+        );
+        try {
+          localStorage.setItem("agrinet_farmer_products_sync", Date.now().toString());
+        } catch {}
+      }
 
       closeModal();
       await loadProducts(false);
@@ -161,6 +176,20 @@ export default function useProducts() {
 
       showToast.success("Product updated.");
       invalidateAccountCache(accountCacheKey(profile.uid, "farmer-products"));
+      if (profile?.uid) {
+        pageCache.invalidate(`farmerDashboard:${profile.uid}`);
+        pageCache.invalidatePrefix(`farmerProductAnalytics:${profile.uid}`);
+      }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("agrinet:farmer-products-updated", {
+            detail: { uid: profile.uid, action: "update", productId: form.id },
+          })
+        );
+        try {
+          localStorage.setItem("agrinet_farmer_products_sync", Date.now().toString());
+        } catch {}
+      }
 
       closeModal();
       await loadProducts(false);
@@ -180,6 +209,21 @@ export default function useProducts() {
       await apiDeleteProduct(editingProduct.id);
 
       setProducts((prev) => prev.filter((p) => p.id !== editingProduct.id));
+      invalidateAccountCache(accountCacheKey(profile.uid, "farmer-products"));
+      if (profile?.uid) {
+        pageCache.invalidate(`farmerDashboard:${profile.uid}`);
+        pageCache.invalidatePrefix(`farmerProductAnalytics:${profile.uid}`);
+      }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("agrinet:farmer-products-updated", {
+            detail: { uid: profile.uid, action: "delete", productId: editingProduct.id },
+          })
+        );
+        try {
+          localStorage.setItem("agrinet_farmer_products_sync", Date.now().toString());
+        } catch {}
+      }
 
       showToast.success("Product deleted.");
 

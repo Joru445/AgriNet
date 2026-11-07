@@ -2,8 +2,10 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import { useInquiriesContext } from "../context/InquiriesContext";
 import {
   apiGetInquiries,
+  apiGetInquiryGroupCounts,
   apiStartTransaction,
   apiRequestCompletion,
   apiSubmitProof,
@@ -12,8 +14,10 @@ import {
   apiCancelInquiry,
   apiAdvancePreorder,
   apiAcceptPreorderAgreement,
+  mapInquiryToGroup,
 } from "../services/inquiry.service";
 import { accountCacheKey, getAccountCache, setAccountCache, accountCacheRequest, invalidateAccountCache } from "../utils/accountQueryCache";
+import { getAcceptedInquiries, removeAcceptedInquiry } from "../utils/optimisticInquiries";
 
 import { getProductById } from "../services/product.service";
 import { getUserProfile } from "../services/user.service";
@@ -21,13 +25,75 @@ import { getFarmerById } from "../services/farmer.service";
 
 import { showToast } from "../utils/toast";
 
-const INQUIRY_GROUP_IDS = new Set(["requests", "confirmed", "preparation", "in-progress", "completed", "cancelled"]);
+const INQUIRY_GROUP_IDS = new Set(["requests", "in-progress", "completed", "cancelled"]);
 
 export default function useInquiries() {
   const { profile } = useAuth();
+  const { inquiries: realtimeInquiries } = useInquiriesContext();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [counts, setCounts] = useState(null);
+  const lastCountsReloadRef = useRef(0);
+  const isConsumer = profile?.role === "consumer";
+
+  const effectiveCounts = useMemo(() => {
+    const base = counts ? { ...counts } : null;
+    const localAccepted = getAcceptedInquiries(profile?.uid);
+    if (!base && !realtimeInquiries?.length && !localAccepted.length) return null;
+    const res = { requests: 0, "in-progress": 0, completed: 0, cancelled: 0 };
+    if (base) {
+      res.requests = Number(base.requests || 0);
+      res["in-progress"] =
+        Number(base["in-progress"] || 0) +
+        Number(base.confirmed || 0) +
+        Number(base.preparation || 0);
+      res.completed = Number(base.completed || 0);
+      res.cancelled = Number(base.cancelled || 0);
+    }
+    const realtimeIds = new Set();
+    const tally = (item) => {
+      const group = mapInquiryToGroup(item);
+      if (group && res[group] != null) {
+        res[group] = Math.max(Number(res[group] || 0), 1);
+      }
+    };
+    if (Array.isArray(realtimeInquiries)) {
+      realtimeInquiries.forEach((item) => {
+        if (item?.id) realtimeIds.add(String(item.id));
+        if (item?.inquiryMessageId) realtimeIds.add(String(item.inquiryMessageId));
+        if (typeof item?.id === "string" && item.id.startsWith("inq_")) {
+          realtimeIds.add(item.id.replace(/^inq_/, ""));
+        }
+        tally(item);
+      });
+    }
+    if (Array.isArray(localAccepted)) {
+      localAccepted.forEach((item) => {
+        const idStr = String(item?.id || "");
+        const rawId = idStr.replace(/^inq_/, "");
+        const msgId = String(item?.inquiryMessageId || "");
+        if (realtimeIds.has(idStr) || (rawId && realtimeIds.has(rawId)) || (msgId && realtimeIds.has(msgId))) {
+          return;
+        }
+        tally(item);
+      });
+    }
+    return res;
+  }, [counts, realtimeInquiries, profile?.uid]);
+
   const requestedGroup = searchParams.get("group");
-  const activeTab = INQUIRY_GROUP_IDS.has(requestedGroup) ? requestedGroup : "requests";
+  let normalizedRequested = requestedGroup;
+  if (normalizedRequested === "preparation" || normalizedRequested === "confirmed") {
+    normalizedRequested = "in-progress";
+  }
+  if (isConsumer && normalizedRequested === "requests") {
+    normalizedRequested = "in-progress";
+  }
+
+  const activeTab = INQUIRY_GROUP_IDS.has(normalizedRequested) && (!isConsumer || normalizedRequested !== "requests")
+    ? normalizedRequested
+    : isConsumer
+      ? "in-progress"
+      : "requests";
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,20 +111,33 @@ export default function useInquiries() {
     if (!profile?.uid || !profile?.role) return;
     const key = accountCacheKey(profile.uid, "inquiries", activeTab);
     const cached = !force && getAccountCache(key, 2 * 60 * 1000);
-    if (!append && cached) {
+    const expectedCount = Number(effectiveCounts?.[activeTab] || counts?.[activeTab] || 0);
+    const cacheIsStale = cached && Array.isArray(cached.items) && cached.items.length === 0 && expectedCount > 0;
+    if (!append && cached && !cacheIsStale) {
       setInquiries(cached.items || []); setCursor(cached.cursor || null); setHasMore(Boolean(cached.hasMore)); setLoading(false); return;
     }
     // Revalidation keeps the current group visible; only an empty initial
     // group needs row skeletons.
     setLoading(!append && (initial || inquiries.length === 0)); setError(null);
     try {
-      const result = await accountCacheRequest(`${key}:${append ? (cursor || "first") : "first"}`, () => apiGetInquiries({ group: activeTab, cursor: append ? cursor : null, limit: 12 }));
-      const nextItems = append ? [...inquiries, ...(result.items || [])] : (result.items || []);
-      const value = { items: nextItems, cursor: result.cursor, hasMore: result.hasMore };
-      setAccountCache(key, value); setInquiries(nextItems); setCursor(result.cursor); setHasMore(result.hasMore);
+      const result = await accountCacheRequest(`${key}:${append ? (cursor || "first") : "first"}`, () =>
+        apiGetInquiries({
+          group: activeTab,
+          role: profile.role,
+          cursor: append ? cursor : null,
+          limit: 12,
+        }),
+      );
+      const fetchedItems = Array.isArray(result?.items) ? result.items : [];
+      const nextItems = append ? [...inquiries, ...fetchedItems] : fetchedItems;
+      const value = { items: nextItems, cursor: result?.cursor ?? null, hasMore: Boolean(result?.hasMore) };
+      setAccountCache(key, value);
+      setInquiries(nextItems);
+      setCursor(result?.cursor ?? null);
+      setHasMore(Boolean(result?.hasMore));
     } catch (loadError) { setError(loadError); }
     finally { setLoading(false); }
-  }, [profile?.uid, profile?.role, activeTab, cursor, inquiries]);
+  }, [profile?.uid, profile?.role, activeTab, cursor, inquiries, effectiveCounts, counts]);
 
   useEffect(() => {
     setInquiries([]); setCursor(null); setHasMore(false);
@@ -68,18 +147,97 @@ export default function useInquiries() {
   }, [profile?.uid, profile?.role, activeTab]);
 
   const setActiveTab = useCallback((group) => {
-    setSearchParams(group === "requests" ? {} : { group }, { replace: false });
-  }, [setSearchParams]);
+    let target = group;
+    if (target === "preparation" || target === "confirmed") target = "in-progress";
+    if (isConsumer && target === "requests") target = "in-progress";
+    const isDefault = isConsumer ? target === "in-progress" : target === "requests";
+    setSearchParams(isDefault ? {} : { group: target }, { replace: false });
+  }, [setSearchParams, isConsumer]);
 
   const refresh = useCallback(() => {
     if (!profile?.uid) return Promise.resolve();
-    invalidateAccountCache(accountCacheKey(profile.uid, "inquiries", activeTab));
+    invalidateAccountCache(accountCacheKey(profile.uid, "inquiries"));
     invalidateAccountCache(accountCacheKey(profile.uid, "inquiry-group-counts"));
     window.dispatchEvent(new CustomEvent("agrinet:inquiry-counts-invalidated", { detail: { uid: profile.uid } }));
     return loadGroup({ force: true });
-  }, [profile?.uid, activeTab, loadGroup]);
+  }, [profile?.uid, loadGroup]);
 
   const loadMore = useCallback(() => loadGroup({ append: true }), [loadGroup]);
+
+  useEffect(() => {
+    if (!profile?.uid) return undefined;
+    let cancelled = false;
+    const countsKey = accountCacheKey(profile.uid, "inquiry-group-counts");
+    const inquiriesKey = accountCacheKey(profile.uid, "inquiries");
+
+    const loadCounts = (force = false) => {
+      if (force) lastCountsReloadRef.current = Date.now();
+      const cached = !force && getAccountCache(countsKey, 60 * 1000);
+      if (cached) {
+        setCounts(cached);
+        return;
+      }
+      accountCacheRequest(countsKey, () => apiGetInquiryGroupCounts({ role: profile?.role }))
+        .then((val) => {
+          if (!cancelled && val) {
+            setAccountCache(countsKey, val);
+            setCounts(val);
+          }
+        })
+        .catch(() => {});
+    };
+
+    loadCounts();
+
+    const handleCountsInvalidation = (e) => {
+      if (e.detail?.uid && e.detail.uid !== profile.uid) return;
+      if (Date.now() - lastCountsReloadRef.current < 1500) return;
+      lastCountsReloadRef.current = Date.now();
+      invalidateAccountCache(countsKey);
+      loadCounts(true);
+      loadGroup({ force: true });
+    };
+
+    const handleInquiryUpdated = (e) => {
+      if (e.detail?.uid && e.detail.uid !== profile.uid) return;
+      invalidateAccountCache(inquiriesKey);
+      invalidateAccountCache(countsKey);
+      loadCounts(true);
+      loadGroup({ force: true });
+    };
+
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === "visible") {
+        invalidateAccountCache(inquiriesKey);
+        invalidateAccountCache(countsKey);
+        loadCounts(true);
+        loadGroup({ force: true });
+      }
+    };
+
+    // Auto revalidate every 6 seconds when page is active so ratings and proof updates appear in real-time
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        invalidateAccountCache(inquiriesKey);
+        loadCounts(true);
+        loadGroup({ force: true });
+      }
+    }, 6000);
+
+    window.addEventListener("agrinet:inquiry-counts-invalidated", handleCountsInvalidation);
+    window.addEventListener("agrinet:inquiry-updated", handleInquiryUpdated);
+    window.addEventListener("focus", handleVisibilityOrFocus);
+    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+      window.removeEventListener("agrinet:inquiry-counts-invalidated", handleCountsInvalidation);
+      window.removeEventListener("agrinet:inquiry-updated", handleInquiryUpdated);
+      window.removeEventListener("focus", handleVisibilityOrFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+    };
+  }, [profile?.uid, profile?.role, loadGroup]);
 
   useEffect(() => {
     profileRef.current = profile;
@@ -91,8 +249,112 @@ export default function useInquiries() {
    * --------------------------------------------------
    */
 
+  const filteredInquiries = useMemo(() => {
+    const authoritativeMap = new Map();
+    const registerAuthoritative = (item) => {
+      if (!item) return;
+      if (item.id) authoritativeMap.set(String(item.id), item);
+      if (item.inquiryMessageId) authoritativeMap.set(String(item.inquiryMessageId), item);
+      if (typeof item.id === "string" && item.id.startsWith("inq_")) {
+        authoritativeMap.set(item.id.replace(/^inq_/, ""), item);
+      }
+    };
+
+    if (Array.isArray(realtimeInquiries)) realtimeInquiries.forEach(registerAuthoritative);
+
+    const resolveItem = (item) => {
+      if (!item) return null;
+      const idStr = String(item.id || "");
+      const rawId = idStr.replace(/^inq_/, "");
+      const msgId = String(item.inquiryMessageId || "");
+      const authoritative =
+        authoritativeMap.get(idStr) ||
+        (rawId ? authoritativeMap.get(rawId) : null) ||
+        (msgId ? authoritativeMap.get(msgId) : null);
+      return authoritative ? { ...item, ...authoritative } : item;
+    };
+
+    const list = [];
+    const seen = new Set();
+
+    const markSeen = (item) => {
+      if (item?.id) seen.add(String(item.id));
+      if (item?.inquiryMessageId) seen.add(String(item.inquiryMessageId));
+      if (typeof item?.id === "string" && item.id.startsWith("inq_")) {
+        seen.add(item.id.replace(/^inq_/, ""));
+      }
+    };
+
+    const isSeen = (item) => {
+      if (!item) return true;
+      if (item.id && seen.has(String(item.id))) return true;
+      if (item.inquiryMessageId && seen.has(String(item.inquiryMessageId))) return true;
+      if (typeof item.id === "string" && item.id.startsWith("inq_") && seen.has(item.id.replace(/^inq_/, ""))) return true;
+      return false;
+    };
+
+    // 1. Group-specific items fetched from API, resolved with latest authoritative realtime state
+    if (Array.isArray(inquiries)) {
+      for (const rawItem of inquiries) {
+        const item = resolveItem(rawItem);
+        if (!isSeen(item) && mapInquiryToGroup(item) === activeTab) {
+          markSeen(item);
+          list.push(item);
+        }
+      }
+    }
+
+    // 2. Realtime inquiries that belong to this group
+    if (Array.isArray(realtimeInquiries)) {
+      for (const item of realtimeInquiries) {
+        if (!isSeen(item) && mapInquiryToGroup(item) === activeTab) {
+          markSeen(item);
+          list.push(item);
+        }
+      }
+    }
+
+    // 3. Local accepted optimistic inquiries (belong to in-progress)
+    const localAccepted = getAcceptedInquiries(profile?.uid);
+    if (Array.isArray(localAccepted)) {
+      for (const item of localAccepted) {
+        const idStr = String(item.id || "");
+        const rawId = idStr.replace(/^inq_/, "");
+        const msgId = String(item.inquiryMessageId || "");
+
+        const serverItem =
+          authoritativeMap.get(idStr) ||
+          (rawId ? authoritativeMap.get(rawId) : null) ||
+          (msgId ? authoritativeMap.get(msgId) : null);
+
+        if (serverItem) {
+          // If the server stream already knows this inquiry, its status is authoritative.
+          // If it is no longer in-progress, purge it immediately so it doesn't linger.
+          if (mapInquiryToGroup(serverItem) !== "in-progress") {
+            removeAcceptedInquiry(item.id);
+            continue;
+          }
+        }
+
+        if (isSeen(item)) continue;
+
+        if (mapInquiryToGroup(item) !== "in-progress") {
+          removeAcceptedInquiry(item.id);
+          continue;
+        }
+
+        if (activeTab === "in-progress") {
+          markSeen(item);
+          list.push(item);
+        }
+      }
+    }
+
+    return list;
+  }, [inquiries, realtimeInquiries, activeTab, profile?.uid]);
+
   useEffect(() => {
-    if (!inquiries.length) {
+    if (!filteredInquiries.length) {
       setInquiryData({});
       return;
     }
@@ -102,14 +364,14 @@ export default function useInquiries() {
     async function loadRelatedData() {
       const isConsumer = profile?.role === "consumer";
       const farmerIds = isConsumer
-        ? [...new Set(inquiries.map((i) => i.farmerId).filter(Boolean))]
+        ? [...new Set(filteredInquiries.map((i) => i.farmerId).filter(Boolean))]
         : [];
 
-      const legacyInquiries = inquiries.filter(
+      const legacyInquiries = filteredInquiries.filter(
         (inquiry) => !inquiry.productSnapshot || !inquiry.consumerSnapshot,
       );
 
-      const reservedPreorders = inquiries.filter(
+      const reservedPreorders = filteredInquiries.filter(
         (inquiry) =>
           inquiry.type === "preorder" &&
           normalizeStatus(inquiry.status) === "reserved" &&
@@ -168,14 +430,14 @@ export default function useInquiries() {
         const liveProductMap = new Map(liveProducts.map((r) => [r.id, r]));
 
         const mapped = {};
-        inquiries.forEach((inquiry) => {
+        filteredInquiries.forEach((inquiry) => {
           const legacy = legacyMap.get(inquiry.id);
           const live = liveProductMap.get(inquiry.id);
           const farmer = farmerMap.get(inquiry.farmerId);
 
           mapped[inquiry.id] = {
-            product: live?.product ?? legacy?.product ?? null,
-            consumer: legacy?.consumer ?? null,
+            product: live?.product ?? legacy?.product ?? inquiry.productSnapshot ?? null,
+            consumer: legacy?.consumer ?? inquiry.consumerSnapshot ?? null,
             farmer: farmer
               ? {
                   uid: farmer.uid,
@@ -185,7 +447,7 @@ export default function useInquiries() {
                   verificationStatus: farmer.verificationStatus || (farmer.verified === true ? "approved" : "not_applied"),
                   verified: farmer.verified === true,
                 }
-              : null,
+              : inquiry.farmerSnapshot || null,
           };
         });
 
@@ -200,17 +462,7 @@ export default function useInquiries() {
     return () => {
       cancelled = true;
     };
-  }, [inquiries, profile?.role]);
-
-  /*
-   * --------------------------------------------------
-   * Filter inquiries
-   * --------------------------------------------------
-   */
-
-  const filteredInquiries = useMemo(() => {
-    return inquiries;
-  }, [inquiries]);
+  }, [filteredInquiries, profile?.role]);
 
   /*
    * --------------------------------------------------
@@ -226,9 +478,42 @@ export default function useInquiries() {
     try {
       setUpdatingId(inquiryId);
 
+      // Optimistically remove from accepted inquiries cache
+      removeAcceptedInquiry(inquiryId);
+      // Optimistically remove from current inquiry list
+      setInquiries((prev) =>
+        prev.filter((item) => {
+          const target = String(inquiryId);
+          const targetRaw = target.replace(/^inq_/, "");
+          const itemId = String(item?.id || "");
+          const itemRaw = itemId.replace(/^inq_/, "");
+          const msgId = String(item?.inquiryMessageId || "");
+          return (
+            itemId !== target &&
+            itemRaw !== target &&
+            (!targetRaw || itemRaw !== targetRaw) &&
+            msgId !== target &&
+            (!targetRaw || msgId !== targetRaw)
+          );
+        }),
+      );
+
       if (status === "ongoing") {
-        await apiStartTransaction(inquiryId);
-        showToast.success("Inquiry marked as ongoing.");
+        try {
+          await apiStartTransaction(inquiryId);
+          showToast.success("Inquiry marked as ongoing.");
+        } catch (apiError) {
+          // If the inquiry was already started / transitioned on backend, handle gracefully
+          if (
+            apiError.message?.includes("cannot make that status change") ||
+            apiError.message?.includes("already") ||
+            apiError.status === 400
+          ) {
+            showToast.info("Transaction is already in progress.");
+          } else {
+            throw apiError;
+          }
+        }
       } else if (status === "preparing" || status === "ready") {
         await apiAdvancePreorder(inquiryId, status);
         showToast.success(status === "ready" ? "Your customer's order is ready." : "Order marked as preparing.");
@@ -243,6 +528,7 @@ export default function useInquiries() {
     } catch (error) {
       console.error(error);
       showToast.error(error.message || "Failed to update inquiry.");
+      await refresh();
     } finally {
       setUpdatingId(null);
     }
@@ -408,9 +694,10 @@ export default function useInquiries() {
   }
 
   return {
-    inquiries,
+    inquiries: filteredInquiries,
     filteredInquiries,
     inquiryData,
+    counts: effectiveCounts,
 
     loading,
     error,

@@ -127,6 +127,19 @@ export default function useProfile(profile) {
       return;
     }
 
+    if (trimmedUsername !== String(profile?.username || "").toLowerCase()) {
+      try {
+        const availability = await checkUsernameAvailability(trimmedUsername);
+        if (!availability.available) {
+          showToast.error(availability.reason === "reserved" ? "This username is reserved." : "Username is already in use.");
+          return;
+        }
+      } catch {
+        showToast.error("Unable to check username availability. Please try again.");
+        return;
+      }
+    }
+
     setSaving(true);
 
     try {
@@ -160,19 +173,6 @@ export default function useProfile(profile) {
       showToast.error(error.message);
     } finally {
       setSaving(false);
-    }
-
-    if (trimmedUsername !== String(profile?.username || "").toLowerCase()) {
-      try {
-        const availability = await checkUsernameAvailability(trimmedUsername);
-        if (!availability.available) {
-          showToast.error(availability.reason === "reserved" ? "This username is reserved." : "Username is already in use.");
-          return;
-        }
-      } catch {
-        showToast.error("Unable to check username availability. Please try again.");
-        return;
-      }
     }
   }
 

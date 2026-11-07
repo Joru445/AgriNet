@@ -4,7 +4,22 @@ import { getProductAvailability } from "./productStatus";
 /** Apply runtime-only checks to a server-paginated marketplace page. */
 export function filterMarketplaceProducts(items, filters, location) {
   const search = String(filters?.search || "").trim().toLowerCase();
+  const selectedCategory = String(filters?.category || "").trim().toLowerCase();
   return items.filter((product) => {
+    if (selectedCategory && selectedCategory !== "all") {
+      const productCat = String(product.category || "").trim().toLowerCase();
+      if (selectedCategory === "others" || selectedCategory === "other") {
+        if (productCat !== "others" && productCat !== "other") return false;
+      } else if (
+        selectedCategory === "root-crops" ||
+        selectedCategory === "rootcrops" ||
+        selectedCategory === "root crops"
+      ) {
+        if (!["root-crops", "rootcrops", "root crops"].includes(productCat)) return false;
+      } else if (productCat !== selectedCategory) {
+        return false;
+      }
+    }
     if (
       search &&
       ![

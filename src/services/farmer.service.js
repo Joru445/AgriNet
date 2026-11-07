@@ -38,7 +38,8 @@ export async function getFarmerDashboard() {
 
 export async function apiGetFarmerInquiryAnalytics({ from, to }) {
   try {
-    const params = new URLSearchParams({ from, to });
+    const toParam = to && !to.includes("T") ? `${to}T23:59:59.999Z` : to;
+    const params = new URLSearchParams({ from, to: toParam });
     const result = await apiRequest(`/v1/farmers/dashboard/inquiry-analytics?${params.toString()}`);
     return result.data ?? { points: [] };
   } catch (err) {

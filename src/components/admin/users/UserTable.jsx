@@ -9,6 +9,7 @@ export default function UserTable({
   currentUserId,
   onView,
   onEdit,
+  onDelete,
 }) {
   const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(1);
@@ -129,6 +130,7 @@ export default function UserTable({
                 farmer={farmerMap[user.uid]}
                 onView={onView}
                 onEdit={onEdit}
+                onDelete={onDelete}
               />
             ))}
           </tbody>

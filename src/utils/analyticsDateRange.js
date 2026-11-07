@@ -20,7 +20,12 @@ export function getRangeForPreset(preset) {
   const spec = RANGE_PRESETS[preset] ?? RANGE_PRESETS["30d"];
   const to = new Date();
   const from = new Date(to.getTime() - (spec.days - 1) * 24 * 60 * 60 * 1000);
-  return { from: toDateString(from), to: toDateString(to), days: spec.days };
+  const toDateStr = toDateString(to);
+  return {
+    from: toDateString(from),
+    to: `${toDateStr}T23:59:59.999Z`,
+    days: spec.days,
+  };
 }
 
 export const DEFAULT_RANGE_PRESET = "30d";

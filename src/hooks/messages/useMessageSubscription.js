@@ -30,6 +30,7 @@ export default function useMessageSubscription(uid, conversationId) {
 
   const messagesMapRef = useRef(new Map());
   const readRequestRef = useRef(null);
+  const pendingReadRef = useRef(false);
 
   useEffect(() => {
     if (!uid || !conversationId) {
@@ -90,21 +91,37 @@ export default function useMessageSubscription(uid, conversationId) {
 
         setMessages(sorted);
 
-        const newestMsg = sorted[sorted.length - 1];
+        const incomingFromOther = sorted.filter((m) => m.senderId && m.senderId !== uid);
+        const newestIncoming = incomingFromOther[incomingFromOther.length - 1];
         if (
           document.visibilityState === "visible" &&
-          newestMsg &&
-          newestMsg.senderId &&
-          newestMsg.senderId !== uid && cached.markedNewest !== newestMsg.id
+          newestIncoming &&
+          newestIncoming.id &&
+          cached.markedNewest !== newestIncoming.id
         ) {
-          cached.markedNewest = newestMsg.id;
-          if (!readRequestRef.current) {
+          const targetId = newestIncoming.id;
+          const executeMarkRead = () => {
             readRequestRef.current = apiMarkConversationRead(conversationId)
+              .then(() => {
+                cached.markedNewest = targetId;
+              })
               .catch((error) => {
                 cached.markedNewest = null;
                 console.error("Failed to mark conversation as read:", error);
               })
-              .finally(() => { readRequestRef.current = null; });
+              .finally(() => {
+                readRequestRef.current = null;
+                if (pendingReadRef.current) {
+                  pendingReadRef.current = false;
+                  executeMarkRead();
+                }
+              });
+          };
+
+          if (readRequestRef.current) {
+            pendingReadRef.current = true;
+          } else {
+            executeMarkRead();
           }
         }
       },
@@ -119,6 +136,28 @@ export default function useMessageSubscription(uid, conversationId) {
       unsubscribe();
     };
   }, [uid, conversationId]);
+
+  useEffect(() => {
+    if (!conversationId || !uid) return;
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && conversationId) {
+        apiMarkConversationRead(conversationId).catch(() => {});
+      }
+    };
+
+    if (document.visibilityState === "visible") {
+      onVisible();
+    }
+
+    window.addEventListener("focus", onVisible);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.removeEventListener("focus", onVisible);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [conversationId, uid]);
 
   const loadOlderMessages = useCallback(async () => {
     if (loadingOlder || !hasMoreOlder || !conversationId) {
