@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+import { useAuth } from "../context/AuthContext";
 import { apiGetProductById } from "../services/product.service";
 import { getFarmerById } from "../services/farmer.service";
 import * as pageCache from "../utils/pageCache";
@@ -9,6 +10,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export default function useProductDetails() {
   const { id } = useParams();
+  const { profile } = useAuth();
 
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [loadingFarmer, setLoadingFarmer] = useState(false);
@@ -51,7 +53,7 @@ export default function useProductDetails() {
         return;
       }
 
-      const productData = await apiGetProductById(id);
+      const productData = await apiGetProductById(id, { uid: profile?.uid });
 
       if (!productData) {
         setProduct(null);
@@ -80,7 +82,7 @@ export default function useProductDetails() {
     } finally {
       setLoadingProduct(false);
     }
-  }, [id]);
+  }, [id, profile?.uid]);
 
   useEffect(() => {
     loadProduct();

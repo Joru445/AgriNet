@@ -17,6 +17,11 @@ import { invalidatePublicMarketplaceCache } from "../utils/publicMarketplaceCach
 import { getProductReviewSummaries } from "./product-review.service";
 import { registerProductReviewSummaries } from "../utils/productReviewSync";
 import * as pageCache from "../utils/pageCache";
+import {
+  deleteProductSnapshot,
+  loadProductSnapshot,
+  saveProductSnapshot,
+} from "../utils/persistence/productSnapshotCache";
 
 const productsRef = collection(db, "products");
 
@@ -319,25 +324,51 @@ export function invalidateMarketplaceCatalog() {
   invalidatePublicMarketplaceCache();
 }
 
-export async function apiGetProductById(id) {
+export async function apiGetProductById(id, { uid } = {}) {
+  const snapshotKey = `product:${id}`;
+
   try {
     const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}`, {
       requireAuth: false,
     });
-    return data.data ?? null;
+    const product = data.data ?? null;
+    if (uid && product) {
+      saveProductSnapshot(uid, snapshotKey, product).catch(() => {});
+    }
+    return product;
   } catch (err) {
+    if (uid) {
+      const cached = await loadProductSnapshot(uid, snapshotKey).catch(() => null);
+      if (cached) {
+        console.warn("[Products] Offline; using cached product snapshot.");
+        return cached;
+      }
+    }
     console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
     return getProductById(id);
   }
 }
 
 export async function apiGetFarmerProducts(farmerId) {
+  const snapshotKey = `farmer-products:${farmerId}`;
+
   try {
     const data = await apiRequest(`/v1/products/farmer/${encodeURIComponent(farmerId)}`, {
       requireAuth: false,
     });
-    return data.data ?? [];
+    const products = data.data ?? [];
+    if (farmerId) {
+      saveProductSnapshot(farmerId, snapshotKey, products).catch(() => {});
+    }
+    return products;
   } catch (err) {
+    if (farmerId) {
+      const cached = await loadProductSnapshot(farmerId, snapshotKey).catch(() => null);
+      if (cached) {
+        console.warn("[Products] Offline; using cached farmer product snapshot.");
+        return cached;
+      }
+    }
     console.warn("[Products] Backend API unavailable, using Firebase Firestore:", err.message);
     return getFarmerProducts(farmerId);
   }
@@ -368,6 +399,9 @@ export async function apiCreateProduct(productData) {
     method: "POST",
     body: JSON.stringify(productPayload(productData)),
   });
+  if (productData.farmerId) {
+    deleteProductSnapshot(productData.farmerId, `farmer-products:${productData.farmerId}`).catch(() => {});
+  }
   pageCache.invalidate("marketplaceProducts");
   invalidateMarketplaceCatalog();
   pageCache.invalidate("homeProducts");
@@ -381,6 +415,10 @@ export async function apiUpdateProduct(id, productData) {
     method: "PATCH",
     body: JSON.stringify(productPayload(productData)),
   });
+  if (productData.farmerId) {
+    deleteProductSnapshot(productData.farmerId, `farmer-products:${productData.farmerId}`).catch(() => {});
+    deleteProductSnapshot(productData.farmerId, `product:${id}`).catch(() => {});
+  }
   pageCache.invalidate("marketplaceProducts");
   invalidateMarketplaceCatalog();
   pageCache.invalidate("homeProducts");
@@ -390,10 +428,14 @@ export async function apiUpdateProduct(id, productData) {
   return data.data ?? null;
 }
 
-export async function apiDeleteProduct(id) {
+export async function apiDeleteProduct(id, { uid } = {}) {
   const data = await apiRequest(`/v1/products/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
+  if (uid) {
+    deleteProductSnapshot(uid, `farmer-products:${uid}`).catch(() => {});
+    deleteProductSnapshot(uid, `product:${id}`).catch(() => {});
+  }
   pageCache.invalidate("marketplaceProducts");
   invalidateMarketplaceCatalog();
   pageCache.invalidate("homeProducts");

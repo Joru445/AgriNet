@@ -1,10 +1,18 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useAuth } from "../../context/AuthContext";
 
-const STORAGE_KEY = "agri_message_drafts";
+const STORAGE_KEY_PREFIX = "agri_message_drafts";
 
-function loadDrafts() {
+function storageKeyFor(uid) {
+  return uid ? `${STORAGE_KEY_PREFIX}:${uid}` : null;
+}
+
+function loadDrafts(uid) {
+  const storageKey = storageKeyFor(uid);
+  if (!storageKey) return {};
+
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(storageKey);
     const parsed = saved ? JSON.parse(saved) : {};
     const cleaned = {};
     if (parsed && typeof parsed === "object") {
@@ -21,6 +29,10 @@ function loadDrafts() {
 }
 
 export default function useDrafts(targetKeyOrKeys) {
+  const { account, identity } = useAuth();
+  const uid = account?.uid || identity?.uid || null;
+  const storageKey = storageKeyFor(uid);
+
   const targetKeys = useMemo(() => {
     if (!targetKeyOrKeys) return [];
     if (Array.isArray(targetKeyOrKeys)) return targetKeyOrKeys.filter(Boolean);
@@ -29,16 +41,26 @@ export default function useDrafts(targetKeyOrKeys) {
 
   const primaryKey = targetKeys[0] || null;
 
-  const [drafts, setDrafts] = useState(loadDrafts);
+  const [loadedUid, setLoadedUid] = useState(uid);
+  const [drafts, setDrafts] = useState(() => loadDrafts(uid));
   const [message, setMessageState] = useState("");
 
   useEffect(() => {
+    if (loadedUid === uid) return;
+    setDrafts(loadDrafts(uid));
+    setLoadedUid(uid);
+    setMessageState("");
+  }, [uid, loadedUid]);
+
+  useEffect(() => {
+    if (!storageKey || loadedUid !== uid) return;
+
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts));
+      localStorage.setItem(storageKey, JSON.stringify(drafts));
     } catch (error) {
       console.error("Failed to save drafts to localStorage:", error);
     }
-  }, [drafts]);
+  }, [drafts, storageKey, loadedUid, uid]);
 
   useEffect(() => {
     if (!primaryKey) {

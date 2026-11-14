@@ -13,6 +13,13 @@ import { uploadProductImage } from "../services/cloudinary.service";
 import { showToast } from "../utils/toast";
 import { accountCacheKey, getAccountCache, setAccountCache, invalidateAccountCache } from "../utils/accountQueryCache";
 import * as pageCache from "../utils/pageCache";
+import {
+  clearProductDrafts,
+  deleteProductDraft,
+  listProductDrafts,
+  loadDraftImage,
+  pruneProductDrafts,
+} from "../utils/persistence/productDraftStore";
 
 export default function useProducts() {
   const { profile } = useAuth();
@@ -30,6 +37,10 @@ export default function useProducts() {
   const [showDelete, setShowDelete] = useState(false);
 
   const [editingProduct, setEditingProduct] = useState(null);
+  const [activeDraftId, setActiveDraftId] = useState(null);
+
+  const [drafts, setDrafts] = useState([]);
+  const [loadingDrafts, setLoadingDrafts] = useState(true);
 
   const loadProducts = useCallback(async (isInitial = false) => {
     if (!profile?.uid) return;
@@ -59,9 +70,43 @@ export default function useProducts() {
     }
   }, [profile?.uid]);
 
+  const loadDrafts = useCallback(async () => {
+    try {
+      const stored = await listProductDrafts();
+      setDrafts(stored);
+      return stored;
+    } catch (error) {
+      console.warn("[product-draft] Unable to list drafts:", error);
+      setDrafts([]);
+      return [];
+    } finally {
+      setLoadingDrafts(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadProducts(true);
   }, [loadProducts]);
+
+  useEffect(() => {
+    let active = true;
+
+    pruneProductDrafts()
+      .catch(() => {})
+      .finally(() => {
+        if (active) loadDrafts();
+      });
+
+    const handleDraftsChanged = () => loadDrafts();
+    window.addEventListener("agrinet:product-drafts-updated", handleDraftsChanged);
+    window.addEventListener("focus", handleDraftsChanged);
+
+    return () => {
+      active = false;
+      window.removeEventListener("agrinet:product-drafts-updated", handleDraftsChanged);
+      window.removeEventListener("focus", handleDraftsChanged);
+    };
+  }, [loadDrafts]);
 
   const filteredProducts = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -81,12 +126,35 @@ export default function useProducts() {
 
   function openCreate() {
     setEditingProduct(null);
+    setActiveDraftId(null);
     setShowModal(true);
   }
 
   function openEdit(product) {
     setEditingProduct(product);
+    setActiveDraftId(null);
     setShowModal(true);
+  }
+
+  function openDraft(draft) {
+    const matchedProduct = draft.productId
+      ? products.find((product) => product.id === draft.productId)
+        || { id: draft.productId, ...(draft.form || {}) }
+      : null;
+
+    setEditingProduct(matchedProduct);
+    setActiveDraftId(draft.id);
+    setShowModal(true);
+  }
+
+  async function deleteDraft(draftId) {
+    await deleteProductDraft(draftId);
+    if (activeDraftId === draftId) setActiveDraftId(null);
+  }
+
+  async function clearDrafts() {
+    await clearProductDrafts();
+    setActiveDraftId(null);
   }
 
   function openDelete(product) {
@@ -97,6 +165,8 @@ export default function useProducts() {
   function closeModal() {
     setShowModal(false);
     setEditingProduct(null);
+    setActiveDraftId(null);
+    loadDrafts();
   }
 
   function closeDelete() {
@@ -117,6 +187,20 @@ export default function useProducts() {
           return uploadProductImage(image.file);
         }
 
+        // Image persisted in IndexedDB while the product was a draft
+        if (image.kind === "draft" && image.id) {
+          const record = await loadDraftImage(image.id);
+          if (!record?.blob) {
+            throw new Error("A saved image could not be restored. Please add it again.");
+          }
+          const file = new File(
+            [record.blob],
+            record.name || "product-image.jpg",
+            { type: record.type || record.blob.type || "image/jpeg" },
+          );
+          return uploadProductImage(file);
+        }
+
         throw new Error("Invalid image format.");
       }),
     );
@@ -134,6 +218,10 @@ export default function useProducts() {
         images: uploadedImages,
       });
 
+      if (form.draftId) {
+        await deleteProductDraft(form.draftId).catch(() => {});
+      }
+
       showToast.success("Product created.");
       invalidateAccountCache(accountCacheKey(profile.uid, "farmer-products"));
       if (profile?.uid) {
@@ -148,7 +236,7 @@ export default function useProducts() {
         );
         try {
           localStorage.setItem("agrinet_farmer_products_sync", Date.now().toString());
-        } catch {}
+        } catch { /* ignore storage errors */ }
       }
 
       closeModal();
@@ -174,6 +262,10 @@ export default function useProducts() {
         images: uploadedImages,
       });
 
+      if (form.draftId) {
+        await deleteProductDraft(form.draftId).catch(() => {});
+      }
+
       showToast.success("Product updated.");
       invalidateAccountCache(accountCacheKey(profile.uid, "farmer-products"));
       if (profile?.uid) {
@@ -188,7 +280,7 @@ export default function useProducts() {
         );
         try {
           localStorage.setItem("agrinet_farmer_products_sync", Date.now().toString());
-        } catch {}
+        } catch { /* ignore storage errors */ }
       }
 
       closeModal();
@@ -206,7 +298,7 @@ export default function useProducts() {
     if (!editingProduct) return;
 
     try {
-      await apiDeleteProduct(editingProduct.id);
+      await apiDeleteProduct(editingProduct.id, { uid: profile?.uid });
 
       setProducts((prev) => prev.filter((p) => p.id !== editingProduct.id));
       invalidateAccountCache(accountCacheKey(profile.uid, "farmer-products"));
@@ -222,7 +314,7 @@ export default function useProducts() {
         );
         try {
           localStorage.setItem("agrinet_farmer_products_sync", Date.now().toString());
-        } catch {}
+        } catch { /* ignore storage errors */ }
       }
 
       showToast.success("Product deleted.");
@@ -254,10 +346,17 @@ export default function useProducts() {
     showDelete,
 
     editingProduct,
+    activeDraftId,
+
+    drafts,
+    loadingDrafts,
 
     openCreate,
     openEdit,
+    openDraft,
     openDelete,
+    deleteDraft,
+    clearDrafts,
     closeModal,
     closeDelete,
 
@@ -266,5 +365,6 @@ export default function useProducts() {
     handleDelete,
 
     reloadProducts: loadProducts,
+    reloadDrafts: loadDrafts,
   };
 }
