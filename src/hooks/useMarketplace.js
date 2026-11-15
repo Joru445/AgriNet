@@ -5,7 +5,6 @@ import { apiGetMarketplaceProducts } from "../services/product.service";
 import useUserLocation from "./useUserLocation";
 
 import { getDistanceKm } from "../utils/distance";
-import { filterMarketplaceProducts } from "../utils/marketplaceCatalog";
 
 import * as pageCache from "../utils/pageCache";
 
@@ -51,8 +50,9 @@ function decorateDistance(items, location) {
 
 export default function useMarketplace() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { location: userLocation } = useUserLocation();
-  const [fetchedProducts, setFetchedProducts] = useState([]);
+  const { location: userLocation, locationError, refreshLocation } = useUserLocation(false);
+  const [searchInput, setSearchInput] = useState("");
+const [fetchedProducts, setFetchedProducts] = useState([]);
   const [visibleCount, setVisibleCount] = useState(0);
   const [columns, setColumns] = useState(2);
   const [loading, setLoading] = useState(true);
@@ -79,6 +79,7 @@ export default function useMarketplace() {
           localStorage.getItem("agri_consumer_distance") ||
           DEFAULT_FILTERS.distance,
       ),
+      distanceActive: searchParams.has("distance"),
       minPrice: Number(searchParams.get("minPrice") || 0),
       maxPrice: Number(searchParams.get("maxPrice") || 0),
       rating: Number(searchParams.get("rating") || 0),
@@ -95,6 +96,12 @@ export default function useMarketplace() {
   useLayoutEffect(() => {
     filtersRef.current = filters;
   }, [filters]);
+
+  // Keep the search box in sync with URL-driven filter state (back/forward,
+  // refresh, reset) without clobbering an in-progress keystroke.
+  useEffect(() => {
+    setSearchInput(filters.search);
+  }, [filters.search]);
 
   // A wider grid can reveal more already-buffered cards immediately. It does
   // not reset pagination or discard cards when the available width changes.
@@ -139,6 +146,13 @@ export default function useMarketplace() {
             active.sellingMode !== "all" ? active.sellingMode : undefined,
           groupId: active.group || undefined,
           sort: active.sort,
+          minPrice: active.minPrice > 0 ? active.minPrice : undefined,
+          maxPrice: active.maxPrice > 0 ? active.maxPrice : undefined,
+          rating: active.rating > 0 ? active.rating : undefined,
+          search: active.search?.trim() || undefined,
+          lat: active.distanceActive ? userLocation?.lat : undefined,
+          lng: active.distanceActive ? userLocation?.lng : undefined,
+          maxDistance: active.distanceActive ? active.distance : undefined,
           signal: controller.signal,
         });
         if (requestId !== requestIdRef.current) return false;
@@ -169,7 +183,7 @@ export default function useMarketplace() {
         }
       }
     },
-    [fetchedProducts.length, hasMore],
+    [fetchedProducts.length, hasMore, userLocation],
   );
 
   useEffect(() => {
@@ -280,10 +294,7 @@ export default function useMarketplace() {
     () => decorateDistance(fetchedProducts, userLocation),
     [fetchedProducts, userLocation],
   );
-  const filteredProducts = useMemo(
-    () => filterMarketplaceProducts(products, filters, userLocation),
-    [products, filters, userLocation],
-  );
+  const filteredProducts = useMemo(() => products, [products]);
   const visibleProducts = useMemo(
     () => filteredProducts.slice(0, visibleCount),
     [filteredProducts, visibleCount],
@@ -362,6 +373,15 @@ export default function useMarketplace() {
     [setSearchParams],
   );
 
+  // Debounce search input -> committed URL filter state.
+  useEffect(() => {
+    if (searchInput === filters.search) return;
+    const timer = setTimeout(() => {
+      updateFilter("search", searchInput);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput, filters.search, updateFilter]);
+
   const hasActiveFilters =
     filters.search.trim() !== "" ||
     filters.category !== "All" ||
@@ -371,7 +391,7 @@ export default function useMarketplace() {
     filters.showUnavailable ||
     filters.sellingMode !== "all" ||
     filters.group !== "" ||
-    filters.distance !== DEFAULT_FILTERS.distance;
+    filters.distanceActive;
   const refreshProducts = useCallback(async () => {
     if (refreshing) return false;
     setRefreshing(true);
@@ -391,6 +411,8 @@ export default function useMarketplace() {
     refreshing,
     error,
     filters,
+    searchInput,
+    setSearchInput,
     products,
     filteredProducts,
     visibleProducts,
@@ -400,6 +422,9 @@ export default function useMarketplace() {
     setShowFilters,
     updateFilter,
     hasActiveFilters,
+    userLocation,
+    locationError,
+    refreshLocation,
     setColumns: setGridColumns,
     revealNextRow,
     reloadProducts: () => requestPage({ reset: true }),

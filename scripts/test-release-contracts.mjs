@@ -18,7 +18,9 @@ test("marketplace forwards group IDs", () => {
 test("eligible available products survive the default/filter/reset catalog flow", () => {
   const hook = src("src/hooks/useMarketplace.js");
   const catalog = src("src/utils/marketplaceCatalog.js");
-  assert.match(
+  // Backend is now the source of truth for filtering; the hook must NOT
+  // re-filter the loaded page client-side (that hid products beyond page 1).
+  assert.doesNotMatch(
     hook,
     /filterMarketplaceProducts\(products, filters, userLocation\)/,
   );
@@ -29,6 +31,9 @@ test("eligible available products survive the default/filter/reset catalog flow"
   );
   assert.match(catalog, /filters\.minPrice/);
   assert.match(catalog, /filters\.maxPrice/);
+  // The backend request must carry the new filter dimensions.
+  assert.match(hook, /minPrice: active\.minPrice/);
+  assert.match(hook, /search: active\.search/);
   assert.match(hook, /resetFilters: \(\) =>/);
 });
 

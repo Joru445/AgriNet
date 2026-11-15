@@ -1349,6 +1349,8 @@ export default {
     nearestFarmer: "Pinakamalapit na magsasaka:",
     noNearbyFarmers: "Walang malapit na magsasaka.",
     youAreHere: "Nandito ka",
+    useMyLocation: "Gamitin ang aking lokasyon",
+    enableLocation: "I-enable ang lokasyon para sa distansya",
     group: "Grupo",
     allGroups: "Lahat ng Grupo",
     selectedGroup: "Napiling grupo",

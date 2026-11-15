@@ -1333,6 +1333,8 @@ export default {
     nearestFarmer: "Nearest farmer:",
     noNearbyFarmers: "No nearby farmers.",
     youAreHere: "You are here",
+    useMyLocation: "Use my location",
+    enableLocation: "Enable location for distance",
     group: "Group",
     allGroups: "All Groups",
     selectedGroup: "Selected group",

@@ -37,6 +37,8 @@ export default function Marketplace() {
     refreshing,
     error,
     filters,
+    searchInput,
+    setSearchInput,
     visibleProducts,
     filteredProducts,
     hasMore,
@@ -44,6 +46,9 @@ export default function Marketplace() {
     setShowFilters,
     updateFilter,
     hasActiveFilters,
+    userLocation,
+    locationError,
+    refreshLocation,
     setColumns,
     revealNextRow,
     reloadProducts,
@@ -131,7 +136,13 @@ export default function Marketplace() {
     isDesktop
       ? setDesktopFiltersVisible((visible) => !visible)
       : setShowFilters(true);
-  const removeFilter = (key) =>
+  const removeFilter = (key) => {
+    if (key === "search") return updateFilter("search", "");
+    if (key === "minPrice" || key === "maxPrice") {
+      updateFilter({ minPrice: 0, maxPrice: 0 });
+      return;
+    }
+    if (key === "rating") return updateFilter("rating", 0);
     updateFilter(
       key,
       key === "category"
@@ -146,6 +157,7 @@ export default function Marketplace() {
                 ? false
                 : 0,
     );
+  };
 
   return (
     <main
@@ -153,8 +165,8 @@ export default function Marketplace() {
       className="mx-auto w-full min-w-0 max-w-7xl space-y-4 pb-8"
     >
       <MarketplaceSubHeader
-        searchValue={filters.search}
-        onSearchChange={(value) => updateFilter("search", value)}
+        searchValue={searchInput}
+        onSearchChange={setSearchInput}
         onOpenFilters={openFilters}
         filtersActive={hasActiveFilters || (isDesktop && desktopFiltersVisible)}
       />
@@ -168,6 +180,9 @@ export default function Marketplace() {
           onChange={updateFilter}
           onReset={resetFilters}
           visible={desktopFiltersVisible}
+          onUseLocation={refreshLocation}
+          hasLocation={Boolean(userLocation)}
+          locationError={locationError}
         />
         <section ref={catalogRef} className="min-w-0 flex-1 space-y-4">
           <ProductsToolbar
@@ -236,6 +251,9 @@ export default function Marketplace() {
         onChange={updateFilter}
         onReset={resetFilters}
         onClose={() => setShowFilters(false)}
+        onUseLocation={refreshLocation}
+        hasLocation={Boolean(userLocation)}
+        locationError={locationError}
       />
     </main>
   );

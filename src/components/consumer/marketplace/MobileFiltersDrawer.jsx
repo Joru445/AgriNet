@@ -10,6 +10,9 @@ export default function MobileFiltersDrawer({
   onChange,
   onReset,
   onClose,
+  onUseLocation,
+  hasLocation,
+  locationError,
 }) {
   const { t } = useLanguage();
 
@@ -32,6 +35,9 @@ export default function MobileFiltersDrawer({
         filters={filters}
         onChange={onChange}
         onReset={onReset}
+        onUseLocation={onUseLocation}
+        hasLocation={hasLocation}
+        locationError={locationError}
       />
     </Sheet>
   );

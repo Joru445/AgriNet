@@ -11,6 +11,9 @@ export default function FiltersSidebar({
   onReset,
   mobile = false,
   visible = true,
+  onUseLocation,
+  hasLocation = false,
+  locationError = null,
 }) {
 
   const { t } = useLanguage();
@@ -118,6 +121,24 @@ export default function FiltersSidebar({
         />
       </div>
       <div>
+        {onUseLocation && (
+          <div className="mb-3">
+            <Button
+              variant={hasLocation ? "ghost" : "secondary"}
+              size="sm"
+              fullWidth
+              onClick={onUseLocation}
+            >
+              <i className="ri-map-pin-user-line mr-1.5" />
+              {hasLocation ? t("nearby.useMyLocation") : t("nearby.enableLocation")}
+            </Button>
+            {locationError && (
+              <p className="mt-1 text-[10px] text-red-500">
+                {locationError.message || locationError.code || "Location unavailable"}
+              </p>
+            )}
+          </div>
+        )}
         <label className="mb-2 flex items-center gap-1.5 text-xs font-bold text-(--agri-text)">
           <i className="ri-map-pin-range-line text-(--agri-text-muted)" />
           {t("nearby.distanceLabel", { distance: filters.distance })}

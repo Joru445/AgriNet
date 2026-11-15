@@ -4,10 +4,11 @@ import Select from "../../ui/Select";
 export default function ProductsToolbar({ sort, onSort, filters, onRemoveFilter, onClearFilters }) {
   const { t } = useLanguage();
   const chips = [
+    filters?.search && ["search", `"${filters.search}"`],
     filters?.category !== "All" && ["category", filters.category],
     filters?.sellingMode !== "all" && ["sellingMode", filters.sellingMode],
     filters?.group && ["group", filters.group],
-    filters?.distance !== 10 && ["distance", `${filters.distance} km`],
+    filters?.distanceActive && ["distance", `${filters.distance} km`],
     filters?.minPrice > 0 && ["minPrice", `₱${filters.minPrice}+`],
     filters?.maxPrice > 0 && ["maxPrice", `≤ ₱${filters.maxPrice}`],
     filters?.rating > 0 && ["rating", `${filters.rating}★`],

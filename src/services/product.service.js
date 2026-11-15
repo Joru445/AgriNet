@@ -234,20 +234,27 @@ async function getFarmersByIds(ids) {
  * preserved for easy rollback.
  */
 
-export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, category, available, sellingMode, farmerId, groupId, sort, signal } = {}) {
+export async function apiGetMarketplaceProducts({ limit: pageSize = 24, cursor, category, available, sellingMode, farmerId, groupId, sort, minPrice, maxPrice, rating, search, lat, lng, maxDistance, signal } = {}) {
   try {
     const params = new URLSearchParams();
     params.set("limit", String(pageSize));
     if (cursor) params.set("cursor", String(cursor));
 
-    // Pass supported filters to the backend so Firestore applies them
-    // server-side rather than returning the full collection.
     if (category) params.set("category", category);
     if (available !== undefined) params.set("available", String(available));
     if (sellingMode) params.set("sellingMode", sellingMode);
     if (farmerId) params.set("farmerId", farmerId);
     if (groupId) params.set("groupId", groupId);
     if (sort) params.set("sort", sort);
+    if (minPrice != null && minPrice > 0) params.set("minPrice", String(minPrice));
+    if (maxPrice != null && maxPrice > 0) params.set("maxPrice", String(maxPrice));
+    if (rating != null && rating > 0) params.set("rating", String(rating));
+    if (search) params.set("search", search);
+    if (lat != null && lng != null) {
+      params.set("lat", String(lat));
+      params.set("lng", String(lng));
+      if (maxDistance != null && maxDistance > 0) params.set("maxDistance", String(maxDistance));
+    }
 
     const data = await apiRequest(`/v1/products/marketplace?${params}`, {
       requireAuth: false,
