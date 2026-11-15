@@ -16,6 +16,11 @@ import { getProductReviewSummaries } from "../services/product-review.service";
 import { registerProductReviewSummaries } from "../utils/productReviewSync";
 
 const PAGE_SIZE = 24;
+// Infinite-scroll tuning. Keep these in one place so the scroll strategy is
+// adjustable without hunting through the hook.
+const REVEAL_STEP_MULTIPLIER = 2;
+// Prefetch configuration for uninterrupted infinite scrolling. Keep these
+// values here so the scroll strategy is tunable in one place.
 // The memory cache matches the persisted public-listing retention window. A
 // catalog entry is not revalidated merely because the former two-minute TTL
 // elapsed; normal eviction still bounds storage and a true cache miss loads.
@@ -160,9 +165,17 @@ const [fetchedProducts, setFetchedProducts] = useState([]);
           const merged = reset
             ? result.products
             : [...current, ...result.products];
-          return Array.from(
+          const deduped = Array.from(
             new Map(merged.map((item) => [item.id, item])).values(),
           );
+          if (!reset) {
+            // Auto-reveal one extra row so newly fetched products appear
+            // without waiting for the next observer intersection.
+            setVisibleCount((vc) =>
+              Math.min(deduped.length, vc + columnsRef.current),
+            );
+          }
+          return deduped;
         });
         cursorRef.current = result.cursor || null;
         setHasMore(Boolean(result.hasMore && result.cursor));
@@ -255,6 +268,7 @@ const [fetchedProducts, setFetchedProducts] = useState([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryKey]);
 
+
   useEffect(() => {
     const handleReviewUpdated = (event) => {
       const { productId, summary } = event.detail || {};
@@ -318,10 +332,11 @@ const [fetchedProducts, setFetchedProducts] = useState([]);
   }, [error, fetchedProducts, filteredProducts.length, filters, hasMore, loading]);
 
   const revealNextRow = useCallback(async () => {
+    const step = columnsRef.current * REVEAL_STEP_MULTIPLIER;
     const remaining = filteredProducts.length - visibleCount;
-    if (remaining >= columnsRef.current) {
+    if (remaining >= step) {
       setVisibleCount((count) =>
-        Math.min(filteredProducts.length, count + columnsRef.current),
+        Math.min(filteredProducts.length, count + step),
       );
       return true;
     }

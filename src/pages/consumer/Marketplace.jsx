@@ -119,7 +119,7 @@ export default function Marketplace() {
       ([entry]) => {
         if (entry.isIntersecting) revealNextRow();
       },
-      { rootMargin: "320px" },
+      { rootMargin: "800px" },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();

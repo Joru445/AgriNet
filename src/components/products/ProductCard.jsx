@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -26,7 +26,7 @@ import { CATEGORY_ICONS } from "../../utils/categoryIcons";
 import { applyTransform, PRODUCT_THUMB_TF, isCloudinaryUrl } from "../../utils/cloudinaryTransform";
 import { useLiveProductReview } from "../../utils/productReviewSync";
 
-export default function ProductCard({
+function ProductCard({
   product,
   hideFooter = false,
   hideDiscount = false,
@@ -272,3 +272,5 @@ export default function ProductCard({
     </Link>
   );
 }
+
+export default memo(ProductCard);
