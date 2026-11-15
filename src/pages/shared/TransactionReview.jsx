@@ -8,6 +8,8 @@ import useTransactionReview from "../../hooks/useTransactionReview";
 import TransactionSummary from "../../components/transactions/TransactionSummary";
 import TransactionReviewForm from "../../components/transactions/TransactionReviewForm";
 import TransactionReviewView from "../../components/transactions/TransactionReviewView";
+import LoginRequired from "../../components/ui/LoginRequired";
+import PageWrapper from "../../components/ui/PageWrapper";
 
 export default function TransactionReview() {
   const { inquiryId } = useParams();
@@ -41,6 +43,14 @@ export default function TransactionReview() {
 
   const isConsumer = profile?.role === "consumer";
   const isOwner = inquiry?.consumerId === profile?.uid;
+
+  if (!profile) {
+    return (
+      <PageWrapper>
+        <LoginRequired title={t("loginRequired.title")} />
+      </PageWrapper>
+    );
+  }
 
   /*
    * A transaction is considered reviewed when

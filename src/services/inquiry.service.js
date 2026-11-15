@@ -27,7 +27,6 @@ export function mapInquiryToGroup(inquiry) {
   if ([
     "accepted",
     "reserved",
-    "awaiting_agreement",
     "confirmed",
     "preparing",
     "ready",

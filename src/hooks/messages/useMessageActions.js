@@ -16,6 +16,7 @@ export default function useMessageActions({
   setSearchParams,
   message,
   clearCurrentDraft,
+  appendLocalMessage,
 }) {
   const [failedMessages, setFailedMessages] = useState([]);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -129,7 +130,23 @@ export default function useMessageActions({
           replyTo: replyTo?.messageId || replyTo || null,
         };
 
-        await apiSendMessage(messagePayload);
+        const sentId = await apiSendMessage(messagePayload);
+
+        // Echo the message locally so it renders even when the realtime stream
+        // is reconnecting. Keyed by the server-assigned id, so the snapshot
+        // replaces this placeholder instead of showing a duplicate.
+        if (sentId && appendLocalMessage) {
+          appendLocalMessage({
+            id: sentId,
+            conversationId,
+            senderId: profile.uid,
+            text: text || "",
+            type: activeImg ? "image" : "text",
+            imageUrl,
+            replyTo: replyTo?.messageId || replyTo || null,
+            createdAt: { seconds: Math.floor(Date.now() / 1000) },
+          });
+        }
 
         if (!activeConversation?.id) {
           setActiveConversation(
@@ -184,6 +201,7 @@ export default function useMessageActions({
       setActiveUser,
       setSearchParams,
       clearCurrentDraft,
+      appendLocalMessage,
       enqueueMessage,
     ],
   );

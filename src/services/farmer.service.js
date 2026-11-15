@@ -70,7 +70,9 @@ export async function getFarmerById(uid) {
     const farmer = result.data;
 
     if (farmer) return farmer;
-  } catch {}
+  } catch {
+    // ignore
+  }
 
   return null;
 }

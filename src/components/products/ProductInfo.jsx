@@ -238,7 +238,10 @@ export default function ProductInfo({
             <span className="text-(--agri-border)">·</span>
             <span className="text-xs sm:text-sm font-semibold text-(--agri-text-secondary)">
               {t("productDetails.stockAvailable", {
-                count: product.stock,
+                count: Math.max(
+                  0,
+                  Number(product.stock ?? 0) - Number(product.reservedStock ?? 0),
+                ),
                 unit: product.unit || t("productDetails.unit"),
               })}
             </span>

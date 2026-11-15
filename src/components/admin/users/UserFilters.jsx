@@ -1,7 +1,6 @@
 import { useLanguage } from "../../../context/LanguageContext";
 import InlineSearchInput from "../../ui/InlineSearchInput";
 import Select from "../../ui/Select";
-import Input from "../../ui/Input";
 
 export default function UserFilters({
   search,

@@ -147,8 +147,7 @@ export default function FiltersSidebar({
           value={priceRange}
           onChange={setPriceRange}
           onCommit={([minPrice, maxPrice]) => {
-            onChange("minPrice", minPrice);
-            onChange("maxPrice", maxPrice === 10000 ? 0 : maxPrice);
+            onChange({ minPrice, maxPrice: maxPrice === 10000 ? 0 : maxPrice });
           }}
         />
         {(filters.minPrice > 0 || filters.maxPrice > 0) && (
@@ -158,8 +157,7 @@ export default function FiltersSidebar({
             className="mt-2"
             onClick={() => {
               setPriceRange([0, 10000]);
-              onChange("minPrice", 0);
-              onChange("maxPrice", 0);
+              onChange({ minPrice: 0, maxPrice: 0 });
             }}
           >
             {t("marketplace.resetPriceRange")}

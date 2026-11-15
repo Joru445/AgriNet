@@ -41,12 +41,16 @@ async function waitFor(getValue, description, timeout = 20_000) {
     }
     await wait(150);
   }
-  throw new Error(`Timed out waiting for ${description}${lastError ? `: ${lastError.message}` : ""}`);
+  throw new Error(
+    `Timed out waiting for ${description}${lastError ? `: ${lastError.message}` : ""}`,
+  );
 }
 
 function runBrowser(args, screenshotPath) {
   return new Promise((resolve, reject) => {
-    const browser = spawn(chromePath, args, { stdio: ["ignore", "pipe", "pipe"] });
+    const browser = spawn(chromePath, args, {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
     let stdout = "";
     let stderr = "";
     let settled = false;
@@ -68,8 +72,12 @@ function runBrowser(args, screenshotPath) {
     }, 100);
     browser.stdout.setEncoding("utf8");
     browser.stderr.setEncoding("utf8");
-    browser.stdout.on("data", (chunk) => { stdout += chunk; });
-    browser.stderr.on("data", (chunk) => { stderr += chunk; });
+    browser.stdout.on("data", (chunk) => {
+      stdout += chunk;
+    });
+    browser.stderr.on("data", (chunk) => {
+      stderr += chunk;
+    });
     browser.on("error", (error) => {
       if (!settled) reject(error);
     });
@@ -87,45 +95,78 @@ const browserTestSkip = !chromePath
     ? "Set AGRINET_RUN_BROWSER_TEST=1 in a browser-capable environment to run this test."
     : false;
 
-test("a fresh browser can directly load the canonical username profile route", { skip: browserTestSkip }, async (t) => {
-  const vite = spawn(process.execPath, [vitePath, "--host", "127.0.0.1", "--port", String(appPort), "--strictPort", "--force"], {
-    cwd: process.cwd(),
-    stdio: "ignore",
-  });
-  const profileDir = mkdtempSync(join(tmpdir(), `agrinet-leaflet-${process.pid}-`));
-  t.after(() => {
-    stop(vite);
-    rmSync(profileDir, { recursive: true, force: true, maxRetries: 3 });
-  });
+test(
+  "a fresh browser can directly load the canonical username profile route",
+  { skip: browserTestSkip },
+  async (t) => {
+    const vite = spawn(
+      process.execPath,
+      [
+        vitePath,
+        "--host",
+        "127.0.0.1",
+        "--port",
+        String(appPort),
+        "--strictPort",
+        "--force",
+      ],
+      {
+        cwd: process.cwd(),
+        stdio: "ignore",
+      },
+    );
+    const profileDir = mkdtempSync(
+      join(tmpdir(), `agrinet-leaflet-${process.pid}-`),
+    );
+    t.after(() => {
+      stop(vite);
+      rmSync(profileDir, { recursive: true, force: true, maxRetries: 3 });
+    });
 
-  const profilePath = process.env.AGRINET_PROFILE_SMOKE_PATH || "/__profile_smoke__";
-  await waitFor(
-    () => getStatus(`http://127.0.0.1:${appPort}${profilePath}`).then((status) => status === 200),
-    "Vite dev server",
-  );
-  const screenshotPath = join(profileDir, "me-route.png");
-  const result = await runBrowser([
-    "--headless=new",
-    "--disable-gpu",
-    "--disable-gpu-sandbox",
-    "--disable-breakpad",
-    "--no-first-run",
-    "--no-default-browser-check",
-    "--enable-logging=stderr",
-    "--run-all-compositor-stages-before-draw",
-    "--window-size=1280,720",
-    `--user-data-dir=${profileDir}`,
-    "--virtual-time-budget=3000",
-    `--screenshot=${screenshotPath}`,
-    `http://127.0.0.1:${appPort}${profilePath}`,
-  ], screenshotPath);
+    const profilePath =
+      process.env.AGRINET_PROFILE_SMOKE_PATH || "/__profile_smoke__";
+    await waitFor(
+      () =>
+        getStatus(`http://127.0.0.1:${appPort}${profilePath}`).then(
+          (status) => status === 200,
+        ),
+      "Vite dev server",
+    );
+    const screenshotPath = join(profileDir, "me-route.png");
+    const result = await runBrowser(
+      [
+        "--headless=new",
+        "--disable-gpu",
+        "--disable-gpu-sandbox",
+        "--disable-breakpad",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--enable-logging=stderr",
+        "--run-all-compositor-stages-before-draw",
+        "--window-size=1280,720",
+        `--user-data-dir=${profileDir}`,
+        "--virtual-time-budget=3000",
+        `--screenshot=${screenshotPath}`,
+        `http://127.0.0.1:${appPort}${profilePath}`,
+      ],
+      screenshotPath,
+    );
 
-  assert.equal(result.timedOut, undefined, `Chrome did not render ${profilePath} within 15 seconds.\n${result.stderr}`);
-  assert.equal(result.code, 0, result.stderr);
-  assert.equal(existsSync(screenshotPath), true, "Chrome must render the direct username profile route.");
-  assert.doesNotMatch(
-    `${result.stdout}\n${result.stderr}`,
-    /does not provide an export named ['"]t['"]|requested module.*leaflet\.js/i,
-    "The direct username profile route must not load a mismatched Leaflet optimizer artifact.",
-  );
-});
+    assert.equal(
+      result.timedOut,
+      undefined,
+      `Chrome did not render ${profilePath} within 15 seconds.\n${result.stderr}`,
+    );
+    assert.equal(result.code, 0, result.stderr);
+    assert.equal(
+      existsSync(screenshotPath),
+      true,
+      "Chrome must render the direct username profile route.",
+    );
+    assert.doesNotMatch(
+      `${result.stdout}\n${result.stderr}`,
+      /does not provide an export named ['"]t['"]|requested module.*leaflet\.js/i,
+      "The direct username profile route must not load a mismatched Leaflet optimizer artifact.",
+    );
+  },
+);

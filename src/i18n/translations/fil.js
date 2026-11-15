@@ -548,6 +548,10 @@ export default {
       pending: "Nakabinbin",
       accepted: "Tinanggap",
       reserved: "Naka-reserve",
+      awaitingAgreement: "Naghihintay ng Kasunduan",
+      confirmed: "Nakumpirma",
+      preparing: "Naghahanda",
+      ready: "Handa na",
       ongoing: "Ongoing",
       completed: "Tapos na",
       cancelled: "Kinansela",
@@ -745,6 +749,8 @@ export default {
     yesReceived: "Oo, natanggap ko na",
     processing: "Pinoproseso...",
     uploadTitle: "Mag-upload ng patunay ng transaction",
+    proofPending: "Naghihintay na mag-submit ang buyer ng patunay ng pagkumpleto.",
+    proofNotYetAvailable: "Magiging available ang patunay kapag na-submit na ng buyer.",
     uploadBody:
       "Mag-upload ng malinaw na larawan ng produktong natanggap mo.",
     rejectedTitle: "Na-reject ang nakaraang patunay.",
@@ -1349,6 +1355,10 @@ export default {
     loadingGroups: "Naglo-load ng mga grupo…",
     noGroups: "Walang available na grupo",
     groupsLoadFailed: "Hindi ma-load ang mga grupo.",
+    locationUnavailable: "Hindi namin makuha ang iyong lokasyon.",
+    locationUnavailableHint:
+      "Ipinapakita ang mga magsasaka malapit sa gitna ng Lungsod ng Lucena. Payagan ang pag-access ng lokasyon at subukang muli para sa tumpak na distansya.",
+    retryLocation: "Subukang muli ang lokasyon",
   },
 
   admin: {

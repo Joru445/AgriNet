@@ -98,7 +98,9 @@ export async function getGroup(groupId) {
       pageCache.set(cacheKey, data.data, 5 * 60 * 1000);
       return data.data;
     }
-  } catch {}
+  } catch {
+        // ignore
+      }
 
   return cached || null;
 }
@@ -161,18 +163,6 @@ function getRecordTimestamp(item) {
     return isNaN(d.getTime()) ? 0 : d.getTime();
   }
   return 0;
-}
-
-function toIsoStringSafe(ts) {
-  if (!ts) return null;
-  if (ts?.toDate && typeof ts.toDate === "function") return ts.toDate().toISOString();
-  if (typeof ts === "string") return ts;
-  try {
-    const d = new Date(ts);
-    return isNaN(d.getTime()) ? null : d.toISOString();
-  } catch {
-    return null;
-  }
 }
 
 /**
@@ -296,7 +286,7 @@ export async function getMembership(groupId, userId) {
  * @param {string} groupId
  * @returns {Promise<Array>}
  */
-export async function getGroupMembers(groupId, options = {}) {
+export async function getGroupMembers(groupId) {
   if (!groupId) return [];
   const cacheKey = `group_members_${groupId}`;
   // Only authorized manager/admin APIs may reveal the full member roster.
@@ -395,7 +385,9 @@ export function notifyGroupMembersUpdated(groupId) {
     );
     try {
       localStorage.setItem("agrinet_group_sync", `${groupId}:${Date.now()}`);
-    } catch {}
+    } catch {
+        // ignore
+      }
   }
 }
 
@@ -499,12 +491,14 @@ export async function getGroupMemberCount(groupId, options = {}) {
       }
 
       try {
-        const members = await getGroupMembers(groupId, options);
+        const members = await getGroupMembers(groupId);
         if (Array.isArray(members) && members.length > 0) {
           pageCache.set(cacheKey, members.length, 60 * 1000);
           return members.length;
         }
-      } catch {}
+      } catch {
+        // ignore
+      }
 
       // 3. Fallback to group document metadata
       const groupData = await getGroup(groupId).catch(() => null);
@@ -600,7 +594,9 @@ export async function getGroupManager(groupId, userId) {
           permissions: Object.values(GROUP_PERMISSIONS),
         };
       }
-    } catch {}
+    } catch {
+        // ignore
+      }
   }
 
   try {
@@ -608,7 +604,9 @@ export async function getGroupManager(groupId, userId) {
       `${GROUPS_BASE}/${encodeURIComponent(groupId)}/managers/${encodeURIComponent(userId)}`,
     );
     if (data?.data) return data.data;
-  } catch {}
+  } catch {
+        // ignore
+      }
 
   return null;
 }

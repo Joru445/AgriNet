@@ -71,7 +71,13 @@ function LegacyRedirect({ to }) {
 
 export default function AppRoutes() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-(--agri-border) border-t-(--agri-brand)" />
+        </div>
+      }
+    >
       <Routes>
         {/* ROOT */}
 

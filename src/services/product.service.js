@@ -353,10 +353,26 @@ export async function apiGetFarmerProducts(farmerId) {
   const snapshotKey = `farmer-products:${farmerId}`;
 
   try {
-    const data = await apiRequest(`/v1/products/farmer/${encodeURIComponent(farmerId)}`, {
-      requireAuth: false,
-    });
-    const products = data.data ?? [];
+    // The backend caps a single page at 100 rows; follow the cursor so farmers
+    // with more than 100 listings still see every product.
+    const all = [];
+    let cursor = null;
+    let hasMore = true;
+    let guard = 0;
+    while (hasMore && guard < 10) {
+      const params = new URLSearchParams({ limit: "100" });
+      if (cursor) params.set("cursor", cursor);
+      const data = await apiRequest(`/v1/products/farmer/${encodeURIComponent(farmerId)}?${params.toString()}`, {
+        requireAuth: false,
+      });
+      const page = data.data ?? [];
+      all.push(...page);
+      cursor = data.cursor ?? null;
+      hasMore = data.hasMore === true && page.length > 0;
+      guard += 1;
+    }
+
+    const products = all;
     if (farmerId) {
       saveProductSnapshot(farmerId, snapshotKey, products).catch(() => {});
     }

@@ -548,6 +548,10 @@ export default {
       pending: "Pending",
       accepted: "Accepted",
       reserved: "Reserved",
+      awaitingAgreement: "Awaiting Agreement",
+      confirmed: "Confirmed",
+      preparing: "Preparing",
+      ready: "Ready",
       ongoing: "Ongoing",
       completed: "Completed",
       cancelled: "Cancelled",
@@ -736,6 +740,8 @@ export default {
     yesReceived: "Yes, I received the product",
     processing: "Processing...",
     uploadTitle: "Upload transaction proof",
+    proofPending: "Waiting for the buyer to submit completion proof.",
+    proofNotYetAvailable: "Proof will be available once the buyer submits it.",
     uploadBody: "Upload a clear photo showing the product you received.",
     rejectedTitle: "Previous proof was rejected.",
     rejectedBody: "Please upload another photo.",
@@ -1333,6 +1339,10 @@ export default {
     loadingGroups: "Loading groups…",
     noGroups: "No groups available",
     groupsLoadFailed: "Could not load groups.",
+    locationUnavailable: "We couldn't access your location.",
+    locationUnavailableHint:
+      "Showing farmers near Lucena City center. Allow location access and retry for accurate distances.",
+    retryLocation: "Retry location",
   },
 
   admin: {

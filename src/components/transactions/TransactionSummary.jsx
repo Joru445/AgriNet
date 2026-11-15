@@ -16,6 +16,8 @@ export default function TransactionSummary({ inquiry }) {
 
   const farmer = inquiry.farmerSnapshot ?? {};
 
+  const agreedPrice = inquiry?.agreement?.unitPrice ?? product.price;
+
   const productImage = getImageUrl(product.imageUrl) || productPlaceholder;
 
   return (
@@ -55,9 +57,9 @@ export default function TransactionSummary({ inquiry }) {
             {product.name || t("transactionReview.product")}
           </h3>
 
-          {product.price != null && (
+          {agreedPrice != null && (
             <p className="mt-0.5 text-sm font-bold text-[#2D6A4F] dark:text-(--agri-brand)">
-              ₱{product.price}
+              ₱{agreedPrice}
               {product.unit ? ` / ${product.unit}` : ""}
             </p>
           )}

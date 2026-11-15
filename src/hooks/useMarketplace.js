@@ -324,23 +324,42 @@ export default function useMarketplace() {
   }, [filteredProducts.length, hasMore, requestPage, visibleCount]);
 
   const updateFilter = useCallback(
-    (key, value) => {
-      const params = new URLSearchParams(searchParams);
-      if (key === "distance")
-        localStorage.setItem("agri_consumer_distance", String(value));
-      if (key === "showUnavailable")
-        value ? params.set(key, "true") : params.delete(key);
-      else if (key === "search" || key === "group")
-        value ? params.set(key, value) : params.delete(key);
-      else if (
-        value === DEFAULT_FILTERS[key] ||
-        Number(value) === DEFAULT_FILTERS[key]
-      )
-        params.delete(key);
-      else params.set(key, value);
-      setSearchParams(params);
+    (keyOrPatch, value) => {
+      const isPatch =
+        typeof keyOrPatch !== "string" &&
+        keyOrPatch != null &&
+        typeof keyOrPatch === "object";
+
+      // Apply every change to the CURRENT search params. Using a functional
+      // updater matters when a single interaction commits multiple filters
+      // (e.g. the price-range slider sets min and max together): building each
+      // update from the stale `searchParams` closure silently dropped one of
+      // them.
+      setSearchParams((current) => {
+        const params = new URLSearchParams(current);
+        const entries = isPatch
+          ? Object.entries(keyOrPatch)
+          : [[keyOrPatch, value]];
+
+        for (const [key, filterValue] of entries) {
+          if (key === "distance")
+            localStorage.setItem("agri_consumer_distance", String(filterValue));
+          if (key === "showUnavailable")
+            filterValue ? params.set(key, "true") : params.delete(key);
+          else if (key === "search" || key === "group")
+            filterValue ? params.set(key, filterValue) : params.delete(key);
+          else if (
+            filterValue === DEFAULT_FILTERS[key] ||
+            Number(filterValue) === DEFAULT_FILTERS[key]
+          )
+            params.delete(key);
+          else params.set(key, filterValue);
+        }
+
+        return params;
+      });
     },
-    [searchParams, setSearchParams],
+    [setSearchParams],
   );
 
   const hasActiveFilters =

@@ -16,30 +16,36 @@ export default function useNearbyFarmers() {
     location: gpsLocation,
     loadingLocation,
     refreshLocation,
+    locationError,
   } = useUserLocation(true);
 
-  const validUserLocation = useMemo(() => {
-    if (
-      gpsLocation &&
-      typeof gpsLocation.lat === "number" &&
-      !isNaN(gpsLocation.lat) &&
-      typeof gpsLocation.lng === "number" &&
-      !isNaN(gpsLocation.lng)
-    ) {
-      return gpsLocation;
+  const isValidLocation = (value) =>
+    Boolean(
+      value &&
+        typeof value.lat === "number" &&
+        !isNaN(value.lat) &&
+        typeof value.lng === "number" &&
+        !isNaN(value.lng),
+    );
+
+  const { userLocation, hasRealLocation } = useMemo(() => {
+    if (isValidLocation(gpsLocation)) {
+      return { userLocation: gpsLocation, hasRealLocation: true };
     }
 
-    if (
-      profile?.location &&
-      typeof profile.location.lat === "number" &&
-      !isNaN(profile.location.lat) &&
-      typeof profile.location.lng === "number" &&
-      !isNaN(profile.location.lng)
-    ) {
-      return profile.location;
+    // The profile address is a legitimate fallback, but only when the user
+    // actually registered one.
+    if (isValidLocation(profile?.location)) {
+      return { userLocation: profile.location, hasRealLocation: true };
     }
 
-    return { lat: 13.9411, lng: 121.6243 };
+    // No usable position. Keep a stable search center so the page still
+    // renders, but flag it as a placeholder: showing "You are here" at an
+    // invented coordinate is misleading.
+    return {
+      userLocation: { lat: 13.9411, lng: 121.6243 },
+      hasRealLocation: false,
+    };
   }, [gpsLocation, profile]);
 
   const [loading, setLoading] = useState(() => !pageCache.get(CACHE_KEY));
@@ -76,21 +82,32 @@ export default function useNearbyFarmers() {
         setLoading(true);
       }
 
-      const { farmers: data } = await getFarmers({
-        hasProducts: true,
-        lat: validUserLocation.lat,
-        lng: validUserLocation.lng,
-      });
+      const all = [];
+      let cursor = null;
+      let hasMore = true;
+      let guard = 0;
+      while (hasMore && guard < 10) {
+        const { farmers: page, cursor: nextCursor, hasMore: more } = await getFarmers({
+          hasProducts: true,
+          lat: userLocation.lat,
+          lng: userLocation.lng,
+          cursor,
+          limit: 100,
+        });
+        all.push(...(Array.isArray(page) ? page : []));
+        cursor = nextCursor;
+        hasMore = more === true && (Array.isArray(page) ? page.length : 0) > 0;
+        guard += 1;
+      }
 
-      const list = Array.isArray(data) ? data : [];
-      setAllFarmers(list);
-      pageCache.set(CACHE_KEY, list, CACHE_TTL);
+      setAllFarmers(all);
+      pageCache.set(CACHE_KEY, all, CACHE_TTL);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [validUserLocation.lat, validUserLocation.lng, allFarmers.length]);
+  }, [userLocation.lat, userLocation.lng, allFarmers.length]);
 
   useEffect(() => {
     loadFarmers();
@@ -118,8 +135,8 @@ export default function useNearbyFarmers() {
           typeof farmer.distance === "number" && !isNaN(farmer.distance)
             ? farmer.distance
             : getDistanceKm(
-                validUserLocation.lat,
-                validUserLocation.lng,
+                userLocation.lat,
+                userLocation.lng,
                 fLat,
                 fLng,
               );
@@ -137,7 +154,7 @@ export default function useNearbyFarmers() {
         );
       })
       .sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
-  }, [allFarmers, validUserLocation, maxDistance]);
+  }, [allFarmers, userLocation, maxDistance]);
 
   const nearestFarmer = nearbyFarmers[0] ?? null;
 
@@ -145,7 +162,10 @@ export default function useNearbyFarmers() {
     loading: loading && allFarmers.length === 0,
     loadingLocation,
 
-    userLocation: validUserLocation,
+    userLocation,
+    hasRealLocation,
+
+    locationError,
 
     farmers: nearbyFarmers,
     nearbyFarmers,

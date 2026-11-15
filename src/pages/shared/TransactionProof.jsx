@@ -1,4 +1,5 @@
 ﻿import useTransactionProof from "../../hooks/useTransactionProof";
+import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 
 import TransactionProduct from "../../components/transactions/TransactionProduct";
@@ -6,12 +7,15 @@ import TransactionProofReview from "../../components/transactions/TransactionPro
 import TransactionProofStatus from "../../components/transactions/TransactionProofStatus";
 import TransactionProofUpload from "../../components/transactions/TransactionProofUpload";
 import TransactionProofSkeleton from "../../components/transactions/TransactionProofSkeleton";
+import LoginRequired from "../../components/ui/LoginRequired";
 import PageWrapper from "../../components/ui/PageWrapper";
 import { InlineError } from "../../components/ui/ErrorState";
 import Button from "../../components/ui/Button";
 
 export default function TransactionProof() {
   const { t } = useLanguage();
+  const { profile } = useAuth();
+
   const {
     inquiry,
     status,
@@ -34,6 +38,14 @@ export default function TransactionProof() {
     confirmProof,
     rejectProof,
   } = useTransactionProof();
+
+  if (!profile) {
+    return (
+      <PageWrapper>
+        <LoginRequired title={t("loginRequired.title")} />
+      </PageWrapper>
+    );
+  }
 
   return (
     <PageWrapper>
@@ -66,6 +78,20 @@ export default function TransactionProof() {
           <>
             {/* Product */}
             <TransactionProduct inquiry={inquiry} />
+
+            {/* Farmer: waiting for buyer to submit proof */}
+            {isFarmer &&
+              (status === "accepted" ||
+                status === "ongoing" ||
+                status === "awaiting_proof") && (
+                <div className="mt-5 rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) p-5">
+                  <p className="text-sm text-(--agri-text-muted)">
+                    {status === "awaiting_proof"
+                      ? t("transaction.proofPending")
+                      : t("transaction.proofNotYetAvailable")}
+                  </p>
+                </div>
+              )}
 
             {/* Error */}
             {error && <InlineError message={error} className="mt-5" />}

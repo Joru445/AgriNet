@@ -4,9 +4,8 @@ import { useLanguage } from "../../context/LanguageContext";
 import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
 import { getProductInquiryState } from "../../utils/productStatus";
-import { showToast } from "../../utils/toast";
 
-export default function ProductActions({ product, farmer, isOwner, onProductUpdate }) {
+export default function ProductActions({ product, farmer, isOwner }) {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user, authInitializing, identity } = useAuth();

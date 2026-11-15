@@ -295,8 +295,9 @@ export default function useProducts() {
   }
 
   async function handleDelete() {
-    if (!editingProduct) return;
+    if (!editingProduct || saving) return;
 
+    setSaving(true);
     try {
       await apiDeleteProduct(editingProduct.id, { uid: profile?.uid });
 
@@ -323,6 +324,8 @@ export default function useProducts() {
     } catch (error) {
       console.error(error);
       showToast.error(error.message);
+    } finally {
+      setSaving(false);
     }
   }
 

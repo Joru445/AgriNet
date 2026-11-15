@@ -1,12 +1,20 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
 import { useAuth } from "../context/AuthContext";
+import { showToast } from "../utils/toast";
 
 import Loading from "../components/ui/Loading";
 
 export default function RoleRoute({ allowedRole }) {
   const { user, profile, loading, suspended, phoneVerified, backendStatus } = useAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    if (profile && profile.role && profile.role !== allowedRole) {
+      showToast.warning("You don't have access to that page.");
+    }
+  }, [profile, allowedRole]);
 
   if (loading) {
     return <Loading />;

@@ -64,15 +64,11 @@ export default function useMessageSubscription(uid, conversationId) {
         setLoadingMessages(false);
         cached.lastSyncedAt = Date.now();
         if (meta?.fullSnapshot) {
-          const incomingIds = new Set(incomingMessages.map((message) => message.id));
-          cached.recentIds?.forEach((id) => {
-            if (!incomingIds.has(id)) cached.map.delete(id);
-          });
-          cached.recentIds = incomingIds;
-          if (!cached.cursor && !cached.hasLoadedOlder) {
-            cached.map = new Map(incomingMessages.map((message) => [message.id, message]));
-            messagesMapRef.current = cached.map;
-          }
+          // The stream now windows the NEWEST messages. Do not evict rows that
+          // fall out of that window: they are already rendered, and messages
+          // cannot be deleted server-side. Merging below keeps every loaded
+          // message while the window advances.
+          cached.recentIds = new Set(incomingMessages.map((message) => message.id));
         }
         if (!cached.cursor) {
           cached.hasMore = Boolean(meta?.hasMore);
@@ -237,11 +233,33 @@ export default function useMessageSubscription(uid, conversationId) {
     }
   }, [loadingOlder, hasMoreOlder, conversationId, uid]);
 
+  /**
+   * Render a just-sent message immediately, keyed by its server-assigned id so
+   * the realtime snapshot replaces this placeholder instead of duplicating it.
+   */
+  const appendLocalMessage = useCallback(
+    (message) => {
+      if (!uid || !conversationId || !message?.id) return;
+
+      const cached = getMessageCache(uid, conversationId);
+      if (!cached) return;
+
+      cached.map.set(message.id, message);
+      messagesMapRef.current = cached.map;
+      setMessageCache(uid, conversationId, cached);
+      setMessages(
+        Array.from(messagesMapRef.current.values()).sort(sortByCreatedAt),
+      );
+    },
+    [uid, conversationId],
+  );
+
   return {
     messages,
     loadingMessages,
     hasMoreOlder,
     loadingOlder,
     loadOlderMessages,
+    appendLocalMessage,
   };
 }

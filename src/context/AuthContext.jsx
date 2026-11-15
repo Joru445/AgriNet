@@ -8,13 +8,8 @@ import {
 } from "react";
 
 import { beforeAuthStateChanged, onAuthStateChanged, signOut, reload } from "firebase/auth";
-import {
-  doc,
-  onSnapshot,
-} from "firebase/firestore";
 
 import { auth, authPersistenceReady } from "../firebase/auth";
-import { db } from "../firebase/firestore";
 import { apiSyncTransactionStats } from "../services/user.service";
 import { getCachedUserProfile } from "../utils/userProfileCache";
 import { getSavedAccounts, saveAccount } from "../services/savedAccounts.service";
@@ -29,8 +24,10 @@ import { recordAuthDiagnostic } from "../utils/authDiagnostics";
 import {
   clearDeviceSession,
   ensureCurrentDeviceSession,
+  getCurrentDeviceSessionId,
   isDeviceSessionRejection,
 } from "../services/deviceSession.service";
+import { apiRequest } from "../services/api/api.client";
 import { setCachedUserProfile } from "../utils/userProfileCache";
 import { clearMessageCache } from "../utils/messaging/messageCache";
 
@@ -68,12 +65,44 @@ export function AuthProvider({ children }) {
 
   async function logout() {
     explicitLogoutRef.current = true;
-    if (auth.currentUser?.uid) await removeRetainedSession(auth.currentUser.uid);
+    const uid = auth.currentUser?.uid;
+
+    // Revoke the backend-managed device session BEFORE dropping Firebase auth.
+    // Otherwise the server keeps the session "active" and a still-valid ID
+    // token could continue calling protected APIs after the user logged out.
+    try {
+      const sessionId = getCurrentDeviceSessionId(uid);
+      if (sessionId) {
+        await apiRequest(
+          `/v1/me/sessions/${encodeURIComponent(sessionId)}`,
+          { method: "DELETE" },
+        );
+      }
+    } catch (error) {
+      // Best-effort revocation; sign-out must never be blocked by it.
+      console.warn("Failed to revoke device session during logout:", error);
+    } finally {
+      if (uid) clearDeviceSession(uid);
+    }
+
+    if (uid) await removeRetainedSession(uid);
     await signOut(auth);
   }
 
   async function logoutAllAccounts() {
     explicitLogoutRef.current = true;
+    const uid = auth.currentUser?.uid;
+
+    // Revoke every server-managed session for this account (including this
+    // device's), which also refreshes Firebase refresh tokens.
+    try {
+      await apiRequest("/v1/me/sessions/logout-all", { method: "POST" });
+    } catch (error) {
+      console.warn("Failed to revoke all device sessions during logout:", error);
+    } finally {
+      if (uid) clearDeviceSession(uid);
+    }
+
     await signOutAllRetainedSessions();
   }
 
@@ -206,112 +235,14 @@ export function AuthProvider({ children }) {
             setLoading(false);
           });
         return;
-
-        const userRef = doc(
-          db,
-          "users",
-          firebaseUser.uid,
-        );
-
-        // Capture the UID this listener was created for so stale callbacks
-        // from a previous user's snapshot cannot overwrite the current state.
-        const legacyListenerUid = firebaseUser.uid;
-
-        unsubscribeProfile = onSnapshot(
-          userRef,
-          (snapshot) => {
-            // Guard: ignore if the authenticated user has changed since this
-            // listener was created (e.g. rapid account switching).
-            if (auth.currentUser?.uid !== legacyListenerUid) return;
-
-            if (!snapshot.exists()) {
-              setProfile(null);
-              setFarmer(null);
-              setLoading(false);
-              return;
-            }
-
-            const userData = {
-              uid: snapshot.id,
-              ...snapshot.data(),
-            };
-
-            setProfile(userData);
-
-            // One-time operation after auth — run only once per login,
-            // NOT on every profile snapshot emission. Running this on
-            // every snapshot causes a feedback loop: snapshot → write → snapshot.
-            if (!statsSyncedRef.current && userData.role === "consumer") {
-              statsSyncedRef.current = true;
-              apiSyncTransactionStats().catch(() => {});
-            }
-
-            // Only farmers need the farmer listener.
-            if (userData.role !== "farmer") {
-              setFarmer(null);
-              setLoading(false);
-              return;
-            }
-
-            const farmerRef = doc(
-              db,
-              "farmers",
-              legacyListenerUid,
-            );
-
-            unsubscribeFarmer?.();
-
-            unsubscribeFarmer = onSnapshot(
-              farmerRef,
-              (farmerSnapshot) => {
-                // Guard: same check for farmer listener.
-                if (auth.currentUser?.uid !== legacyListenerUid) return;
-
-                setFarmer(
-                  farmerSnapshot.exists()
-                    ? {
-                        uid: farmerSnapshot.id,
-                        ...farmerSnapshot.data(),
-                      }
-                    : null,
-                );
-
-                setLoading(false);
-              },
-              (error) => {
-                console.error(
-                  "Failed to load farmer profile:",
-                  error,
-                );
-
-                setFarmer(null);
-                setLoading(false);
-              },
-            );
-          },
-          (error) => {
-            console.error(
-              "Failed to load user profile:",
-              error,
-            );
-
-            // Offline/unavailable is NOT a sign-out and NOT a missing profile.
-            // The authenticated identity and last known profile are retained as
-            // they were; loading stays true so route guards wait instead of
-            // redirecting an authenticated user to /login. Firestore retries
-            // the snapshot automatically when connectivity returns.
-            setLoading(true);
-          },
-        );
       },
       (error) => {
-        // Network and Firestore errors are not sign-outs. Keep route guards in
-        // loading state and allow Firebase to retry its managed session.
         recordAuthDiagnostic("firebase-auth-listener-error", { code: error?.code || "unknown", hasSession: Boolean(auth.currentUser) });
         setLoading(true);
       },
-      );
-    };
+    );
+  };
+
 
     // setPersistence may migrate Firebase's SDK-managed state asynchronously.
     // Subscribing only after it settles prevents a transient null user from

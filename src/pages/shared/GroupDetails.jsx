@@ -59,7 +59,7 @@ export default function GroupDetails() {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { user, profile, identity, authInitializing } = useAuth();
+  const { user, profile, identity } = useAuth();
   const currentRole = profile?.role || identity?.role || user?.role;
   const isFarmer = currentRole === "farmer";
 
@@ -86,7 +86,9 @@ export default function GroupDetails() {
           return { ...parsed, status: "pending", groupId, userId: user.uid };
         }
       }
-    } catch {}
+    } catch {
+        // ignore
+      }
     return null;
   });
   const [membershipLoaded, setMembershipLoaded] = useState(() => {
@@ -98,7 +100,9 @@ export default function GroupDetails() {
     if (Array.isArray(approvedAll)) return true;
     try {
       if (localStorage.getItem(`pending_app_${groupId}_${user.uid}`)) return true;
-    } catch {}
+    } catch {
+        // ignore
+      }
     return false;
   });
   const [memberCount, setMemberCount] = useState(() => {

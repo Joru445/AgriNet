@@ -115,6 +115,7 @@ export default function MyProducts() {
       <DeleteProductModal
         open={showDelete}
         product={editingProduct}
+        deleting={saving}
         onCancel={closeDelete}
         onConfirm={handleDelete}
       />

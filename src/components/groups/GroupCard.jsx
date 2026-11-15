@@ -105,7 +105,9 @@ export default function GroupCard({
           return "pending";
         }
       }
-    } catch {}
+    } catch {
+      // ignore
+    }
     try {
       const authUser = auth.currentUser;
       if (authUser?.uid) {
@@ -122,7 +124,9 @@ export default function GroupCard({
           if (found?.status) return found.status;
         }
       }
-    } catch {}
+    } catch {
+      // ignore
+    }
     return membershipStatus;
   })();
 

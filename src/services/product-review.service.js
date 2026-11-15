@@ -27,6 +27,17 @@ export async function getProductReviewSummaries(productIds) {
   );
 }
 
+export async function getProductReviewProofs(productId) {
+  if (!productId) return {};
+  try {
+    const result = await apiRequest(
+      `/v1/reviews/products/${encodeURIComponent(productId)}/proofs`,
+    );
+    return result?.data || {};
+  } catch {
+    return {};
+  }
+}
 export async function getInquiryProductReview(inquiryId) {
   try {
     const result = await apiRequest(`/v1/reviews/inquiries/${inquiryId}/product`, {

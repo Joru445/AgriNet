@@ -11,8 +11,8 @@
     "preview": "vite preview",
     "test": "node --test scripts/test-release-contracts.mjs",
     "test:browser": "node --test scripts/test-leaflet-browser.mjs",
-    "test:rules": "firebase.cmd emulators:exec --project agrinet-security-test --only auth,firestore \"node --test test/firestore.rules.test.mjs\"",
-    "emulators": "firebase.cmd emulators:start --project agrinet-security-test --only auth,firestore",
+    "test:rules": "firebase emulators:exec --project agrinet-security-test --only auth,firestore \"node --test test/firestore.rules.test.mjs\"",
+    "emulators": "firebase emulators:start --project agrinet-security-test --only auth,firestore",
     "check:i18n": "node scripts/check-translations.mjs"
   },
   "dependencies": {

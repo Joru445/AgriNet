@@ -10,6 +10,7 @@ export default function TransactionProduct({ inquiry }) {
 
   const quantity = inquiry?.quantity ?? 1;
   const unit = product.unit || "units";
+  const agreedPrice = inquiry?.agreement?.unitPrice ?? product.price;
 
   return (
     <section className="overflow-hidden rounded-2xl border border-(--agri-border-subtle) bg-(--agri-card) shadow-sm">
@@ -32,7 +33,7 @@ export default function TransactionProduct({ inquiry }) {
 
             <Info
               label={t("transactionProduct.pricePer", { unit: product.unit })}
-              value={`₱${Number(product.price ?? 0).toLocaleString()}`}
+              value={`₱${Number(agreedPrice ?? 0).toLocaleString()}`}
             />
           </div>
 
@@ -40,7 +41,7 @@ export default function TransactionProduct({ inquiry }) {
             <Info
               label={t("transactionProduct.estimatedTotal")}
               value={`₱${(
-                Number(product.price ?? 0) * Number(quantity)
+                Number(agreedPrice ?? 0) * Number(quantity)
               ).toLocaleString()}`}
             />
           </div>

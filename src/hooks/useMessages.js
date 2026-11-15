@@ -94,6 +94,7 @@ export default function useMessages() {
     hasMoreOlder,
     loadingOlder,
     loadOlderMessages,
+    appendLocalMessage,
   } = useMessageSubscription(profile?.uid, activeConversation?.id);
 
   const {
@@ -113,6 +114,7 @@ export default function useMessages() {
     setSearchParams,
     message,
     clearCurrentDraft,
+    appendLocalMessage,
   });
 
   const currentUid = profile?.uid || auth.currentUser?.uid;

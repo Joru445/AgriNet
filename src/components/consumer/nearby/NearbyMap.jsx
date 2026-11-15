@@ -9,7 +9,12 @@ import FarmerPopup from "./FarmerPopup";
 
 const PHILIPPINES_CENTER = { lat: 12.8797, lng: 121.7740 };
 
-export default function NearbyMap({ userLocation, farmers, maxDistance }) {
+export default function NearbyMap({
+  userLocation,
+  farmers,
+  maxDistance,
+  showUserMarker = true,
+}) {
   const { t } = useLanguage();
   const startConversation = useStartConversation();
 
@@ -49,7 +54,7 @@ export default function NearbyMap({ userLocation, farmers, maxDistance }) {
   ]);
 
   const markers = useMemo(() => [
-    ...(hasValidUserLocation
+    ...(hasValidUserLocation && showUserMarker
       ? [
           {
             key: "user",
@@ -80,13 +85,13 @@ export default function NearbyMap({ userLocation, farmers, maxDistance }) {
           <FarmerPopup farmer={f} onMessage={() => startConversation(f)} />
         ),
       })),
-  ], [hasValidUserLocation, userLocation?.lat, userLocation?.lng, farmers, t, startConversation]);
+  ], [hasValidUserLocation, showUserMarker, userLocation?.lat, userLocation?.lng, farmers, t, startConversation]);
 
   return (
     <Map
       center={mapCenter}
       zoom={13}
-      radius={maxDistance * 1000}
+      radius={showUserMarker ? maxDistance * 1000 : undefined}
       markers={markers}
     />
   );
