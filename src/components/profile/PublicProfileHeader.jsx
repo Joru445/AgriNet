@@ -246,7 +246,7 @@ export default function PublicProfileHeader({
               </button>
             )}
 
-            {!isOwner && <button
+            {!isOwner && user && <button
               type="button"
               onClick={() => setShowReportModal(true)}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-(--agri-border) bg-(--agri-card) px-4 py-2.5 text-sm font-semibold text-(--agri-text-secondary) transition hover:bg-(--agri-hover) cursor-pointer"

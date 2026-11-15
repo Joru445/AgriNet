@@ -66,13 +66,15 @@ export default function BottomNavigation({ items }) {
                       )}
 
                     <div className="relative w-8 flex items-center justify-center size-6 shrink-0 mt-0.5">
-                      {item.kind === "profile" ? (
+                      {item.kind === "profile" && identity?.username ? (
                         <Avatar
                           src={identity?.profilePicture}
                           name={identity?.fullname || identity?.username}
                           size="xxs"
                           className={isActive ? "ring-2 ring-[#2D6A4F] dark:ring-(--agri-brand)" : ""}
                         />
+                      ) : item.kind === "profile" ? (
+                        <i className="ri-user-3-line text-xl leading-none" />
                       ) : <i className={`${item.icon} text-xl leading-none`} />}
                       {isMessages && unreadCount > 0 && (
                         <Badge count={unreadCount} className="!-top-1.5 !-right-2.5 min-w-[0.875rem] h-3.5 px-0.5 text-[9px] ring-2 ring-(--agri-surface)" />
