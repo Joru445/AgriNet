@@ -44,6 +44,7 @@ export default function LandingFooter() {
               {t("landing.footer.description")}
             </p>
             <div className="flex gap-3">
+{/* Socials
               {socialLinks.map((social) => (
                 <a
                   key={social.icon}
@@ -53,6 +54,7 @@ export default function LandingFooter() {
                   <i className={`${social.icon} text-sm`} />
                 </a>
               ))}
+*/}
             </div>
           </div>
 
