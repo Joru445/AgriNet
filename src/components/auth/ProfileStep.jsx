@@ -43,7 +43,7 @@ export default function ProfileStep({
             type="tel"
             inputMode="numeric"
             maxLength={13}
-            placeholder="09XXXXXXXXX"
+            placeholder="+639XXXXXXXXX"
             value={form.contactNumber}
             onChange={(e) => {
               const value = e.target.value.replace(/[^\d+]/g, "");
