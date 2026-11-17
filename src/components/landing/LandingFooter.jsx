@@ -45,7 +45,6 @@ export default function LandingFooter() {
             </p>
             <div className="flex gap-3">
               {socialLinks.map((social) => (
-/* Socials
                 <a
                   key={social.icon}
                   href={social.href}
@@ -53,7 +52,6 @@ export default function LandingFooter() {
                 >
                   <i className={`${social.icon} text-sm`} />
                 </a>
-*/
               ))}
             </div>
           </div>
